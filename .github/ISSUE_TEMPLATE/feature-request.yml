@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a new framework capability, extension point or maintainer workflow improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: FNLLA PHP is a proprietary shared framework. Requests that only serve one downstream app may be redirected out of framework scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: Explain what delivery, framework or maintainer need is not currently covered.
+      placeholder: We need a first-party way to structure repeated policy checks across authenticated controller actions.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the shape of the new capability.
+      placeholder: Add a lightweight policy resolver or controller helper that keeps gate checks centralized and testable.
+    validations:
+      required: true
+  - type: dropdown
+    id: contract-impact
+    attributes:
+      label: Framework contract impact
+      description: Estimate how much of the public framework surface this changes.
+      options:
+        - Small additive change
+        - Moderate extension of existing patterns
+        - Large feature or API expansion
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: Explain how the change should be validated once built.
+      placeholder: Add framework tests, lint validation, CLI verification where relevant and a docs update.

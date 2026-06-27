@@ -1,0 +1,49 @@
+name: Docs and framework parity
+description: Report a mismatch between documented framework behavior and the shipped runtime or CLI contract.
+title: "[Parity]: "
+labels:
+  - docs-parity
+  - documentation
+  - testing
+body:
+  - type: input
+    id: docs-page
+    attributes:
+      label: Docs page or file
+      description: Name the README section, file or route where the mismatch appears.
+      placeholder: README.md or views/pages/about.php
+    validations:
+      required: true
+  - type: input
+    id: runtime-surface
+    attributes:
+      label: Runtime surface
+      description: Identify the framework, CLI or public runtime surface that should match the docs.
+      placeholder: src/Routing/Router.php, php fnlla route:list or public/index.php
+    validations:
+      required: true
+  - type: textarea
+    id: mismatch
+    attributes:
+      label: What is out of sync
+      description: Describe the exact mismatch between docs and runtime.
+      placeholder: README says the framework supports one flow, but the shipped CLI or runtime behaves differently.
+    validations:
+      required: true
+  - type: textarea
+    id: source-of-truth
+    attributes:
+      label: Intended source of truth
+      description: State whether the docs should change, the runtime should change, or both need adjustment.
+      placeholder: Runtime should adopt the documented behavior because the README defines the official delivery contract.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verification
+      options:
+        - label: I checked the current README and release notes before opening this issue.
+          required: true
+        - label: I checked whether the mismatch is already tracked in an open issue.
+          required: true
