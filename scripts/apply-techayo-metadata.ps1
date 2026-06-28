@@ -1,7 +1,7 @@
 <#
 ===============================================================================
 FNLLA PHP MAINTAINER SCRIPT: OWNERSHIP AND HEADER NORMALIZATION
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 This script applies a consistent TechAyo LTD ownership banner to first-party
@@ -94,12 +94,12 @@ function Build-PhpBanner {
 ===============================================================================
 $Title
 File: $RelativePath
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -120,7 +120,7 @@ function Build-CssBanner {
 ===============================================================================
 $Title
 File: $RelativePath
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
@@ -145,12 +145,12 @@ function Build-Ps1Banner {
 ===============================================================================
 $Title
 File: $RelativePath
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This script belongs to the maintained repository workflow for
-the proprietary FNLLA PHP framework.
+the public MIT-licensed FNLLA PHP framework.
 
 Purpose:
 - $Purpose
@@ -169,7 +169,7 @@ function Build-CmdBanner {
 REM ============================================================================
 REM $Title
 REM File: $RelativePath
-REM Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+REM Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 REM FNLLA PHP is produced, maintained and distributed by TechAyo LTD.
 REM Purpose: $Purpose
 REM ============================================================================

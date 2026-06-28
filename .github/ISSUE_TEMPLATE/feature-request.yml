@@ -6,7 +6,7 @@ labels:
 body:
   - type: markdown
     attributes:
-      value: FNLLA PHP is a proprietary shared framework. Requests that only serve one downstream app may be redirected out of framework scope.
+      value: FNLLA PHP is a shared maintainer-led framework. Requests that only serve one downstream app may be redirected out of framework scope.
   - type: textarea
     id: problem
     attributes:

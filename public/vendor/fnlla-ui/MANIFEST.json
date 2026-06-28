@@ -3,7 +3,7 @@
   "product": {
     "name": "FNLLA UI",
     "slug": "fnlla-ui",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "owner": "TechAyo LTD (techayo.co.uk)",
     "origin": "Finella Gardens in Dundee, UK",
     "repository": "https://github.com/fnlla/ui.git",
@@ -17,6 +17,8 @@
     "release_files": [
       "MANIFEST.json",
       "LICENSE.md",
+      "SUPPORT.md",
+      "TRADEMARKS.md",
       "VERSION"
     ]
   },
@@ -26,7 +28,9 @@
       "MANIFEST.json",
       "README.md",
       "VERSION",
-      "LICENSE.md"
+      "LICENSE.md",
+      "SUPPORT.md",
+      "TRADEMARKS.md"
     ]
   }
 }

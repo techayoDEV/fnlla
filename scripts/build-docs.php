@@ -6,12 +6,12 @@ declare(strict_types=1);
 ===============================================================================
 FNLLA PHP MAINTAINER SCRIPT
 File: scripts\build-docs.php
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -265,7 +265,7 @@ function render_docs_page(array $page): string
 
     return <<<HTML
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved. -->
+<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -327,7 +327,7 @@ function render_docs_page(array $page): string
 {$contentHtml}
 
     <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). All rights reserved.</p>
+      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 

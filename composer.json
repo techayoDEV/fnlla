@@ -1,8 +1,8 @@
 {
     "name": "fnlla/php",
-    "description": "Proprietary production-hardened server-rendered PHP framework by TechAyo LTD for FNLLA UI based productions.",
+    "description": "Open-source server-rendered PHP framework by TechAyo LTD for FNLLA UI based productions.",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "homepage": "https://techayo.co.uk",
     "authors": [
         {
@@ -12,7 +12,8 @@
         }
     ],
     "support": {
-        "issues": "https://techayo.co.uk"
+        "issues": "https://github.com/fnlla/php/issues",
+        "source": "https://github.com/fnlla/php"
     },
     "require": {
         "php": "^8.3"

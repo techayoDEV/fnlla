@@ -6,12 +6,12 @@ declare(strict_types=1);
 ===============================================================================
 FNLLA PHP TEST CASE
 File: tests\MakeProjectCommandTest.php
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -69,6 +69,8 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $command->handle([$this->targetPath, "Starter Test"]));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "LICENSE.md");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "SUPPORT.md");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "TRADEMARKS.md");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "VERSION");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "MANIFEST.json");
         self::assertStringContainsString(
@@ -77,6 +79,14 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertStringContainsString(
             "php scripts/validate-version-manifest.php",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "SUPPORT.md",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "TRADEMARKS.md",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
 

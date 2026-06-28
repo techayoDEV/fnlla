@@ -1,48 +1,21 @@
-FNLLA UI Proprietary Commercial License
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+MIT License
 
-1. Scope
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk)
 
-This license governs the FNLLA UI framework and the related repository materials distributed by TechAyo LTD, including source files, published runtime assets, documentation pages, generated exports, examples, scripts and release metadata.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-2. Ownership
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-FNLLA UI, its source code, documentation, design tokens, examples, naming system, runtime assets and generated distribution materials remain the exclusive intellectual property of TechAyo LTD.
-
-3. Permitted use
-
-FNLLA UI may be used in commercial, internal and client-facing productions that are designed, built, maintained or directly delivered by TechAyo LTD.
-
-4. Restricted use
-
-Without prior written permission from TechAyo LTD, no person or organization may:
-
-- redistribute FNLLA UI as a standalone package
-- sublicense, resell or publish FNLLA UI for third-party self-service use
-- rebrand FNLLA UI as an independent public framework
-- provide the source as a reusable framework deliverable outside productions executed by TechAyo LTD
-- extract the runtime, documentation or generated export into a separately marketed framework product
-
-5. Client delivery boundary
-
-TechAyo LTD may deploy FNLLA UI inside completed commercial productions for its clients. That delivery does not transfer ownership of FNLLA UI itself, and it does not grant the client a separate right to extract, redistribute, commercialize or relicence the framework as a standalone product.
-
-6. Modifications
-
-TechAyo LTD may modify, extend, rename, harden or redistribute FNLLA UI at its discretion. Third-party modifications require written authorization from TechAyo LTD unless the work is performed under TechAyo LTD's direction as part of a production engagement.
-
-7. Repository and export boundary
-
-The repository root, the published `assets/` runtime tree and the generated `dist/fnlla-ui/` export are all covered by this same license. The runtime export exists to support downstream delivery, not to create a separate public-license surface.
-
-8. Trademark and naming
-
-The FNLLA name and the FNLLA UI product name are reserved identifiers associated with TechAyo LTD and their documented origin.
-
-9. Warranty
-
-FNLLA UI is provided on a proprietary, as-is basis for authorized use within TechAyo LTD productions unless separate written contractual terms state otherwise.
-
-10. Contact
-
-Licensing, partnership and permission requests should be directed through techayo.co.uk.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

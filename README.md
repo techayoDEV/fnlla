@@ -1,13 +1,13 @@
 # FNLLA PHP
 
-[![License](https://img.shields.io/badge/license-proprietary-111827?style=flat-square)](./LICENSE.md)
+[![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![UI Contract](https://img.shields.io/badge/ui-fnlla--ui%20required-0f766e?style=flat-square)](./public/vendor/fnlla-ui/README.md)
 [![Runtime](https://img.shields.io/badge/runtime-php%208.3%20%2B%20mysql-2f65eb?style=flat-square)](./VERSION)
 [![Development](https://img.shields.io/badge/source-github%20only-c26d00?style=flat-square)](./scripts/sync-fnlla-ui.ps1)
 
 ## What FNLLA PHP is
 
-FNLLA PHP is a compact proprietary PHP framework for server-rendered websites and application surfaces that are built on top of the FNLLA UI runtime.
+FNLLA PHP is a compact open-source PHP framework for server-rendered websites and application surfaces that are built on top of the FNLLA UI runtime.
 
 It intentionally stays small enough that one maintainer or one delivery team can trace the whole request lifecycle without hidden framework magic, while still shipping the practical foundations needed for production work.
 
@@ -22,7 +22,7 @@ The supported application contract includes:
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
 
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 
 ## Name origin
 
@@ -30,16 +30,22 @@ The name `FNLLA` comes from Finella, and more specifically from Finella Gardens 
 
 ## Ownership and license
 
-FNLLA PHP is proprietary software owned by TechAyo LTD (techayo.co.uk).
+FNLLA PHP is open-source software released under the MIT License by TechAyo LTD (techayo.co.uk).
 
-Its use is governed by `LICENSE.md`, which permits commercial use in productions executed by TechAyo LTD while prohibiting standalone redistribution, resale and unauthorized relicensing.
+Use of the source code is governed by `LICENSE.md`.
 
-The current repository identity is defined by four state files that should stay aligned:
+Support, maintenance and release-cadence expectations are documented in `SUPPORT.md`.
+
+Trademark and branding boundaries for the FNLLA product names and marks are documented in `TRADEMARKS.md`.
+
+The current repository identity is defined by state files that should stay aligned:
 
 - `MANIFEST.json`
 - `README.md`
 - `VERSION`
 - `LICENSE.md`
+- `SUPPORT.md`
+- `TRADEMARKS.md`
 
 Repository participation and disclosure rules also rely on:
 
@@ -66,6 +72,16 @@ FNLLA PHP currently ships with:
 - a simple scheduler and CLI command surface
 - localization helpers
 - FNLLA UI contract enforcement and GitHub-only UI runtime synchronization
+
+## Support and release expectations
+
+Anyone may use FNLLA PHP under the MIT License, including for self-service and commercial work.
+
+TechAyo LTD does not promise support, maintenance, SLA coverage or a fixed release cadence for third-party projects built on FNLLA PHP.
+
+Public updates are shipped when TechAyo LTD decides they are appropriate.
+
+Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding rules.
 
 ## Repository structure
 
@@ -313,13 +329,13 @@ Treat these as delivery-layer templates that still belong to the framework repos
 
 ## Related product identity
 
-FNLLA UI and FNLLA PHP are related proprietary framework products maintained under the same product family.
+FNLLA UI and FNLLA PHP are related MIT-licensed framework products maintained under the same product family.
 
 They share:
 
 - the `FNLLA` naming origin
 - TechAyo LTD ownership
-- the same delivery and licensing direction
+- the same delivery direction and support boundary
 - the same expectation that repository metadata should clearly identify the maintainer and ownership boundary
 
 Use the repos as a coordinated pair, not as unrelated framework projects.

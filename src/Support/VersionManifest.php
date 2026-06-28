@@ -6,12 +6,12 @@ declare(strict_types=1);
 ===============================================================================
 FNLLA PHP SUPPORT SOURCE
 File: src\Support\VersionManifest.php
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -27,6 +27,9 @@ final class VersionManifest
 {
     private const ROOT_MANIFEST_FILE = "MANIFEST.json";
     private const ROOT_VERSION_FILE = "VERSION";
+    private const ROOT_LICENSE_FILE = "LICENSE.md";
+    private const ROOT_SUPPORT_FILE = "SUPPORT.md";
+    private const ROOT_TRADEMARKS_FILE = "TRADEMARKS.md";
     private const UI_VERSION_FILE = "public/vendor/fnlla-ui/VERSION";
     private const SEMVER_PATTERN = '/^\d+\.\d+\.\d+$/';
 
@@ -95,6 +98,8 @@ final class VersionManifest
                     "README.md",
                     "VERSION",
                     "LICENSE.md",
+                    "SUPPORT.md",
+                    "TRADEMARKS.md",
                 ],
             ],
         ];
@@ -154,6 +159,22 @@ final class VersionManifest
                 $errors[] = "public/vendor/fnlla-ui/VERSION: '{$uiVersion}' is not a semantic version";
             }
         }
+
+        self::validateRequiredTextFile(
+            self::ROOT_LICENSE_FILE,
+            ["MIT License", "Permission is hereby granted", 'THE SOFTWARE IS PROVIDED "AS IS"'],
+            $errors
+        );
+        self::validateRequiredTextFile(
+            self::ROOT_SUPPORT_FILE,
+            ["Support Policy", "MIT License", "TechAyo LTD", "does not promise", "release cadence"],
+            $errors
+        );
+        self::validateRequiredTextFile(
+            self::ROOT_TRADEMARKS_FILE,
+            ["Trademark Notice", "MIT License", "TechAyo LTD", "does not grant trademark rights", "official FNLLA PHP project"],
+            $errors
+        );
 
         try {
             $expectedManifest = self::buildRepositoryManifest();
@@ -245,6 +266,29 @@ final class VersionManifest
             return self::readVersionValue($path);
         } catch (RuntimeException) {
             return null;
+        }
+    }
+
+    private static function validateRequiredTextFile(string $relativePath, array $requiredTexts, array &$errors): void
+    {
+        $path = base_path($relativePath);
+
+        if (!is_file($path)) {
+            $errors[] = str_replace("\\", "/", $relativePath) . ": missing file";
+            return;
+        }
+
+        $content = file_get_contents($path);
+
+        if ($content === false) {
+            $errors[] = str_replace("\\", "/", $relativePath) . ": unable to read file";
+            return;
+        }
+
+        foreach ($requiredTexts as $requiredText) {
+            if (!str_contains($content, $requiredText)) {
+                $errors[] = str_replace("\\", "/", $relativePath) . ": missing required text '{$requiredText}'";
+            }
         }
     }
 

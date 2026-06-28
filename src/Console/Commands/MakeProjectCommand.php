@@ -6,12 +6,12 @@ declare(strict_types=1);
 ===============================================================================
 FNLLA PHP CONSOLE SOURCE
 File: src\Console\Commands\MakeProjectCommand.php
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -250,6 +250,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - the FNLLA PHP application core
 - the vendored FNLLA UI runtime under `public/vendor/fnlla-ui/`
 - machine-readable release metadata in `MANIFEST.json`
+- root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
 - routes, controllers and views
 - sessions, cookies, CSRF and auth foundations
 - MySQL migrations, seeders and factories
@@ -293,6 +294,8 @@ The exported project already includes `public/.htaccess`.
 The exported project still contains a working demonstration surface so the starter runs immediately.
 
 That demo is a starting point, not the final product. Replace the placeholder pages, routes and content with the real website or application flow for this project.
+
+Use `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` to understand the upstream FNLLA code license, support boundary and branding rules that came with this starter.
 
 ## Useful commands
 

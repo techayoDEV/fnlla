@@ -9,9 +9,12 @@ contact_links:
   - name: FNLLA PHP Support
     url: https://github.com/fnlla/php/blob/main/.github/SUPPORT.md
     about: Find the right support, licensing or conduct route for non-bug requests.
+  - name: FNLLA PHP Trademark Notice
+    url: https://github.com/fnlla/php/blob/main/TRADEMARKS.md
+    about: Review branding and endorsement rules before presenting a fork, derivative or integration as official FNLLA work.
   - name: FNLLA PHP README
     url: https://github.com/fnlla/php/blob/main/README.md
     about: Review the framework contract, repository structure and maintainer workflow before opening an issue.
-  - name: FNLLA PHP v1.0.3 release notes
-    url: https://github.com/fnlla/php/releases/tag/v1.0.3
+  - name: FNLLA PHP v1.0.4 release notes
+    url: https://github.com/fnlla/php/releases/tag/v1.0.4
     about: Check the current stable release scope before reporting a regression or release gap.

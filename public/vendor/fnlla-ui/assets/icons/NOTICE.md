@@ -1,8 +1,8 @@
 # FNLLA Icons Notice
 
-`FNLLA Icons` is the internal icon distribution name used by `FNLLA UI`.
+`FNLLA Icons` is the local icon distribution name used by `FNLLA UI`.
 
-This bundle is produced for internal framework use by TechAyo LTD (techayo.co.uk).
+This bundle is produced for framework use by TechAyo LTD (techayo.co.uk) and downstream adopters of FNLLA UI.
 
 Source attribution:
 - based on the official `lucide-static` package

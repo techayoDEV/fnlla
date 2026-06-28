@@ -25,7 +25,7 @@ If this change may be security-sensitive, stop and follow `SECURITY.md` instead 
 
 - [ ] No release note needed
 - [ ] Follow-up for the next release milestone
-- [ ] Requires update to `README.md`, `VERSION` or `LICENSE.md`
+- [ ] Requires update to `README.md`, `VERSION`, `LICENSE.md`, `SUPPORT.md` or `TRADEMARKS.md`
 
 ## Checklist
 

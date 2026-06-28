@@ -2,12 +2,12 @@
 ===============================================================================
 FNLLA PHP MAINTAINER SCRIPT
 File: scripts\sync-fnlla-ui.ps1
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This script belongs to the maintained repository workflow for
-the proprietary FNLLA PHP framework.
+the public MIT-licensed FNLLA PHP framework.
 
 Purpose:
 - Supports framework maintenance, validation, release hygiene or repository hardening.

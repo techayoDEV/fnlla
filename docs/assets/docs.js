@@ -1,7 +1,7 @@
 /*
   ============================================================================
   Documentation-only behavior for FNLLA PHP docs.
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 

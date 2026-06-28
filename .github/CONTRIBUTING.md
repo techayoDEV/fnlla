@@ -2,14 +2,16 @@
 
 ## First, understand the repository
 
-FNLLA PHP is a proprietary framework owned and maintained by TechAyo LTD (techayo.co.uk).
+FNLLA PHP is an MIT-licensed framework maintained by TechAyo LTD (techayo.co.uk).
 
-This repository is not run as a general-purpose public open source project. Contributions are reviewed against business scope, product direction, maintenance cost, client impact, security posture and licensing constraints.
+This repository is public and contributions are welcome, but it remains maintainer-led. Proposed changes are reviewed against framework scope, product direction, maintenance cost, client impact, security posture and long-term coherence.
 
 Before opening work, read:
 
 - [`README.md`](../README.md)
 - [`LICENSE.md`](../LICENSE.md)
+- [`SUPPORT.md`](../SUPPORT.md)
+- [`TRADEMARKS.md`](../TRADEMARKS.md)
 - [`SECURITY.md`](../SECURITY.md)
 - [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
 - [`.github/SUPPORT.md`](./SUPPORT.md)
@@ -30,7 +32,7 @@ The following are commonly declined or redirected:
 
 - one-off project customizations that belong in a downstream application
 - broad rewrites without agreed scope
-- changes that conflict with the proprietary licensing boundary
+- changes that conflict with the documented framework boundary
 - contributions that introduce unclear ownership or third-party IP risk
 - large unsolicited pull requests that were not discussed first
 - framework changes that attempt to detach the official FNLLA UI integration boundary
@@ -59,7 +61,7 @@ When a change is accepted for implementation:
 
 - edit first-party source files under `src/`, `bootstrap/`, `config/`, `routes/`, `views/` and `scripts/` where appropriate
 - do not treat generated runtime state under `storage/` as a hand-authored source of truth
-- keep `README.md`, `VERSION` and `LICENSE.md` aligned when release-facing behavior changes
+- keep `README.md`, `VERSION`, `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` aligned when release-facing behavior changes
 - preserve the documented MySQL-only database boundary unless an explicit product decision changes it
 - preserve the FNLLA UI runtime boundary under `public/vendor/fnlla-ui/`
 - keep GitHub as the source of truth for both `fnlla/php` and `fnlla/ui`
@@ -92,9 +94,9 @@ By submitting a contribution, you represent that:
 
 - you have the right to submit the material
 - the material does not knowingly violate another party's IP or confidentiality rights
-- the contribution may be reviewed, modified, rejected or incorporated by TechAyo LTD under the repository's proprietary licensing model
+- the contribution may be reviewed, modified, rejected or incorporated by TechAyo LTD under the repository's MIT licensing model
 
-Submitting a contribution does not transfer ownership of FNLLA PHP or change the repository license.
+Submitting a contribution does not transfer ownership of FNLLA PHP branding or change the repository license.
 
 ## Support and contact
 

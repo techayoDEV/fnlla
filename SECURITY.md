@@ -1,6 +1,6 @@
 # FNLLA PHP Security Policy
 
-FNLLA PHP is a proprietary internal framework product maintained by TechAyo LTD (techayo.co.uk).
+FNLLA PHP is maintained as a public MIT-licensed framework by TechAyo LTD (techayo.co.uk).
 
 If you believe you have found a security issue in FNLLA PHP or in the FNLLA PHP to FNLLA UI integration boundary, please report it privately.
 
@@ -8,10 +8,8 @@ If you believe you have found a security issue in FNLLA PHP or in the FNLLA PHP 
 
 Use one of these routes:
 
-1. the appropriate private business contact route through `https://techayo.co.uk`
-2. a direct private contact path already established with TechAyo LTD for framework maintenance work
-
-Clearly mark the report `FNLLA PHP SECURITY`.
+1. GitHub private vulnerability reporting for this repository, when available.
+2. TechAyo LTD's contact route at `https://techayo.co.uk`, clearly marked `FNLLA PHP SECURITY`.
 
 ## Please include
 
@@ -29,7 +27,7 @@ TechAyo LTD will aim to:
 - acknowledge a credible report in a reasonable timeframe
 - investigate impact and reproduction
 - decide whether the issue belongs to FNLLA PHP, FNLLA UI or integration code between them
-- coordinate remediation before public disclosure where disclosure is appropriate at all
+- coordinate remediation before public disclosure where disclosure is appropriate
 
 ## Disclosure expectations
 

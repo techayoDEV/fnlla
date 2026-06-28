@@ -1,13 +1,13 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: PREAMBLE AND SHARED STATE
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
 /*
   FNLLA UI runtime script.
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   Produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
   Public runtime asset names and enhancement markers define the supported runtime contract.
 */
@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaUiVersion = "1.0.3";
+  var fnllaUiVersion = "1.0.4";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -148,7 +148,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: DOM AND FOCUS HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -353,7 +353,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: DROPDOWN STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -445,7 +445,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: NAVIGATION STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -519,7 +519,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: MODAL STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -777,7 +777,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: ACCORDION STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -856,7 +856,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TABS STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -937,7 +937,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: FOCUS MANAGEMENT HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -988,7 +988,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TOAST STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1048,7 +1048,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: OFFCANVAS STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1152,7 +1152,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: POPOVER STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1230,7 +1230,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TOOLTIP STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1306,7 +1306,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: SCROLLSPY STATE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1412,7 +1412,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: CUSTOM SELECT CORE HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1446,7 +1446,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: DROPDOWN INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1556,7 +1556,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: NAVIGATION INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1597,7 +1597,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TABS INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1679,7 +1679,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: ACCORDION INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1757,7 +1757,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: MODAL INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1837,7 +1837,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TOAST INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1904,7 +1904,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: OFFCANVAS INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -1983,7 +1983,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: POPOVER INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2069,7 +2069,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: TOOLTIP INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2107,7 +2107,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: CUSTOM SELECT SHARED HELPERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2325,7 +2325,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: CUSTOM SELECT MENU BUILDERS
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2451,7 +2451,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: CUSTOM SELECT INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2701,7 +2701,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: RANGE OUTPUT INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2746,7 +2746,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: SCROLLSPY INITIALIZER
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
@@ -2820,7 +2820,7 @@
 /*
   ============================================================================
   FNLLA UI SOURCE MODULE: RUNTIME BINDING AND PUBLIC API
-  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
