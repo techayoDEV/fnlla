@@ -73,7 +73,7 @@ $pageMeta = page_meta([
                 <button class="btn btn-outline btn-sm" id="resource-menu-trigger" type="button" data-fnlla-dropdown-toggle aria-expanded="false" aria-controls="resource-menu">Resources</button>
                 <div class="dropdown-menu" id="resource-menu" aria-labelledby="resource-menu-trigger">
                   <a class="dropdown-item" href="<?= h(route("api.health")) ?>">JSON health route</a>
-                  <a class="dropdown-item" href="https://github.com/fnlla/ui" target="_blank" rel="noreferrer">FNLLA UI repo</a>
+                  <a class="dropdown-item" href="https://github.com/fnlla/web" target="_blank" rel="noreferrer">FNLLA UI repo</a>
                 </div>
               </li>
             </ul>

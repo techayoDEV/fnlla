@@ -116,7 +116,7 @@ Important operational rules:
 - do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI into the official FNLLA PHP stack
 - do not load FNLLA UI assets from third-party CDNs
 - keep the vendored runtime under `public/vendor/fnlla-ui/`
-- treat the GitHub `fnlla/ui` repository as the only supported source of truth for FNLLA UI updates
+- treat the GitHub `fnlla/web` repository as the only supported source of truth for FNLLA UI updates
 
 ## CSS variables and tokens
 
@@ -290,7 +290,7 @@ FNLLA PHP and FNLLA UI are intended to be maintained from GitHub repositories ow
 For the official stack:
 
 - `fnlla-php` repository is the source of truth for the PHP framework
-- `fnlla/ui` repository is the source of truth for the UI runtime
+- `fnlla/web` repository is the source of truth for the UI runtime
 
 Packagist, npm-style registry distribution and third-party mirrors are intentionally out of scope for the official maintainer workflow.
 

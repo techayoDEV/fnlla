@@ -20,7 +20,7 @@
     "ui_runtime": {
         "name": "FNLLA UI",
         "slug": "fnlla-ui",
-        "repository": "https://github.com/fnlla/ui.git",
+        "repository": "https://github.com/fnlla/web.git",
         "source_of_truth": "github",
         "version_path": "public/vendor/fnlla-ui/VERSION",
         "vendored_version": "1.0.6",

@@ -84,7 +84,7 @@ final class VersionManifest
             "ui_runtime" => [
                 "name" => "FNLLA UI",
                 "slug" => "fnlla-ui",
-                "repository" => "https://github.com/fnlla/ui.git",
+                "repository" => "https://github.com/fnlla/web.git",
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
                 "vendored_version" => $uiVersion,
