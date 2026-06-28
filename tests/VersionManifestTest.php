@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+===============================================================================
+FNLLA PHP TEST CASE
+File: tests\VersionManifestTest.php
+Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
+===============================================================================
+
+FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+(techayo.co.uk). This repository is the authoritative maintainer workspace for
+the proprietary FNLLA PHP framework and its related delivery scripts, tests,
+templates and release metadata.
+
+Purpose:
+- Validates maintained framework behavior inside the repository-local test harness.
+*/
+
+namespace Fnlla\Php\Tests;
+
+use Fnlla\Php\Support\VersionManifest;
+use PHPUnit\Framework\TestCase;
+
+final class VersionManifestTest extends TestCase
+{
+    public function testBuildRepositoryManifestReflectsCurrentRepositoryVersions(): void
+    {
+        $manifest = VersionManifest::buildRepositoryManifest();
+
+        self::assertSame("FNLLA PHP", $manifest["product"]["name"] ?? null);
+        self::assertSame("fnlla-php", $manifest["product"]["slug"] ?? null);
+        self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["product"]["version"] ?? "")));
+        self::assertSame("FNLLA UI", $manifest["ui_runtime"]["name"] ?? null);
+        self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["vendored_version"] ?? "")));
+        self::assertSame(
+            $manifest["ui_runtime"]["vendored_version"] ?? null,
+            $manifest["ui_runtime"]["validated_version"] ?? null
+        );
+    }
+
+    public function testVersionManifestValidationPassesForMaintainedRepositoryState(): void
+    {
+        self::assertSame([], VersionManifest::validateRepositoryManifest());
+    }
+}

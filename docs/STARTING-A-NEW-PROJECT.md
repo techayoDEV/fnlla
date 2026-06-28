@@ -104,7 +104,19 @@ Inside the new project directory:
 php fnlla fnlla-ui:validate
 php scripts/test.php
 php scripts/lint.php
+php scripts/validate-version-manifest.php
 ```
+
+7. Start the local server:
+
+```bash
+php -S 127.0.0.1:8080 -t public public/router.php
+```
+
+8. Open `http://127.0.0.1:8080` in your browser.
+
+For Apache environments, use `public/` as the document root.
+The exported project already contains `public/.htaccess`.
 
 ## Which files you normally edit first
 

@@ -45,3 +45,7 @@ jobs:
       - name: Validate FNLLA UI contract
         shell: pwsh
         run: php .\scripts\validate-fnlla-ui.php
+
+      - name: Validate version contract
+        shell: pwsh
+        run: php .\scripts\validate-version-manifest.php

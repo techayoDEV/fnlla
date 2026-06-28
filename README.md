@@ -34,8 +34,9 @@ FNLLA PHP is proprietary software owned by TechAyo LTD (techayo.co.uk).
 
 Its use is governed by `LICENSE.md`, which permits commercial use in productions executed by TechAyo LTD while prohibiting standalone redistribution, resale and unauthorized relicensing.
 
-The current repository identity is defined by three state files that should stay aligned:
+The current repository identity is defined by four state files that should stay aligned:
 
+- `MANIFEST.json`
 - `README.md`
 - `VERSION`
 - `LICENSE.md`
@@ -120,6 +121,10 @@ php -S 127.0.0.1:8080 -t public public/router.php
 
 Then open `http://127.0.0.1:8080`.
 
+For Apache-based local or production hosting, point the document root at `public/`.
+The repository already includes the rewrite file at `public/.htaccess`.
+There is intentionally no top-level `.htaccess` because `public/` is the only supported web root.
+
 Copy `.env.example` to `.env` when you want explicit local configuration.
 
 No Packagist download step is required for the framework itself.
@@ -171,6 +176,7 @@ Use the repository-local commands:
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-ui.php
+php scripts/validate-version-manifest.php
 ```
 
 Windows launchers are also included:
@@ -212,6 +218,8 @@ Important commands:
 - `php fnlla queue:work`
 - `php fnlla schedule:run`
 - `php fnlla route:list`
+- `php fnlla version:status`
+- `php fnlla version:sync`
 
 ## GitHub-only source of truth
 
@@ -233,7 +241,9 @@ Generated runtime state, local queue files, session files and logs should not be
 Authoritative maintainer scripts and checkpoints:
 
 - `scripts/sync-fnlla-ui.ps1` syncs the vendored FNLLA UI runtime from GitHub
+- `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
 - `scripts/validate-fnlla-ui.php` validates the enforced FNLLA UI contract
+- `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
 - `bootstrap/common.php` enforces the shared FNLLA UI guard during bootstrap
@@ -244,7 +254,9 @@ Recommended maintainer sequence:
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-ui.php
+php scripts/validate-version-manifest.php
 php fnlla fnlla-ui:sync
+php fnlla version:status
 ```
 
 ## Runtime and repository boundary

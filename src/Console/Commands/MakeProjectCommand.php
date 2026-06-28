@@ -90,7 +90,7 @@ final class MakeProjectCommand extends Command
         $this->line("1. Open the new project directory.");
         $this->line("2. Copy .env.example to .env and set APP_URL plus MySQL credentials.");
         $this->line("3. Review routes/web.php, src/Controllers/ and views/pages/ and replace the demo surface with your project pages.");
-        $this->line("4. Run php fnlla fnlla-ui:validate, php scripts/test.php and php scripts/lint.php.");
+        $this->line("4. Run php fnlla fnlla-ui:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
         $this->line("5. Initialize a separate Git repository for the new website or application.");
 
         return 0;
@@ -147,10 +147,8 @@ final class MakeProjectCommand extends Command
             ".git",
             ".github",
             "CODE_OF_CONDUCT.md",
-            "LICENSE.md",
             "README.md",
             "SECURITY.md",
-            "VERSION",
         ], true);
     }
 
@@ -251,10 +249,11 @@ It is intended to be the beginning of a new server-rendered website or web appli
 
 - the FNLLA PHP application core
 - the vendored FNLLA UI runtime under `public/vendor/fnlla-ui/`
+- machine-readable release metadata in `MANIFEST.json`
 - routes, controllers and views
 - sessions, cookies, CSRF and auth foundations
 - MySQL migrations, seeders and factories
-- local lint, test and FNLLA UI validation scripts
+- local lint, test, version metadata and FNLLA UI validation scripts
 
 ## How to start working
 
@@ -266,6 +265,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 php fnlla fnlla-ui:validate
 php scripts/test.php
 php scripts/lint.php
+php scripts/validate-version-manifest.php
 ```
 
 4. Start the local server:
@@ -273,6 +273,11 @@ php scripts/lint.php
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
+
+5. Open `http://127.0.0.1:8080` in your browser.
+
+For Apache environments, use `public/` as the document root.
+The exported project already includes `public/.htaccess`.
 
 ## First files to replace or review
 
@@ -298,8 +303,11 @@ php fnlla fnlla-ui:validate
 php fnlla migrate
 php fnlla migrate:rollback
 php fnlla migrate:status
+php fnlla version:status
+php fnlla version:sync
 php scripts/test.php
 php scripts/lint.php
+php scripts/validate-version-manifest.php
 ```
 
 On Windows, the starter also includes:
@@ -327,7 +335,7 @@ MD;
             }
         }
 
-        $testLauncher = <<<CMD
+        $testLauncher = <<<'CMD'
 @echo off
 REM ============================================================================
 REM FNLLA PROJECT LAUNCHER
@@ -338,7 +346,7 @@ setlocal
 php "%~dp0scripts\test.php" %*
 CMD;
 
-        $lintLauncher = <<<CMD
+        $lintLauncher = <<<'CMD'
 @echo off
 REM ============================================================================
 REM FNLLA PROJECT LAUNCHER
@@ -348,6 +356,7 @@ REM ============================================================================
 setlocal
 php "%~dp0scripts\lint.php" || exit /b %ERRORLEVEL%
 php "%~dp0scripts\validate-fnlla-ui.php" || exit /b %ERRORLEVEL%
+php "%~dp0scripts\validate-version-manifest.php" || exit /b %ERRORLEVEL%
 CMD;
 
         file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "test-project.cmd", $testLauncher . PHP_EOL);

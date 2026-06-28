@@ -35,6 +35,8 @@ use Fnlla\Php\Console\Commands\QueueWorkCommand;
 use Fnlla\Php\Console\Commands\RouteListCommand;
 use Fnlla\Php\Console\Commands\ScheduleRunCommand;
 use Fnlla\Php\Console\Commands\SeedCommand;
+use Fnlla\Php\Console\Commands\VersionStatusCommand;
+use Fnlla\Php\Console\Commands\VersionSyncCommand;
 
 /*
 Guard bypass note:
@@ -42,7 +44,7 @@ Guard bypass note:
   itself is blocking normal bootstrap because of a UI contract violation
 - this keeps the repository recoverable without editing bootstrap files by hand
 */
-if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-ui:sync", "fnlla-ui:validate"], true) && !defined("FNLLA_UI_SKIP_AUTO_GUARD")) {
+if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-ui:sync", "fnlla-ui:validate", "version:status", "version:sync"], true) && !defined("FNLLA_UI_SKIP_AUTO_GUARD")) {
     define("FNLLA_UI_SKIP_AUTO_GUARD", true);
 }
 
@@ -66,5 +68,7 @@ $console->register(MakeSeederCommand::class);
 $console->register(QueueWorkCommand::class);
 $console->register(RouteListCommand::class);
 $console->register(ScheduleRunCommand::class);
+$console->register(VersionStatusCommand::class);
+$console->register(VersionSyncCommand::class);
 
 exit($console->run($_SERVER["argv"] ?? []));

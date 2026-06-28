@@ -288,6 +288,10 @@ try {
     if ($sourceVersion -ne $targetVersion) {
         throw "Version mismatch after sync. Source=$sourceVersion Target=$targetVersion"
     }
+
+    $phpPath = Assert-CommandExists -Name "php"
+    $versionSyncScriptPath = Join-Path $projectRoot "scripts\sync-version-manifest.php"
+    Invoke-CheckedCommand -FilePath $phpPath -Arguments @($versionSyncScriptPath) -Label "php"
 }
 finally {
     if ($ephemeralClonePath -and (Test-Path -LiteralPath $ephemeralClonePath)) {

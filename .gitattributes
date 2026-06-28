@@ -1,0 +1,29 @@
+# Copyright (c) TechAyo LTD. All rights reserved.
+# Repository-wide line ending policy for FNLLA PHP and its vendored runtime assets.
+
+* text=auto eol=lf
+
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.php text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.svg text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

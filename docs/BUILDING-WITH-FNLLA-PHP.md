@@ -81,6 +81,7 @@ php fnlla fnlla-ui:sync
 php fnlla fnlla-ui:validate
 php scripts/test.php
 php scripts/lint.php
+php scripts/validate-version-manifest.php
 ```
 
 Start the local server:
@@ -88,6 +89,11 @@ Start the local server:
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
+
+Then open `http://127.0.0.1:8080`.
+
+If you run FNLLA PHP under Apache, configure the virtual host so the document root is `public/`.
+The framework already ships with `public/.htaccess` for route rewriting.
 
 ## How to add a new page
 
