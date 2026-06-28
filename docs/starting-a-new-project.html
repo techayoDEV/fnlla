@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Starting a New Project - FNLLA PHP Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla-ui.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -16,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.5</span>
+        <span class="doc-status">Stable 1.0.6</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -46,10 +47,9 @@
         </button>
       </div>
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
-        <a class="btn btn-outline btn-sm" href="./starting-a-new-project.html" aria-current="page">Starting a New Project</a>
-        <a class="btn btn-ghost btn-sm" href="./building-with-fnlla-php.html">Building with FNLLA PHP</a>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-ui.html">FNLLA UI</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -66,40 +66,12 @@
 
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Starting a New Project</h1>
+        <h2 class="section-title">Starting a New Project</h2>
         <p class="section-text">Recommended starter-export workflow for real downstream projects built on FNLLA PHP.</p>
       </div>
 
       <div class="doc-guide-layout">
-        <aside class="doc-guide-sidebar">
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Guide source</p>
-            <p class="card-text"><code>docs/STARTING-A-NEW-PROJECT.md</code></p>
-          </article>
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">On this page</p>
-            <ul class="doc-toc-list">
-              <li><a href="#short-answer">Short answer</a></li>
-              <li><a href="#why-not-just-clone-fnlla-php-and-build-directly-inside-it">Why not just clone fnlla-php and build directly inside it</a></li>
-              <li><a href="#official-recommended-workflow">Official recommended workflow</a></li>
-              <li><a href="#what-the-export-gives-you">What the export gives you</a></li>
-              <li><a href="#what-the-new-project-should-be">What the new project should be</a></li>
-              <li><a href="#example">Example</a></li>
-              <li><a href="#what-to-do-right-after-export">What to do right after export</a></li>
-              <li><a href="#which-files-you-normally-edit-first">Which files you normally edit first</a></li>
-              <li><a href="#should-there-still-be-a-separate-starter-directory-inside-fnlla-php">Should there still be a separate starter directory inside fnlla-php</a></li>
-              <li><a href="#when-cloning-the-repository-directly-is-still-acceptable">When cloning the repository directly is still acceptable</a></li>
-              <li><a href="#final-rule">Final rule</a></li>
-            </ul>
-          </article>
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Other guides</p>
-<ul><li><a href="./building-with-fnlla-php.html">Building with FNLLA PHP</a></li></ul>
-          </article>
-        </aside>
-
-        <article class="card doc-guide-card">
-          <div class="doc-guide">
+        <article class="card doc-guide-card doc-guide-prose doc-guide-prose-numbered">
             <h2 id="short-answer">Short answer</h2>
             <p>Do not treat the <code>fnlla/php</code> repository itself as the normal place where a new client website or new web application should be built.</p>
             <p>The recommended workflow is:</p>
@@ -156,12 +128,12 @@
             </ol>
             <h2 id="example">Example</h2>
             <p>If your maintained framework lives here:</p>
-            <pre><code class="language-text">C:\workspace\fnlla-php</code></pre>
+            <pre><code class="language-text">/workspace/fnlla-php</code></pre>
             <p>Then a good new project export might be:</p>
-            <pre><code class="language-bash">cd C:\workspace\fnlla-php
-php fnlla make:project ..\acme-service-portal &quot;Acme Service Portal&quot;</code></pre>
+            <pre><code class="language-bash">cd /workspace/fnlla-php
+php fnlla make:project ../acme-service-portal &quot;Acme Service Portal&quot;</code></pre>
             <p>That creates:</p>
-            <pre><code class="language-text">C:\workspace\acme-service-portal</code></pre>
+            <pre><code class="language-text">/workspace/acme-service-portal</code></pre>
             <p>and leaves the framework repository untouched.</p>
             <h2 id="what-to-do-right-after-export">What to do right after export</h2>
             <p>Inside the new project directory:</p>
@@ -224,8 +196,32 @@ php scripts/validate-version-manifest.php</code></pre>
               <li>one real website or one real web application project</li>
             </ul>
             <p>That separation is the cleanest and most scalable way to work with FNLLA PHP.</p>
-          </div>
         </article>
+        <aside class="doc-guide-sidebar scrollbar scrollbar-thin">
+          <div class="card doc-guide-card">
+            <p class="doc-panel-label">Guide pages</p>
+            <div class="doc-guide-nav" aria-label="Guide pages">
+            <a class="btn btn-outline btn-sm" href="./starting-a-new-project.html" aria-current="page">Starting a New Project</a>
+            <a class="btn btn-ghost btn-sm" href="./building-with-fnlla-php.html">Building</a>
+            </div>
+          </div>
+          <div class="card doc-guide-card">
+            <p class="doc-panel-label">On this page</p>
+            <div class="doc-guide-toc doc-guide-toc-numbered">
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#short-answer">Short answer</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#why-not-just-clone-fnlla-php-and-build-directly-inside-it">Why not just clone fnlla-php and build directly inside it</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#official-recommended-workflow">Official recommended workflow</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-the-export-gives-you">What the export gives you</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-the-new-project-should-be">What the new project should be</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#example">Example</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-to-do-right-after-export">What to do right after export</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#which-files-you-normally-edit-first">Which files you normally edit first</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#should-there-still-be-a-separate-starter-directory-inside-fnlla-php">Should there still be a separate starter directory inside fnlla-php</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#when-cloning-the-repository-directly-is-still-acceptable">When cloning the repository directly is still acceptable</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#final-rule">Final rule</a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 

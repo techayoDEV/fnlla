@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Building with FNLLA PHP - FNLLA PHP Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla-ui.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -16,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.5</span>
+        <span class="doc-status">Stable 1.0.6</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -46,10 +47,9 @@
         </button>
       </div>
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
-        <a class="btn btn-ghost btn-sm" href="./starting-a-new-project.html">Starting a New Project</a>
-        <a class="btn btn-outline btn-sm" href="./building-with-fnlla-php.html" aria-current="page">Building with FNLLA PHP</a>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-ui.html">FNLLA UI</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -66,53 +66,12 @@
 
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Building with FNLLA PHP</h1>
+        <h2 class="section-title">Building with FNLLA PHP</h2>
         <p class="section-text">Long-form implementation guidance for routes, controllers, views, forms, MySQL and auth.</p>
       </div>
 
       <div class="doc-guide-layout">
-        <aside class="doc-guide-sidebar">
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Guide source</p>
-            <p class="card-text"><code>docs/BUILDING-WITH-FNLLA-PHP.md</code></p>
-          </article>
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">On this page</p>
-            <ul class="doc-toc-list">
-              <li><a href="#what-this-guide-is-for">What this guide is for</a></li>
-              <li><a href="#the-working-model">The working model</a></li>
-              <li><a href="#official-ui-rule">Official UI rule</a></li>
-              <li><a href="#recommended-build-sequence">Recommended build sequence</a></li>
-              <li><a href="#local-setup-for-a-new-project">Local setup for a new project</a></li>
-              <li><a href="#how-to-add-a-new-page">How to add a new page</a></li>
-              <li><a href="#how-to-structure-views">How to structure views</a></li>
-              <li><a href="#when-to-use-controllers-and-when-to-use-closures">When to use controllers and when to use closures</a></li>
-              <li><a href="#handling-forms-correctly">Handling forms correctly</a></li>
-              <li><a href="#validation-pattern">Validation pattern</a></li>
-              <li><a href="#database-workflow">Database workflow</a></li>
-              <li><a href="#query-builder-usage">Query builder usage</a></li>
-              <li><a href="#authentication-and-protected-areas">Authentication and protected areas</a></li>
-              <li><a href="#middleware-usage">Middleware usage</a></li>
-              <li><a href="#route-organization">Route organization</a></li>
-              <li><a href="#building-json-endpoints">Building JSON endpoints</a></li>
-              <li><a href="#using-the-container-well">Using the container well</a></li>
-              <li><a href="#a-practical-app-structure">A practical app structure</a></li>
-              <li><a href="#how-to-add-an-admin-or-dashboard-area">How to add an admin or dashboard area</a></li>
-              <li><a href="#styling-and-page-composition-rules">Styling and page composition rules</a></li>
-              <li><a href="#what-to-avoid">What to avoid</a></li>
-              <li><a href="#suggested-workflow-for-a-new-client-project">Suggested workflow for a new client project</a></li>
-              <li><a href="#pre-release-checks">Pre-release checks</a></li>
-              <li><a href="#final-recommendation">Final recommendation</a></li>
-            </ul>
-          </article>
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Other guides</p>
-<ul><li><a href="./starting-a-new-project.html">Starting a New Project</a></li></ul>
-          </article>
-        </aside>
-
-        <article class="card doc-guide-card">
-          <div class="doc-guide">
+        <article class="card doc-guide-card doc-guide-prose doc-guide-prose-numbered">
             <h2 id="what-this-guide-is-for">What this guide is for</h2>
             <p>This guide explains how to build new server-rendered websites and web applications on top of <code>fnlla-php</code>.</p>
             <p>It is written for the official stack:</p>
@@ -504,8 +463,45 @@ php fnlla route:list</code></pre>
               <li>release hygiene consistent</li>
             </ul>
             <p>If a new website or application follows those rules, <code>fnlla-php</code> becomes a fast and stable base instead of a pile of custom exceptions.</p>
-          </div>
         </article>
+        <aside class="doc-guide-sidebar scrollbar scrollbar-thin">
+          <div class="card doc-guide-card">
+            <p class="doc-panel-label">Guide pages</p>
+            <div class="doc-guide-nav" aria-label="Guide pages">
+            <a class="btn btn-ghost btn-sm" href="./starting-a-new-project.html">Starting a New Project</a>
+            <a class="btn btn-outline btn-sm" href="./building-with-fnlla-php.html" aria-current="page">Building</a>
+            </div>
+          </div>
+          <div class="card doc-guide-card">
+            <p class="doc-panel-label">On this page</p>
+            <div class="doc-guide-toc doc-guide-toc-numbered">
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-this-guide-is-for">What this guide is for</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#the-working-model">The working model</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#official-ui-rule">Official UI rule</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#recommended-build-sequence">Recommended build sequence</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#local-setup-for-a-new-project">Local setup for a new project</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#how-to-add-a-new-page">How to add a new page</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#how-to-structure-views">How to structure views</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#when-to-use-controllers-and-when-to-use-closures">When to use controllers and when to use closures</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#handling-forms-correctly">Handling forms correctly</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#validation-pattern">Validation pattern</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#database-workflow">Database workflow</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#query-builder-usage">Query builder usage</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#authentication-and-protected-areas">Authentication and protected areas</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#middleware-usage">Middleware usage</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#route-organization">Route organization</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#building-json-endpoints">Building JSON endpoints</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#using-the-container-well">Using the container well</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#a-practical-app-structure">A practical app structure</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#how-to-add-an-admin-or-dashboard-area">How to add an admin or dashboard area</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#styling-and-page-composition-rules">Styling and page composition rules</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-to-avoid">What to avoid</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#suggested-workflow-for-a-new-client-project">Suggested workflow for a new client project</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#pre-release-checks">Pre-release checks</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#final-recommendation">Final recommendation</a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 

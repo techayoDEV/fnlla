@@ -39,6 +39,12 @@ $rootPages = [
         "document_title" => "Distribution - FNLLA PHP Documentation",
     ],
     [
+        "label" => "FNLLA UI",
+        "href" => "fnlla-ui.html",
+        "title" => "FNLLA UI",
+        "document_title" => "FNLLA UI - FNLLA PHP Documentation",
+    ],
+    [
         "label" => "Getting Started",
         "href" => "getting-started.html",
         "title" => "Getting Started",
@@ -128,6 +134,19 @@ $pagesToWrite = [
             "page_lead" => "Local setup, starter export, first delivery steps and the maintainer commands worth running before any real implementation work.",
             "version" => $version,
             "content_html" => render_getting_started_content(),
+        ]),
+    ],
+    [
+        "target" => $docsRoot . DIRECTORY_SEPARATOR . "fnlla-ui.html",
+        "content" => render_docs_page([
+            "root_pages" => $rootPages,
+            "guide_pages" => $guidePages,
+            "current_root_label" => "FNLLA UI",
+            "document_title" => "FNLLA UI - FNLLA PHP Documentation",
+            "page_title" => "FNLLA UI",
+            "page_lead" => "How FNLLA PHP depends on FNLLA UI, where the vendored runtime lives and how downstream projects should keep that dependency healthy.",
+            "version" => $version,
+            "content_html" => render_fnlla_ui_content(),
         ]),
     ],
     [
@@ -254,14 +273,8 @@ function render_docs_page(array $page): string
     $guidePages = $page["guide_pages"];
     $currentRootLabel = $page["current_root_label"];
     $rootCurrentAriaLabel = array_key_exists("root_current_aria_label", $page) ? $page["root_current_aria_label"] : $currentRootLabel;
-    $currentGuideHref = $page["current_guide_href"] ?? null;
     $contentHtml = $page["content_html"];
     $rootPagesMarkup = render_root_navigation($rootPages, $currentRootLabel, $rootCurrentAriaLabel);
-    $guideRail = "";
-
-    if ($currentRootLabel === "Guides") {
-        $guideRail = render_guide_navigation($guidePages, $currentGuideHref);
-    }
 
     return <<<HTML
 <!DOCTYPE html>
@@ -272,6 +285,7 @@ function render_docs_page(array $page): string
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>{$documentTitle}</title>
+  <link rel="icon" href="./assets/brand/fnlla-ui.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -312,7 +326,6 @@ function render_docs_page(array $page): string
         </button>
       </div>
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
-{$guideRail}
 {$rootPagesMarkup}
         <div class="doc-nav-controls">
           <label class="switch doc-theme-toggle">
@@ -364,6 +377,20 @@ function render_guide_navigation(array $guidePages, ?string $currentGuideHref): 
     return implode(PHP_EOL, $markup);
 }
 
+function render_guide_sidebar_navigation(array $guidePages, array $currentGuide): string
+{
+    $markup = [];
+
+    foreach ($guidePages as $page) {
+        $label = $page["label"] === "Building with FNLLA PHP" ? "Building" : $page["label"];
+        $className = $page["href"] === $currentGuide["href"] ? "btn btn-outline btn-sm" : "btn btn-ghost btn-sm";
+        $ariaCurrent = $page["href"] === $currentGuide["href"] ? ' aria-current="page"' : "";
+        $markup[] = '            <a class="' . $className . '" href="./' . escape_html($page["href"]) . '"' . $ariaCurrent . '>' . escape_html($label) . "</a>";
+    }
+
+    return implode(PHP_EOL, $markup);
+}
+
 function render_overview_content(string $version): string
 {
     $version = escape_html($version);
@@ -371,7 +398,7 @@ function render_overview_content(string $version): string
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Start here</h1>
+        <h2 class="section-title">Start here</h2>
         <p class="section-text">FNLLA PHP is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the starter-export workflow and the practical delivery rules for downstream websites and applications.</p>
       </div>
 
@@ -419,6 +446,11 @@ views/</code></pre>
           <span class="doc-link-label">Packaging</span>
           <p class="doc-link-title">Distribution</p>
           <p class="doc-link-text">What belongs to the downstream runtime surface, what stays maintainer-only and how the vendored FNLLA UI runtime should be treated.</p>
+        </a>
+        <a class="doc-link-card" href="./fnlla-ui.html">
+          <span class="doc-link-label">Dependency</span>
+          <p class="doc-link-title">FNLLA UI</p>
+          <p class="doc-link-text">Where the vendored runtime lives, how to keep it synced and why FNLLA PHP officially depends on FNLLA UI as its only supported UI layer.</p>
         </a>
         <a class="doc-link-card" href="./getting-started.html">
           <span class="doc-link-label">Bootstrap</span>
@@ -471,12 +503,107 @@ views/</code></pre>
 HTML;
 }
 
+function render_fnlla_ui_content(): string
+{
+    return <<<HTML
+    <section class="section pt-1">
+      <div class="section-header">
+        <h2 class="section-title">FNLLA UI is a required runtime dependency</h2>
+        <p class="section-text">FNLLA PHP is not designed to be UI-agnostic in the official stack. The maintained application shell, shared layout and validation flow all assume that FNLLA UI is present as the only supported UI runtime.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h2 class="card-title">Where it lives</h2>
+          <p class="card-text">The vendored runtime lives under <code>public/vendor/fnlla-ui/</code>. That directory is the local downstream copy used by the framework and by starter exports created from this repository.</p>
+        </article>
+        <article class="card">
+          <h2 class="card-title">Why it matters</h2>
+          <p class="card-text">Shared views, docs shells, theme switching, consent UI and application primitives all expect FNLLA UI classes, tokens and JavaScript behavior to exist locally.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Supported dependency contract</h2>
+        <p class="section-text">Downstream work should treat FNLLA UI as a first-class product dependency, not as a replaceable design preference.</p>
+      </div>
+
+      <div class="doc-mini-grid">
+        <article class="card">
+          <h3 class="card-title">Supported</h3>
+          <ul class="doc-checklist">
+            <li>Keep the vendored runtime under <code>public/vendor/fnlla-ui/</code>.</li>
+            <li>Sync updates from the official FNLLA UI repository workflow.</li>
+            <li>Build pages with FNLLA UI layout, card, button, alert and form primitives.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Unsupported</h3>
+          <ul class="doc-checklist">
+            <li>Replacing FNLLA UI with Tailwind, Bootstrap or another framework in the official stack.</li>
+            <li>Loading third-party UI assets from random CDNs instead of the vendored runtime.</li>
+            <li>Changing shared shell markup so the framework can no longer validate the UI contract.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Sync and validation workflow</h2>
+        <p class="section-text">When FNLLA UI changes upstream, update the vendored runtime deliberately and validate it before treating the repository as release-ready.</p>
+      </div>
+
+      <div class="grid grid-2 gap-md">
+        <article class="card">
+          <h3 class="card-title">Recommended commands</h3>
+          <pre><code class="language-bash">php fnlla fnlla-ui:sync
+php fnlla fnlla-ui:validate
+php scripts/build-docs.php --check</code></pre>
+          <p class="card-text">These commands keep the local downstream copy aligned and confirm that docs and application shell expectations still match the vendored runtime.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Operational rule</h3>
+          <p class="card-text">If you change FNLLA UI upstream, sync the vendored copy before shipping FNLLA PHP changes that rely on the new runtime behavior or styles.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Starter-export consequence</h2>
+        <p class="section-text">A new project created from FNLLA PHP inherits the vendored FNLLA UI runtime immediately, so downstream teams can build pages without adding a separate UI package step.</p>
+      </div>
+
+      <div class="doc-flow-grid">
+        <article class="card">
+          <p class="doc-link-label">1. Export</p>
+          <h3 class="card-title">Project scaffold</h3>
+          <p class="card-text">The starter export includes the application code and the vendored FNLLA UI runtime together.</p>
+        </article>
+        <article class="card">
+          <p class="doc-link-label">2. Build</p>
+          <h3 class="card-title">Shared layout</h3>
+          <p class="card-text">Views render against the same local UI contract already used by the framework docs and app shell.</p>
+        </article>
+        <article class="card">
+          <p class="doc-link-label">3. Maintain</p>
+          <h3 class="card-title">Future updates</h3>
+          <p class="card-text">Later UI improvements are pulled in by syncing the vendored runtime instead of introducing a second styling system.</p>
+        </article>
+      </div>
+    </section>
+HTML;
+}
+
 function render_distribution_content(): string
 {
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Repository and runtime boundary</h1>
+        <h2 class="section-title">Repository and runtime boundary</h2>
         <p class="section-text">FNLLA PHP is maintained as a full repository, but downstream consumers should only treat a smaller subset as the supported application runtime surface.</p>
       </div>
 
@@ -564,14 +691,14 @@ function render_getting_started_content(): string
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Quickstart</h1>
+        <h2 class="section-title">Quickstart</h2>
         <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a starter for the real project, configure MySQL and validate the UI/runtime contract before building features.</p>
       </div>
 
       <div class="grid">
         <article class="card">
           <h2 class="card-title">Run the maintained framework locally</h2>
-          <pre><code>cd C:\workspace\fnlla-php
+          <pre><code>cd /workspace/fnlla-php
 php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <p class="card-text">Open <code>http://127.0.0.1:8080</code>. For Apache-based hosting, set the document root to <code>public/</code> and keep <code>public/.htaccess</code> in place.</p>
         </article>
@@ -653,7 +780,7 @@ function render_building_content(): string
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Build with the grain of the framework</h1>
+        <h2 class="section-title">Build with the grain of the framework</h2>
         <p class="section-text">FNLLA PHP stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
       </div>
 
@@ -770,7 +897,7 @@ function render_api_content(): string
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Stable touchpoints</h1>
+        <h2 class="section-title">Stable touchpoints</h2>
         <p class="section-text">These are the framework surfaces downstream projects are expected to depend on directly, and the ones maintainers should treat carefully when evolving the repository.</p>
       </div>
 
@@ -897,7 +1024,7 @@ HTML;
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Guide library</h1>
+        <h2 class="section-title">Guide library</h2>
         <p class="section-text">These guide pages are generated from the Markdown files kept under <code>docs/</code>, so long-form content can stay authorable in plain text while still shipping in the same docs shell as the rest of the reference set.</p>
       </div>
 
@@ -922,53 +1049,38 @@ HTML;
 
 function render_guide_content(string $guideHtml, array $tocItems, array $guidePages, array $currentGuide): string
 {
-    $tocMarkup = render_toc($tocItems);
-    $otherGuides = [];
-
-    foreach ($guidePages as $guidePage) {
-        if ($guidePage["href"] === $currentGuide["href"]) {
-            continue;
-        }
-
-        $otherGuides[] = '<li><a href="./' . escape_html($guidePage["href"]) . '">' . escape_html($guidePage["label"]) . "</a></li>";
-    }
-
-    $otherGuidesMarkup = $otherGuides === [] ? "" : "<ul>" . implode("", $otherGuides) . "</ul>";
+    $tocMarkup = render_guide_toc($tocItems);
+    $guidePagesMarkup = render_guide_sidebar_navigation($guidePages, $currentGuide);
 
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">{$currentGuide["title"]}</h1>
+        <h2 class="section-title">{$currentGuide["title"]}</h2>
         <p class="section-text">{$currentGuide["lead"]}</p>
       </div>
 
       <div class="doc-guide-layout">
-        <aside class="doc-guide-sidebar">
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Guide source</p>
-            <p class="card-text"><code>docs/{$currentGuide["source_name"]}</code></p>
-          </article>
-          <article class="card doc-sidebar-card">
+        <article class="card doc-guide-card doc-guide-prose doc-guide-prose-numbered">
+{$guideHtml}
+        </article>
+        <aside class="doc-guide-sidebar scrollbar scrollbar-thin">
+          <div class="card doc-guide-card">
+            <p class="doc-panel-label">Guide pages</p>
+            <div class="doc-guide-nav" aria-label="Guide pages">
+{$guidePagesMarkup}
+            </div>
+          </div>
+          <div class="card doc-guide-card">
             <p class="doc-panel-label">On this page</p>
 {$tocMarkup}
-          </article>
-          <article class="card doc-sidebar-card">
-            <p class="doc-panel-label">Other guides</p>
-{$otherGuidesMarkup}
-          </article>
-        </aside>
-
-        <article class="card doc-guide-card">
-          <div class="doc-guide">
-{$guideHtml}
           </div>
-        </article>
+        </aside>
       </div>
     </section>
 HTML;
 }
 
-function render_toc(array $tocItems): string
+function render_guide_toc(array $tocItems): string
 {
     if ($tocItems === []) {
         return '            <p class="card-text">No generated sections were found in the source document.</p>';
@@ -977,11 +1089,11 @@ function render_toc(array $tocItems): string
     $items = [];
 
     foreach ($tocItems as $item) {
-        $className = $item["level"] >= 3 ? " class=\"is-subitem\"" : "";
-        $items[] = '              <li' . $className . '><a href="#' . escape_html($item["id"]) . '">' . escape_html($item["text"]) . "</a></li>";
+        $levelClass = $item["level"] >= 3 ? "doc-guide-toc-level-3" : "doc-guide-toc-level-2";
+        $items[] = '              <a class="doc-guide-toc-link ' . $levelClass . '" href="#' . escape_html($item["id"]) . '">' . escape_html($item["text"]) . "</a>";
     }
 
-    return "            <ul class=\"doc-toc-list\">\n" . implode(PHP_EOL, $items) . "\n            </ul>";
+    return "            <div class=\"doc-guide-toc doc-guide-toc-numbered\">\n" . implode(PHP_EOL, $items) . "\n            </div>";
 }
 
 function render_markdown_document(string $markdown, array $linkMap): array

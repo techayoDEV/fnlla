@@ -71,20 +71,20 @@ That means the normal flow is:
 If your maintained framework lives here:
 
 ```text
-C:\workspace\fnlla-php
+/workspace/fnlla-php
 ```
 
 Then a good new project export might be:
 
 ```bash
-cd C:\workspace\fnlla-php
-php fnlla make:project ..\acme-service-portal "Acme Service Portal"
+cd /workspace/fnlla-php
+php fnlla make:project ../acme-service-portal "Acme Service Portal"
 ```
 
 That creates:
 
 ```text
-C:\workspace\acme-service-portal
+/workspace/acme-service-portal
 ```
 
 and leaves the framework repository untouched.

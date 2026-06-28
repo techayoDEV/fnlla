@@ -3,7 +3,7 @@
     "product": {
         "name": "FNLLA PHP",
         "slug": "fnlla-php",
-        "version": "1.0.5",
+        "version": "1.0.6",
         "owner": "TechAyo LTD (techayo.co.uk)",
         "origin": "Finella Gardens in Dundee, UK",
         "repository": "https://github.com/fnlla/php.git",
@@ -23,8 +23,8 @@
         "repository": "https://github.com/fnlla/ui.git",
         "source_of_truth": "github",
         "version_path": "public/vendor/fnlla-ui/VERSION",
-        "vendored_version": "1.0.5",
-        "validated_version": "1.0.5",
+        "vendored_version": "1.0.6",
+        "validated_version": "1.0.6",
         "expected_major": 1
     },
     "release": {

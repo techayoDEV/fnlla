@@ -118,6 +118,22 @@ Important operational rules:
 - keep the vendored runtime under `public/vendor/fnlla-ui/`
 - treat the GitHub `fnlla/ui` repository as the only supported source of truth for FNLLA UI updates
 
+## CSS variables and tokens
+
+FNLLA UI is the source of truth for shared CSS variables in the official stack.
+
+That means:
+
+- shared colors, spacing, typography, sizing, radii, transitions and theme tokens come from `public/vendor/fnlla-ui/assets/css/fnlla-ui.css`
+- downstream FNLLA PHP styles should consume those `--fnlla-*` variables instead of rebuilding a second global token system
+- FNLLA PHP may define a small project-local layer of aliases such as `--fnlla-php-*` in `public/assets/app.css` when the application shell needs its own composed values
+
+Practical rule:
+
+- use `--fnlla-color-*`, `--fnlla-space-*`, `--fnlla-font-*`, `--fnlla-radius-*` and related FNLLA UI tokens first
+- add `--fnlla-php-*` only for delivery-shell specifics that do not belong back in the shared UI runtime
+- avoid scattering new hardcoded colors through `public/assets/app.css` when an existing FNLLA UI token already expresses the same design intent
+
 ## Strict development contract
 
 FNLLA PHP enforces the FNLLA UI contract during development.

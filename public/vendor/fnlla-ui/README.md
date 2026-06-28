@@ -24,7 +24,7 @@ It contains the same supported browser runtime contract that lives under the rep
 
 ## Version
 
-1.0.5
+1.0.6
 
 ## Maintainer notes
 

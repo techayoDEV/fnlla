@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Getting Started - FNLLA PHP Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla-ui.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -16,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.5</span>
+        <span class="doc-status">Stable 1.0.6</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -46,9 +47,9 @@
         </button>
       </div>
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
-
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-ui.html">FNLLA UI</a>
         <a class="btn btn-outline btn-sm" href="./getting-started.html" aria-current="page">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -65,14 +66,14 @@
 
     <section class="section pt-1">
       <div class="section-header">
-        <h1 class="section-title">Quickstart</h1>
+        <h2 class="section-title">Quickstart</h2>
         <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a starter for the real project, configure MySQL and validate the UI/runtime contract before building features.</p>
       </div>
 
       <div class="grid">
         <article class="card">
           <h2 class="card-title">Run the maintained framework locally</h2>
-          <pre><code>cd C:\workspacenlla-php
+          <pre><code>cd /workspace/fnlla-php
 php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <p class="card-text">Open <code>http://127.0.0.1:8080</code>. For Apache-based hosting, set the document root to <code>public/</code> and keep <code>public/.htaccess</code> in place.</p>
         </article>

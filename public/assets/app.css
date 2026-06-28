@@ -13,24 +13,51 @@ Purpose:
 - Styles the delivery-facing shell that sits on top of the vendored FNLLA UI runtime.
 */
 
-:root {
+:root,
+[data-fnlla-theme="default"] {
   color-scheme: light;
+  --fnlla-php-shell-radial: var(--fnlla-color-primary-soft);
+  --fnlla-php-shell-bg-start: #f8fbff;
+  --fnlla-php-shell-bg-mid: var(--fnlla-color-bg);
+  --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
+  --fnlla-php-header-bg: rgba(248, 251, 255, 0.88);
+  --fnlla-php-header-border: rgba(21, 48, 79, 0.1);
+  --fnlla-php-brand-start: #15304f;
+  --fnlla-php-brand-end: #2563eb;
+  --fnlla-php-brand-text: var(--fnlla-color-on-dark);
+  --fnlla-php-card-muted-bg: rgba(255, 255, 255, 0.76);
+  --fnlla-php-footer-note: #456158;
+}
+
+[data-fnlla-theme="dark"] {
+  color-scheme: dark;
+  --fnlla-php-shell-radial: rgba(96, 165, 250, 0.14);
+  --fnlla-php-shell-bg-start: #0b1220;
+  --fnlla-php-shell-bg-mid: #0f1729;
+  --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
+  --fnlla-php-header-bg: rgba(16, 25, 45, 0.88);
+  --fnlla-php-header-border: rgba(226, 236, 255, 0.12);
+  --fnlla-php-brand-start: #60a5fa;
+  --fnlla-php-brand-end: #2563eb;
+  --fnlla-php-brand-text: #0f172a;
+  --fnlla-php-card-muted-bg: rgba(18, 27, 47, 0.78);
+  --fnlla-php-footer-note: #a9bad2;
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, rgba(87, 162, 136, 0.12), transparent 26rem),
-    linear-gradient(180deg, #f6fbf8 0%, #eef5f1 48%, #f9fcfa 100%);
+    radial-gradient(circle at top right, var(--fnlla-php-shell-radial), transparent 26rem),
+    linear-gradient(180deg, var(--fnlla-php-shell-bg-start) 0%, var(--fnlla-php-shell-bg-mid) 48%, var(--fnlla-php-shell-bg-end) 100%);
 }
 
 .site-header-shell {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(249, 252, 250, 0.88);
+  background: var(--fnlla-php-header-bg);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(26, 65, 55, 0.08);
+  border-bottom: 1px solid var(--fnlla-php-header-border);
 }
 
 .site-brand-mark {
@@ -41,8 +68,8 @@ body {
   height: 2.2rem;
   margin-right: 0.75rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #1a4137 0%, #57a288 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--fnlla-php-brand-start) 0%, var(--fnlla-php-brand-end) 100%);
+  color: var(--fnlla-php-brand-text);
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -66,7 +93,7 @@ body {
 }
 
 .site-card-muted {
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--fnlla-php-card-muted-bg);
 }
 
 .site-status-anchor {
@@ -93,7 +120,7 @@ body {
 
 .site-footer-note {
   margin: 0;
-  color: #456158;
+  color: var(--fnlla-php-footer-note);
 }
 
 .site-footer-tools {
