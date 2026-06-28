@@ -142,6 +142,11 @@ function asset(string $path = ""): string
     return url($path);
 }
 
+function page_meta(array $overrides = []): array
+{
+    return \Fnlla\Php\Support\PageMeta::resolve($overrides, (string) config("app.name", "FNLLA PHP"));
+}
+
 function route(string $name, array $parameters = []): string
 {
     return app(\Fnlla\Php\Routing\UrlGenerator::class)->route($name, $parameters);

@@ -19,6 +19,14 @@ TechAyo LTD does not promise:
 - SLA, uptime, compatibility or upgrade guarantees
 - acceptance of external feature requests, pull requests or roadmap proposals
 
+## Deployment and security responsibility
+
+If a third party deploys, extends, modifies or operates a project built on FNLLA PHP, that third party is responsible for the resulting application, hosting, infrastructure, integrations, cookie usage, security controls, secret handling, monitoring, backups, patching and incident response.
+
+That remains true even when the deployment uses FNLLA PHP exactly as published.
+
+TechAyo LTD does not operate, audit, monitor or secure third-party deployments by default and does not accept responsibility for intrusions, data loss, compliance failures, outages or downstream damages affecting those separate deployments.
+
 ## Official support scope
 
 Support may be provided only when TechAyo LTD separately agrees to provide it, for example through direct delivery work, a private agreement or an explicit maintenance arrangement.

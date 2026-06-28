@@ -82,6 +82,26 @@ body {
   gap: 1rem;
 }
 
+.site-footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.site-footer-note {
+  margin: 0;
+  color: #456158;
+}
+
+.site-footer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 @media (min-width: 768px) {
   .site-footer-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

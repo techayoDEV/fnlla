@@ -29,7 +29,8 @@ final class HomeController extends Controller
     public function home(Request $request): Response
     {
         return $this->view("pages/home", [
-            "pageTitle" => "FNLLA PHP",
+            "pageTitle" => "Overview",
+            "pageTitleHome" => true,
             "featureCards" => [
                 [
                     "title" => "Routing that stays readable",
@@ -67,7 +68,8 @@ final class HomeController extends Controller
     public function about(Request $request): Response
     {
         return $this->view("pages/about", [
-            "pageTitle" => "About FNLLA PHP",
+            "pageTitle" => "About",
+            "pageTitleSection" => "Framework",
             "principles" => [
                 "Keep the runtime small enough that the whole request flow is easy to trace.",
                 "Prefer local, published assets over external dependencies for the UI layer.",
@@ -80,7 +82,7 @@ final class HomeController extends Controller
     public function contact(Request $request): Response
     {
         return $this->view("pages/contact", [
-            "pageTitle" => "Contact FNLLA PHP",
+            "pageTitle" => "Contact",
         ]);
     }
 

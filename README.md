@@ -71,6 +71,8 @@ FNLLA PHP currently ships with:
 - file cache and file-backed queue primitives
 - a simple scheduler and CLI command surface
 - localization helpers
+- a built-in cookie consent banner and settings modal powered by FNLLA UI only
+- a server-side page-title contract that feeds professional browser-tab titles into the shared layout
 - FNLLA UI contract enforcement and GitHub-only UI runtime synchronization
 
 ## Support and release expectations
@@ -80,6 +82,8 @@ Anyone may use FNLLA PHP under the MIT License, including for self-service and c
 TechAyo LTD does not promise support, maintenance, SLA coverage or a fixed release cadence for third-party projects built on FNLLA PHP.
 
 Public updates are shipped when TechAyo LTD decides they are appropriate.
+
+Third-party deployments remain responsible for their own hosting, integrations, cookie usage, security controls, monitoring, backups, patching and incident response.
 
 Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding rules.
 

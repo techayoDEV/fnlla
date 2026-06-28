@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaUiVersion = "1.0.4";
+  var fnllaUiVersion = "1.0.5";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -35,6 +35,7 @@
   var customSelectStateMap = new WeakMap();
   var scrollspyRegistry = [];
   var fnllaUiIdCounter = 0;
+  var defaultConsentCategories = ["preferences", "analytics", "marketing"];
   var mobileNavQuery = window.matchMedia ? window.matchMedia("(max-width: 880px)") : null;
   var runtimeEnhancementClass = "fnlla-ui-js";
 
@@ -63,7 +64,12 @@
     tooltipTrigger: new WeakSet(),
     select: new WeakSet(),
     rangeInput: new WeakSet(),
-    scrollspy: new WeakSet()
+    scrollspy: new WeakSet(),
+    consent: new WeakSet(),
+    consentOpen: new WeakSet(),
+    consentAccept: new WeakSet(),
+    consentSave: new WeakSet(),
+    consentReset: new WeakSet()
   };
   /*
     Global runtime bindings:
@@ -87,7 +93,10 @@
     rangePrefix: "data-fnlla-range-prefix",
     rangeSuffix: "data-fnlla-range-suffix",
     tooltip: "data-fnlla-tooltip",
-    tooltipPosition: "data-fnlla-tooltip-position"
+    tooltipPosition: "data-fnlla-tooltip-position",
+    consentCategory: "data-fnlla-consent-category",
+    consentCookie: "data-fnlla-consent-cookie",
+    consentExpiryDays: "data-fnlla-consent-expiry-days"
   };
   /* Shared selectors used across all modules. */
   var selectors = {
@@ -125,7 +134,14 @@
     popoverClose: "[data-fnlla-popover-close]",
     tooltipTrigger: "[data-fnlla-tooltip]",
     scrollspy: "[data-fnlla-scrollspy]",
-    scrollspyNav: "[data-fnlla-scrollspy-nav]"
+    scrollspyNav: "[data-fnlla-scrollspy-nav]",
+    consent: "[data-fnlla-consent]",
+    consentModal: "[data-fnlla-consent-modal]",
+    consentOpen: "[data-fnlla-consent-open]",
+    consentAccept: "[data-fnlla-consent-accept]",
+    consentSave: "[data-fnlla-consent-save]",
+    consentReset: "[data-fnlla-consent-reset]",
+    consentCategory: "[data-fnlla-consent-category]"
   };
   /* Shared ID prefixes used when markup does not provide explicit IDs. */
   var idPrefixes = {
@@ -1441,6 +1457,349 @@
         closeSelectMenu(select);
       }
     });
+  }
+
+/*
+  ============================================================================
+  FNLLA UI SOURCE MODULE: DOCUMENT TITLE HELPERS
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function getTitleRootElement() {
+    return document.documentElement || document.querySelector("html");
+  }
+
+  function normalizeTitlePart(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+
+    return value.replace(/\s+/g, " ").trim();
+  }
+
+  function readDocumentTitleConfig() {
+    var root = getTitleRootElement();
+
+    return {
+      site: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-site") : ""),
+      page: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-page") : ""),
+      section: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-section") : ""),
+      suffix: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-suffix") : ""),
+      home: root ? root.getAttribute("data-fnlla-title-home") === "true" : false
+    };
+  }
+
+  function writeDocumentTitleConfig(config) {
+    var root = getTitleRootElement();
+
+    if (!root || !config) {
+      return;
+    }
+
+    [
+      ["data-fnlla-title-site", config.site],
+      ["data-fnlla-title-page", config.page],
+      ["data-fnlla-title-section", config.section],
+      ["data-fnlla-title-suffix", config.suffix]
+    ].forEach(function (entry) {
+      var attributeName = entry[0];
+      var value = normalizeTitlePart(entry[1]);
+
+      if (value) {
+        root.setAttribute(attributeName, value);
+      } else {
+        root.removeAttribute(attributeName);
+      }
+    });
+
+    if (config.home) {
+      root.setAttribute("data-fnlla-title-home", "true");
+    } else {
+      root.removeAttribute("data-fnlla-title-home");
+    }
+  }
+
+  function getMergedDocumentTitleConfig(nextConfig) {
+    var current = readDocumentTitleConfig();
+
+    if (typeof nextConfig === "string") {
+      current.page = normalizeTitlePart(nextConfig);
+      current.home = false;
+      return current;
+    }
+
+    if (!nextConfig || typeof nextConfig !== "object") {
+      return current;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "site")) {
+      current.site = normalizeTitlePart(nextConfig.site);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "page")) {
+      current.page = normalizeTitlePart(nextConfig.page);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "section")) {
+      current.section = normalizeTitlePart(nextConfig.section);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "suffix")) {
+      current.suffix = normalizeTitlePart(nextConfig.suffix);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "home")) {
+      current.home = nextConfig.home === true;
+    }
+
+    return current;
+  }
+
+  function buildDocumentTitle(config) {
+    var normalizedConfig = getMergedDocumentTitleConfig(config);
+    var parts = [];
+
+    if (normalizedConfig.home && normalizedConfig.site) {
+      parts.push(normalizedConfig.site);
+    } else {
+      parts.push(normalizedConfig.page);
+      parts.push(normalizedConfig.section);
+      parts.push(normalizedConfig.site);
+    }
+
+    if (normalizedConfig.suffix) {
+      parts.push(normalizedConfig.suffix);
+    }
+
+    return parts
+      .filter(Boolean)
+      .filter(function (part, index, array) {
+        return array.findIndex(function (candidate) {
+          return candidate.toLowerCase() === part.toLowerCase();
+        }) === index;
+      })
+      .join(" | ");
+  }
+
+  function syncDocumentTitle(config) {
+    var nextConfig = getMergedDocumentTitleConfig(config);
+    var title = buildDocumentTitle(nextConfig);
+
+    writeDocumentTitleConfig(nextConfig);
+
+    if (title) {
+      document.title = title;
+    }
+
+    return document.title;
+  }
+
+/*
+  ============================================================================
+  FNLLA UI SOURCE MODULE: CONSENT STATE HELPERS
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function getConsentRuntimeRoot() {
+    return document.querySelector(selectors.consent) || document.querySelector(selectors.consentModal) || getTitleRootElement();
+  }
+
+  function getConsentCookieName() {
+    var root = getConsentRuntimeRoot();
+    var configured = root ? normalizeTitlePart(root.getAttribute(attributeNames.consentCookie)) : "";
+
+    return configured || "fnlla-consent";
+  }
+
+  function getConsentExpiryDays() {
+    var root = getConsentRuntimeRoot();
+    var configured = root ? Number(root.getAttribute(attributeNames.consentExpiryDays)) : NaN;
+
+    return Number.isFinite(configured) && configured > 0 ? configured : 180;
+  }
+
+  function getDefaultConsentState() {
+    return {
+      necessary: true,
+      preferences: false,
+      analytics: false,
+      marketing: false,
+      stored: false
+    };
+  }
+
+  function cloneConsentState(state) {
+    return {
+      necessary: state.necessary === true,
+      preferences: state.preferences === true,
+      analytics: state.analytics === true,
+      marketing: state.marketing === true,
+      stored: state.stored === true
+    };
+  }
+
+  function normalizeConsentState(input, stored) {
+    var base = getDefaultConsentState();
+    var source = input && typeof input === "object" ? input : {};
+
+    defaultConsentCategories.forEach(function (category) {
+      base[category] = source[category] === true;
+    });
+
+    base.necessary = true;
+    base.stored = stored === true;
+    return base;
+  }
+
+  function readCookieValue(name) {
+    var encodedName = encodeURIComponent(name) + "=";
+    var match = document.cookie.split(/;\s*/).find(function (entry) {
+      return entry.indexOf(encodedName) === 0;
+    });
+
+    return match ? decodeURIComponent(match.slice(encodedName.length)) : "";
+  }
+
+  function writeCookieValue(name, value, expiryDays) {
+    var maxAge = Math.round(expiryDays * 24 * 60 * 60);
+    var cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + "; path=/; max-age=" + maxAge + "; SameSite=Lax";
+
+    if (window.location && window.location.protocol === "https:") {
+      cookie += "; Secure";
+    }
+
+    document.cookie = cookie;
+  }
+
+  function clearCookieValue(name) {
+    document.cookie = encodeURIComponent(name) + "=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  }
+
+  function getStoredConsentSnapshot() {
+    var rawValue = readCookieValue(getConsentCookieName());
+
+    if (!rawValue) {
+      return getDefaultConsentState();
+    }
+
+    try {
+      return normalizeConsentState(JSON.parse(rawValue), true);
+    } catch (error) {
+      clearCookieValue(getConsentCookieName());
+      return getDefaultConsentState();
+    }
+  }
+
+  function getConsentModalElement() {
+    var root = getConsentRuntimeRoot();
+    var selector = root ? root.getAttribute("data-fnlla-consent-settings") : "";
+    var modal = selector ? resolveModalBySelector(selector) : null;
+
+    return modal || document.querySelector(selectors.consentModal);
+  }
+
+  function updateConsentRootAttributes(state) {
+    var root = document.documentElement;
+
+    if (!root) {
+      return;
+    }
+
+    root.setAttribute("data-fnlla-consent-ready", state.stored ? "true" : "false");
+
+    defaultConsentCategories.forEach(function (category) {
+      root.setAttribute("data-fnlla-consent-" + category, state[category] ? "granted" : "denied");
+    });
+  }
+
+  function syncConsentInputs(scope, state) {
+    getScopedMatches(scope || document, selectors.consentCategory).forEach(function (input) {
+      var category = input.getAttribute(attributeNames.consentCategory) || "";
+
+      if (category === "necessary") {
+        input.checked = true;
+        input.disabled = true;
+        return;
+      }
+
+      if (defaultConsentCategories.indexOf(category) === -1) {
+        return;
+      }
+
+      input.checked = state[category] === true;
+    });
+  }
+
+  function syncConsentBannerVisibility(state) {
+    getScopedMatches(document, selectors.consent).forEach(function (element) {
+      var shouldShow = state.stored !== true;
+
+      element.hidden = !shouldShow;
+      element.classList.toggle("is-visible", shouldShow);
+      element.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+      setElementInertState(element, !shouldShow);
+    });
+  }
+
+  function dispatchConsentChange(state) {
+    if (typeof window.CustomEvent !== "function") {
+      return;
+    }
+
+    document.dispatchEvent(new CustomEvent("fnlla:consentchange", {
+      detail: {
+        state: cloneConsentState(state)
+      }
+    }));
+  }
+
+  function applyConsentState(state, shouldDispatch) {
+    var normalized = normalizeConsentState(state, state && state.stored === true);
+
+    updateConsentRootAttributes(normalized);
+    syncConsentBannerVisibility(normalized);
+    syncConsentInputs(document, normalized);
+
+    if (shouldDispatch) {
+      dispatchConsentChange(normalized);
+    }
+
+    return normalized;
+  }
+
+  function saveConsentState(state) {
+    var normalized = normalizeConsentState(state, true);
+
+    writeCookieValue(getConsentCookieName(), JSON.stringify(normalized), getConsentExpiryDays());
+    applyConsentState(normalized, true);
+    return cloneConsentState(normalized);
+  }
+
+  function collectConsentStateFromScope(scope) {
+    var nextState = getDefaultConsentState();
+    var inputs = getScopedMatches(scope || document, selectors.consentCategory);
+
+    if (!inputs.length && scope !== document) {
+      inputs = getScopedMatches(document, selectors.consentCategory);
+    }
+
+    inputs.forEach(function (input) {
+      var category = input.getAttribute(attributeNames.consentCategory) || "";
+
+      if (defaultConsentCategories.indexOf(category) === -1) {
+        return;
+      }
+
+      nextState[category] = input.checked === true;
+    });
+
+    return nextState;
+  }
+
+  function syncConsentState() {
+    return applyConsentState(getStoredConsentSnapshot(), false);
   }
 
 /*
@@ -2819,6 +3178,100 @@
 
 /*
   ============================================================================
+  FNLLA UI SOURCE MODULE: CONSENT INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function initConsent(root) {
+    getScopedMatches(root, selectors.consent).forEach(function (element) {
+      if (initializationState.consent.has(element)) {
+        return;
+      }
+
+      initializationState.consent.add(element);
+      element.setAttribute("aria-hidden", "true");
+    });
+
+    getScopedMatches(root, selectors.consentOpen).forEach(function (button) {
+      if (initializationState.consentOpen.has(button)) {
+        return;
+      }
+
+      initializationState.consentOpen.add(button);
+      button.addEventListener("click", function (event) {
+        var modal = getConsentModalElement();
+
+        event.preventDefault();
+        syncConsentInputs(modal || document, getStoredConsentSnapshot());
+
+        if (modal) {
+          openModal(modal, button);
+        }
+      });
+    });
+
+    getScopedMatches(root, selectors.consentAccept).forEach(function (button) {
+      if (initializationState.consentAccept.has(button)) {
+        return;
+      }
+
+      initializationState.consentAccept.add(button);
+      button.addEventListener("click", function (event) {
+        var mode = button.getAttribute("data-fnlla-consent-accept");
+        var modal = button.closest(selectors.modal);
+        var nextState = {};
+
+        event.preventDefault();
+        defaultConsentCategories.forEach(function (category) {
+          nextState[category] = mode !== "necessary";
+        });
+
+        saveConsentState(nextState);
+
+        if (modal) {
+          closeModal(modal);
+        }
+      });
+    });
+
+    getScopedMatches(root, selectors.consentSave).forEach(function (button) {
+      if (initializationState.consentSave.has(button)) {
+        return;
+      }
+
+      initializationState.consentSave.add(button);
+      button.addEventListener("click", function (event) {
+        var scope = button.closest(selectors.modal) || button.closest(selectors.consent) || document;
+        var modal = button.closest(selectors.modal);
+
+        event.preventDefault();
+        saveConsentState(collectConsentStateFromScope(scope));
+
+        if (modal) {
+          closeModal(modal);
+        }
+      });
+    });
+
+    getScopedMatches(root, selectors.consentReset).forEach(function (button) {
+      if (initializationState.consentReset.has(button)) {
+        return;
+      }
+
+      initializationState.consentReset.add(button);
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        clearCookieValue(getConsentCookieName());
+        syncConsentState();
+      });
+    });
+
+    syncConsentState();
+  }
+
+/*
+  ============================================================================
   FNLLA UI SOURCE MODULE: RUNTIME BINDING AND PUBLIC API
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
@@ -2957,6 +3410,7 @@
 
     cleanupDetachedScrollspyInstances();
     document.documentElement.classList.add(runtimeEnhancementClass);
+    syncDocumentTitle();
     bindRuntimeHandlers();
     initDropdowns(scope);
     initNavigation(scope);
@@ -2971,6 +3425,7 @@
     initSelects(scope);
     initRanges(scope);
     initScrollspy(scope);
+    initConsent(scope);
     syncNavigationMode(scope);
 
     return fnllaUiApi;
@@ -3016,6 +3471,20 @@
   var fnllaUiApi = {
     version: fnllaUiVersion,
     init: initFnllaUi,
+    getDocumentTitle: function () {
+      return document.title;
+    },
+    getDocumentTitleConfig: function () {
+      return readDocumentTitleConfig();
+    },
+    syncDocumentTitle: function (config) {
+      syncDocumentTitle(config);
+      return fnllaUiApi;
+    },
+    setDocumentTitle: function (config) {
+      syncDocumentTitle(config);
+      return fnllaUiApi;
+    },
     setTheme: function (theme, target) {
       var themeTarget = resolveThemeTarget(target);
 
@@ -3177,6 +3646,58 @@
         state.update();
       }
 
+      return fnllaUiApi;
+    },
+    getConsentState: function () {
+      return cloneConsentState(syncConsentState());
+    },
+    hasConsent: function (category) {
+      var state = syncConsentState();
+
+      if (category === "necessary") {
+        return true;
+      }
+
+      return defaultConsentCategories.indexOf(category) !== -1 ? state[category] === true : false;
+    },
+    openConsentSettings: function () {
+      var modal = getConsentModalElement();
+
+      syncConsentInputs(modal || document, getStoredConsentSnapshot());
+
+      if (modal) {
+        openModal(modal);
+      }
+
+      return fnllaUiApi;
+    },
+    acceptConsent: function () {
+      var nextState = {};
+
+      defaultConsentCategories.forEach(function (category) {
+        nextState[category] = true;
+      });
+
+      saveConsentState(nextState);
+      return fnllaUiApi;
+    },
+    rejectConsent: function () {
+      var nextState = {};
+
+      defaultConsentCategories.forEach(function (category) {
+        nextState[category] = false;
+      });
+
+      saveConsentState(nextState);
+      return fnllaUiApi;
+    },
+    saveConsent: function (state) {
+      saveConsentState(state);
+      return fnllaUiApi;
+    },
+    resetConsent: function () {
+      clearCookieValue(getConsentCookieName());
+      syncConsentState();
       return fnllaUiApi;
     }
   };

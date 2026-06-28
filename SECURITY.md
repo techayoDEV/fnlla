@@ -29,6 +29,8 @@ TechAyo LTD will aim to:
 - decide whether the issue belongs to FNLLA PHP, FNLLA UI or integration code between them
 - coordinate remediation before public disclosure where disclosure is appropriate
 
+Downstream hosting, application code, third-party scripts, analytics wiring, cookie-classification decisions, server hardening, secret management and operational monitoring remain the responsibility of the team operating that separate deployment.
+
 ## Disclosure expectations
 
 Please give TechAyo LTD a reasonable opportunity to investigate and remediate before public disclosure.
