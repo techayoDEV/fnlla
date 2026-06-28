@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#18352f">
+  <title>Building with FNLLA PHP - FNLLA PHP Documentation</title>
+  <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
+  <link rel="stylesheet" href="./assets/docs.css">
+</head>
+<body data-fnlla-theme="default">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <main class="doc-wrapper" id="main-content">
+    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+      <div class="doc-header-bar">
+        <span class="doc-kicker">Application framework</span>
+        <span class="doc-status">Stable 1.0.3</span>
+      </div>
+      <div class="doc-header-grid">
+        <p class="doc-overline">Server-rendered delivery stack</p>
+        <div class="doc-brand">
+          <svg class="doc-brand-mark" viewBox="0 0 560 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect class="doc-brand-mark-tile" x="143" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="335" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="267" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="363" width="82" height="82" rx="12"></rect>
+          </svg>
+          <span class="doc-brand-badge" aria-hidden="true">PHP</span>
+          <span class="doc-brand-separator" aria-hidden="true">-</span>
+          <p class="doc-display">Documentation</p>
+        </div>
+        <p class="doc-lead">Long-form implementation guidance for routes, controllers, views, forms, MySQL and auth.</p>
+      </div>
+    </header>
+
+    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+      <div class="doc-nav-top">
+        <p class="doc-nav-label">Docs Navigation</p>
+        <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
+          Browse Docs
+        </button>
+      </div>
+      <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
+        <a class="btn btn-ghost btn-sm" href="./starting-a-new-project.html">Starting a New Project</a>
+        <a class="btn btn-outline btn-sm" href="./building-with-fnlla-php.html" aria-current="page">Building with FNLLA PHP</a>
+        <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
+        <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
+        <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
+        <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
+        <a class="btn btn-outline btn-sm" href="./guides.html">Guides</a>
+        <div class="doc-nav-controls">
+          <label class="switch doc-theme-toggle">
+            <input class="switch-input" data-doc-theme-toggle type="checkbox" aria-label="Enable dark mode for the docs">
+            <span class="switch-slider" aria-hidden="true"></span>
+            <span class="switch-label">Dark mode</span>
+          </label>
+        </div>
+      </div>
+    </nav>
+
+    <section class="section pt-1">
+      <div class="section-header">
+        <h1 class="section-title">Building with FNLLA PHP</h1>
+        <p class="section-text">Long-form implementation guidance for routes, controllers, views, forms, MySQL and auth.</p>
+      </div>
+
+      <div class="doc-guide-layout">
+        <aside class="doc-guide-sidebar">
+          <article class="card doc-sidebar-card">
+            <p class="doc-panel-label">Guide source</p>
+            <p class="card-text"><code>docs/BUILDING-WITH-FNLLA-PHP.md</code></p>
+          </article>
+          <article class="card doc-sidebar-card">
+            <p class="doc-panel-label">On this page</p>
+            <ul class="doc-toc-list">
+              <li><a href="#what-this-guide-is-for">What this guide is for</a></li>
+              <li><a href="#the-working-model">The working model</a></li>
+              <li><a href="#official-ui-rule">Official UI rule</a></li>
+              <li><a href="#recommended-build-sequence">Recommended build sequence</a></li>
+              <li><a href="#local-setup-for-a-new-project">Local setup for a new project</a></li>
+              <li><a href="#how-to-add-a-new-page">How to add a new page</a></li>
+              <li><a href="#how-to-structure-views">How to structure views</a></li>
+              <li><a href="#when-to-use-controllers-and-when-to-use-closures">When to use controllers and when to use closures</a></li>
+              <li><a href="#handling-forms-correctly">Handling forms correctly</a></li>
+              <li><a href="#validation-pattern">Validation pattern</a></li>
+              <li><a href="#database-workflow">Database workflow</a></li>
+              <li><a href="#query-builder-usage">Query builder usage</a></li>
+              <li><a href="#authentication-and-protected-areas">Authentication and protected areas</a></li>
+              <li><a href="#middleware-usage">Middleware usage</a></li>
+              <li><a href="#route-organization">Route organization</a></li>
+              <li><a href="#building-json-endpoints">Building JSON endpoints</a></li>
+              <li><a href="#using-the-container-well">Using the container well</a></li>
+              <li><a href="#a-practical-app-structure">A practical app structure</a></li>
+              <li><a href="#how-to-add-an-admin-or-dashboard-area">How to add an admin or dashboard area</a></li>
+              <li><a href="#styling-and-page-composition-rules">Styling and page composition rules</a></li>
+              <li><a href="#what-to-avoid">What to avoid</a></li>
+              <li><a href="#suggested-workflow-for-a-new-client-project">Suggested workflow for a new client project</a></li>
+              <li><a href="#pre-release-checks">Pre-release checks</a></li>
+              <li><a href="#final-recommendation">Final recommendation</a></li>
+            </ul>
+          </article>
+          <article class="card doc-sidebar-card">
+            <p class="doc-panel-label">Other guides</p>
+<ul><li><a href="./starting-a-new-project.html">Starting a New Project</a></li></ul>
+          </article>
+        </aside>
+
+        <article class="card doc-guide-card">
+          <div class="doc-guide">
+            <h2 id="what-this-guide-is-for">What this guide is for</h2>
+            <p>This guide explains how to build new server-rendered websites and web applications on top of <code>fnlla-php</code>.</p>
+            <p>It is written for the official stack:</p>
+            <ul>
+              <li><code>fnlla-php</code> as the application framework</li>
+              <li><code>fnlla-ui</code> as the only supported UI runtime</li>
+              <li>PHP 8.3</li>
+              <li>MySQL</li>
+            </ul>
+            <p>If you follow the patterns below, your project will stay aligned with the current framework contract and with the intended TechAyo LTD delivery style.</p>
+            <p>Before using this guide for a real delivery, read <a href="./starting-a-new-project.html"><code>STARTING-A-NEW-PROJECT.md</code></a>. That document explains the official starter-export workflow and when not to build directly inside the maintained <code>fnlla/php</code> repository.</p>
+            <h2 id="the-working-model">The working model</h2>
+            <p>FNLLA PHP is built around a small and explicit request flow:</p>
+            <ol>
+              <li>The request enters through <code>public/index.php</code>.</li>
+              <li>Bootstrapping happens in <code>bootstrap/app.php</code> and <code>bootstrap/common.php</code>.</li>
+              <li>The router reads definitions from <code>routes/web.php</code>.</li>
+              <li>A controller or closure handles the request.</li>
+              <li>A response is returned as HTML, JSON, redirect or another supported response type.</li>
+              <li>HTML views render through <code>views/layouts/app.php</code> and <code>views/pages/</code>.</li>
+            </ol>
+            <p>Keep that flow in mind when building anything new. The framework is intentionally small enough that most delivery work should fit into that lifecycle without extra abstraction layers.</p>
+            <h2 id="official-ui-rule">Official UI rule</h2>
+            <p>Every new website or application built on <code>fnlla-php</code> must use <code>fnlla-ui</code>.</p>
+            <p>That means:</p>
+            <ul>
+              <li>keep the shared shell structure from <code>views/layouts/app.php</code></li>
+              <li>keep using <code>public/vendor/fnlla-ui/</code> as the source of runtime UI assets</li>
+              <li>keep <code>section</code>, <code>container</code>, <code>card</code>, grid and related FNLLA UI layout conventions</li>
+              <li>do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI</li>
+            </ul>
+            <p>The framework already enforces parts of that contract during bootstrap and validation.</p>
+            <h2 id="recommended-build-sequence">Recommended build sequence</h2>
+            <p>When starting a new delivery on top of FNLLA PHP, the safest sequence is:</p>
+            <ol>
+              <li>Set local environment values in <code>.env</code>.</li>
+              <li>Confirm FNLLA UI is synced and valid.</li>
+              <li>Define the pages and flows you need.</li>
+              <li>Add routes.</li>
+              <li>Add or extend controllers.</li>
+              <li>Add views.</li>
+              <li>Add forms, validation and flash feedback where needed.</li>
+              <li>Add database tables and migrations when persistence is required.</li>
+              <li>Add auth or authorization boundaries when a page is protected.</li>
+              <li>Run tests, lint and FNLLA UI validation before shipping.</li>
+            </ol>
+            <h2 id="local-setup-for-a-new-project">Local setup for a new project</h2>
+            <p>Copy the environment template:</p>
+            <pre><code class="language-bash">copy .env.example .env</code></pre>
+            <p>Then fill the important values:</p>
+            <ul>
+              <li><code>APP_URL</code></li>
+              <li><code>DB_HOST</code></li>
+              <li><code>DB_PORT</code></li>
+              <li><code>DB_DATABASE</code></li>
+              <li><code>DB_USERNAME</code></li>
+              <li><code>DB_PASSWORD</code></li>
+              <li><code>CONTACT_NOTIFICATION_EMAIL</code></li>
+            </ul>
+            <p>Recommended first checks:</p>
+            <pre><code class="language-bash">php fnlla fnlla-ui:sync
+php fnlla fnlla-ui:validate
+php scripts/test.php
+php scripts/lint.php
+php scripts/validate-version-manifest.php</code></pre>
+            <p>Start the local server:</p>
+            <pre><code class="language-bash">php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
+            <p>Then open <code>http://127.0.0.1:8080</code>.</p>
+            <p>If you run FNLLA PHP under Apache, configure the virtual host so the document root is <code>public/</code>. The framework already ships with <code>public/.htaccess</code> for route rewriting.</p>
+            <h2 id="how-to-add-a-new-page">How to add a new page</h2>
+            <p>The normal page workflow is:</p>
+            <ol>
+              <li>Add a route in <code>routes/web.php</code>.</li>
+              <li>Add a controller method in <code>src/Controllers/</code>.</li>
+              <li>Add a page template in <code>views/pages/</code>.</li>
+              <li>Return the page through the shared layout.</li>
+            </ol>
+            <p>Example route:</p>
+            <pre><code class="language-php">$router-&gt;get(&quot;/services&quot;, [HomeController::class, &quot;services&quot;])-&gt;name(&quot;services&quot;);</code></pre>
+            <p>Example controller method:</p>
+            <pre><code class="language-php">public function services(Request $request): Response
+{
+    return $this-&gt;view(&quot;pages/services&quot;, [
+        &quot;pageTitle&quot; =&gt; &quot;Services&quot;,
+        &quot;services&quot; =&gt; [
+            [
+                &quot;title&quot; =&gt; &quot;Advisory&quot;,
+                &quot;text&quot; =&gt; &quot;Delivery guidance for teams building with FNLLA PHP.&quot;,
+            ],
+            [
+                &quot;title&quot; =&gt; &quot;Implementation&quot;,
+                &quot;text&quot; =&gt; &quot;Hands-on website and application delivery.&quot;,
+            ],
+        ],
+    ]);
+}</code></pre>
+            <p>Example page template:</p>
+            <pre><code class="language-php">&lt;section class=&quot;section&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;stack gap-lg&quot;&gt;
+      &lt;header class=&quot;stack gap-sm&quot;&gt;
+        &lt;h1&gt;Services&lt;/h1&gt;
+        &lt;p class=&quot;content-text&quot;&gt;Build the page with FNLLA UI primitives and plain PHP data output.&lt;/p&gt;
+      &lt;/header&gt;
+
+      &lt;div class=&quot;grid grid-2 gap-md&quot;&gt;
+        &lt;?php foreach ($services as $service): ?&gt;
+        &lt;article class=&quot;card&quot;&gt;
+          &lt;h2 class=&quot;card-title&quot;&gt;&lt;?= h($service[&quot;title&quot;]) ?&gt;&lt;/h2&gt;
+          &lt;p class=&quot;card-text&quot;&gt;&lt;?= h($service[&quot;text&quot;]) ?&gt;&lt;/p&gt;
+        &lt;/article&gt;
+        &lt;?php endforeach; ?&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+            <h2 id="how-to-structure-views">How to structure views</h2>
+            <p>Use these rules for page templates:</p>
+            <ul>
+              <li>keep page files under <code>views/pages/</code></li>
+              <li>let <code>views/layouts/app.php</code> own the global shell, header, footer and shared assets</li>
+              <li>keep page templates focused on page content, not full HTML documents</li>
+              <li>use helper functions like <code>h()</code>, <code>route()</code>, <code>asset()</code>, <code>auth()</code> and <code>csrf_field()</code> where appropriate</li>
+              <li>keep markup aligned with FNLLA UI classes and layout patterns</li>
+            </ul>
+            <p>Good default page structure:</p>
+            <pre><code class="language-html">&lt;section class=&quot;section&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;grid grid-2 gap-md&quot;&gt;...&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+            <p>Alternate section pattern:</p>
+            <pre><code class="language-html">&lt;section class=&quot;section section-alt&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;card&quot;&gt;...&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+            <h2 id="when-to-use-controllers-and-when-to-use-closures">When to use controllers and when to use closures</h2>
+            <p>Use closures only for very small runtime endpoints such as:</p>
+            <ul>
+              <li>health checks</li>
+              <li>compact JSON diagnostics</li>
+              <li>tiny one-off responses</li>
+            </ul>
+            <p>Use controllers for:</p>
+            <ul>
+              <li>any page that has more than trivial view data</li>
+              <li>forms</li>
+              <li>auth flows</li>
+              <li>persistence</li>
+              <li>events, mail or side effects</li>
+              <li>anything you may want to test or extend later</li>
+            </ul>
+            <p>If a route looks like real product behavior, move it into a controller.</p>
+            <h2 id="handling-forms-correctly">Handling forms correctly</h2>
+            <p>For forms:</p>
+            <ul>
+              <li>render them in a page view</li>
+              <li>submit to a named POST route</li>
+              <li>use <code>csrf_field()</code></li>
+              <li>validate incoming data in the controller</li>
+              <li>flash errors and previous input back into the next request</li>
+              <li>redirect after success</li>
+            </ul>
+            <p>The existing contact flow is the reference pattern:</p>
+            <ul>
+              <li>GET page route for the form</li>
+              <li>POST submit route with <code>csrf</code> and <code>throttle</code></li>
+              <li>controller validation</li>
+              <li>flash status message</li>
+              <li>redirect back to the page anchor</li>
+            </ul>
+            <p>That pattern is already visible in:</p>
+            <ul>
+              <li><code>routes/web.php</code></li>
+              <li><code>src/Controllers/HomeController.php</code></li>
+              <li><code>views/pages/contact.php</code></li>
+            </ul>
+            <h2 id="validation-pattern">Validation pattern</h2>
+            <p>Validate input inside controllers before doing work with it.</p>
+            <p>Typical pattern:</p>
+            <pre><code class="language-php">$payload = [
+    &quot;email&quot; =&gt; trim((string) $request-&gt;input(&quot;email&quot;, &quot;&quot;)),
+];
+
+$this-&gt;validate($payload, [
+    &quot;email&quot; =&gt; [&quot;required&quot;, &quot;email&quot;, &quot;max:160&quot;],
+]);</code></pre>
+            <p>Use validation for:</p>
+            <ul>
+              <li>forms</li>
+              <li>query payloads</li>
+              <li>route-driven actions</li>
+              <li>administrative operations</li>
+            </ul>
+            <p>Do not trust raw request input just because the UI already constrains it.</p>
+            <h2 id="database-workflow">Database workflow</h2>
+            <p>Use MySQL for all official projects.</p>
+            <p>When you need persistence:</p>
+            <ol>
+              <li>Create a migration.</li>
+              <li>Run the migration.</li>
+              <li>Add query logic or model-like data access through the query builder.</li>
+              <li>Add seeding only when it genuinely helps local setup or demo data.</li>
+            </ol>
+            <p>Important commands:</p>
+            <pre><code class="language-bash">php fnlla migrate
+php fnlla migrate:rollback
+php fnlla migrate:status
+php fnlla db:seed</code></pre>
+            <p>Where the database work lives:</p>
+            <ul>
+              <li>migrations in <code>database/migrations/</code></li>
+              <li>seeders in <code>database/seeders/</code></li>
+              <li>factories in <code>database/factories/</code></li>
+              <li>shared DB access in <code>src/Database/</code></li>
+            </ul>
+            <h2 id="query-builder-usage">Query builder usage</h2>
+            <p>FNLLA PHP ships with a lean query builder. Use it when you need a direct and readable database interaction layer.</p>
+            <p>Typical use cases:</p>
+            <ul>
+              <li>loading dashboard data</li>
+              <li>listing records</li>
+              <li>resolving a user record for auth</li>
+              <li>writing admin tools</li>
+            </ul>
+            <p>Keep query logic out of views. Put it in controllers or in a dedicated service class resolved through the container.</p>
+            <h2 id="authentication-and-protected-areas">Authentication and protected areas</h2>
+            <p>For protected pages:</p>
+            <ul>
+              <li>add the <code>auth</code> middleware</li>
+              <li>add authorization where permission checks are needed</li>
+              <li>keep login/logout flows explicit</li>
+            </ul>
+            <p>Examples already exist:</p>
+            <ul>
+              <li><code>/login</code></li>
+              <li><code>/dashboard</code></li>
+              <li><code>/admin</code></li>
+              <li><code>/logout</code></li>
+            </ul>
+            <p>Typical protected route:</p>
+            <pre><code class="language-php">$router-&gt;get(&quot;/dashboard&quot;, [AuthController::class, &quot;dashboard&quot;])
+    -&gt;middleware(&quot;auth&quot;)
+    -&gt;authorize(&quot;view-dashboard&quot;)
+    -&gt;name(&quot;dashboard&quot;);</code></pre>
+            <p>Use authentication for identity.</p>
+            <p>Use authorization for capability checks such as:</p>
+            <ul>
+              <li>admin area access</li>
+              <li>management tools</li>
+              <li>project-specific operations</li>
+            </ul>
+            <h2 id="middleware-usage">Middleware usage</h2>
+            <p>Middleware should handle cross-cutting HTTP concerns, not page-specific business logic.</p>
+            <p>Use middleware for:</p>
+            <ul>
+              <li>authentication</li>
+              <li>authorization</li>
+              <li>CSRF</li>
+              <li>CORS</li>
+              <li>throttling</li>
+            </ul>
+            <p>If a rule belongs to every request in a route group or a protected area, middleware is the right tool.</p>
+            <h2 id="route-organization">Route organization</h2>
+            <p>Keep routes readable.</p>
+            <p>Recommended rules:</p>
+            <ul>
+              <li>define HTML routes near the top of <code>routes/web.php</code></li>
+              <li>group API routes together</li>
+              <li>use route names consistently</li>
+              <li>keep URL paths stable and descriptive</li>
+              <li>prefer one controller action per route</li>
+            </ul>
+            <p>Name routes early. It makes links, redirects and navigation safer:</p>
+            <pre><code class="language-php">-&gt;name(&quot;projects.show&quot;)</code></pre>
+            <p>Then use:</p>
+            <pre><code class="language-php">route(&quot;projects.show&quot;, [&quot;project&quot; =&gt; $slug])</code></pre>
+            <h2 id="building-json-endpoints">Building JSON endpoints</h2>
+            <p>FNLLA PHP is server-rendered first, but it can also expose JSON endpoints for app surfaces.</p>
+            <p>Use JSON responses for:</p>
+            <ul>
+              <li>health endpoints</li>
+              <li>authenticated panel data</li>
+              <li>partial client-side enhancements</li>
+              <li>internal application surfaces</li>
+            </ul>
+            <p>Example:</p>
+            <pre><code class="language-php">return Response::json([
+    &quot;status&quot; =&gt; &quot;ok&quot;,
+    &quot;timestamp&quot; =&gt; gmdate(DATE_ATOM),
+]);</code></pre>
+            <p>For structured resource output, use <code>JsonResource</code> when the payload deserves a stable shape.</p>
+            <h2 id="using-the-container-well">Using the container well</h2>
+            <p>The container is there to keep controllers and services clean, not to hide everything behind indirection.</p>
+            <p>Good uses:</p>
+            <ul>
+              <li>injecting a service into a controller constructor</li>
+              <li>centralizing mail, persistence or domain operations</li>
+              <li>keeping repeated logic out of large controllers</li>
+            </ul>
+            <p>Avoid unnecessary abstraction when a simple controller method is enough.</p>
+            <h2 id="a-practical-app-structure">A practical app structure</h2>
+            <p>For a real project, a healthy shape often looks like this:</p>
+            <ul>
+              <li><code>routes/web.php</code> for route registration</li>
+              <li><code>src/Controllers/</code> for HTTP actions</li>
+              <li><code>src/Services/</code> for reusable business logic if needed</li>
+              <li><code>views/pages/</code> for page templates</li>
+              <li><code>database/migrations/</code> for schema</li>
+              <li><code>database/seeders/</code> for local/demo data</li>
+            </ul>
+            <p>Do not move too fast into heavy architecture. Start with readable controllers and only extract services when patterns repeat.</p>
+            <h2 id="how-to-add-an-admin-or-dashboard-area">How to add an admin or dashboard area</h2>
+            <p>Recommended pattern:</p>
+            <ol>
+              <li>Protect the route with <code>auth</code>.</li>
+              <li>Add an authorization gate for the role or capability.</li>
+              <li>Keep admin views under <code>views/pages/</code>.</li>
+              <li>Return dashboard-specific data from a controller.</li>
+              <li>Keep dangerous write actions behind POST routes with CSRF.</li>
+            </ol>
+            <p>If the admin area grows, group routes by prefix and name:</p>
+            <pre><code class="language-php">$router-&gt;group([
+    &quot;prefix&quot; =&gt; &quot;admin&quot;,
+    &quot;as&quot; =&gt; &quot;admin.&quot;,
+    &quot;middleware&quot; =&gt; &quot;auth&quot;,
+], static function ($router): void {
+    $router-&gt;get(&quot;/users&quot;, [AdminController::class, &quot;users&quot;])
+        -&gt;authorize(&quot;manage-admin-area&quot;)
+        -&gt;name(&quot;users.index&quot;);
+});</code></pre>
+            <h2 id="styling-and-page-composition-rules">Styling and page composition rules</h2>
+            <p>When building pages:</p>
+            <ul>
+              <li>compose layouts with FNLLA UI primitives first</li>
+              <li>avoid one-off CSS unless the page truly needs it</li>
+              <li>keep custom CSS in <code>public/assets/app.css</code></li>
+              <li>prefer reusable structural patterns over ad hoc markup</li>
+            </ul>
+            <p>A good rule is:</p>
+            <ul>
+              <li>use FNLLA UI for layout, spacing, cards, grid, buttons, alerts and shells</li>
+              <li>use project CSS only for branding or delivery-specific refinements</li>
+            </ul>
+            <h2 id="what-to-avoid">What to avoid</h2>
+            <p>Avoid these common mistakes:</p>
+            <ul>
+              <li>putting SQL or heavy logic inside views</li>
+              <li>adding a second UI framework</li>
+              <li>writing raw HTML documents inside page partials</li>
+              <li>skipping CSRF on form POST routes</li>
+              <li>using closures for large business flows</li>
+              <li>mixing downstream project hacks into shared framework behavior without intent</li>
+              <li>bypassing named routes and hardcoding links everywhere</li>
+            </ul>
+            <h2 id="suggested-workflow-for-a-new-client-project">Suggested workflow for a new client project</h2>
+            <p>For a brand-new website or application delivery, use this checklist:</p>
+            <ol>
+              <li>Define the page map and protected areas.</li>
+              <li>Define the required data entities.</li>
+              <li>Add migrations for those entities.</li>
+              <li>Add routes for public pages, auth flows and admin flows.</li>
+              <li>Build controllers page by page.</li>
+              <li>Build views using FNLLA UI structure.</li>
+              <li>Add validation and flash feedback to every form.</li>
+              <li>Add auth and authorization guards.</li>
+              <li>Add seed data if it improves local setup.</li>
+              <li>Run validation and hardening checks before every release candidate.</li>
+            </ol>
+            <h2 id="pre-release-checks">Pre-release checks</h2>
+            <p>Before shipping a new project built on FNLLA PHP, run:</p>
+            <pre><code class="language-bash">php scripts/test.php
+php scripts/lint.php
+php scripts/validate-fnlla-ui.php
+php fnlla route:list</code></pre>
+            <p>When the release touches schema or seed data, also run:</p>
+            <pre><code class="language-bash">php fnlla migrate:status</code></pre>
+            <h2 id="final-recommendation">Final recommendation</h2>
+            <p>Build with the grain of the framework.</p>
+            <p>FNLLA PHP is strongest when you keep:</p>
+            <ul>
+              <li>routing explicit</li>
+              <li>controllers readable</li>
+              <li>views plain</li>
+              <li>validation early</li>
+              <li>MySQL usage disciplined</li>
+              <li>UI work inside the FNLLA UI contract</li>
+              <li>release hygiene consistent</li>
+            </ul>
+            <p>If a new website or application follows those rules, <code>fnlla-php</code> becomes a fast and stable base instead of a pile of custom exceptions.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
+      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). All rights reserved.</p>
+    </footer>
+  </main>
+
+  <script src="../public/vendor/fnlla-ui/assets/js/fnlla-ui.js"></script>
+  <script src="./assets/docs.js"></script>
+</body>
+</html>

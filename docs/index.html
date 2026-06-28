@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#18352f">
+  <title>Overview - FNLLA PHP Documentation</title>
+  <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
+  <link rel="stylesheet" href="./assets/docs.css">
+</head>
+<body data-fnlla-theme="default">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <main class="doc-wrapper" id="main-content">
+    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+      <div class="doc-header-bar">
+        <span class="doc-kicker">Application framework</span>
+        <span class="doc-status">Stable 1.0.3</span>
+      </div>
+      <div class="doc-header-grid">
+        <p class="doc-overline">Server-rendered delivery stack</p>
+        <div class="doc-brand">
+          <svg class="doc-brand-mark" viewBox="0 0 560 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect class="doc-brand-mark-tile" x="143" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="335" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="267" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="363" width="82" height="82" rx="12"></rect>
+          </svg>
+          <span class="doc-brand-badge" aria-hidden="true">PHP</span>
+          <span class="doc-brand-separator" aria-hidden="true">-</span>
+          <p class="doc-display">Documentation</p>
+        </div>
+        <p class="doc-lead">Server-rendered PHP framework documentation for teams building websites and application surfaces on top of FNLLA UI.</p>
+      </div>
+    </header>
+
+    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+      <div class="doc-nav-top">
+        <p class="doc-nav-label">Docs Navigation</p>
+        <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
+          Browse Docs
+        </button>
+      </div>
+      <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
+
+        <a class="btn btn-outline btn-sm" href="./index.html" aria-current="page">Overview</a>
+        <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
+        <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
+        <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
+        <a class="btn btn-ghost btn-sm" href="./guides.html">Guides</a>
+        <div class="doc-nav-controls">
+          <label class="switch doc-theme-toggle">
+            <input class="switch-input" data-doc-theme-toggle type="checkbox" aria-label="Enable dark mode for the docs">
+            <span class="switch-slider" aria-hidden="true"></span>
+            <span class="switch-label">Dark mode</span>
+          </label>
+        </div>
+      </div>
+    </nav>
+
+    <section class="section pt-1">
+      <div class="section-header">
+        <h1 class="section-title">Start here</h1>
+        <p class="section-text">FNLLA PHP is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the starter-export workflow and the practical delivery rules for downstream websites and applications.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <h2 class="card-title">Stable repository contract</h2>
+          <pre><code>public/index.php
+public/router.php
+public/vendor/fnlla-ui/
+src/
+routes/
+views/</code></pre>
+          <p class="card-text">Version 1.0.3 keeps the framework intentionally explicit: request flow, UI runtime boundary and maintainer scripts are visible in the repository rather than hidden behind packaging layers.</p>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">Build real projects outside this repo</h2>
+          <ul class="doc-checklist">
+            <li><strong>Framework mode:</strong> maintain <code>fnlla/php</code>, its scripts, docs and shared delivery foundations here.</li>
+            <li><strong>Project mode:</strong> export a downstream starter with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
+            <li><strong>UI rule:</strong> keep FNLLA UI as the only supported UI runtime under <code>public/vendor/fnlla-ui/</code>.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">Read next by task</h2>
+          <ul class="doc-checklist">
+            <li><a href="./distribution.html"><code>distribution.html</code></a> for runtime and repository boundaries.</li>
+            <li><a href="./getting-started.html"><code>getting-started.html</code></a> for local setup and starter export.</li>
+            <li><a href="./building.html"><code>building.html</code></a> for route, controller, view and form patterns.</li>
+            <li><a href="./guides.html"><code>guides.html</code></a> for the long-form Markdown guides rendered as HTML.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Documentation routes</h2>
+        <p class="section-text">Use the shortest route to the kind of answer you need: packaging, first setup, implementation patterns, framework API or long-form maintainers' guidance.</p>
+      </div>
+
+      <div class="doc-link-grid">
+        <a class="doc-link-card" href="./distribution.html">
+          <span class="doc-link-label">Packaging</span>
+          <p class="doc-link-title">Distribution</p>
+          <p class="doc-link-text">What belongs to the downstream runtime surface, what stays maintainer-only and how the vendored FNLLA UI runtime should be treated.</p>
+        </a>
+        <a class="doc-link-card" href="./getting-started.html">
+          <span class="doc-link-label">Bootstrap</span>
+          <p class="doc-link-title">Getting Started</p>
+          <p class="doc-link-text">Local server boot, environment setup, starter export and the first files you normally touch in a real delivery.</p>
+        </a>
+        <a class="doc-link-card" href="./building.html">
+          <span class="doc-link-label">Implementation</span>
+          <p class="doc-link-title">Building</p>
+          <p class="doc-link-text">Practical patterns for request flow, controllers, views, forms, validation, migrations and protected areas.</p>
+        </a>
+        <a class="doc-link-card" href="./api.html">
+          <span class="doc-link-label">Contract</span>
+          <p class="doc-link-title">API</p>
+          <p class="doc-link-text">Helpers, middleware aliases, CLI commands and the public framework touchpoints downstream projects are meant to rely on.</p>
+        </a>
+        <a class="doc-link-card" href="./guides.html">
+          <span class="doc-link-label">Workflow</span>
+          <p class="doc-link-title">Guides</p>
+          <p class="doc-link-text">HTML guide pages generated from the maintained Markdown sources already living under <code>docs/</code>.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Keep these rules in your head</h2>
+        <p class="section-text">These are the habits that keep FNLLA PHP strong instead of slowly turning it into a one-project-only code dump.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">Export before delivery work</h3>
+          <p class="card-text">Treat this repository as the framework source of truth. Use <code>make:project</code> to start real downstream websites and apps in their own repositories.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">FNLLA UI stays mandatory</h3>
+          <p class="card-text">Do not replace the UI runtime with Tailwind, Bootstrap or another CSS framework. The shared layout and guard rails assume FNLLA UI is present.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">MySQL is the official database target</h3>
+          <p class="card-text">The framework contract assumes PHP 8.3 with <code>pdo_mysql</code> and a reachable MySQL server for application persistence work.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Validation is part of maintenance</h3>
+          <p class="card-text">Run tests, lint, FNLLA UI validation, version-manifest checks and docs sync checks before calling a release state finished.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
+      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). All rights reserved.</p>
+    </footer>
+  </main>
+
+  <script src="../public/vendor/fnlla-ui/assets/js/fnlla-ui.js"></script>
+  <script src="./assets/docs.js"></script>
+</body>
+</html>

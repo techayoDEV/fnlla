@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#18352f">
+  <title>Building - FNLLA PHP Documentation</title>
+  <link rel="stylesheet" href="../public/vendor/fnlla-ui/assets/css/fnlla-ui.css">
+  <link rel="stylesheet" href="./assets/docs.css">
+</head>
+<body data-fnlla-theme="default">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <main class="doc-wrapper" id="main-content">
+    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+      <div class="doc-header-bar">
+        <span class="doc-kicker">Application framework</span>
+        <span class="doc-status">Stable 1.0.3</span>
+      </div>
+      <div class="doc-header-grid">
+        <p class="doc-overline">Server-rendered delivery stack</p>
+        <div class="doc-brand">
+          <svg class="doc-brand-mark" viewBox="0 0 560 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <rect class="doc-brand-mark-tile" x="143" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="335" y="75" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="239" y="171" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="267" width="82" height="82" rx="12"></rect>
+            <rect class="doc-brand-mark-tile" x="143" y="363" width="82" height="82" rx="12"></rect>
+          </svg>
+          <span class="doc-brand-badge" aria-hidden="true">PHP</span>
+          <span class="doc-brand-separator" aria-hidden="true">-</span>
+          <p class="doc-display">Documentation</p>
+        </div>
+        <p class="doc-lead">The practical delivery model for routes, controllers, views, validation, persistence, auth and FNLLA UI page composition.</p>
+      </div>
+    </header>
+
+    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+      <div class="doc-nav-top">
+        <p class="doc-nav-label">Docs Navigation</p>
+        <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
+          Browse Docs
+        </button>
+      </div>
+      <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
+
+        <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
+        <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
+        <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
+        <a class="btn btn-outline btn-sm" href="./building.html" aria-current="page">Building</a>
+        <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
+        <a class="btn btn-ghost btn-sm" href="./guides.html">Guides</a>
+        <div class="doc-nav-controls">
+          <label class="switch doc-theme-toggle">
+            <input class="switch-input" data-doc-theme-toggle type="checkbox" aria-label="Enable dark mode for the docs">
+            <span class="switch-slider" aria-hidden="true"></span>
+            <span class="switch-label">Dark mode</span>
+          </label>
+        </div>
+      </div>
+    </nav>
+
+    <section class="section pt-1">
+      <div class="section-header">
+        <h1 class="section-title">Build with the grain of the framework</h1>
+        <p class="section-text">FNLLA PHP stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
+      </div>
+
+      <div class="doc-flow-grid">
+        <article class="card">
+          <p class="doc-link-label">1. Request</p>
+          <h2 class="card-title">Entrypoints</h2>
+          <p class="card-text"><code>public/index.php</code> and <code>public/router.php</code> are the maintained HTTP entrypoints.</p>
+        </article>
+        <article class="card">
+          <p class="doc-link-label">2. Bootstrap</p>
+          <h2 class="card-title">Bootstrap and router</h2>
+          <p class="card-text"><code>bootstrap/app.php</code>, <code>bootstrap/common.php</code> and <code>bootstrap/router.php</code> wire environment, services, middleware aliases and route resolution.</p>
+        </article>
+        <article class="card">
+          <p class="doc-link-label">3. Delivery</p>
+          <h2 class="card-title">Controller or closure</h2>
+          <p class="card-text">A controller action or a small closure builds the response payload and decides whether the output is HTML, JSON or a redirect.</p>
+        </article>
+        <article class="card">
+          <p class="doc-link-label">4. Response</p>
+          <h2 class="card-title">View or API output</h2>
+          <p class="card-text"><code>views/layouts/app.php</code> owns the HTML shell, while <code>Response::json()</code> and <code>JsonResource</code> cover structured API output.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Page-building pattern</h2>
+        <p class="section-text">New product surfaces usually land in four moves: route, controller, view and optional persistence or auth rules.</p>
+      </div>
+
+      <div class="grid grid-2 gap-md">
+        <article class="card">
+          <h3 class="card-title">Route and controller</h3>
+          <pre><code>$router->get("/services", [HomeController::class, "services"])->name("services");
+
+public function services(Request $request): Response
+{
+    return $this->view("pages/services", [
+        "pageTitle" => "Services",
+    ]);
+}</code></pre>
+        </article>
+        <article class="card">
+          <h3 class="card-title">View structure</h3>
+          <pre><code>&lt;section class="section"&gt;
+  &lt;div class="container"&gt;
+    &lt;div class="grid grid-2 gap-md"&gt;...&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+          <p class="card-text">Keep page templates under <code>views/pages/</code> and let the shared layout own the document shell and shared FNLLA UI assets.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Forms, validation and redirects</h2>
+        <p class="section-text">The framework is happiest when forms follow a predictable GET page + POST submit + validation + redirect pattern.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">Form rules</h3>
+          <ul class="doc-checklist">
+            <li>Submit to a named POST route.</li>
+            <li>Use <code>csrf_field()</code> in every state-changing form.</li>
+            <li>Validate before side effects.</li>
+            <li>Flash errors or success state back into the next request.</li>
+            <li>Redirect after success instead of rendering directly from the POST.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Validation example</h3>
+          <pre><code>$payload = [
+    "email" => trim((string) $request->input("email", "")),
+];
+
+$this->validate($payload, [
+    "email" => ["required", "email", "max:160"],
+]);</code></pre>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Persistence and protected areas</h2>
+        <p class="section-text">Use MySQL for official projects, keep query logic out of views and rely on middleware plus authorization gates for protected sections.</p>
+      </div>
+
+      <div class="doc-mini-grid">
+        <article class="card">
+          <h3 class="card-title">Database workflow</h3>
+          <p class="card-text">Create migrations under <code>database/migrations/</code>, run them with <code>php fnlla migrate</code> and keep repeated data access in controllers or dedicated services.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Protected routes</h3>
+          <p class="card-text">Use <code>auth</code> middleware for identity checks and <code>authorize()</code> or route-level authorization for capabilities such as admin access.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Reference guide</h3>
+          <p class="card-text">Use <a href="./building-with-fnlla-php.html"><code>building-with-fnlla-php.html</code></a> for the longer delivery playbook and examples.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
+      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). All rights reserved.</p>
+    </footer>
+  </main>
+
+  <script src="../public/vendor/fnlla-ui/assets/js/fnlla-ui.js"></script>
+  <script src="./assets/docs.js"></script>
+</body>
+</html>

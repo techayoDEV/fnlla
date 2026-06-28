@@ -177,6 +177,7 @@ php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-ui.php
 php scripts/validate-version-manifest.php
+php scripts/build-docs.php --check
 ```
 
 Windows launchers are also included:
@@ -201,6 +202,31 @@ That guide covers:
 - how to use MySQL, migrations and the query builder
 - how to protect pages with auth and authorization
 - how to stay inside the FNLLA UI contract during delivery
+
+## Documentation set
+
+The repository also ships a browsable docs set under [`docs/index.html`](./docs/index.html), styled on top of the vendored FNLLA UI runtime.
+
+Primary pages:
+
+- `docs/index.html`
+- `docs/distribution.html`
+- `docs/getting-started.html`
+- `docs/building.html`
+- `docs/api.html`
+- `docs/guides.html`
+
+The long-form guide pages are generated from:
+
+- `docs/STARTING-A-NEW-PROJECT.md`
+- `docs/BUILDING-WITH-FNLLA-PHP.md`
+
+When docs content or the shared docs shell changes, rebuild or verify the HTML with:
+
+```bash
+php scripts/build-docs.php
+php scripts/build-docs.php --check
+```
 
 ## CLI surface
 
@@ -242,6 +268,7 @@ Authoritative maintainer scripts and checkpoints:
 
 - `scripts/sync-fnlla-ui.ps1` syncs the vendored FNLLA UI runtime from GitHub
 - `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
+- `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-ui.php` validates the enforced FNLLA UI contract
 - `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
 - `scripts/test.php` runs the repository-local framework tests
@@ -255,6 +282,7 @@ php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-ui.php
 php scripts/validate-version-manifest.php
+php scripts/build-docs.php --check
 php fnlla fnlla-ui:sync
 php fnlla version:status
 ```
