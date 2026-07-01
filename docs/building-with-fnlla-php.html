@@ -138,7 +138,7 @@
               <li><code>APP_DEBUG=true</code></li>
               <li><code>SESSION_SECURE=false</code></li>
             </ul>
-            <p>That keeps sessions, flashes and CSRF-protected forms working over plain <code>http://127.0.0.1</code> during local setup. Before production deployment, switch those values back to production-safe settings and serve the app over HTTPS.</p>
+            <p>That keeps sessions, flashes and CSRF-protected forms working over plain <code>http://127.0.0.1</code> during local setup. Before production deployment, switch those values back to production-safe settings and serve the app over HTTPS. If the deployment sits behind a reverse proxy, set <code>TRUSTED_PROXIES</code> so forwarded client IP and HTTPS headers are only accepted from explicitly trusted proxy addresses.</p>
             <p>Recommended first checks:</p>
             <pre><code class="language-bash">php fnlla fnlla-web:sync
 php fnlla fnlla-web:validate

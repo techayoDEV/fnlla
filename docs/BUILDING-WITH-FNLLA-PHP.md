@@ -84,6 +84,7 @@ The template defaults are intentionally local-development friendly:
 
 That keeps sessions, flashes and CSRF-protected forms working over plain `http://127.0.0.1` during local setup.
 Before production deployment, switch those values back to production-safe settings and serve the app over HTTPS.
+If the deployment sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarded client IP and HTTPS headers are only accepted from explicitly trusted proxy addresses.
 
 Recommended first checks:
 

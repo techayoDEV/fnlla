@@ -41,19 +41,44 @@ $composerAutoload = APP_ROOT . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARA
 if (is_file($composerAutoload)) {
     require $composerAutoload;
 } else {
-    spl_autoload_register(static function (string $class): void {
-        $prefix = "Fnlla\\Php\\";
+    $autoloadPrefixes = [
+        "Fnlla\\Php\\" => "src/",
+    ];
+    $composerJsonPath = APP_ROOT . DIRECTORY_SEPARATOR . "composer.json";
 
-        if (!str_starts_with($class, $prefix)) {
-            return;
+    if (is_file($composerJsonPath)) {
+        $composerConfig = json_decode((string) file_get_contents($composerJsonPath), true);
+        $composerPrefixes = $composerConfig["autoload"]["psr-4"] ?? null;
+
+        if (is_array($composerPrefixes) && $composerPrefixes !== []) {
+            $autoloadPrefixes = $composerPrefixes;
         }
+    }
 
-        $relativeClass = substr($class, strlen($prefix));
-        $relativePath = str_replace("\\", DIRECTORY_SEPARATOR, $relativeClass) . ".php";
-        $absolutePath = APP_ROOT . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . $relativePath;
+    spl_autoload_register(static function (string $class) use ($autoloadPrefixes): void {
+        foreach ($autoloadPrefixes as $prefix => $relativeBasePaths) {
+            if (!is_string($prefix) || $prefix === "" || !str_starts_with($class, $prefix)) {
+                continue;
+            }
 
-        if (is_file($absolutePath)) {
-            require $absolutePath;
+            $relativeClass = substr($class, strlen($prefix));
+            $relativePath = str_replace("\\", DIRECTORY_SEPARATOR, $relativeClass) . ".php";
+            $basePaths = is_array($relativeBasePaths) ? $relativeBasePaths : [$relativeBasePaths];
+
+            foreach ($basePaths as $relativeBasePath) {
+                if (!is_string($relativeBasePath) || $relativeBasePath === "") {
+                    continue;
+                }
+
+                $normalizedBasePath = trim(str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $relativeBasePath), DIRECTORY_SEPARATOR);
+                $absolutePath = APP_ROOT . DIRECTORY_SEPARATOR . $normalizedBasePath . DIRECTORY_SEPARATOR . $relativePath;
+
+                if (is_file($absolutePath)) {
+                    require $absolutePath;
+
+                    return;
+                }
+            }
         }
     });
 }

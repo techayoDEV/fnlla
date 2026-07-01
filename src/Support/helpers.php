@@ -52,19 +52,135 @@ function framework_detect_environment(): string
     return is_file(base_path(".env")) ? "production" : "development";
 }
 
-function app_request_is_secure(): bool
+function framework_trusted_proxies(): array
 {
-    $forwardedProto = $_SERVER["HTTP_X_FORWARDED_PROTO"] ?? null;
+    $raw = trim((string) env("TRUSTED_PROXIES", ""));
 
-    if (is_string($forwardedProto) && trim($forwardedProto) !== "") {
-        $firstProto = strtolower(trim(explode(",", $forwardedProto)[0] ?? ""));
+    if ($raw === "") {
+        return [];
+    }
 
-        if ($firstProto === "https") {
+    $entries = preg_split('/[\s,;]+/', $raw) ?: [];
+
+    return array_values(array_filter(
+        array_map(static fn (string $entry): string => trim($entry), $entries),
+        static fn (string $entry): bool => $entry !== ""
+    ));
+}
+
+function framework_remote_addr(array $server): string
+{
+    return (string) ($server["REMOTE_ADDR"] ?? "0.0.0.0");
+}
+
+function framework_request_comes_from_trusted_proxy(array $server): bool
+{
+    $remoteAddr = framework_remote_addr($server);
+
+    if (filter_var($remoteAddr, FILTER_VALIDATE_IP) === false) {
+        return false;
+    }
+
+    foreach (framework_trusted_proxies() as $trustedProxy) {
+        $normalized = strtolower($trustedProxy);
+
+        if (($normalized === "loopback" || $normalized === "localhost") && in_array($remoteAddr, ["127.0.0.1", "::1"], true)) {
             return true;
         }
 
-        if ($firstProto === "http") {
-            return false;
+        if (str_contains($trustedProxy, "/")) {
+            [$network, $prefixLength] = array_pad(explode("/", $trustedProxy, 2), 2, "");
+            $networkPacked = inet_pton(trim($network));
+            $addressPacked = inet_pton($remoteAddr);
+            $prefix = is_numeric($prefixLength) ? (int) $prefixLength : -1;
+
+            if ($networkPacked === false || $addressPacked === false || strlen($networkPacked) !== strlen($addressPacked)) {
+                continue;
+            }
+
+            $maxBits = strlen($networkPacked) * 8;
+
+            if ($prefix < 0 || $prefix > $maxBits) {
+                continue;
+            }
+
+            $fullBytes = intdiv($prefix, 8);
+            $remainingBits = $prefix % 8;
+
+            if ($fullBytes > 0 && substr($addressPacked, 0, $fullBytes) !== substr($networkPacked, 0, $fullBytes)) {
+                continue;
+            }
+
+            if ($remainingBits === 0) {
+                return true;
+            }
+
+            $mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+            $addressByte = ord($addressPacked[$fullBytes]);
+            $networkByte = ord($networkPacked[$fullBytes]);
+
+            if (($addressByte & $mask) === ($networkByte & $mask)) {
+                return true;
+            }
+
+            continue;
+        }
+
+        if (strcasecmp($remoteAddr, $trustedProxy) === 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function framework_trusted_forwarded_ip(array $server, array $headers = []): ?string
+{
+    if (!framework_request_comes_from_trusted_proxy($server)) {
+        return null;
+    }
+
+    $forwardedFor = $headers["x-forwarded-for"] ?? $server["HTTP_X_FORWARDED_FOR"] ?? "";
+
+    if (!is_string($forwardedFor) || trim($forwardedFor) === "") {
+        return null;
+    }
+
+    foreach (explode(",", $forwardedFor) as $candidate) {
+        $candidate = trim($candidate);
+
+        if (filter_var($candidate, FILTER_VALIDATE_IP) !== false) {
+            return $candidate;
+        }
+    }
+
+    return null;
+}
+
+function framework_request_ip(array $server, array $headers = []): string
+{
+    return framework_trusted_forwarded_ip($server, $headers) ?? framework_remote_addr($server);
+}
+
+function app_request_is_secure(): bool
+{
+    if (framework_request_comes_from_trusted_proxy($_SERVER)) {
+        $forwardedProto = $_SERVER["HTTP_X_FORWARDED_PROTO"] ?? null;
+
+        if (is_string($forwardedProto) && trim($forwardedProto) !== "") {
+            $firstProto = strtolower(trim(explode(",", $forwardedProto)[0] ?? ""));
+
+            if ($firstProto === "https") {
+                return true;
+            }
+
+            if ($firstProto === "http") {
+                return false;
+            }
+        }
+
+        if (strtolower((string) ($_SERVER["HTTP_X_FORWARDED_SSL"] ?? "")) === "on") {
+            return true;
         }
     }
 
@@ -77,10 +193,6 @@ function app_request_is_secure(): bool
     $requestScheme = strtolower((string) ($_SERVER["REQUEST_SCHEME"] ?? ""));
 
     if ($requestScheme === "https") {
-        return true;
-    }
-
-    if (strtolower((string) ($_SERVER["HTTP_X_FORWARDED_SSL"] ?? "")) === "on") {
         return true;
     }
 

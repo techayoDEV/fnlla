@@ -25,6 +25,26 @@ use PHPUnit\Framework\TestCase;
 
 final class RequestTest extends TestCase
 {
+    private mixed $trustedProxiesBackup;
+
+    protected function setUp(): void
+    {
+        $this->trustedProxiesBackup = $_ENV["TRUSTED_PROXIES"] ?? null;
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->trustedProxiesBackup === null) {
+            unset($_ENV["TRUSTED_PROXIES"], $_SERVER["TRUSTED_PROXIES"]);
+            putenv("TRUSTED_PROXIES");
+            return;
+        }
+
+        $_ENV["TRUSTED_PROXIES"] = $this->trustedProxiesBackup;
+        $_SERVER["TRUSTED_PROXIES"] = (string) $this->trustedProxiesBackup;
+        putenv("TRUSTED_PROXIES=" . (string) $this->trustedProxiesBackup);
+    }
+
     public function testCaptureSupportsJsonHeadersAndMethodOverride(): void
     {
         $request = Request::capture(
@@ -60,5 +80,33 @@ final class RequestTest extends TestCase
         self::assertSame("token-123", $request->bearerToken());
         self::assertSame("127.0.0.1", $request->ip());
         self::assertNotSame("", $request->requestId());
+    }
+
+    public function testIpIgnoresForwardedHeadersUnlessRemoteProxyIsTrusted(): void
+    {
+        unset($_ENV["TRUSTED_PROXIES"], $_SERVER["TRUSTED_PROXIES"]);
+        putenv("TRUSTED_PROXIES");
+
+        $untrustedProxyRequest = Request::capture("", [
+            "REQUEST_URI" => "/status",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "198.51.100.10",
+            "HTTP_X_FORWARDED_FOR" => "127.0.0.1, 198.51.100.10",
+        ]);
+
+        self::assertSame("198.51.100.10", $untrustedProxyRequest->ip());
+
+        $_ENV["TRUSTED_PROXIES"] = "10.0.0.10";
+        $_SERVER["TRUSTED_PROXIES"] = "10.0.0.10";
+        putenv("TRUSTED_PROXIES=10.0.0.10");
+
+        $trustedProxyRequest = Request::capture("", [
+            "REQUEST_URI" => "/status",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "10.0.0.10",
+            "HTTP_X_FORWARDED_FOR" => "203.0.113.24, 10.0.0.10",
+        ]);
+
+        self::assertSame("203.0.113.24", $trustedProxyRequest->ip());
     }
 }

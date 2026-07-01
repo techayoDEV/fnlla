@@ -241,15 +241,7 @@ final class Request
 
     public function ip(): string
     {
-        $forwardedFor = (string) $this->header("X-Forwarded-For", "");
-
-        if ($forwardedFor !== "") {
-            $parts = explode(",", $forwardedFor);
-
-            return trim($parts[0]);
-        }
-
-        return (string) ($this->server["REMOTE_ADDR"] ?? "0.0.0.0");
+        return framework_request_ip($this->server, $this->headers);
     }
 
     public function bearerToken(): ?string

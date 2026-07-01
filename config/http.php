@@ -19,6 +19,7 @@ Purpose:
 */
 
 return [
+    "trusted_proxies" => framework_trusted_proxies(),
     "security_headers" => [
         "Content-Security-Policy" => (string) env(
             "CONTENT_SECURITY_POLICY",

@@ -49,3 +49,7 @@ jobs:
       - name: Validate version contract
         shell: pwsh
         run: php .\scripts\validate-version-manifest.php
+
+      - name: Audit cross-repository ecosystem contract
+        shell: pwsh
+        run: .\scripts\audit-fnlla-ecosystem.ps1 -SkipLocalChecks

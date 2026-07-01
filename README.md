@@ -166,6 +166,7 @@ Copy `.env.example` to `.env` when you want explicit local configuration.
 
 The template ships with local-development defaults that are safe for plain HTTP on `127.0.0.1`.
 Before production deployment, switch the environment values back to production-safe settings and serve the app over HTTPS.
+If the application sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarded client IP and HTTPS headers are only honored from explicitly trusted proxy addresses.
 
 No Packagist download step is required for the framework itself.
 
@@ -312,6 +313,7 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-web.php` validates the enforced FNLLA Web contract
 - `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
+- `scripts/audit-fnlla-ecosystem.ps1` audits local `fnlla-php`, sibling `fnlla-web`, the shared `fnlla/.github` defaults and the upstream `fnlla/web` release tag before cross-repository release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
 - exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows

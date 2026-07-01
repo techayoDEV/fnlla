@@ -211,7 +211,7 @@ Important boundary:
 Operational note:
 
 - `FRAMEWORK_UPDATE_UI_ENABLED` turns the page on or off
-- `FRAMEWORK_UPDATE_UI_LOCAL_ONLY` keeps it limited to localhost by default
+- `FRAMEWORK_UPDATE_UI_LOCAL_ONLY` keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when `TRUSTED_PROXIES` explicitly names the proxy
 - `FRAMEWORK_UPDATE_UI_APPLY_ENABLED` controls whether the browser UI may run safe apply or only drift checks
 - `FRAMEWORK_UPDATE_SOURCE_PATH` lets the project prefill the maintained `fnlla/php` source path
 

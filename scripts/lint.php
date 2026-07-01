@@ -20,6 +20,9 @@ Purpose:
 
 $root = dirname(__DIR__);
 $phpBinary = PHP_BINARY;
+$rootFiles = [
+    "fnlla",
+];
 $paths = [
     "bootstrap",
     "config",
@@ -34,6 +37,20 @@ $paths = [
 ];
 
 $errors = [];
+
+foreach ($rootFiles as $relativePath) {
+    $absolutePath = $root . DIRECTORY_SEPARATOR . $relativePath;
+
+    if (!is_file($absolutePath)) {
+        continue;
+    }
+
+    passthru(escapeshellarg($phpBinary) . " -l " . escapeshellarg($absolutePath), $exitCode);
+
+    if ($exitCode !== 0) {
+        $errors[] = $absolutePath;
+    }
+}
 
 foreach ($paths as $relativePath) {
     $absolutePath = $root . DIRECTORY_SEPARATOR . $relativePath;

@@ -263,7 +263,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <p>Operational note:</p>
             <ul>
               <li><code>FRAMEWORK_UPDATE_UI_ENABLED</code> turns the page on or off</li>
-              <li><code>FRAMEWORK_UPDATE_UI_LOCAL_ONLY</code> keeps it limited to localhost by default</li>
+              <li><code>FRAMEWORK_UPDATE_UI_LOCAL_ONLY</code> keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when <code>TRUSTED_PROXIES</code> explicitly names the proxy</li>
               <li><code>FRAMEWORK_UPDATE_UI_APPLY_ENABLED</code> controls whether the browser UI may run safe apply or only drift checks</li>
               <li><code>FRAMEWORK_UPDATE_SOURCE_PATH</code> lets the project prefill the maintained <code>fnlla/php</code> source path</li>
             </ul>

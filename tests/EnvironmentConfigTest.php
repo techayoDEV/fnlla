@@ -27,12 +27,14 @@ final class EnvironmentConfigTest extends TestCase
     private array $serverBackup = [];
     private mixed $appUrlBackup;
     private mixed $sessionSecureBackup;
+    private mixed $trustedProxiesBackup;
 
     protected function setUp(): void
     {
         $this->serverBackup = $_SERVER;
         $this->appUrlBackup = $_ENV["APP_URL"] ?? null;
         $this->sessionSecureBackup = $_ENV["SESSION_SECURE"] ?? null;
+        $this->trustedProxiesBackup = $_ENV["TRUSTED_PROXIES"] ?? null;
     }
 
     protected function tearDown(): void
@@ -56,6 +58,15 @@ final class EnvironmentConfigTest extends TestCase
             $_SERVER["SESSION_SECURE"] = (string) $this->sessionSecureBackup;
             putenv("SESSION_SECURE=" . (string) $this->sessionSecureBackup);
         }
+
+        if ($this->trustedProxiesBackup === null) {
+            unset($_ENV["TRUSTED_PROXIES"], $_SERVER["TRUSTED_PROXIES"]);
+            putenv("TRUSTED_PROXIES");
+        } else {
+            $_ENV["TRUSTED_PROXIES"] = $this->trustedProxiesBackup;
+            $_SERVER["TRUSTED_PROXIES"] = (string) $this->trustedProxiesBackup;
+            putenv("TRUSTED_PROXIES=" . (string) $this->trustedProxiesBackup);
+        }
     }
 
     public function testSessionConfigDefaultsToNonSecureCookiesOnLocalHttp(): void
@@ -76,6 +87,40 @@ final class EnvironmentConfigTest extends TestCase
         $_ENV["APP_URL"] = "https://fnlla.example.test";
         $_SERVER["APP_URL"] = "https://fnlla.example.test";
         putenv("APP_URL=https://fnlla.example.test");
+        unset($_ENV["SESSION_SECURE"], $_SERVER["SESSION_SECURE"]);
+        putenv("SESSION_SECURE");
+
+        $config = require base_path("config/session.php");
+
+        self::assertTrue($config["secure"]);
+    }
+
+    public function testSessionSecureDetectionIgnoresForwardedHttpsWithoutTrustedProxy(): void
+    {
+        $_ENV["APP_URL"] = "http://fnlla.example.test";
+        $_SERVER["APP_URL"] = "http://fnlla.example.test";
+        $_SERVER["REMOTE_ADDR"] = "198.51.100.20";
+        $_SERVER["HTTP_X_FORWARDED_PROTO"] = "https";
+        putenv("APP_URL=http://fnlla.example.test");
+        unset($_ENV["SESSION_SECURE"], $_SERVER["SESSION_SECURE"], $_ENV["TRUSTED_PROXIES"], $_SERVER["TRUSTED_PROXIES"]);
+        putenv("SESSION_SECURE");
+        putenv("TRUSTED_PROXIES");
+
+        $config = require base_path("config/session.php");
+
+        self::assertFalse($config["secure"]);
+    }
+
+    public function testSessionSecureDetectionHonorsForwardedHttpsFromTrustedProxy(): void
+    {
+        $_ENV["APP_URL"] = "http://fnlla.example.test";
+        $_SERVER["APP_URL"] = "http://fnlla.example.test";
+        $_SERVER["REMOTE_ADDR"] = "10.0.0.10";
+        $_SERVER["HTTP_X_FORWARDED_PROTO"] = "https";
+        $_ENV["TRUSTED_PROXIES"] = "10.0.0.10";
+        $_SERVER["TRUSTED_PROXIES"] = "10.0.0.10";
+        putenv("APP_URL=http://fnlla.example.test");
+        putenv("TRUSTED_PROXIES=10.0.0.10");
         unset($_ENV["SESSION_SECURE"], $_SERVER["SESSION_SECURE"]);
         putenv("SESSION_SECURE");
 
