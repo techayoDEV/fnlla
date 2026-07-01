@@ -142,6 +142,10 @@ final class MakeProjectCommandTest extends TestCase
             "php fnlla framework:update --check --source <path-to-fnlla-php>",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
+        self::assertStringContainsString(
+            'assertFalse(class_exists("Database\\\\Factories\\\\UserFactory"))',
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "BootstrapAutoloadTest.php")
+        );
 
         [$exitCode, $output] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "validate-version-manifest.php"
@@ -162,6 +166,13 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(str_contains($listOutput, "make:project"));
         self::assertFalse(str_contains($listOutput, "make:controller"));
         self::assertFalse(str_contains($listOutput, "make:migration"));
+
+        [$projectTestExitCode, $projectTestOutput] = $this->runPhpScript(
+            $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "test.php"
+        );
+
+        self::assertSame(0, $projectTestExitCode, $projectTestOutput);
+        self::assertStringContainsString("OK (", $projectTestOutput);
 
         [$updateCheckExitCode, $updateCheckOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
