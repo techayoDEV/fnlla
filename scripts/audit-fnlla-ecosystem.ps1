@@ -71,8 +71,20 @@ function Invoke-Git {
         [Parameter(Mandatory = $true)][string[]]$Arguments
     )
 
-    $output = & git @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
+    $nativeErrorPreferenceWasPresent = Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue
+    if ($nativeErrorPreferenceWasPresent) {
+        $previousNativeErrorPreference = $PSNativeCommandUseErrorActionPreference
+        $script:PSNativeCommandUseErrorActionPreference = $false
+    }
+
+    try {
+        $output = & git @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
+    } finally {
+        if ($nativeErrorPreferenceWasPresent) {
+            $script:PSNativeCommandUseErrorActionPreference = $previousNativeErrorPreference
+        }
+    }
 
     return @{
         Output = @($output)
@@ -180,9 +192,10 @@ try {
                 Add-Error -Errors $errors -Message "Local fnlla-web MANIFEST.json product.version does not match VERSION ($($localWebManifest.product.version) vs $localWebVersion)."
             }
 
-            $tagResult = Invoke-Git -Arguments @("-C", $resolvedFnllaWebPath, "describe", "--tags", "--exact-match")
-            if ($tagResult.ExitCode -eq 0) {
-                Write-Host "Local fnlla-web checkout is exactly on tag $($tagResult.Output[0])."
+            $tagResult = Invoke-Git -Arguments @("-C", $resolvedFnllaWebPath, "tag", "--points-at", "HEAD")
+            $releaseTags = @($tagResult.Output | Where-Object { $_ -match '^v\d+\.\d+\.\d+$' })
+            if ($tagResult.ExitCode -eq 0 -and $releaseTags.Count -gt 0) {
+                Write-Host "Local fnlla-web checkout is exactly on tag $($releaseTags[0])."
             } else {
                 Write-Host "Local fnlla-web checkout is not exactly on a release tag; treat it as unpublished work unless that is intentional."
             }
