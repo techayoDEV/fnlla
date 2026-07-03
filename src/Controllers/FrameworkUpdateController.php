@@ -25,6 +25,7 @@ namespace Fnlla\Php\Controllers;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Support\FrameworkLock;
+use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
 use RuntimeException;
 
@@ -35,6 +36,13 @@ final class FrameworkUpdateController extends Controller
         $pageState = $this->pageState($request);
         $lock = $this->safeLoadLock();
         $report = flash("framework_update_report");
+        $configuredSourcePath = (string) config("framework_update.source_path", "");
+        $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
+        $oldSourcePath = trim((string) old("source_path", ""));
+        $cachedRelease = FrameworkReleaseChannel::readCachedReleaseSummary(base_path());
+        $sourcePathValue = $oldSourcePath !== ""
+            ? $oldSourcePath
+            : (string) ($sourceDetection["resolved_path"] ?? $configuredSourcePath);
 
         return $this->view("maintenance/framework-update", [
             "pageTitle" => "Framework updates",
@@ -42,7 +50,9 @@ final class FrameworkUpdateController extends Controller
             "frameworkUpdatePageState" => $pageState,
             "frameworkUpdateLock" => $lock,
             "frameworkUpdateReport" => is_array($report) ? $report : null,
-            "frameworkUpdateSourcePath" => (string) old("source_path", (string) config("framework_update.source_path", "")),
+            "frameworkUpdateSourcePath" => $sourcePathValue,
+            "frameworkUpdateSourceDetection" => $sourceDetection,
+            "frameworkUpdateCachedRelease" => $cachedRelease,
         ]);
     }
 
@@ -62,17 +72,25 @@ final class FrameworkUpdateController extends Controller
             return $this->redirect(route("maintenance.framework_update"));
         }
 
-        $sourcePath = trim((string) $request->input("source_path", (string) config("framework_update.source_path", "")));
         $mode = trim((string) $request->input("mode", "check"));
+        $usesGitHub = in_array($mode, ["github-check", "github-apply"], true);
+        $configuredSourcePath = (string) config("framework_update.source_path", "");
+        $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
+        $sourcePathInput = trim((string) $request->input("source_path", ""));
+        $sourcePath = $sourcePathInput !== ""
+            ? $sourcePathInput
+            : (string) ($sourceDetection["resolved_path"] ?? "");
+        $releaseTag = trim((string) $request->input("release_tag", ""));
         flash_set("old", [
             "source_path" => $sourcePath,
+            "release_tag" => $releaseTag,
         ]);
 
-        if ($sourcePath === "") {
+        if ($usesGitHub !== true && $sourcePath === "") {
             flash_set("status", [
                 "variant" => "warning",
-                "title" => "Source path still needed",
-                "text" => "Set the maintained fnlla/php source path before running a framework update check.",
+                "title" => "Maintained source repository still needed",
+                "text" => "FNLLA PHP could not auto-detect a maintained source repository for this project. Set FRAMEWORK_UPDATE_SOURCE_PATH in .env or enter the path manually below.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -80,7 +98,7 @@ final class FrameworkUpdateController extends Controller
             return $this->redirect(route("maintenance.framework_update"));
         }
 
-        if (!in_array($mode, ["check", "apply"], true)) {
+        if (!in_array($mode, ["check", "apply", "github-check", "github-apply"], true)) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Unknown framework update action",
@@ -92,7 +110,7 @@ final class FrameworkUpdateController extends Controller
             return $this->redirect(route("maintenance.framework_update"));
         }
 
-        if ($mode === "apply" && $pageState["can_apply"] !== true) {
+        if (in_array($mode, ["apply", "github-apply"], true) && $pageState["can_apply"] !== true) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Safe apply is disabled here",
@@ -104,22 +122,38 @@ final class FrameworkUpdateController extends Controller
             return $this->redirect(route("maintenance.framework_update"));
         }
 
+        if ($usesGitHub && ((bool) config("framework_update.github_enabled", true)) !== true) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "GitHub release channel is disabled",
+                "text" => "Enable FRAMEWORK_UPDATE_GITHUB_ENABLED in the local environment to let this page fetch FNLLA PHP releases directly from GitHub.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("maintenance.framework_update"));
+        }
+
         try {
-            $report = $mode === "apply"
-                ? FrameworkUpdater::apply(base_path(), $sourcePath, (string) config("app.name"))
-                : FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name"));
+            $report = match ($mode) {
+                "apply" => FrameworkUpdater::apply(base_path(), $sourcePath, (string) config("app.name")),
+                "github-check" => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
+                "github-apply" => FrameworkUpdater::applyLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
+                default => FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name")),
+            };
 
             flash_set("framework_update_report", array_merge($report, [
                 "mode" => $mode,
                 "executed_at_utc" => gmdate(DATE_ATOM),
-                "source_path" => $sourcePath,
+                "source_path" => (string) ($report["source_root"] ?? $sourcePath),
+                "release_tag" => $releaseTag,
             ]));
             flash_set("status", [
-                "variant" => ($mode === "apply" && (int) ($report["applied_changes"] ?? 0) > 0) || ($mode === "check" && $report["conflicts"] === []) ? "success" : "info",
-                "title" => $mode === "apply" ? "Safe framework update finished" : "Framework update check finished",
-                "text" => $mode === "apply"
-                    ? "Review the structured report below, then rerun validation before treating the application as ready."
-                    : "The application compared its framework base against the maintained source export and prepared a structured drift report.",
+                "variant" => $this->statusVariantForReport($mode, $report),
+                "title" => in_array($mode, ["apply", "github-apply"], true) ? "Safe framework update finished" : "Framework update check finished",
+                "text" => in_array($mode, ["apply", "github-apply"], true)
+                    ? $this->applyStatusText($report)
+                    : $this->checkStatusText($mode, $report),
                 "toast" => false,
             ]);
         } catch (RuntimeException $exception) {
@@ -155,6 +189,7 @@ final class FrameworkUpdateController extends Controller
             "enabled" => $enabled,
             "local_only" => $localOnly,
             "apply_enabled" => $applyEnabled,
+            "github_enabled" => (bool) config("framework_update.github_enabled", true),
             "is_local_request" => $isLocalRequest,
             "can_run" => $canRun,
             "can_apply" => $canRun && $applyEnabled,
@@ -169,5 +204,36 @@ final class FrameworkUpdateController extends Controller
         } catch (RuntimeException) {
             return null;
         }
+    }
+
+    private function statusVariantForReport(string $mode, array $report): string
+    {
+        if (in_array($mode, ["apply", "github-apply"], true)) {
+            return ($report["post_install_ok"] ?? true) === true ? "success" : "warning";
+        }
+
+        return ($report["conflicts"] ?? []) === [] ? "success" : "info";
+    }
+
+    private function applyStatusText(array $report): string
+    {
+        if (($report["post_install_ok"] ?? true) === true) {
+            return "The framework update was applied and the built-in post-install checks passed. Review the report below before treating the application as ready.";
+        }
+
+        return "The framework update was applied, but one or more post-install checks reported follow-up work. Review the report below before treating the application as ready.";
+    }
+
+    private function checkStatusText(string $mode, array $report): string
+    {
+        if (is_string($report["release_skip_reason"] ?? null) && $report["release_skip_reason"] !== "") {
+            return (string) $report["release_skip_reason"];
+        }
+
+        if ($mode === "github-check") {
+            return "The application checked the latest published FNLLA PHP release from GitHub, cached the source baseline locally and prepared a structured drift report.";
+        }
+
+        return "The application compared its framework base against the maintained source export and prepared a structured drift report.";
     }
 }

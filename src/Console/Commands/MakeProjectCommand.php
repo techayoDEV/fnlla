@@ -359,6 +359,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - a legacy compatibility lock in `.fnlla/starter-lock.json` for older update flows
 - root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
 - a lean application surface: home page, contact flow and health endpoint
+- a dedicated project launch guide at `/project/launch`
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
 - local lint, test, version metadata and FNLLA Web validation scripts
@@ -383,10 +384,10 @@ php scripts/validate-version-manifest.php
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-5. Open `http://127.0.0.1:8080` in your browser.
+5. Open `http://127.0.0.1:8080` in your browser and review `http://127.0.0.1:8080/project/launch`.
 6. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
 
-The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED` and `FRAMEWORK_UPDATE_SOURCE_PATH` in `.env`.
+The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED` and `FRAMEWORK_UPDATE_SOURCE_PATH` in `.env`.
 
 For Apache environments, use `public/` as the document root.
 The exported project already includes `public/.htaccess`.
@@ -432,8 +433,10 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
 - `php scripts/validate-fnlla-web.php` checks that the exported project still respects the FNLLA Web runtime contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the vendored FNLLA Web version stay aligned
-- `php fnlla framework:update --check --source <path-to-fnlla-php>` checks framework drift against a maintained FNLLA PHP source repository
-- `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with buttons for check and safe apply
+- `php fnlla framework:update --check --github` checks the latest published FNLLA PHP release from GitHub and caches the release source locally before comparing drift
+- `php fnlla framework:update --check [--source <path-to-fnlla-php>]` checks framework drift against a maintained FNLLA PHP source repository when a local maintainer checkout is preferred
+- `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
+- `/project/launch` gives the downstream developer a built-in delivery guide for the first project implementation pass
 - `php fnlla version:sync` regenerates `MANIFEST.json` after an intentional version change
 - `php fnlla fnlla-web:sync` or `update-fnlla-web.cmd` refresh the vendored FNLLA Web runtime from GitHub
 
@@ -441,11 +444,14 @@ The export intentionally leaves `make:*`, `make:project` and broader framework-i
 
 The full framework documentation remains in the upstream `fnlla/php` repository.
 
+The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA PHP release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release starter builds.
+
 ```bash
 php fnlla list
 php fnlla fnlla-web:sync
 php fnlla fnlla-web:validate
-php fnlla framework:update --check --source ..\fnlla-php
+php fnlla framework:update --check --github
+php fnlla framework:update --check --source ..\fnlla-php  # optional local override
 php fnlla route:list
 php fnlla migrate
 php fnlla migrate:rollback
@@ -486,10 +492,9 @@ Purpose:
 */
 
 use Fnlla\Php\Controllers\HomeController;
-use Fnlla\Php\Http\Request;
-use Fnlla\Php\Http\Response;
 
 $router->get("/", [HomeController::class, "home"])->name("home");
+$router->get("/project/launch", [HomeController::class, "projectLaunch"])->name("project.launch");
 $router->get("/contact", [HomeController::class, "contact"])->name("contact");
 $router->post("/contact", [HomeController::class, "sendContact"])->middleware("csrf")->throttle(5, 1)->name("contact.submit");
 
@@ -498,12 +503,7 @@ $router->group([
     "as" => "api.",
     "middleware" => "throttle",
 ], static function ($router): void {
-    $router->get("/health", static fn (Request $request): Response => Response::json([
-        "name" => config("app.name"),
-        "status" => "ok",
-        "timestamp" => gmdate(DATE_ATOM),
-        "request_path" => $request->path(),
-    ]))->name("health");
+    $router->get("/health", [HomeController::class, "health"])->name("health");
 });
 PHP;
 
@@ -525,6 +525,8 @@ namespace Fnlla\Php\Controllers;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Support\FrameworkReleaseChannel;
+use Fnlla\Php\Support\FrameworkUpdater;
 use Fnlla\Php\Validation\ValidationException;
 
 final class HomeController extends Controller
@@ -536,34 +538,87 @@ final class HomeController extends Controller
             "pageTitleHome" => true,
             "foundationCards" => [
                 [
-                    "title" => "Application-first surface",
-                    "text" => "The exported project starts as a working application shell instead of a second maintainer workspace.",
+                    "title" => "Project-first shell",
+                    "text" => "The exported repository starts as a real downstream application instead of asking developers to work inside the framework maintainer tree.",
                 ],
                 [
-                    "title" => "Full runtime still included",
-                    "text" => "FNLLA Web, the PHP core and the validation scripts stay local so the product remains complete.",
+                    "title" => "Guided delivery flow",
+                    "text" => "A dedicated project launch page, starter checklist and framework-update surface help new developers understand what to touch first.",
                 ],
                 [
-                    "title" => "Clear next steps",
-                    "text" => "Replace routes, copy, forms and persistence with the real project flow without unpicking framework showcase pages first.",
+                    "title" => "Complete runtime still local",
+                    "text" => "FNLLA PHP, the vendored FNLLA Web runtime and validation commands all stay inside the project so there is no missing operational layer.",
                 ],
             ],
             "deliverySteps" => [
                 [
                     "number" => "1",
-                    "title" => "Shape the app",
-                    "text" => "Define the real page map, data model and user journeys for this project.",
+                    "title" => "Shape the product map",
+                    "text" => "Define the real pages, data model, service boundaries and delivery milestones before replacing the starter copy.",
                 ],
                 [
                     "number" => "2",
-                    "title" => "Wire the flow",
-                    "text" => "Add the routes, controllers, templates and persistence that belong to the delivery itself.",
+                    "title" => "Replace the starter surface",
+                    "text" => "Use the project launch guide to swap routes, controllers, templates, forms and integrations with the real product flow.",
                 ],
                 [
                     "number" => "3",
-                    "title" => "Validate the build",
-                    "text" => "Run FNLLA Web validation, lint, tests and version checks before calling the project ready.",
+                    "title" => "Validate and release cleanly",
+                    "text" => "Run FNLLA Web validation, tests, lint and version checks before calling the first release candidate ready.",
                 ],
+            ],
+            "launchChecklist" => [
+                "Open /project/launch and review the first delivery sequence.",
+                "Set .env values for APP_URL, MySQL and mail routing before feature work begins.",
+                "Replace the starter routes, home page, contact flow and footer content with the real product map.",
+                "Use /maintenance/framework-update when the framework base needs a controlled downstream update.",
+            ],
+        ]);
+    }
+
+    public function projectLaunch(Request $request): Response
+    {
+        return $this->view("pages/project-launch", [
+            "pageTitle" => "Project launch",
+            "pageTitleSection" => "Delivery",
+            "launchTracks" => [
+                [
+                    "number" => "1",
+                    "title" => "Set the project contract",
+                    "text" => "Confirm page map, data model, roles, environments, mail destinations and deployment expectations before writing custom features.",
+                ],
+                [
+                    "number" => "2",
+                    "title" => "Replace the starter intentionally",
+                    "text" => "Touch routes/web.php, src/Controllers/HomeController.php, views/pages/ and public/assets/app.css first so the placeholder shell turns into the real product flow.",
+                ],
+                [
+                    "number" => "3",
+                    "title" => "Connect infrastructure",
+                    "text" => "Configure MySQL, mail delivery, queue paths, trusted proxies and any required integrations while the surface is still easy to reason about.",
+                ],
+                [
+                    "number" => "4",
+                    "title" => "Keep release hygiene visible",
+                    "text" => "Treat php scripts/test.php, php scripts/lint.php, php scripts/validate-fnlla-web.php and php scripts/validate-version-manifest.php as normal project gates.",
+                ],
+            ],
+            "launchFiles" => [
+                "routes/web.php",
+                "src/Controllers/HomeController.php",
+                "views/pages/",
+                "public/assets/app.css",
+                "config/app.php",
+                "config/database.php",
+                "config/mail.php",
+                "database/migrations/",
+            ],
+            "launchCommands" => [
+                "php fnlla route:list",
+                "php fnlla fnlla-web:validate",
+                "php scripts/test.php",
+                "php scripts/lint.php",
+                "php scripts/validate-version-manifest.php",
             ],
         ]);
     }
@@ -577,6 +632,56 @@ final class HomeController extends Controller
                 "New website",
                 "Portal or application",
                 "Operations or support",
+            ],
+        ]);
+    }
+
+    public function health(Request $request): Response
+    {
+        $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), (string) config("framework_update.source_path", ""));
+        $cachedRelease = FrameworkReleaseChannel::readCachedReleaseSummary(base_path());
+        $frameworkVersion = $this->readVersionLine(base_path("VERSION"));
+        $uiVersion = $this->readVersionLine(public_path("vendor/fnlla-web/VERSION"));
+        $frameworkLockPresent = is_file(base_path(".fnlla/framework-lock.json"));
+
+        return Response::json([
+            "service" => [
+                "name" => config("app.name"),
+                "slug" => $this->slugifyServiceName((string) config("app.name")),
+                "status" => "ok",
+                "environment" => app_environment(),
+                "timestamp" => gmdate(DATE_ATOM),
+                "description" => "FNLLA PHP downstream application health status.",
+            ],
+            "versions" => [
+                "fnlla_php" => $frameworkVersion,
+                "fnlla_web" => $uiVersion,
+            ],
+            "request" => [
+                "id" => request_id(),
+                "method" => $request->method(),
+                "path" => $request->path(),
+                "secure" => app_request_is_secure(),
+                "ip" => $request->ip(),
+            ],
+            "checks" => [
+                "framework_lock" => $frameworkLockPresent ? "ok" : "missing",
+                "vendored_fnlla_web" => $uiVersion !== null ? "ok" : "missing",
+                "framework_update_ui" => config("framework_update.ui_enabled", false) ? "enabled" : "disabled",
+                "framework_update_github" => config("framework_update.github_enabled", true) ? "enabled" : "disabled",
+                "auto_detected_source" => is_string($sourceDetection["resolved_path"] ?? null) && $sourceDetection["resolved_path"] !== "" ? "available" : "not_detected",
+            ],
+            "framework_update" => [
+                "source_path" => $sourceDetection["resolved_path"] ?? null,
+                "source_origin" => $sourceDetection["origin"] ?? "manual input required",
+                "cached_release_tag" => $cachedRelease["tag"] ?? null,
+                "cached_release_path" => $cachedRelease["cache_path"] ?? null,
+            ],
+            "links" => [
+                "home" => route("home"),
+                "project_launch" => route("project.launch"),
+                "contact" => route("contact"),
+                "framework_updates" => route("maintenance.framework_update"),
             ],
         ]);
     }
@@ -631,6 +736,31 @@ final class HomeController extends Controller
 
         return $this->redirect(route("contact") . "#contact-form");
     }
+
+    private function readVersionLine(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $lines = file($path, FILE_IGNORE_NEW_LINES);
+
+        if (!is_array($lines)) {
+            return null;
+        }
+
+        $version = trim((string) ($lines[0] ?? ""));
+
+        return $version !== "" ? $version : null;
+    }
+
+    private function slugifyServiceName(string $name): string
+    {
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', strtolower(trim($name)));
+        $slug = is_string($slug) ? trim($slug, '-') : '';
+
+        return $slug !== '' ? $slug : 'application';
+    }
 }
 PHP;
 
@@ -647,6 +777,36 @@ $pageMeta = page_meta([
     "suffix" => (string) ($pageTitleSuffix ?? ""),
     "home" => (bool) ($pageTitleHome ?? false),
 ]);
+$appName = (string) config("app.name");
+$brandWords = array_values(array_filter(
+    preg_split('/[^A-Za-z0-9]+/', $appName) ?: [],
+    static fn (string $word): bool => $word !== ""
+));
+$brandInitials = "";
+
+if (count($brandWords) >= 2) {
+    foreach ($brandWords as $brandWord) {
+        $brandInitials .= strtoupper(substr($brandWord, 0, 1));
+
+        if (strlen($brandInitials) === 2) {
+            break;
+        }
+    }
+}
+
+if ($brandInitials === "") {
+    preg_match_all('/[A-Z0-9]/', $appName, $brandCaps);
+    $brandInitials = strtoupper(implode("", array_slice($brandCaps[0] ?? [], 0, 2)));
+}
+
+if (strlen($brandInitials) < 2) {
+    $compactAppName = preg_replace('/[^A-Za-z0-9]+/', '', $appName);
+    $brandInitials = strtoupper(substr(is_string($compactAppName) ? $compactAppName : "", 0, 2));
+}
+
+if ($brandInitials === "") {
+    $brandInitials = "AP";
+}
 ?>
 <!DOCTYPE html>
 <html
@@ -672,7 +832,7 @@ $pageMeta = page_meta([
         <nav class="navbar" aria-label="Primary navigation">
           <a class="navbar-brand" href="<?= h(route("home")) ?>">
             <span class="site-brand-text">
-              <span class="site-brand-mark">PR</span>
+              <span class="site-brand-mark"><?= h($brandInitials) ?></span>
               <?= h(config("app.name")) ?>
             </span>
           </a>
@@ -680,12 +840,13 @@ $pageMeta = page_meta([
           <div class="navbar-panel" id="primary-navigation-panel">
             <ul class="navbar-menu">
               <li><a href="<?= h(route("home")) ?>" <?= is_current_path("/") ? 'aria-current="page"' : "" ?>>Home</a></li>
+              <li><a href="<?= h(route("project.launch")) ?>" <?= is_current_path("/project/launch") ? 'aria-current="page"' : "" ?>>Project launch</a></li>
               <li><a href="<?= h(route("contact")) ?>" <?= is_current_path("/contact") ? 'aria-current="page"' : "" ?>>Contact</a></li>
               <li><a href="<?= h(route("maintenance.framework_update")) ?>" <?= is_current_path("/maintenance/framework-update") ? 'aria-current="page"' : "" ?>>Framework updates</a></li>
               <li><a href="<?= h(route("api.health")) ?>">Health</a></li>
             </ul>
             <div class="navbar-actions">
-              <a class="btn btn-primary btn-sm" href="<?= h(route("contact")) ?>">Start the project</a>
+              <a class="btn btn-primary btn-sm" href="<?= h(route("project.launch")) ?>">Start the project</a>
             </div>
           </div>
         </nav>
@@ -748,6 +909,7 @@ $pageMeta = page_meta([
                 <h3 class="footer-heading">App routes</h3>
                 <div class="footer-links">
                   <a href="<?= h(route("home")) ?>">Home</a>
+                  <a href="<?= h(route("project.launch")) ?>">Project launch</a>
                   <a href="<?= h(route("contact")) ?>">Contact</a>
                   <a href="<?= h(route("maintenance.framework_update")) ?>">Framework updates</a>
                   <a href="<?= h(route("api.health")) ?>">Health</a>
@@ -782,10 +944,10 @@ $pageMeta = page_meta([
   <aside class="consent-banner" data-fnlla-consent data-fnlla-consent-cookie="fnlla-php-consent" data-fnlla-consent-settings="#cookie-settings-modal" aria-label="Cookie consent banner">
     <div class="consent-banner-grid">
       <div class="consent-copy">
-        <p class="consent-kicker">Cookie settings</p>
-        <h2 class="consent-title">Choose which optional cookies this project may use.</h2>
-        <p class="consent-text">Necessary cookies keep sessions, CSRF protection and the runtime shell working. Optional categories should be enabled only when the downstream project genuinely uses them.</p>
-        <p class="consent-meta">The application keeps this first-party and local, with no external scripts required.</p>
+        <p class="consent-kicker">Cookie preferences</p>
+        <h2 class="consent-title">Choose which optional cookies this project may use before analytics or personalization are introduced.</h2>
+        <p class="consent-text">Necessary cookies keep sessions, CSRF protection and the runtime shell working. Optional categories should stay off until the downstream project has a confirmed business reason and a clear implementation plan for them.</p>
+        <p class="consent-meta">This starter keeps consent first-party, local and transparent. Nothing here depends on external tag managers or third-party scripts.</p>
       </div>
       <div class="consent-actions">
         <button class="btn btn-primary btn-sm" type="button" data-fnlla-consent-accept="all">Accept all</button>
@@ -801,13 +963,27 @@ $pageMeta = page_meta([
         <h2 class="content-title mb-0" id="cookie-settings-modal-title">Cookie settings</h2>
         <button class="btn btn-ghost btn-sm" type="button" data-fnlla-modal-close data-fnlla-modal-initial-focus>Close</button>
       </div>
+      <div class="grid grid-2 gap-md mb-3">
+        <article class="feature-card">
+          <h3 class="content-title">What this controls</h3>
+          <p class="content-text mb-0">These settings decide whether the project may enable non-essential client-side behaviors such as analytics, preference storage or campaign attribution after the real product adds them.</p>
+        </article>
+        <article class="feature-card">
+          <h3 class="content-title">How the choice is stored</h3>
+          <p class="content-text mb-0">The starter stores the consent state in a first-party cookie only. No external consent vendor or remote preference service is required for the baseline implementation.</p>
+        </article>
+      </div>
+      <div class="form-message mb-3" role="status">
+        <h3 class="form-message-title">Developer note</h3>
+        <p class="form-message-text mb-0">Keep optional categories disabled until the downstream project documents the purpose, retention model, legal basis and implementation owner for each one.</p>
+      </div>
       <div class="consent-preferences">
         <ul class="consent-switch-list" aria-label="Cookie categories">
           <li class="consent-switch-item">
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Necessary cookies</p>
-                <p class="consent-switch-text">Required for sessions, request protection and the local runtime shell.</p>
+                <p class="consent-switch-text">Required for sessions, request protection, consent persistence and the local runtime shell. These are always on because the application cannot operate safely without them.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="necessary" checked disabled>
@@ -820,7 +996,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Preferences</p>
-                <p class="consent-switch-text">For optional visitor preferences such as UI-level personalization.</p>
+                <p class="consent-switch-text">Use this only for optional visitor preferences such as saved UI choices, remembered content variants or language conveniences that are not strictly required for the service to function.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="preferences">
@@ -833,7 +1009,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Analytics</p>
-                <p class="consent-switch-text">For downstream analytics that a real project explicitly decides to add.</p>
+                <p class="consent-switch-text">Use this for measurement tools, funnel analysis or operational product insights only after the project decides which analytics stack is justified and how the data should be governed.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="analytics">
@@ -846,7 +1022,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Marketing</p>
-                <p class="consent-switch-text">For optional downstream campaigns and attribution flows when the project actually needs them.</p>
+                <p class="consent-switch-text">Use this only if the downstream project introduces campaign tracking, advertising pixels or attribution tooling and has clear ownership for the resulting data flow.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="marketing">
@@ -860,7 +1036,7 @@ $pageMeta = page_meta([
       <div class="d-flex flex-wrap gap-md mt-3">
         <button class="btn btn-primary btn-sm" type="button" data-fnlla-consent-save>Save preferences</button>
         <button class="btn btn-outline btn-sm" type="button" data-fnlla-consent-accept="all">Accept all</button>
-        <button class="btn btn-ghost btn-sm" type="button" data-fnlla-consent-reset>Reset</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-fnlla-consent-reset>Reset stored choice</button>
       </div>
     </div>
   </div>
@@ -885,17 +1061,18 @@ declare(strict_types=1);
           <span class="badge">Server-rendered by default</span>
         </div>
         <h1 class="hero-title">Start from a real project shell, not from a second framework showcase.</h1>
-        <p class="hero-text">This exported repository keeps the full FNLLA PHP and FNLLA Web runtime under the hood, but begins with a smaller application surface so teams can move straight into delivery work.</p>
+        <p class="hero-text">This exported repository keeps the full FNLLA PHP and FNLLA Web runtime under the hood, but pairs it with a clearer delivery path so developers can move straight into real product work without guessing what comes first.</p>
         <ul class="hero-proof-list">
           <li>The public app shell already runs with the vendored FNLLA Web runtime.</li>
+          <li>The project launch guide turns the starter into a concrete onboarding flow for delivery teams.</li>
           <li>The contact flow demonstrates a real request lifecycle with CSRF, validation and flash feedback.</li>
           <li>The framework maintenance page adds a professional browser front-end for update checks and safe apply runs.</li>
-          <li>The health endpoint and validation commands stay available for release hygiene.</li>
         </ul>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-xl" href="<?= h(route("contact")) ?>">Open the contact flow</a>
+          <a class="btn btn-primary btn-xl" href="<?= h(route("project.launch")) ?>">Open project launch</a>
+          <a class="btn btn-outline" href="<?= h(route("contact")) ?>">Open the contact flow</a>
           <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Open framework updates</a>
-          <a class="btn btn-outline" href="<?= h(route("api.health")) ?>">Check the health endpoint</a>
+          <a class="btn btn-ghost" href="<?= h(route("api.health")) ?>">Inspect the health endpoint</a>
         </div>
       </div>
     </section>
@@ -941,6 +1118,130 @@ declare(strict_types=1);
     </section>
   </div>
 </section>
+
+<section class="section">
+  <div class="container">
+    <section class="feature-section" aria-label="Starter checklist">
+      <div class="section-header mb-0">
+        <p class="feature-kicker">First working session</p>
+        <h2 class="section-title">A new developer should be able to open the starter and see the intended delivery sequence immediately.</h2>
+        <p class="section-text">Use this as the minimum orientation layer before the project starts diverging from the placeholder shell.</p>
+      </div>
+      <div class="grid grid-2 gap-md">
+        <article class="feature-card">
+          <h3 class="content-title">Project launch checklist</h3>
+          <ul class="contact-list">
+            <?php foreach ($launchChecklist as $checkItem): ?>
+            <li><?= h($checkItem) ?></li>
+            <?php endforeach; ?>
+          </ul>
+        </article>
+        <article class="feature-card">
+          <h3 class="content-title">Why this matters</h3>
+          <p class="content-text">A stronger starter reduces the gap between “the framework runs” and “the team knows how to ship the actual product.” The goal is confidence, not just placeholder visuals.</p>
+          <div class="d-flex flex-wrap gap-md">
+            <a class="btn btn-primary" href="<?= h(route("project.launch")) ?>">Review the full launch guide</a>
+            <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Review framework updates</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</section>
+PHP;
+
+        $projectLaunchView = <<<'PHP'
+<?php
+
+declare(strict_types=1);
+?>
+<section class="section pt-1">
+  <div class="container site-page-stack">
+    <section class="hero hero-compact" aria-label="Project launch introduction">
+      <div class="grid gap-md hero-copy">
+        <div class="d-flex flex-wrap items-center gap-md">
+          <span class="tag">Project launch</span>
+          <span class="badge">Delivery guide</span>
+          <span class="badge">Developer onboarding</span>
+          <span class="badge">Release hygiene</span>
+        </div>
+        <h1 class="hero-title">Turn the starter into the real product with a deliberate project flow instead of ad-hoc edits.</h1>
+        <p class="hero-text">This page is the downstream developer guide built into the starter itself. It highlights which files matter first, which commands should become normal release habits and how framework maintenance fits into everyday work.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-xl" href="<?= h(route("contact")) ?>">Open the working form flow</a>
+          <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Open framework updates</a>
+          <a class="btn btn-ghost" href="<?= h(route("api.health")) ?>">Inspect the health endpoint</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <section class="process-section" aria-label="Project launch tracks">
+      <div class="section-header mb-0">
+        <p class="process-kicker">Delivery tracks</p>
+        <h2 class="section-title">Four tracks make the starter feel owned, not abandoned.</h2>
+      </div>
+      <div class="process-grid">
+        <?php foreach ($launchTracks as $track): ?>
+        <article class="process-step">
+          <span class="process-step-number"><?= h($track["number"]) ?></span>
+          <h3 class="process-step-title"><?= h($track["title"]) ?></h3>
+          <p class="process-step-text"><?= h($track["text"]) ?></p>
+        </article>
+        <?php endforeach; ?>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <section class="feature-section" aria-label="Files and commands to touch first">
+      <div class="grid grid-2 gap-md">
+        <article class="feature-card">
+          <h2 class="content-title">Files to replace or review first</h2>
+          <ul class="contact-list">
+            <?php foreach ($launchFiles as $launchFile): ?>
+            <li><code><?= h($launchFile) ?></code></li>
+            <?php endforeach; ?>
+          </ul>
+        </article>
+        <article class="feature-card">
+          <h2 class="content-title">Commands to normalize early</h2>
+          <ul class="contact-list">
+            <?php foreach ($launchCommands as $launchCommand): ?>
+            <li><code><?= h($launchCommand) ?></code></li>
+            <?php endforeach; ?>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <section class="cta-section" aria-label="Project launch call to action">
+      <div class="cta-grid">
+        <div class="grid gap-md cta-copy">
+          <div class="d-flex flex-wrap items-center gap-md">
+            <span class="tag">Operational note</span>
+            <span class="badge">Framework maintenance included</span>
+          </div>
+          <h2 class="content-title">Use <code>/maintenance/framework-update</code> as the controlled path for downstream framework updates.</h2>
+          <p class="content-text">The maintenance surface can check the latest published FNLLA PHP release directly from GitHub, cache the release source locally, auto-detect a sibling <code>fnlla-php</code> repository when a local maintainer checkout is preferred, produce a structured drift report and apply only safe framework-managed changes. That keeps framework work explicit without requiring every developer to memorize the update internals.</p>
+          <div class="d-flex flex-wrap gap-md">
+            <a class="btn btn-primary btn-xl" href="<?= h(route("maintenance.framework_update")) ?>">Open framework updates</a>
+            <a class="btn btn-outline" href="<?= h(route("home")) ?>">Back to home</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
 PHP;
 
         $contactView = <<<'PHP'
@@ -966,6 +1267,10 @@ $allErrors = errors();
         </div>
         <h1 class="hero-title">A real project contact flow is already part of the exported application shell.</h1>
         <p class="hero-text">Use this page as the first delivery surface to reshape: replace the placeholder copy, route it to the real mailbox or CRM, and adjust the validation to the real project process.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="<?= h(route("project.launch")) ?>">Review project launch flow</a>
+          <a class="btn btn-outline" href="<?= h(route("home")) ?>">Back to home</a>
+        </div>
       </div>
     </section>
   </div>
@@ -1061,7 +1366,7 @@ $allErrors = errors();
 
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit">Submit request</button>
-              <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to home</a>
+              <a class="btn btn-ghost" href="<?= h(route("project.launch")) ?>">Open project launch</a>
             </div>
           </form>
         </article>
@@ -1075,6 +1380,7 @@ PHP;
         file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Controllers" . DIRECTORY_SEPARATOR . "HomeController.php", $controller . PHP_EOL);
         file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "layouts" . DIRECTORY_SEPARATOR . "app.php", $layout . PHP_EOL);
         file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php", $homeView . PHP_EOL);
+        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php", $projectLaunchView . PHP_EOL);
         file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php", $contactView . PHP_EOL);
     }
 

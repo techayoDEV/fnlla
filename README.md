@@ -277,7 +277,8 @@ Important commands:
 
 - `php fnlla fnlla-web:sync`
 - `php fnlla fnlla-web:validate`
-- `php fnlla framework:update --check --source <path-to-fnlla-php>`
+- `php fnlla framework:update --check --github`
+- `php fnlla framework:update --check [--source <path-to-fnlla-php>]`
 - `php fnlla migrate`
 - `php fnlla migrate:rollback`
 - `php fnlla migrate:status`
@@ -317,9 +318,15 @@ Authoritative maintainer scripts and checkpoints:
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
 - exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
+- the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release starter builds
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
 - `bootstrap/common.php` enforces the shared FNLLA Web guard during bootstrap
+
+Important boundary:
+
+- `php fnlla framework:update` is a downstream project command and expects `.fnlla/framework-lock.json`
+- use it from an exported application repository, not from the maintainer `fnlla/php` repository root itself
 
 Recommended maintainer sequence:
 
@@ -330,7 +337,6 @@ php scripts/validate-fnlla-web.php
 php scripts/validate-version-manifest.php
 php scripts/build-docs.php --check
 php fnlla fnlla-web:sync
-php fnlla framework:update --check --source ..\fnlla-php
 php fnlla version:status
 ```
 

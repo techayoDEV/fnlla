@@ -45,6 +45,8 @@ The exported project already includes:
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
 - lint, test and FNLLA Web validation scripts
+- a dedicated `/project/launch` page for developer onboarding
+- a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - a project README that explains the next steps
 
 It also avoids copying framework-maintainer-only surfaces such as:
@@ -101,23 +103,27 @@ Inside the new project directory:
 2. Set `APP_URL`.
 3. Set MySQL credentials.
 4. Review `config/app.php`.
-5. Replace the demo routes and pages with the real application flow.
-6. Run:
+5. Open `/project/launch` and use it as the first delivery checklist.
+6. Replace the demo routes and pages with the real application flow.
+7. Run:
 
 ```bash
 php fnlla fnlla-web:validate
+php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-7. Start the local server:
+8. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA PHP release from GitHub or against a local maintainer checkout.
+
+9. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-8. Open `http://127.0.0.1:8080` in your browser.
+10. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.

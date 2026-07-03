@@ -17,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.11</span>
+        <span class="doc-status">Stable 1.0.12</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -107,6 +107,8 @@
               <li>MySQL config and migration support</li>
               <li>auth, sessions, cookies and CSRF foundations</li>
               <li>lint, test and FNLLA Web validation scripts</li>
+              <li>a dedicated <code>/project/launch</code> page for developer onboarding</li>
+              <li>a local-first <code>/maintenance/framework-update</code> page with a GitHub-backed update flow</li>
               <li>a project README that explains the next steps</li>
             </ul>
             <p>It also avoids copying framework-maintainer-only surfaces such as:</p>
@@ -145,13 +147,18 @@ php fnlla make:project ../acme-service-portal &quot;Acme Service Portal&quot;</c
               <li>Set <code>APP_URL</code>.</li>
               <li>Set MySQL credentials.</li>
               <li>Review <code>config/app.php</code>.</li>
+              <li>Open <code>/project/launch</code> and use it as the first delivery checklist.</li>
               <li>Replace the demo routes and pages with the real application flow.</li>
               <li>Run:</li>
             </ol>
             <pre><code class="language-bash">php fnlla fnlla-web:validate
+php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php</code></pre>
+            <ol>
+              <li>Use <code>/maintenance/framework-update</code> when you want to compare the project against the latest published FNLLA PHP release from GitHub or against a local maintainer checkout.</li>
+            </ol>
             <ol>
               <li>Start the local server:</li>
             </ol>

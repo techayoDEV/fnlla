@@ -22,11 +22,10 @@ Purpose:
   --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
   --fnlla-php-header-bg: rgba(248, 251, 255, 0.88);
   --fnlla-php-header-border: rgba(21, 48, 79, 0.1);
-  --fnlla-php-brand-start: #15304f;
-  --fnlla-php-brand-end: #2563eb;
+  --fnlla-php-brand-bg: var(--fnlla-color-primary);
   --fnlla-php-brand-text: var(--fnlla-color-on-dark);
   --fnlla-php-card-muted-bg: rgba(255, 255, 255, 0.76);
-  --fnlla-php-surface-bg: rgba(255, 255, 255, 0.72);
+  --fnlla-php-surface-bg: rgba(255, 255, 255, 0.9);
   --fnlla-php-surface-border: rgba(21, 48, 79, 0.1);
   --fnlla-php-footer-note: #456158;
 }
@@ -39,11 +38,10 @@ Purpose:
   --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
   --fnlla-php-header-bg: rgba(16, 25, 45, 0.88);
   --fnlla-php-header-border: rgba(226, 236, 255, 0.12);
-  --fnlla-php-brand-start: #60a5fa;
-  --fnlla-php-brand-end: #2563eb;
+  --fnlla-php-brand-bg: #2563eb;
   --fnlla-php-brand-text: #0f172a;
   --fnlla-php-card-muted-bg: rgba(18, 27, 47, 0.78);
-  --fnlla-php-surface-bg: rgba(18, 27, 47, 0.8);
+  --fnlla-php-surface-bg: rgba(18, 27, 47, 0.92);
   --fnlla-php-surface-border: rgba(226, 236, 255, 0.1);
   --fnlla-php-footer-note: #a9bad2;
 }
@@ -64,6 +62,12 @@ body {
   border-bottom: 1px solid var(--fnlla-php-header-border);
 }
 
+.site-header-shell .navbar {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
 .site-brand-mark {
   display: inline-flex;
   align-items: center;
@@ -72,7 +76,7 @@ body {
   height: 2.2rem;
   margin-right: 0.75rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--fnlla-php-brand-start) 0%, var(--fnlla-php-brand-end) 100%);
+  background: var(--fnlla-php-brand-bg);
   color: var(--fnlla-php-brand-text);
   font-size: 0.9rem;
   font-weight: 700;
@@ -110,17 +114,81 @@ body {
 }
 
 .site-footer-shell {
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
 .site-footer-shell .footer {
   background: var(--fnlla-php-surface-bg);
   border: 1px solid var(--fnlla-php-surface-border);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
 }
 
 .site-footer-shell .footer-note {
   color: var(--fnlla-php-footer-note);
+}
+
+.site-footer-shell .footer-meta-bar {
+  border-top: 1px solid var(--fnlla-php-surface-border);
+  padding-top: 1rem;
+}
+
+.consent-banner {
+  background: var(--fnlla-color-surface-strong);
+  background-image: none;
+  border-top: 1px solid var(--fnlla-color-border);
+  box-shadow: 0 -18px 48px rgba(15, 23, 42, 0.12);
+}
+
+.framework-update-actions-grid .btn {
+  width: 100%;
+}
+
+.framework-update-meta-grid {
+  align-items: start;
+}
+
+.framework-update-release-notes .form-message-text {
+  line-height: 1.65;
+}
+
+.framework-update-progress-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.framework-update-progress-step {
+  position: relative;
+  padding-left: 1.5rem;
+  color: var(--fnlla-color-text-muted);
+}
+
+.framework-update-progress-step::before {
+  content: "";
+  position: absolute;
+  top: 0.45rem;
+  left: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: var(--fnlla-color-border-strong);
+}
+
+.framework-update-progress-step.is-active {
+  color: var(--fnlla-color-text);
+  font-weight: 600;
+}
+
+.framework-update-progress-step.is-active::before {
+  background: var(--fnlla-color-primary);
+  box-shadow: 0 0 0 0.22rem rgba(37, 99, 235, 0.16);
+}
+
+.framework-update-progress-step.is-done {
+  color: var(--fnlla-color-text);
+}
+
+.framework-update-progress-step.is-done::before {
+  background: var(--fnlla-color-success);
 }
 
 @media (min-width: 768px) {

@@ -17,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.11</span>
+        <span class="doc-status">Stable 1.0.12</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -93,7 +93,8 @@
             </ul>
             <p>The exported application also keeps one framework-update command on purpose:</p>
             <ul>
-              <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla-php&gt;</code></li>
+              <li><code>php fnlla framework:update --check --github</code></li>
+              <li><code>php fnlla framework:update --check [--source &lt;path-to-fnlla-php&gt;]</code></li>
             </ul>
             <p>And the application now keeps one browser-facing maintenance page on purpose:</p>
             <ul>
@@ -233,12 +234,16 @@
               <li>you want to apply only the non-conflicting framework-managed changes</li>
             </ul>
             <p>Typical examples:</p>
-            <pre><code class="language-bash">php fnlla framework:update --check --source ..\fnlla-php
+            <pre><code class="language-bash">php fnlla framework:update --check --github
+php fnlla framework:update --apply --github
+php fnlla framework:update --check --source ..\fnlla-php
 php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <p>Important boundary:</p>
             <ul>
-              <li>this command expects a maintained <code>fnlla/php</code> source repository path</li>
-              <li>in this MVP form it does not pull from GitHub by itself</li>
+              <li>by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under <code>storage/framework/updates/</code></li>
+              <li>the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base</li>
+              <li>when <code>--source</code> is used, the command expects a maintained <code>fnlla/php</code> source repository path</li>
+              <li>the GitHub-backed workflow depends on network access plus a working local <code>git</code> binary so the published release can be cached locally</li>
               <li>it updates only files that the framework lock marks as framework-managed</li>
               <li>a hidden <code>php fnlla starter:update</code> alias remains available for legacy project workflows</li>
             </ul>
@@ -258,13 +263,14 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <p>Important boundary:</p>
             <ul>
               <li>it is meant for local or explicitly enabled maintenance usage, not for general public exposure</li>
-              <li>it still relies on a maintained local <code>fnlla/php</code> source path</li>
+              <li>it can fetch the latest published FNLLA PHP release from GitHub or rely on a maintained local <code>fnlla/php</code> source path when a maintainer checkout is preferred</li>
             </ul>
             <p>Operational note:</p>
             <ul>
               <li><code>FRAMEWORK_UPDATE_UI_ENABLED</code> turns the page on or off</li>
               <li><code>FRAMEWORK_UPDATE_UI_LOCAL_ONLY</code> keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when <code>TRUSTED_PROXIES</code> explicitly names the proxy</li>
               <li><code>FRAMEWORK_UPDATE_UI_APPLY_ENABLED</code> controls whether the browser UI may run safe apply or only drift checks</li>
+              <li><code>FRAMEWORK_UPDATE_GITHUB_ENABLED</code> controls whether the maintenance page may contact GitHub directly for published release checks</li>
               <li><code>FRAMEWORK_UPDATE_SOURCE_PATH</code> lets the project prefill the maintained <code>fnlla/php</code> source path</li>
             </ul>
             <h2 id="what-stays-maintainer-only">What stays maintainer-only</h2>
@@ -305,7 +311,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <h2 id="recommended-downstream-command-sequence">Recommended downstream command sequence</h2>
             <p>After export, a healthy first pass is:</p>
             <pre><code class="language-bash">php fnlla fnlla-web:validate
-php fnlla framework:update --check --source ..\fnlla-php
+php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
@@ -316,6 +322,7 @@ php fnlla version:status</code></pre>
               <li>FNLLA Web was just synced</li>
               <li>you want a compact pre-commit or pre-release project check</li>
             </ul>
+            <p>Use the local <code>--source</code> override only when you intentionally want to compare the project against an unpublished maintainer checkout instead of the latest GitHub release.</p>
             <h2 id="final-rule">Final rule</h2>
             <p>Treat <code>scripts/</code> in the framework repository as two overlapping groups:</p>
             <ul>

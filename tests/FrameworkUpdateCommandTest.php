@@ -111,17 +111,44 @@ final class FrameworkUpdateCommandTest extends TestCase
         self::assertStringContainsString("Framework base is already aligned with the provided source export.", $legacyOutput);
     }
 
+    public function testFrameworkUpdateCanAutoDetectSiblingSourceRepository(): void
+    {
+        $workspaceRoot = $this->makeTempPath("fnlla-php-framework-update-workspace-");
+        mkdir($workspaceRoot, 0777, true);
+
+        $projectRoot = $workspaceRoot . DIRECTORY_SEPARATOR . "project";
+        $sourceClone = $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla-php";
+
+        $this->exportProjectTo($projectRoot, "Framework Auto Detect Test");
+        mkdir($sourceClone, 0777, true);
+        $this->copyDirectory(base_path(), $sourceClone);
+
+        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--check"]
+        );
+
+        self::assertSame(0, $checkExitCode, $checkOutput);
+        self::assertStringContainsString("Source repository: ", $checkOutput);
+        self::assertStringContainsString("auto-detected sibling repository", $checkOutput);
+    }
+
     private function exportProject(string $appName): string
+    {
+        $targetPath = $this->makeTempPath("fnlla-php-framework-update-project-");
+        $this->exportProjectTo($targetPath, $appName);
+
+        return $targetPath;
+    }
+
+    private function exportProjectTo(string $targetPath, string $appName): void
     {
         $container = $GLOBALS["fnlla_php_container"] ?? null;
         self::assertInstanceOf(Container::class, $container);
 
-        $targetPath = $this->makeTempPath("fnlla-php-framework-update-project-");
         $command = new MakeProjectCommand($container);
 
         self::assertSame(0, $command->handle([$targetPath, $appName]));
-
-        return $targetPath;
     }
 
     private function cloneRepository(): string

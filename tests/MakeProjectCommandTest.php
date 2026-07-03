@@ -135,16 +135,33 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
+            "/project/launch",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
             "The export intentionally leaves `make:*`, `make:project`",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "php fnlla framework:update --check --source <path-to-fnlla-php>",
+            "php fnlla framework:update --check --github",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "php fnlla framework:update --check [--source <path-to-fnlla-php>]",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
             'assertFalse(class_exists("Database\\\\Factories\\\\UserFactory"))',
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "BootstrapAutoloadTest.php")
+        );
+        $frameworkLock = json_decode(
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json"),
+            true
+        );
+        self::assertTrue(is_array($frameworkLock));
+        self::assertArrayNotHasKey(
+            "tests/BootstrapAutoloadTest.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
 
         [$exitCode, $output] = $this->runPhpScript(
@@ -197,6 +214,7 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $routeListExitCode, $routeListOutput);
         self::assertStringContainsString("GET     /", $routeListOutput);
+        self::assertStringContainsString("GET     /project/launch", $routeListOutput);
         self::assertStringContainsString("GET     /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/framework-update", $routeListOutput);
         self::assertStringContainsString("GET     /api/health", $routeListOutput);

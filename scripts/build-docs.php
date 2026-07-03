@@ -744,10 +744,10 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <h3 class="card-title">Initial commands</h3>
           <pre><code>php fnlla fnlla-web:sync
 php fnlla fnlla-web:validate
+php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
-php scripts/validate-version-manifest.php
-php scripts/build-docs.php --check</code></pre>
+php scripts/validate-version-manifest.php</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">First files to review</h3>
@@ -976,7 +976,8 @@ throttle</code></pre>
             <li><code>php fnlla make:project</code></li>
             <li><code>php fnlla fnlla-web:sync</code></li>
             <li><code>php fnlla fnlla-web:validate</code></li>
-            <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla-php&gt;</code></li>
+            <li><code>php fnlla framework:update --check --github</code></li>
+            <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla-php&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla version:status</code> and <code>php fnlla version:sync</code></li>
           </ul>

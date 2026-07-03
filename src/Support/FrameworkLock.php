@@ -207,6 +207,7 @@ final class FrameworkLock
             "routes/console.php",
             "routes/web.php",
             "src/Controllers/HomeController.php",
+            "tests/BootstrapAutoloadTest.php",
         ], true);
     }
 

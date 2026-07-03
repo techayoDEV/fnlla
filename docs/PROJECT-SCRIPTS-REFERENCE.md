@@ -26,7 +26,8 @@ For a normal exported project, the important script set is:
 
 The exported application also keeps one framework-update command on purpose:
 
-- `php fnlla framework:update --check --source <path-to-fnlla-php>`
+- `php fnlla framework:update --check --github`
+- `php fnlla framework:update --check [--source <path-to-fnlla-php>]`
 
 And the application now keeps one browser-facing maintenance page on purpose:
 
@@ -178,14 +179,18 @@ Use it when:
 Typical examples:
 
 ```bash
+php fnlla framework:update --check --github
+php fnlla framework:update --apply --github
 php fnlla framework:update --check --source ..\fnlla-php
 php fnlla framework:update --apply --source ..\fnlla-php
 ```
 
 Important boundary:
 
-- this command expects a maintained `fnlla/php` source repository path
-- in this MVP form it does not pull from GitHub by itself
+- by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under `storage/framework/updates/`
+- the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base
+- when `--source` is used, the command expects a maintained `fnlla/php` source repository path
+- the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
 - it updates only files that the framework lock marks as framework-managed
 - a hidden `php fnlla starter:update` alias remains available for legacy project workflows
 
@@ -206,13 +211,14 @@ Use it when:
 Important boundary:
 
 - it is meant for local or explicitly enabled maintenance usage, not for general public exposure
-- it still relies on a maintained local `fnlla/php` source path
+- it can fetch the latest published FNLLA PHP release from GitHub or rely on a maintained local `fnlla/php` source path when a maintainer checkout is preferred
 
 Operational note:
 
 - `FRAMEWORK_UPDATE_UI_ENABLED` turns the page on or off
 - `FRAMEWORK_UPDATE_UI_LOCAL_ONLY` keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when `TRUSTED_PROXIES` explicitly names the proxy
 - `FRAMEWORK_UPDATE_UI_APPLY_ENABLED` controls whether the browser UI may run safe apply or only drift checks
+- `FRAMEWORK_UPDATE_GITHUB_ENABLED` controls whether the maintenance page may contact GitHub directly for published release checks
 - `FRAMEWORK_UPDATE_SOURCE_PATH` lets the project prefill the maintained `fnlla/php` source path
 
 ## What stays maintainer-only
@@ -261,7 +267,7 @@ After export, a healthy first pass is:
 
 ```bash
 php fnlla fnlla-web:validate
-php fnlla framework:update --check --source ..\fnlla-php
+php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
@@ -273,6 +279,8 @@ Use this order when:
 - you want to prove the exported project is healthy before heavier project work
 - FNLLA Web was just synced
 - you want a compact pre-commit or pre-release project check
+
+Use the local `--source` override only when you intentionally want to compare the project against an unpublished maintainer checkout instead of the latest GitHub release.
 
 ## Final rule
 

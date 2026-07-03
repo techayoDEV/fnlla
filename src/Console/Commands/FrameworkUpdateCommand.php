@@ -35,7 +35,7 @@ final class FrameworkUpdateCommand extends Command
 
     public function description(): string
     {
-        return "Check or apply FNLLA PHP framework-base updates from a maintained source repository.";
+        return "Check or apply FNLLA PHP framework-base updates from a maintained source repository or the public GitHub release channel.";
     }
 
     public function handle(array $arguments): int
@@ -52,18 +52,26 @@ final class FrameworkUpdateCommand extends Command
         $currentLock = FrameworkLock::load($projectRoot);
         $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA PHP Project"));
 
-        $report = $options["apply"] === true
-            ? FrameworkUpdater::apply($projectRoot, (string) ($options["source"] ?? ""), $appName)
-            : FrameworkUpdater::check($projectRoot, (string) ($options["source"] ?? ""), $appName);
+        $report = ($options["github"] ?? false) === true
+            ? (
+                $options["apply"] === true
+                    ? FrameworkUpdater::applyLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
+                    : FrameworkUpdater::checkLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
+            )
+            : (
+                $options["apply"] === true
+                    ? FrameworkUpdater::apply($projectRoot, (string) ($options["source"] ?? ""), $appName)
+                    : FrameworkUpdater::check($projectRoot, (string) ($options["source"] ?? ""), $appName)
+            );
 
         $this->renderReport($report);
 
         if ($options["apply"] === true) {
             $this->line("");
             $this->line("Applied framework update changes: " . (int) ($report["applied_changes"] ?? 0));
-            $this->line("Next: run php fnlla fnlla-web:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
+            $this->renderPostInstallChecks((array) ($report["post_install_checks"] ?? []));
 
-            return 0;
+            return ($report["post_install_ok"] ?? true) === true ? 0 : 1;
         }
 
         return $report["conflicts"] === [] ? 0 : 1;
@@ -73,7 +81,9 @@ final class FrameworkUpdateCommand extends Command
     {
         $options = [
             "apply" => false,
+            "github" => false,
             "help" => false,
+            "release_tag" => null,
             "source" => null,
         ];
 
@@ -94,8 +104,24 @@ final class FrameworkUpdateCommand extends Command
                 continue;
             }
 
+            if ($argument === "--github") {
+                $options["github"] = true;
+                continue;
+            }
+
             if ($argument === "--help" || $argument === "-h") {
                 $options["help"] = true;
+                continue;
+            }
+
+            if (str_starts_with($argument, "--release-tag=")) {
+                $options["release_tag"] = substr($argument, strlen("--release-tag="));
+                continue;
+            }
+
+            if ($argument === "--release-tag") {
+                $options["release_tag"] = trim((string) ($arguments[$index + 1] ?? ""));
+                $index++;
                 continue;
             }
 
@@ -118,13 +144,31 @@ final class FrameworkUpdateCommand extends Command
 
     private function printUsage(): void
     {
-        $this->line("Usage: php fnlla framework:update --check --source <path-to-fnlla-php>");
-        $this->line("   or: php fnlla framework:update --apply --source <path-to-fnlla-php>");
+        $this->line("Usage: php fnlla framework:update --check [--source <path-to-fnlla-php>]");
+        $this->line("   or: php fnlla framework:update --apply [--source <path-to-fnlla-php>]");
+        $this->line("   or: php fnlla framework:update --check --github [--release-tag v1.0.12]");
+        $this->line("   or: php fnlla framework:update --apply --github [--release-tag v1.0.12]");
+        $this->line("If --source is omitted, FNLLA PHP will try to auto-detect a sibling maintained repository.");
+        $this->line("Use --github to compare against the latest published FNLLA PHP release downloaded into the local update cache.");
     }
 
     private function renderReport(array $report): void
     {
         $this->line("Framework update check");
+        if (is_string($report["source_root"] ?? null) && $report["source_root"] !== "") {
+            $this->line("Source repository: " . $report["source_root"] . " (" . ($report["source_origin"] ?? "resolved") . ")");
+        }
+        if (is_array($report["github_release"] ?? null) && $report["github_release"] !== []) {
+            $githubRelease = (array) $report["github_release"];
+            $this->line(
+                "GitHub release: "
+                . (string) ($githubRelease["tag"] ?? "unknown")
+                . " (current: "
+                . (string) ($githubRelease["current_version"] ?? "unknown")
+                . ")"
+            );
+            $this->line("GitHub cache: " . (string) ($report["download_cache_path"] ?? "unknown"));
+        }
         $this->line("Current framework base: " . $report["current_framework_version"] . " / FNLLA Web " . $report["current_ui_version"]);
         $this->line("Source framework base: " . $report["source_framework_version"] . " / FNLLA Web " . $report["source_ui_version"]);
         $this->line("Managed files tracked: " . $report["tracked_managed_files"] . " (source export: " . $report["source_managed_files"] . ")");
@@ -134,11 +178,15 @@ final class FrameworkUpdateCommand extends Command
 
         if ($report["updates"] === [] && $report["conflicts"] === []) {
             $this->line("");
-            $this->line(
-                $report["local_only_changes"] === []
-                    ? "Framework base is already aligned with the provided source export."
-                    : "No upstream framework drift was detected. Local managed-file edits stay untouched."
-            );
+            if (is_string($report["release_skip_reason"] ?? null) && $report["release_skip_reason"] !== "") {
+                $this->line((string) $report["release_skip_reason"]);
+            } else {
+                $this->line(
+                    $report["local_only_changes"] === []
+                        ? "Framework base is already aligned with the provided source export."
+                        : "No upstream framework drift was detected. Local managed-file edits stay untouched."
+                );
+            }
         }
 
         foreach ($report["updates"] as $path => $update) {
@@ -147,6 +195,31 @@ final class FrameworkUpdateCommand extends Command
 
         foreach ($report["conflicts"] as $path => $conflict) {
             $this->error("[CONFLICT] " . $path . " - " . $conflict["reason"]);
+        }
+    }
+
+    private function renderPostInstallChecks(array $checks): void
+    {
+        if ($checks === []) {
+            $this->line("No post-install checks were recorded for this update run.");
+
+            return;
+        }
+
+        $this->line("Post-install checks:");
+
+        foreach ($checks as $check) {
+            if (!is_array($check)) {
+                continue;
+            }
+
+            $status = strtoupper((string) ($check["status"] ?? "unknown"));
+            $label = (string) ($check["label"] ?? "Check");
+            $exitCode = $check["exit_code"];
+
+            $this->line(
+                "- {$label}: {$status}" . ($exitCode !== null ? " (exit {$exitCode})" : "")
+            );
         }
     }
 }
