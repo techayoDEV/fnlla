@@ -198,10 +198,10 @@ $pageMeta = page_meta([
   <aside class="consent-banner" data-fnlla-consent data-fnlla-consent-cookie="fnlla-php-consent" data-fnlla-consent-settings="#cookie-settings-modal" aria-label="Cookie consent banner">
     <div class="consent-banner-grid">
       <div class="consent-copy">
-        <p class="consent-kicker">Cookie settings</p>
-        <h2 class="consent-title">Choose which optional cookies this project may use.</h2>
-        <p class="consent-text">Necessary cookies keep sessions, CSRF protection and the starter runtime working. Optional categories should be enabled only when the downstream project genuinely uses them.</p>
-        <p class="consent-meta">The starter keeps this first-party and local, with no external scripts required.</p>
+        <p class="consent-kicker">Cookie preferences</p>
+        <h2 class="consent-title">Choose which optional cookies this project may use before analytics or personalization are introduced.</h2>
+        <p class="consent-text">Necessary cookies keep sessions, CSRF protection and the runtime shell working. Optional categories should stay off until the downstream project has a confirmed business reason and a clear implementation plan for them.</p>
+        <p class="consent-meta">This starter keeps consent first-party, local and transparent. Nothing here depends on external tag managers or third-party scripts.</p>
       </div>
       <div class="consent-actions">
         <button class="btn btn-primary btn-sm" type="button" data-fnlla-consent-accept="all">Accept all</button>
@@ -217,13 +217,27 @@ $pageMeta = page_meta([
         <h2 class="content-title mb-0" id="cookie-settings-modal-title">Cookie settings</h2>
         <button class="btn btn-ghost btn-sm" type="button" data-fnlla-modal-close data-fnlla-modal-initial-focus>Close</button>
       </div>
+      <div class="grid grid-2 gap-md mb-3">
+        <article class="feature-card">
+          <h3 class="content-title">What this controls</h3>
+          <p class="content-text mb-0">These settings decide whether the project may enable non-essential client-side behaviors such as analytics, preference storage or campaign attribution after the real product adds them.</p>
+        </article>
+        <article class="feature-card">
+          <h3 class="content-title">How the choice is stored</h3>
+          <p class="content-text mb-0">The starter stores the consent state in a first-party cookie only. No external consent vendor or remote preference service is required for the baseline implementation.</p>
+        </article>
+      </div>
+      <div class="form-message mb-3" role="status">
+        <h3 class="form-message-title">Developer note</h3>
+        <p class="form-message-text mb-0">Keep optional categories disabled until the downstream project documents the purpose, retention model, legal basis and implementation owner for each one.</p>
+      </div>
       <div class="consent-preferences">
         <ul class="consent-switch-list" aria-label="Cookie categories">
           <li class="consent-switch-item">
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Necessary cookies</p>
-                <p class="consent-switch-text">Required for sessions, request protection and the local runtime shell.</p>
+                <p class="consent-switch-text">Required for sessions, request protection, consent persistence and the local runtime shell. These are always on because the application cannot operate safely without them.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="necessary" checked disabled>
@@ -236,7 +250,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Preferences</p>
-                <p class="consent-switch-text">For optional visitor preferences such as UI-level personalization.</p>
+                <p class="consent-switch-text">Use this only for optional visitor preferences such as saved UI choices, remembered content variants or language conveniences that are not strictly required for the service to function.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="preferences">
@@ -249,7 +263,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Analytics</p>
-                <p class="consent-switch-text">For downstream analytics that a real project explicitly decides to add.</p>
+                <p class="consent-switch-text">Use this for measurement tools, funnel analysis or operational product insights only after the project decides which analytics stack is justified and how the data should be governed.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="analytics">
@@ -262,7 +276,7 @@ $pageMeta = page_meta([
             <div class="consent-switch-head">
               <div class="consent-switch-copy">
                 <p class="consent-switch-title">Marketing</p>
-                <p class="consent-switch-text">For optional campaigns or advertising integrations introduced by the downstream project.</p>
+                <p class="consent-switch-text">Use this only if the downstream project introduces campaign tracking, advertising pixels or attribution tooling and has clear ownership for the resulting data flow.</p>
               </div>
               <label class="switch">
                 <input class="switch-input" type="checkbox" data-fnlla-consent-category="marketing">
@@ -272,10 +286,11 @@ $pageMeta = page_meta([
             </div>
           </li>
         </ul>
-        <div class="d-flex flex-wrap gap-md">
-          <button class="btn btn-primary" type="button" data-fnlla-consent-save>Save choices</button>
-          <button class="btn btn-outline" type="button" data-fnlla-consent-reset>Reset stored choice</button>
-        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-md mt-3">
+        <button class="btn btn-primary btn-sm" type="button" data-fnlla-consent-save>Save preferences</button>
+        <button class="btn btn-outline btn-sm" type="button" data-fnlla-consent-accept="all">Accept all</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-fnlla-consent-reset>Reset stored choice</button>
       </div>
     </div>
   </div>

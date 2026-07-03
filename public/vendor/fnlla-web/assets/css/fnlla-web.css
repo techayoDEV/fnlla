@@ -1140,6 +1140,67 @@ textarea {
   animation: fw-progress-indeterminate 1.35s ease-in-out infinite;
 }
 
+.progress-steps {
+  display: grid;
+  gap: var(--fnlla-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-step {
+  position: relative;
+  display: grid;
+  gap: var(--fnlla-space-1);
+  min-width: 0;
+  padding-left: 1.5rem;
+  color: var(--fnlla-color-muted);
+}
+
+.progress-step::before {
+  content: "";
+  position: absolute;
+  top: 0.45rem;
+  left: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--fnlla-color-border-strong);
+}
+
+.progress-step-label,
+.progress-step-meta {
+  margin: 0;
+}
+
+.progress-step-label {
+  color: inherit;
+  font-weight: var(--fnlla-font-weight-semibold);
+}
+
+.progress-step-meta {
+  font-size: var(--fnlla-font-size-sm);
+}
+
+.progress-step.is-active {
+  color: var(--fnlla-color-secondary);
+}
+
+.progress-step.is-active::before {
+  background: var(--fnlla-color-primary);
+  box-shadow: 0 0 0 0.22rem rgb(37 99 235 / 0.16);
+}
+
+.progress-step.is-complete,
+.progress-step.is-done {
+  color: var(--fnlla-color-secondary);
+}
+
+.progress-step.is-complete::before,
+.progress-step.is-done::before {
+  background: var(--fnlla-color-success);
+}
+
 .spinner {
   display: inline-flex;
   width: 1.4rem;
@@ -3636,9 +3697,7 @@ textarea {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--fnlla-color-border-strong);
   border-radius: var(--fnlla-radius-lg);
-  background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.16), transparent 42%),
-    var(--fnlla-color-surface-strong);
+  background: var(--fnlla-color-surface-strong);
   box-shadow: 0 1.25rem 3rem rgba(11, 18, 32, 0.16);
   opacity: 0;
   transform: translateY(0.75rem);

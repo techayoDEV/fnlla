@@ -111,7 +111,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
 
             <div class="form-group">
               <label class="label" for="framework-update-release-tag">Optional release tag override</label>
-              <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter v1.0.12" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+              <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter a specific tag such as v1.0.x" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
               <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA PHP version.</p>
             </div>
 
@@ -325,13 +325,25 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         <div class="progress-bar" data-framework-update-progress-bar style="width: 5%"></div>
       </div>
     </div>
-    <ul class="contact-list framework-update-progress-list" data-framework-update-progress-steps>
-      <li class="framework-update-progress-step is-active">Preparing the maintenance request.</li>
-      <li class="framework-update-progress-step">Contacting the selected update source.</li>
-      <li class="framework-update-progress-step">Building the framework update report.</li>
-      <li class="framework-update-progress-step">Waiting for the final response.</li>
+    <ul class="progress-steps" data-framework-update-progress-steps aria-label="Framework update progress stages">
+      <li class="progress-step is-active">
+        <p class="progress-step-label">Preparing the maintenance request.</p>
+        <p class="progress-step-meta">The browser is packaging the selected mode and source details before the server-side workflow starts.</p>
+      </li>
+      <li class="progress-step">
+        <p class="progress-step-label">Contacting the selected update source.</p>
+        <p class="progress-step-meta">The maintenance flow resolves the GitHub release cache or the maintained local source checkout.</p>
+      </li>
+      <li class="progress-step">
+        <p class="progress-step-label">Building the framework update report.</p>
+        <p class="progress-step-meta">FNLLA PHP compares framework-managed files and prepares the structured result for the operator.</p>
+      </li>
+      <li class="progress-step">
+        <p class="progress-step-label">Waiting for the final response.</p>
+        <p class="progress-step-meta">The last stage captures any safe apply work plus post-install checks before the report is shown.</p>
+      </li>
     </ul>
-    <p class="help-text mb-0">The progress bar is an execution guide for the operator. The final authoritative result always appears in the structured report after the request completes.</p>
+    <p class="help-text mb-0">This modal is an operator-facing execution guide. The final authoritative outcome still comes from the structured report, release notes and post-install validation summary returned after the request completes.</p>
   </div>
 </div>
 
@@ -355,37 +367,85 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       "github-check": {
         copy: "FNLLA PHP is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
         steps: [
-          "Checking the latest published GitHub release metadata.",
-          "Downloading or reusing the cached FNLLA PHP release source.",
-          "Exporting a fresh project baseline from the cached release.",
-          "Comparing framework-managed files against the current application."
+          {
+            label: "Checking the latest published GitHub release metadata.",
+            meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
+          },
+          {
+            label: "Downloading or reusing the cached FNLLA PHP release source.",
+            meta: "Prepares a local release snapshot so repeat checks stay fast and deterministic."
+          },
+          {
+            label: "Exporting a fresh project baseline from the cached release.",
+            meta: "Creates a clean framework reference that matches the published starter contract."
+          },
+          {
+            label: "Comparing framework-managed files against the current application.",
+            meta: "Builds the operator report with release notes, drift details and actionable follow-up."
+          }
         ]
       },
       "github-apply": {
         copy: "FNLLA PHP is applying the cached GitHub-backed update and then running post-install validation checks.",
         steps: [
-          "Checking the latest published GitHub release metadata.",
-          "Downloading or reusing the cached FNLLA PHP release source.",
-          "Applying safe framework-managed changes from the cached release.",
-          "Running post-install checks for contract, tests, lint and version metadata."
+          {
+            label: "Checking the latest published GitHub release metadata.",
+            meta: "Confirms the release source and verifies that the cached baseline is still the correct target."
+          },
+          {
+            label: "Downloading or reusing the cached FNLLA PHP release source.",
+            meta: "Prepares the same release snapshot used by the report so the apply run stays auditable."
+          },
+          {
+            label: "Applying safe framework-managed changes from the cached release.",
+            meta: "Updates only the framework-owned surfaces that the safe-apply contract allows."
+          },
+          {
+            label: "Running post-install checks for contract, tests, lint and version metadata.",
+            meta: "Collects the validation outcome that confirms whether the project stayed healthy after the update."
+          }
         ]
       },
       "check": {
         copy: "FNLLA PHP is comparing this application against the selected maintained source repository.",
         steps: [
-          "Resolving the maintained local source repository.",
-          "Exporting a fresh project baseline from that source.",
-          "Comparing framework-managed files against the current application.",
-          "Preparing the structured drift report."
+          {
+            label: "Resolving the maintained local source repository.",
+            meta: "Finds the local maintainer checkout or the explicit path provided by the operator."
+          },
+          {
+            label: "Exporting a fresh project baseline from that source.",
+            meta: "Creates a clean application reference from the maintained framework source."
+          },
+          {
+            label: "Comparing framework-managed files against the current application.",
+            meta: "Detects starter drift without touching project-owned business logic."
+          },
+          {
+            label: "Preparing the structured drift report.",
+            meta: "Formats the findings so teams can review changes before deciding whether to apply them."
+          }
         ]
       },
       "apply": {
         copy: "FNLLA PHP is applying safe changes from the selected maintained source repository and then running post-install checks.",
         steps: [
-          "Resolving the maintained local source repository.",
-          "Exporting a fresh project baseline from that source.",
-          "Applying safe framework-managed changes.",
-          "Running post-install checks for contract, tests, lint and version metadata."
+          {
+            label: "Resolving the maintained local source repository.",
+            meta: "Locks the update source before any file changes are considered."
+          },
+          {
+            label: "Exporting a fresh project baseline from that source.",
+            meta: "Builds the clean reference used to decide which framework-managed files are safe to update."
+          },
+          {
+            label: "Applying safe framework-managed changes.",
+            meta: "Updates approved framework surfaces while leaving project-owned customization in place."
+          },
+          {
+            label: "Running post-install checks for contract, tests, lint and version metadata.",
+            meta: "Validates the updated project so operators can trust the final result."
+          }
         ]
       }
     };
@@ -407,27 +467,36 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       progressCopy.textContent = definition.copy;
       progressList.innerHTML = "";
 
-      steps.forEach(function (stepText, index) {
+      steps.forEach(function (step, index) {
         var item = document.createElement("li");
-        item.className = "framework-update-progress-step" + (index === 0 ? " is-active" : "");
-        item.textContent = stepText;
+        var label = document.createElement("p");
+        var meta = document.createElement("p");
+
+        item.className = "progress-step" + (index === 0 ? " is-active" : "");
+        label.className = "progress-step-label";
+        label.textContent = step.label;
+        meta.className = "progress-step-meta";
+        meta.textContent = step.meta;
+        item.appendChild(label);
+        item.appendChild(meta);
         progressList.appendChild(item);
       });
 
-      var stepItems = progressList.querySelectorAll(".framework-update-progress-step");
+      var stepItems = progressList.querySelectorAll(".progress-step");
 
       var applyProgressState = function (index) {
         var percent = progressStops[Math.min(index, progressStops.length - 1)];
+        var step = steps[Math.min(index, steps.length - 1)];
 
         progressBar.style.width = percent + "%";
         progressValue.textContent = percent + "%";
-        progressLabel.textContent = steps[Math.min(index, steps.length - 1)];
+        progressLabel.textContent = step.label;
 
         stepItems.forEach(function (item, itemIndex) {
-          item.classList.remove("is-active", "is-done");
+          item.classList.remove("is-active", "is-complete");
 
           if (itemIndex < index) {
-            item.classList.add("is-done");
+            item.classList.add("is-complete");
             return;
           }
 

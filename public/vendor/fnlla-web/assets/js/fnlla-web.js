@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaWebVersion = "1.0.8";
+  var fnllaWebVersion = "1.0.9";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -1606,6 +1606,39 @@
     return document.querySelector(selectors.consent) || document.querySelector(selectors.consentModal) || getTitleRootElement();
   }
 
+  function getSupportedConsentCategories(scope) {
+    var categories = [];
+    var seen = Object.create(null);
+
+    getScopedMatches(scope || document, selectors.consentCategory).forEach(function (input) {
+      var category = normalizeTitlePart(input.getAttribute(attributeNames.consentCategory));
+
+      if (!category || category === "necessary" || seen[category]) {
+        return;
+      }
+
+      seen[category] = true;
+      categories.push(category);
+    });
+
+    return categories.length ? categories : defaultConsentCategories.slice();
+  }
+
+  function getConsentStateCategories(state) {
+    var categories = getSupportedConsentCategories();
+    var source = state && typeof state === "object" ? state : {};
+
+    Object.keys(source).forEach(function (key) {
+      if (key === "necessary" || key === "stored" || categories.indexOf(key) !== -1) {
+        return;
+      }
+
+      categories.push(key);
+    });
+
+    return categories;
+  }
+
   function getConsentCookieName() {
     var root = getConsentRuntimeRoot();
     var configured = root ? normalizeTitlePart(root.getAttribute(attributeNames.consentCookie)) : "";
@@ -1621,30 +1654,36 @@
   }
 
   function getDefaultConsentState() {
-    return {
+    var state = {
       necessary: true,
-      preferences: false,
-      analytics: false,
-      marketing: false,
       stored: false
     };
+
+    getSupportedConsentCategories().forEach(function (category) {
+      state[category] = false;
+    });
+
+    return state;
   }
 
   function cloneConsentState(state) {
-    return {
+    var nextState = {
       necessary: state.necessary === true,
-      preferences: state.preferences === true,
-      analytics: state.analytics === true,
-      marketing: state.marketing === true,
       stored: state.stored === true
     };
+
+    getConsentStateCategories(state).forEach(function (category) {
+      nextState[category] = state && state[category] === true;
+    });
+
+    return nextState;
   }
 
   function normalizeConsentState(input, stored) {
     var base = getDefaultConsentState();
     var source = input && typeof input === "object" ? input : {};
 
-    defaultConsentCategories.forEach(function (category) {
+    getConsentStateCategories(source).forEach(function (category) {
       base[category] = source[category] === true;
     });
 
@@ -1709,7 +1748,7 @@
 
     root.setAttribute("data-fnlla-consent-ready", state.stored ? "true" : "false");
 
-    defaultConsentCategories.forEach(function (category) {
+    getConsentStateCategories(state).forEach(function (category) {
       root.setAttribute("data-fnlla-consent-" + category, state[category] ? "granted" : "denied");
     });
   }
@@ -1724,7 +1763,7 @@
         return;
       }
 
-      if (defaultConsentCategories.indexOf(category) === -1) {
+      if (!category || category === "stored") {
         return;
       }
 
@@ -1788,7 +1827,7 @@
     inputs.forEach(function (input) {
       var category = input.getAttribute(attributeNames.consentCategory) || "";
 
-      if (defaultConsentCategories.indexOf(category) === -1) {
+      if (!category || category === "stored") {
         return;
       }
 
@@ -3220,10 +3259,11 @@
       button.addEventListener("click", function (event) {
         var mode = button.getAttribute("data-fnlla-consent-accept");
         var modal = button.closest(selectors.modal);
+        var scope = modal || button.closest(selectors.consent) || document;
         var nextState = {};
 
         event.preventDefault();
-        defaultConsentCategories.forEach(function (category) {
+        getSupportedConsentCategories(scope).forEach(function (category) {
           nextState[category] = mode !== "necessary";
         });
 
@@ -3658,7 +3698,7 @@
         return true;
       }
 
-      return defaultConsentCategories.indexOf(category) !== -1 ? state[category] === true : false;
+      return state[category] === true;
     },
     openConsentSettings: function () {
       var modal = getConsentModalElement();
@@ -3674,7 +3714,7 @@
     acceptConsent: function () {
       var nextState = {};
 
-      defaultConsentCategories.forEach(function (category) {
+      getSupportedConsentCategories().forEach(function (category) {
         nextState[category] = true;
       });
 
@@ -3684,7 +3724,7 @@
     rejectConsent: function () {
       var nextState = {};
 
-      defaultConsentCategories.forEach(function (category) {
+      getSupportedConsentCategories().forEach(function (category) {
         nextState[category] = false;
       });
 

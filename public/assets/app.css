@@ -132,13 +132,6 @@ body {
   padding-top: 1rem;
 }
 
-.consent-banner {
-  background: var(--fnlla-color-surface-strong);
-  background-image: none;
-  border-top: 1px solid var(--fnlla-color-border);
-  box-shadow: 0 -18px 48px rgba(15, 23, 42, 0.12);
-}
-
 .framework-update-actions-grid .btn {
   width: 100%;
 }
@@ -149,46 +142,6 @@ body {
 
 .framework-update-release-notes .form-message-text {
   line-height: 1.65;
-}
-
-.framework-update-progress-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.framework-update-progress-step {
-  position: relative;
-  padding-left: 1.5rem;
-  color: var(--fnlla-color-text-muted);
-}
-
-.framework-update-progress-step::before {
-  content: "";
-  position: absolute;
-  top: 0.45rem;
-  left: 0;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 999px;
-  background: var(--fnlla-color-border-strong);
-}
-
-.framework-update-progress-step.is-active {
-  color: var(--fnlla-color-text);
-  font-weight: 600;
-}
-
-.framework-update-progress-step.is-active::before {
-  background: var(--fnlla-color-primary);
-  box-shadow: 0 0 0 0.22rem rgba(37, 99, 235, 0.16);
-}
-
-.framework-update-progress-step.is-done {
-  color: var(--fnlla-color-text);
-}
-
-.framework-update-progress-step.is-done::before {
-  background: var(--fnlla-color-success);
 }
 
 @media (min-width: 768px) {
