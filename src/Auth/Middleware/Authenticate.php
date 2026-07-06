@@ -24,6 +24,7 @@ use Fnlla\Php\Auth\AuthManager;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Middleware\MiddlewareInterface;
+use Fnlla\Php\Routing\Router;
 
 final class Authenticate implements MiddlewareInterface
 {
@@ -51,6 +52,9 @@ final class Authenticate implements MiddlewareInterface
             "toast" => false,
         ]);
 
-        return Response::redirect(route("login"));
+        $router = app(Router::class);
+        $redirectRoute = $router->routeByName("login") !== null ? "login" : "home";
+
+        return Response::redirect(route($redirectRoute));
     }
 }

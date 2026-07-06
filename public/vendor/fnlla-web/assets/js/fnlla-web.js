@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaWebVersion = "1.0.9";
+  var fnllaWebVersion = "1.1.0";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -33,7 +33,9 @@
   var tooltipPanelMap = new WeakMap();
   var scrollspyObserverMap = new WeakMap();
   var customSelectStateMap = new WeakMap();
+  var sliderStateMap = new WeakMap();
   var scrollspyRegistry = [];
+  var stickyRegistry = [];
   var fnllaWebIdCounter = 0;
   var defaultConsentCategories = ["preferences", "analytics", "marketing"];
   var mobileNavQuery = window.matchMedia ? window.matchMedia("(max-width: 880px)") : null;
@@ -65,6 +67,12 @@
     select: new WeakSet(),
     rangeInput: new WeakSet(),
     scrollspy: new WeakSet(),
+    sticky: new WeakSet(),
+    counter: new WeakSet(),
+    passwordToggle: new WeakSet(),
+    stepper: new WeakSet(),
+    filter: new WeakSet(),
+    slider: new WeakSet(),
     consent: new WeakSet(),
     consentOpen: new WeakSet(),
     consentAccept: new WeakSet(),
@@ -81,7 +89,8 @@
     documentClick: false,
     documentKeydown: false,
     autoInit: false,
-    scrollspyCleanupObserver: null
+    scrollspyCleanupObserver: null,
+    stickyScroll: false
   };
   var attributeNames = {
     accordionSingle: "data-fnlla-accordion-single",
@@ -92,6 +101,26 @@
     rangeOutput: "data-fnlla-range-output",
     rangePrefix: "data-fnlla-range-prefix",
     rangeSuffix: "data-fnlla-range-suffix",
+    stickyOffset: "data-fnlla-sticky-offset",
+    counterDuration: "data-fnlla-counter-duration",
+    counterThreshold: "data-fnlla-counter-threshold",
+    passwordTarget: "data-fnlla-password-target",
+    stepperMin: "data-fnlla-stepper-min",
+    stepperMax: "data-fnlla-stepper-max",
+    stepperStep: "data-fnlla-stepper-step",
+    filterValue: "data-fnlla-filter-value",
+    sliderSlides: "data-fnlla-slider-slides",
+    sliderScroll: "data-fnlla-slider-scroll",
+    sliderAutoplay: "data-fnlla-slider-autoplay",
+    sliderAutoplaySpeed: "data-fnlla-slider-autoplay-speed",
+    sliderFade: "data-fnlla-slider-fade",
+    sliderDots: "data-fnlla-slider-dots",
+    sliderCenter: "data-fnlla-slider-center",
+    sliderMarquee: "data-fnlla-slider-marquee",
+    sliderMarqueeSpeed: "data-fnlla-slider-marquee-speed",
+    sliderPrev: "data-fnlla-slider-prev",
+    sliderNext: "data-fnlla-slider-next",
+    sliderResponsive: "data-fnlla-slider-responsive",
     tooltip: "data-fnlla-tooltip",
     tooltipPosition: "data-fnlla-tooltip-position",
     consentCategory: "data-fnlla-consent-category",
@@ -128,6 +157,16 @@
     selectMenu: ".select-menu",
     selectOption: "[data-fnlla-select-option]",
     rangeInput: ".range-input[id]",
+    sticky: "[data-fnlla-sticky]",
+    counter: "[data-fnlla-counter], .counter",
+    passwordToggle: "[data-fnlla-password-toggle]",
+    stepper: "[data-fnlla-stepper]",
+    stepperInput: "[data-fnlla-stepper-input]",
+    stepperAction: "[data-fnlla-stepper-action]",
+    filter: "[data-fnlla-filter]",
+    filterControl: "[data-fnlla-filter-control]",
+    filterItem: "[data-fnlla-filter-item]",
+    slider: "[data-fnlla-slider]",
     popover: "[data-fnlla-popover]",
     popoverToggle: "[data-fnlla-popover-toggle]",
     popoverPanel: ".popover-panel",
@@ -3143,6 +3182,871 @@
 
 /*
   ============================================================================
+  FNLLA Web SOURCE MODULE: STICKY ELEMENT INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function syncStickyElements() {
+    stickyRegistry = stickyRegistry.filter(function (entry) {
+      return entry && entry.element && entry.element.isConnected !== false;
+    });
+
+    stickyRegistry.forEach(function (entry) {
+      var element = entry.element;
+      var shouldStick = window.scrollY > entry.offset;
+
+      element.classList.toggle("is-stuck", shouldStick);
+    });
+  }
+
+  function initStickies(root) {
+    getScopedMatches(root, selectors.sticky).forEach(function (element) {
+      if (initializationState.sticky.has(element)) {
+        return;
+      }
+
+      var offsetValue = parseFloat(element.getAttribute(attributeNames.stickyOffset) || "");
+      var baseOffset = Number.isFinite(offsetValue)
+        ? offsetValue
+        : element.getBoundingClientRect().top + window.scrollY;
+
+      initializationState.sticky.add(element);
+      element.classList.add("fnlla-sticky");
+      stickyRegistry.push({
+        element: element,
+        offset: Math.max(0, baseOffset)
+      });
+    });
+
+    if (!runtimeBindings.stickyScroll && stickyRegistry.length) {
+      window.addEventListener("scroll", syncStickyElements, { passive: true });
+      window.addEventListener("resize", syncStickyElements);
+      runtimeBindings.stickyScroll = true;
+    }
+
+    syncStickyElements();
+  }
+
+/*
+  ============================================================================
+  FNLLA Web SOURCE MODULE: COUNTER INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function animateCounter(element) {
+    if (!element || element.dataset.fnllaCounterAnimated === "true") {
+      return;
+    }
+
+    var targetValue = parseFloat(element.getAttribute("data-fnlla-counter") || element.textContent || "0");
+    var durationValue = parseFloat(element.getAttribute(attributeNames.counterDuration) || "1600");
+    var duration = Number.isFinite(durationValue) && durationValue > 0 ? durationValue : 1600;
+    var targetText = String(element.getAttribute("data-fnlla-counter") || element.textContent || "0").trim();
+    var decimalPart = targetText.split(".")[1] || "";
+    var decimals = targetText.indexOf(".") >= 0 ? decimalPart.length : 0;
+    var startTime = performance.now();
+
+    if (!Number.isFinite(targetValue)) {
+      return;
+    }
+
+    element.dataset.fnllaCounterAnimated = "true";
+
+    function step(time) {
+      var progress = Math.min((time - startTime) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var currentValue = targetValue * eased;
+
+      element.textContent = decimals ? currentValue.toFixed(decimals) : String(Math.round(currentValue));
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+        return;
+      }
+
+      element.textContent = decimals ? targetValue.toFixed(decimals) : String(targetValue);
+    }
+
+    window.requestAnimationFrame(step);
+  }
+
+  function initCounters(root) {
+    getScopedMatches(root, selectors.counter).forEach(function (element) {
+      if (initializationState.counter.has(element)) {
+        return;
+      }
+
+      var targetValue = parseFloat(element.getAttribute("data-fnlla-counter") || element.textContent || "0");
+      var thresholdValue = parseFloat(element.getAttribute(attributeNames.counterThreshold) || "0.35");
+      var threshold = Number.isFinite(thresholdValue) ? Math.max(0, Math.min(1, thresholdValue)) : 0.35;
+
+      if (!Number.isFinite(targetValue)) {
+        return;
+      }
+
+      initializationState.counter.add(element);
+
+      if (!("IntersectionObserver" in window)) {
+        animateCounter(element);
+        return;
+      }
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          animateCounter(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: threshold });
+
+      observer.observe(element);
+    });
+  }
+
+/*
+  ============================================================================
+  FNLLA Web SOURCE MODULE: PASSWORD TOGGLE INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function resolvePasswordTarget(toggle) {
+    var controlled = getControlledElement(toggle);
+    var selector = toggle.getAttribute(attributeNames.passwordTarget) || "";
+    var fromSelector = selector ? resolveElementReference(selector) : null;
+    var wrapper = toggle.closest(".input-group, .input-group-meta, .password-field, label, .form-group");
+    var fallback = wrapper ? wrapper.querySelector("input[type='password'], input[type='text']") : null;
+
+    return controlled || fromSelector || fallback;
+  }
+
+  function initPasswordToggles(root) {
+    getScopedMatches(root, selectors.passwordToggle).forEach(function (toggle) {
+      if (initializationState.passwordToggle.has(toggle)) {
+        return;
+      }
+
+      initializationState.passwordToggle.add(toggle);
+
+      if (toggle.tagName !== "BUTTON") {
+        toggle.setAttribute("role", "button");
+        toggle.setAttribute("tabindex", toggle.hasAttribute("tabindex") ? toggle.getAttribute("tabindex") : "0");
+      }
+
+      if (!toggle.hasAttribute("aria-label")) {
+        toggle.setAttribute("aria-label", "Toggle password visibility");
+      }
+
+      toggle.setAttribute("aria-pressed", "false");
+
+      function activate(event) {
+        var input = resolvePasswordTarget(toggle);
+        var isKeyboard = event.type === "keydown";
+
+        if (isKeyboard && event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+
+        if (!input || !/^(password|text)$/i.test(input.getAttribute("type") || "")) {
+          return;
+        }
+
+        event.preventDefault();
+
+        var shouldReveal = (input.getAttribute("type") || "").toLowerCase() === "password";
+
+        input.setAttribute("type", shouldReveal ? "text" : "password");
+        toggle.setAttribute("aria-pressed", shouldReveal ? "true" : "false");
+        toggle.classList.toggle("is-revealed", shouldReveal);
+      }
+
+      toggle.addEventListener("click", activate);
+      toggle.addEventListener("keydown", activate);
+    });
+  }
+
+/*
+  ============================================================================
+  FNLLA Web SOURCE MODULE: NUMERIC STEPPER INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function initSteppers(root) {
+    getScopedMatches(root, selectors.stepper).forEach(function (stepper) {
+      if (initializationState.stepper.has(stepper)) {
+        return;
+      }
+
+      var input = stepper.querySelector(selectors.stepperInput) || stepper.querySelector("input");
+      var controls = toArray(stepper.querySelectorAll(selectors.stepperAction));
+
+      if (!input || !controls.length) {
+        return;
+      }
+
+      initializationState.stepper.add(stepper);
+
+      function getValue() {
+        var parsed = parseFloat(input.value || "0");
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function getMin() {
+        var parsed = parseFloat(input.getAttribute(attributeNames.stepperMin) || input.min || "");
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      function getMax() {
+        var parsed = parseFloat(input.getAttribute(attributeNames.stepperMax) || input.max || "");
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      function getStep() {
+        var parsed = parseFloat(input.getAttribute(attributeNames.stepperStep) || input.step || "1");
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+      }
+
+      function getPrecision(step) {
+        var stepText = String(step);
+        return stepText.indexOf(".") >= 0 ? (stepText.split(".")[1] || "").length : 0;
+      }
+
+      function clampValue(rawValue) {
+        var value = rawValue;
+        var min = getMin();
+        var max = getMax();
+
+        if (min !== null) {
+          value = Math.max(min, value);
+        }
+
+        if (max !== null) {
+          value = Math.min(max, value);
+        }
+
+        return value;
+      }
+
+      function renderValue(value) {
+        var step = getStep();
+        var precision = getPrecision(step);
+        var nextValue = clampValue(value);
+
+        input.value = precision ? nextValue.toFixed(precision) : String(nextValue);
+        syncControls(nextValue);
+      }
+
+      function syncControls(currentValue) {
+        var min = getMin();
+        var max = getMax();
+
+        controls.forEach(function (button) {
+          var action = button.getAttribute("data-fnlla-stepper-action");
+          var isDisabled = (action === "decrement" && min !== null && currentValue <= min)
+            || (action === "increment" && max !== null && currentValue >= max);
+
+          button.setAttribute("aria-disabled", isDisabled ? "true" : "false");
+
+          if (button.tagName === "BUTTON") {
+            button.disabled = isDisabled;
+          }
+        });
+      }
+
+      controls.forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          var action = button.getAttribute("data-fnlla-stepper-action");
+          var currentValue = getValue();
+          var step = getStep();
+
+          event.preventDefault();
+
+          if (action === "increment") {
+            renderValue(currentValue + step);
+            return;
+          }
+
+          if (action === "decrement") {
+            renderValue(currentValue - step);
+          }
+        });
+      });
+
+      input.addEventListener("change", function () {
+        renderValue(getValue());
+      });
+
+      renderValue(getValue());
+    });
+  }
+
+/*
+  ============================================================================
+  FNLLA Web SOURCE MODULE: SIMPLE FILTER INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function initFilters(root) {
+    getScopedMatches(root, selectors.filter).forEach(function (container) {
+      if (initializationState.filter.has(container)) {
+        return;
+      }
+
+      var controls = toArray(container.querySelectorAll(selectors.filterControl));
+      var items = toArray(container.querySelectorAll(selectors.filterItem));
+      var activeValue = "*";
+
+      if (!controls.length || !items.length) {
+        return;
+      }
+
+      initializationState.filter.add(container);
+
+      function sync(value) {
+        activeValue = value || "*";
+
+        controls.forEach(function (control) {
+          var isActive = (control.getAttribute(attributeNames.filterValue) || "*") === activeValue;
+
+          control.classList.toggle("is-active", isActive);
+          control.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+
+        items.forEach(function (item) {
+          var itemTokens = String(item.getAttribute("data-fnlla-filter-item") || "")
+            .split(/[\s,]+/)
+            .filter(Boolean);
+          var shouldShow = activeValue === "*" || itemTokens.indexOf(activeValue) >= 0;
+
+          item.hidden = !shouldShow;
+          item.classList.toggle("is-filtered-out", !shouldShow);
+        });
+      }
+
+      controls.forEach(function (control) {
+        control.addEventListener("click", function (event) {
+          event.preventDefault();
+          sync(control.getAttribute(attributeNames.filterValue) || "*");
+        });
+      });
+
+      sync((controls[0].getAttribute(attributeNames.filterValue) || "*"));
+    });
+  }
+
+/*
+  ============================================================================
+  FNLLA Web SOURCE MODULE: SIMPLE SLIDER INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function readSliderBoolean(element, attributeName) {
+    var value = element.getAttribute(attributeName);
+
+    if (value === null) {
+      return false;
+    }
+
+    return value !== "false";
+  }
+
+  function readSliderNumber(element, attributeName, fallbackValue) {
+    var parsed = parseFloat(element.getAttribute(attributeName) || "");
+    return Number.isFinite(parsed) ? parsed : fallbackValue;
+  }
+
+  function readSliderResponsiveConfig(element) {
+    var raw = element.getAttribute(attributeNames.sliderResponsive) || "";
+
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      var parsed = JSON.parse(raw);
+
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+
+      return Object.keys(parsed).map(function (breakpoint) {
+        return {
+          breakpoint: parseFloat(breakpoint),
+          settings: parsed[breakpoint]
+        };
+      });
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function getSliderConfig(rootElement) {
+    return {
+      slidesToShow: Math.max(1, readSliderNumber(rootElement, attributeNames.sliderSlides, 1)),
+      slidesToScroll: Math.max(1, readSliderNumber(rootElement, attributeNames.sliderScroll, 1)),
+      autoplay: readSliderBoolean(rootElement, attributeNames.sliderAutoplay),
+      autoplaySpeed: Math.max(300, readSliderNumber(rootElement, attributeNames.sliderAutoplaySpeed, 3000)),
+      fade: readSliderBoolean(rootElement, attributeNames.sliderFade),
+      dots: readSliderBoolean(rootElement, attributeNames.sliderDots),
+      centerMode: readSliderBoolean(rootElement, attributeNames.sliderCenter),
+      marquee: readSliderBoolean(rootElement, attributeNames.sliderMarquee),
+      marqueeSpeed: Math.max(10, readSliderNumber(rootElement, attributeNames.sliderMarqueeSpeed, 40)),
+      prevArrow: rootElement.getAttribute(attributeNames.sliderPrev) || "",
+      nextArrow: rootElement.getAttribute(attributeNames.sliderNext) || "",
+      responsive: readSliderResponsiveConfig(rootElement)
+    };
+  }
+
+  function resolveSliderControl(rootElement, selector) {
+    var scope = rootElement.parentElement;
+
+    if (!selector) {
+      return null;
+    }
+
+    while (scope) {
+      var match = scope.querySelector(selector);
+
+      if (match) {
+        return match;
+      }
+
+      scope = scope.parentElement;
+    }
+
+    return resolveElementReference(selector);
+  }
+
+  function getSliderItems(rootElement) {
+    return toArray(rootElement.children).filter(function (child) {
+      return child.nodeType === 1 && child.getAttribute("data-fnlla-slider-generated") !== "true";
+    });
+  }
+
+  function FnllaSlider(rootElement) {
+    this.root = rootElement;
+    this.options = getSliderConfig(rootElement);
+    this.items = getSliderItems(rootElement);
+    this.renderItems = [];
+    this.index = 0;
+    this.timer = null;
+    this.viewport = null;
+    this.track = null;
+    this.dots = [];
+    this.slideMetrics = null;
+    this.prevButton = null;
+    this.nextButton = null;
+    this.resizeHandler = null;
+    this.loadHandler = null;
+    this.marqueeWidth = 0;
+
+    if (this.items.length <= 1) {
+      return;
+    }
+
+    this.build();
+    this.bind();
+    this.update();
+    this.startAutoplay();
+  }
+
+  FnllaSlider.prototype.currentSettings = function () {
+    var base = {
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      fade: false,
+      dots: false,
+      arrows: false,
+      autoplay: false,
+      autoplaySpeed: 3000,
+      centerMode: false,
+      marquee: false,
+      marqueeSpeed: 40,
+      prevArrow: "",
+      nextArrow: "",
+      responsive: []
+    };
+
+    Object.assign(base, this.options);
+
+    base.responsive
+      .slice()
+      .sort(function (left, right) {
+        return right.breakpoint - left.breakpoint;
+      })
+      .forEach(function (entry) {
+        if (window.innerWidth < entry.breakpoint) {
+          Object.assign(base, entry.settings || {});
+        }
+      });
+
+    base.arrows = !!(base.prevArrow || base.nextArrow);
+    return base;
+  };
+
+  FnllaSlider.prototype.build = function () {
+    var slider = this;
+
+    this.root.classList.add("fnlla-slider", "fnlla-slider-ready", "slick-slider", "slick-initialized");
+
+    if (this.options.fade) {
+      this.root.classList.add("fnlla-slider-fade");
+    }
+
+    if (this.options.marquee) {
+      this.root.classList.add("fnlla-slider-marquee");
+    }
+
+    this.viewport = document.createElement("div");
+    this.viewport.className = "fnlla-slider-viewport slick-list";
+    this.viewport.setAttribute("data-fnlla-slider-generated", "true");
+
+    this.track = document.createElement("div");
+    this.track.className = "fnlla-slider-track slick-track";
+    this.track.setAttribute("data-fnlla-slider-generated", "true");
+
+    this.items.forEach(function (item, index) {
+      item.classList.add("fnlla-slide", "slick-slide");
+      item.dataset.slideIndex = String(index);
+      slider.track.appendChild(item);
+    });
+
+    this.renderItems = this.items.slice();
+
+    if (this.options.marquee) {
+      this.items.forEach(function (item, index) {
+        var clone = item.cloneNode(true);
+
+        clone.classList.add("fnlla-slide-clone");
+        clone.dataset.slideIndex = String(index);
+        clone.setAttribute("aria-hidden", "true");
+        slider.track.appendChild(clone);
+        slider.renderItems.push(clone);
+      });
+    }
+
+    this.viewport.appendChild(this.track);
+    this.root.appendChild(this.viewport);
+
+    if (this.currentSettings().dots) {
+      var dots = document.createElement("ul");
+
+      dots.className = "fnlla-slider-dots slick-dots";
+      dots.setAttribute("data-fnlla-slider-generated", "true");
+
+      this.items.forEach(function (_, index) {
+        var item = document.createElement("li");
+        var button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "fnlla-slider-dot";
+        button.textContent = "Slide " + String(index + 1);
+        button.addEventListener("click", function () {
+          slider.goTo(index);
+        });
+        item.appendChild(button);
+        dots.appendChild(item);
+        slider.dots.push(item);
+      });
+
+      this.root.appendChild(dots);
+    }
+  };
+
+  FnllaSlider.prototype.bind = function () {
+    var slider = this;
+    var settings = this.currentSettings();
+
+    if (settings.arrows) {
+      this.prevButton = resolveSliderControl(this.root, settings.prevArrow);
+      this.nextButton = resolveSliderControl(this.root, settings.nextArrow);
+
+      if (this.prevButton) {
+        this.prevButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          slider.prev();
+        });
+      }
+
+      if (this.nextButton) {
+        this.nextButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          slider.next();
+        });
+      }
+    }
+
+    this.root.addEventListener("mouseenter", function () {
+      slider.stopAutoplay();
+    });
+    this.root.addEventListener("mouseleave", function () {
+      slider.startAutoplay();
+    });
+
+    this.resizeHandler = function () {
+      slider.update();
+    };
+    this.loadHandler = function () {
+      slider.update();
+    };
+
+    window.addEventListener("resize", this.resizeHandler);
+    window.addEventListener("load", this.loadHandler, { once: true });
+
+    this.root.querySelectorAll("img").forEach(function (image) {
+      if (image.complete) {
+        return;
+      }
+
+      image.addEventListener("load", function () {
+        slider.update();
+      }, { once: true });
+      image.addEventListener("error", function () {
+        slider.update();
+      }, { once: true });
+    });
+
+    window.setTimeout(function () {
+      slider.update();
+    }, 0);
+  };
+
+  FnllaSlider.prototype.visibleStart = function (settings) {
+    if (!settings.centerMode) {
+      return Math.max(0, Math.min(this.index, Math.max(0, this.items.length - settings.slidesToShow)));
+    }
+
+    var offset = Math.floor(settings.slidesToShow / 2);
+    return Math.max(0, Math.min(this.index - offset, Math.max(0, this.items.length - settings.slidesToShow)));
+  };
+
+  FnllaSlider.prototype.prev = function () {
+    var settings = this.currentSettings();
+    var step = settings.slidesToScroll || 1;
+    var maxIndex = settings.centerMode ? this.items.length - 1 : Math.max(0, this.items.length - settings.slidesToShow);
+    var nextIndex = this.index - step < 0 ? maxIndex : this.index - step;
+
+    this.goTo(nextIndex);
+  };
+
+  FnllaSlider.prototype.next = function () {
+    var settings = this.currentSettings();
+    var step = settings.slidesToScroll || 1;
+    var maxIndex = settings.centerMode ? this.items.length - 1 : Math.max(0, this.items.length - settings.slidesToShow);
+    var nextIndex = this.index + step > maxIndex ? 0 : this.index + step;
+
+    this.goTo(nextIndex);
+  };
+
+  FnllaSlider.prototype.goTo = function (index) {
+    this.index = index;
+    this.update();
+    this.startAutoplay();
+  };
+
+  FnllaSlider.prototype.measureSlides = function (slidesToShow) {
+    var sample = this.items[0];
+    var sampleStyles = window.getComputedStyle(sample);
+    var marginLeft = parseFloat(sampleStyles.marginLeft) || 0;
+    var marginRight = parseFloat(sampleStyles.marginRight) || 0;
+    var horizontalMargins = marginLeft + marginRight;
+    var viewportWidth = this.viewport.clientWidth || this.root.clientWidth || 0;
+    var slideWidth = Math.max(0, (viewportWidth / slidesToShow) - horizontalMargins);
+
+    return {
+      width: slideWidth,
+      outerWidth: slideWidth + horizontalMargins
+    };
+  };
+
+  FnllaSlider.prototype.centerOffset = function (slideOuterWidth) {
+    var viewportWidth = this.viewport.clientWidth || this.root.clientWidth || 0;
+    var maxOffset = Math.max(0, (this.items.length * slideOuterWidth) - viewportWidth);
+    var centered = (this.index * slideOuterWidth) - ((viewportWidth - slideOuterWidth) / 2);
+
+    return Math.max(0, Math.min(centered, maxOffset));
+  };
+
+  FnllaSlider.prototype.layoutMarquee = function () {
+    var speed = this.currentSettings().marqueeSpeed || 40;
+    var slider = this;
+
+    this.renderItems.forEach(function (item) {
+      item.style.width = "auto";
+      item.style.flexBasis = "auto";
+      item.setAttribute("aria-hidden", "false");
+    });
+
+    this.track.style.width = "max-content";
+
+    this.marqueeWidth = this.items.reduce(function (total, item) {
+      var styles = window.getComputedStyle(item);
+      var marginLeft = parseFloat(styles.marginLeft) || 0;
+      var marginRight = parseFloat(styles.marginRight) || 0;
+
+      return total + item.getBoundingClientRect().width + marginLeft + marginRight;
+    }, 0);
+
+    if (!this.marqueeWidth) {
+      return;
+    }
+
+    this.root.style.setProperty("--fnlla-slider-marquee-distance", this.marqueeWidth + "px");
+    this.root.style.setProperty("--fnlla-slider-marquee-duration", (this.marqueeWidth / speed) + "s");
+    this.root.classList.add("is-marquee-active");
+
+    window.setTimeout(function () {
+      slider.track.style.transform = "translate3d(0, 0, 0)";
+    }, 0);
+  };
+
+  FnllaSlider.prototype.update = function () {
+    var settings = this.currentSettings();
+    var slidesToShow = Math.max(1, settings.fade ? 1 : settings.slidesToShow || 1);
+    var maxIndex = settings.centerMode ? this.items.length - 1 : Math.max(0, this.items.length - slidesToShow);
+    var visibleStart;
+    var slider = this;
+
+    if (this.index > maxIndex) {
+      this.index = maxIndex;
+    }
+
+    if (this.index < 0) {
+      this.index = 0;
+    }
+
+    this.root.classList.toggle("fnlla-slider-fade", !!settings.fade);
+    this.root.classList.toggle("fnlla-slider-marquee", !!settings.marquee);
+
+    if (settings.marquee) {
+      this.layoutMarquee();
+      return;
+    }
+
+    visibleStart = this.visibleStart(settings);
+
+    if (settings.fade) {
+      var tallestSlide = this.items.reduce(function (height, item) {
+        return Math.max(height, item.offsetHeight);
+      }, 0);
+
+      this.viewport.style.height = (tallestSlide || this.items[this.index].offsetHeight) + "px";
+      this.slideMetrics = null;
+    } else {
+      this.slideMetrics = this.measureSlides(slidesToShow);
+    }
+
+    this.items.forEach(function (item, index) {
+      var isCurrent = index === slider.index;
+      var isVisible = settings.fade
+        ? isCurrent
+        : index >= visibleStart && index < visibleStart + slidesToShow;
+
+      item.classList.toggle("is-current", isCurrent);
+      item.classList.toggle("slick-current", isCurrent);
+      item.classList.toggle("is-active", isVisible);
+      item.classList.toggle("slick-active", isVisible);
+      item.classList.toggle("is-center", settings.centerMode && isCurrent);
+      item.classList.toggle("slick-center", settings.centerMode && isCurrent);
+      item.setAttribute("aria-hidden", isVisible ? "false" : "true");
+
+      if (!settings.fade) {
+        item.style.width = slider.slideMetrics.width + "px";
+        item.style.flexBasis = slider.slideMetrics.width + "px";
+      }
+    });
+
+    if (settings.fade) {
+      this.track.style.transform = "none";
+      this.track.style.width = "";
+    } else {
+      var offset = settings.centerMode
+        ? this.centerOffset(this.slideMetrics.outerWidth)
+        : visibleStart * this.slideMetrics.outerWidth;
+
+      this.track.style.width = (this.slideMetrics.outerWidth * this.items.length) + "px";
+      this.track.style.transform = "translate3d(" + String(-offset) + "px, 0, 0)";
+    }
+
+    this.dots.forEach(function (dot, index) {
+      dot.classList.toggle("is-active", index === slider.index);
+      dot.classList.toggle("slick-active", index === slider.index);
+    });
+
+    if (this.prevButton || this.nextButton) {
+      var canMove = this.items.length > slidesToShow;
+
+      if (this.prevButton) {
+        this.prevButton.setAttribute("aria-disabled", canMove ? "false" : "true");
+      }
+
+      if (this.nextButton) {
+        this.nextButton.setAttribute("aria-disabled", canMove ? "false" : "true");
+      }
+    }
+  };
+
+  FnllaSlider.prototype.stopAutoplay = function () {
+    if (this.timer) {
+      window.clearInterval(this.timer);
+      this.timer = null;
+    }
+  };
+
+  FnllaSlider.prototype.startAutoplay = function () {
+    var slider = this;
+    var settings = this.currentSettings();
+
+    this.stopAutoplay();
+
+    if (settings.marquee) {
+      this.layoutMarquee();
+      return;
+    }
+
+    if (!settings.autoplay || this.items.length <= 1) {
+      return;
+    }
+
+    this.timer = window.setInterval(function () {
+      slider.next();
+    }, settings.autoplaySpeed || 3000);
+  };
+
+  function refreshSliderInstance(element) {
+    var slider = element ? sliderStateMap.get(element) : null;
+
+    if (slider && typeof slider.update === "function") {
+      slider.update();
+      slider.startAutoplay();
+      return slider;
+    }
+
+    return null;
+  }
+
+  function initSliders(root) {
+    getScopedMatches(root, selectors.slider).forEach(function (element) {
+      if (initializationState.slider.has(element)) {
+        refreshSliderInstance(element);
+        return;
+      }
+
+      initializationState.slider.add(element);
+      sliderStateMap.set(element, new FnllaSlider(element));
+    });
+  }
+
+/*
+  ============================================================================
   FNLLA Web SOURCE MODULE: SCROLLSPY INITIALIZER
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
@@ -3464,6 +4368,12 @@
     initTooltips(scope);
     initSelects(scope);
     initRanges(scope);
+    initStickies(scope);
+    initCounters(scope);
+    initPasswordToggles(scope);
+    initSteppers(scope);
+    initFilters(scope);
+    initSliders(scope);
     initScrollspy(scope);
     initConsent(scope);
     syncNavigationMode(scope);
@@ -3681,6 +4591,20 @@
     refreshScrollspy: function (target) {
       var container = resolveElementReference(target, selectors.scrollspy);
       var state = container ? scrollspyObserverMap.get(container) : null;
+
+      if (state && typeof state.update === "function") {
+        state.update();
+      }
+
+      return fnllaWebApi;
+    },
+    syncSticky: function () {
+      syncStickyElements();
+      return fnllaWebApi;
+    },
+    refreshSlider: function (target) {
+      var slider = resolveElementReference(target, selectors.slider);
+      var state = slider ? sliderStateMap.get(slider) : null;
 
       if (state && typeof state.update === "function") {
         state.update();

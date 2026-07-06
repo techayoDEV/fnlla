@@ -18,22 +18,25 @@ Purpose:
 - Registers maintained HTTP or console routes for the framework runtime.
 */
 
-use Fnlla\Php\Controllers\AuthController;
+use Fnlla\Php\Controllers\DocsController;
 use Fnlla\Php\Controllers\HomeController;
 use Fnlla\Php\Http\Resources\JsonResource;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+
+if (has_local_docs_workspace()) {
+    $router->get("/docs", [DocsController::class, "index"])->name("docs.home");
+    $router->get("/docs/assets/docs.css", [DocsController::class, "stylesheet"])->name("docs.asset.stylesheet");
+    $router->get("/docs/assets/docs.js", [DocsController::class, "script"])->name("docs.asset.script");
+    $router->get("/docs/assets/brand/fnlla-web.svg", [DocsController::class, "brandIcon"])->name("docs.asset.brand");
+    $router->get("/docs/{page}", [DocsController::class, "page"])->name("docs.page");
+}
 
 $router->get("/", [HomeController::class, "home"])->name("home");
 $router->get("/platform", [HomeController::class, "platform"])->name("platform");
 $router->get("/about", [HomeController::class, "about"])->name("about");
 $router->get("/contact", [HomeController::class, "contact"])->name("contact");
 $router->post("/contact", [HomeController::class, "sendContact"])->middleware("csrf")->throttle(5, 1)->name("contact.submit");
-$router->get("/login", [AuthController::class, "loginForm"])->name("login");
-$router->post("/login", [AuthController::class, "login"])->middleware("csrf")->throttle(5, 1)->name("login.submit");
-$router->get("/dashboard", [AuthController::class, "dashboard"])->middleware("auth")->authorize("view-dashboard")->name("dashboard");
-$router->get("/admin", [AuthController::class, "admin"])->middleware("auth")->authorize("manage-admin-area")->name("admin");
-$router->post("/logout", [AuthController::class, "logout"])->middleware(["csrf", "auth"])->name("logout");
 $router->get("/projects/{project}", static fn (string $project): array => [
     "project" => $project,
     "status" => "ok",

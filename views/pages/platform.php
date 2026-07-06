@@ -37,7 +37,7 @@ Purpose:
         </ul>
         <div class="hero-actions">
           <a class="btn btn-primary" href="<?= h(route("contact")) ?>">See the delivery flow</a>
-          <a class="btn btn-outline" href="<?= h(route("login")) ?>">Review starter access</a>
+          <a class="btn btn-outline" href="<?= h(route("about")) ?>">Read the framework model</a>
         </div>
       </div>
       <aside class="hero-panel" aria-label="Platform snapshot">

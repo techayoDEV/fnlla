@@ -17,6 +17,8 @@ templates and release metadata.
 Purpose:
 - Defines a maintained page template for the official FNLLA PHP demonstration surface.
 */
+
+$hasDocumentationWorkspace = has_local_docs_workspace();
 ?>
 <section class="section pt-1">
   <div class="container site-page-stack">
@@ -36,8 +38,10 @@ Purpose:
         </ul>
         <div class="hero-actions">
           <a class="btn btn-primary btn-xl" href="<?= h(route("platform")) ?>">Explore the platform</a>
+          <?php if ($hasDocumentationWorkspace): ?>
+          <a class="btn btn-outline" href="<?= h(route("docs.home")) ?>">Read the docs</a>
+          <?php endif; ?>
           <a class="btn btn-outline" href="<?= h(route("contact")) ?>">Open the contact flow</a>
-          <a class="btn btn-ghost" href="<?= h(route("login")) ?>">View starter access</a>
         </div>
         <div class="hero-background-meta">
           <article class="hero-background-chip">
@@ -57,6 +61,49 @@ Purpose:
     </section>
   </div>
 </section>
+
+<?php if ($hasDocumentationWorkspace): ?>
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2 gap-md">
+      <article class="card site-card-muted">
+        <span class="tag">Maintainer workspace</span>
+        <h2 class="card-title mt-3">This browser surface is the framework repo, not the downstream project you normally ship.</h2>
+        <p class="card-text">Use the running demo to inspect the request flow and shared UI contract. Use the local docs to understand the export workflow, delivery boundaries and the files a real project should change first.</p>
+        <div class="grid gap-2">
+          <p class="mb-0"><code>fnlla/php</code> stays the framework source of truth and docs workspace.</p>
+          <p class="mb-0"><code>php fnlla make:project ../my-app "My App"</code> creates the real downstream repository.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-md mt-3">
+          <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">See the starter workflow</a>
+          <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "project-scripts-reference.html"])) ?>">Review project scripts</a>
+        </div>
+      </article>
+
+      <div class="grid gap-md">
+        <article class="feature-card">
+          <p class="feature-kicker">Documentation</p>
+          <h2 class="content-title">Overview</h2>
+          <p class="content-text">Read the framework contract, repository map and supported stack assumptions without leaving the running local app.</p>
+          <a class="btn btn-ghost btn-sm" href="<?= h(route("docs.home")) ?>">Open overview</a>
+        </article>
+        <article class="feature-card">
+          <p class="feature-kicker">Workflow</p>
+          <h2 class="content-title">Starting a new project</h2>
+          <p class="content-text">Follow the maintained export workflow instead of building real client work directly inside this repository.</p>
+          <a class="btn btn-ghost btn-sm" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Open guide</a>
+        </article>
+        <article class="feature-card">
+          <p class="feature-kicker">Implementation</p>
+          <h2 class="content-title">Building with FNLLA PHP</h2>
+          <p class="content-text">Jump into the long-form implementation guide for routes, controllers, views, forms, MySQL and auth.</p>
+          <a class="btn btn-ghost btn-sm" href="<?= h(route("docs.page", ["page" => "building-with-fnlla-php.html"])) ?>">Open guide</a>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <section class="section">
   <div class="container">
@@ -205,8 +252,8 @@ Purpose:
             <p class="content-text mb-0">Home, Platform, About and Contact already model a multi-page landing shell.</p>
           </div>
           <div class="hero-inline-fact">
-            <span class="badge">Protected examples</span>
-            <p class="content-text mb-0">Login, dashboard and admin routes show how authenticated areas layer onto the same shared runtime.</p>
+            <span class="badge">Framework capability</span>
+            <p class="content-text mb-0">Auth, authorization and protected areas remain available in the framework even when the starter surface no longer presents demo sign-in pages.</p>
           </div>
           <div class="hero-inline-fact">
             <span class="badge">Operational check</span>

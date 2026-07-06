@@ -306,6 +306,12 @@ function asset(string $path = ""): string
     return url($path);
 }
 
+function has_local_docs_workspace(): bool
+{
+    return is_dir(base_path("docs"))
+        && is_file(base_path("docs/index.html"));
+}
+
 function page_meta(array $overrides = []): array
 {
     return \Fnlla\Php\Support\PageMeta::resolve($overrides, (string) config("app.name", "FNLLA PHP"));

@@ -194,6 +194,7 @@
   --fnlla-z-offcanvas: 45;
   --fnlla-z-modal: 50;
   --fnlla-z-toast: 60;
+  --fnlla-z-sticky: 70;
 
   /* ==========================================================================
      BACKGROUND DECORATION
@@ -2199,6 +2200,89 @@ textarea {
 }
 
 /* ==========================================================================
+   PASSWORD TOGGLES AND STEPPERS
+   ========================================================================== */
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-right: 3.5rem;
+}
+
+.password-toggle,
+[data-fnlla-password-toggle] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--fnlla-radius-pill);
+  background: transparent;
+  color: var(--fnlla-color-muted);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--fnlla-transition-base),
+    color var(--fnlla-transition-base);
+}
+
+.password-field .password-toggle,
+.password-field [data-fnlla-password-toggle] {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible,
+[data-fnlla-password-toggle]:hover,
+[data-fnlla-password-toggle]:focus-visible,
+[data-fnlla-password-toggle].is-revealed {
+  background: var(--fnlla-color-primary-soft);
+  color: var(--fnlla-color-secondary);
+  outline: none;
+}
+
+.stepper,
+[data-fnlla-stepper] {
+  display: inline-grid;
+  grid-template-columns: auto minmax(4rem, 1fr) auto;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.stepper .input,
+[data-fnlla-stepper] .input,
+[data-fnlla-stepper-input] {
+  border-radius: 0;
+  text-align: center;
+}
+
+.stepper .btn,
+[data-fnlla-stepper] [data-fnlla-stepper-action] {
+  min-height: var(--fnlla-size-field-min);
+  min-width: var(--fnlla-size-field-min);
+  padding: 0.75rem;
+  border-radius: 0;
+}
+
+.stepper > :first-child,
+[data-fnlla-stepper] > :first-child {
+  border-top-left-radius: var(--fnlla-radius-md);
+  border-bottom-left-radius: var(--fnlla-radius-md);
+}
+
+.stepper > :last-child,
+[data-fnlla-stepper] > :last-child {
+  border-top-right-radius: var(--fnlla-radius-md);
+  border-bottom-right-radius: var(--fnlla-radius-md);
+}
+
+/* ==========================================================================
    VALIDATION AND FOCUS STATES
    ========================================================================== */
 .input[aria-invalid="true"],
@@ -2790,6 +2874,37 @@ textarea {
 }
 
 /* ==========================================================================
+   STICKY SHELL
+   ========================================================================== */
+.fnlla-sticky {
+  position: relative;
+  z-index: var(--fnlla-z-base);
+  transition:
+    background-color var(--fnlla-transition-base),
+    box-shadow var(--fnlla-transition-base),
+    transform var(--fnlla-transition-base);
+}
+
+.fnlla-sticky.is-stuck {
+  position: sticky;
+  top: 0;
+  z-index: var(--fnlla-z-sticky);
+  background: var(--fnlla-color-surface-strong);
+  box-shadow: 0 1px 0 var(--fnlla-color-border);
+  animation: fnlla-sticky-enter var(--fnlla-transition-slow);
+}
+
+@keyframes fnlla-sticky-enter {
+  from {
+    transform: translateY(-0.75rem);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
    DROPDOWN SHELL
    ========================================================================== */
 .dropdown {
@@ -3373,6 +3488,127 @@ textarea {
   background: var(--fnlla-color-primary-soft);
   color: var(--fnlla-color-secondary);
   text-decoration: none;
+}
+
+/* ==========================================================================
+   FILTERS, COUNTERS AND SLIDERS
+   ========================================================================== */
+[data-fnlla-filter-control].is-active {
+  border-color: var(--fnlla-color-primary-border);
+  background: var(--fnlla-color-primary-soft);
+  color: var(--fnlla-color-secondary);
+}
+
+[data-fnlla-filter-item].is-filtered-out {
+  pointer-events: none;
+}
+
+.fnlla-slider,
+[data-fnlla-slider] {
+  --fnlla-slider-gap: 0;
+  --fnlla-slider-dot-size: 0.8rem;
+  position: relative;
+  min-width: 0;
+}
+
+.fnlla-slider-ready {
+  overflow: hidden;
+}
+
+.fnlla-slider-viewport {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.fnlla-slider-track {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  will-change: transform;
+  transition: transform 480ms ease;
+}
+
+.fnlla-slide {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.fnlla-slider-fade .fnlla-slider-track {
+  display: grid;
+}
+
+.fnlla-slider-fade .fnlla-slide {
+  grid-area: 1 / 1;
+  width: 100% !important;
+  flex-basis: 100% !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 420ms ease,
+    visibility 420ms ease;
+}
+
+.fnlla-slider-fade .fnlla-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.fnlla-slider-dots,
+.slick-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fnlla-slider-dot {
+  width: var(--fnlla-slider-dot-size);
+  height: var(--fnlla-slider-dot-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fnlla-color-border-strong);
+  color: transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform var(--fnlla-transition-base),
+    background-color var(--fnlla-transition-base);
+}
+
+.fnlla-slider-dots .is-active .fnlla-slider-dot,
+.slick-dots .slick-active .fnlla-slider-dot,
+.fnlla-slider-dot:hover,
+.fnlla-slider-dot:focus-visible {
+  background: var(--fnlla-color-primary);
+  transform: scale(1.1);
+  outline: none;
+}
+
+.fnlla-slider-marquee .fnlla-slider-track {
+  width: max-content;
+  transition: none;
+}
+
+.fnlla-slider-marquee.is-marquee-active .fnlla-slider-track {
+  animation: fnlla-slider-marquee var(--fnlla-slider-marquee-duration, 18s) linear infinite;
+}
+
+@keyframes fnlla-slider-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(var(--fnlla-slider-marquee-distance, 0px) * -1), 0, 0);
+  }
 }
 
 /* ==========================================================================

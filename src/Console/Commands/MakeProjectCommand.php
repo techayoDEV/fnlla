@@ -230,6 +230,7 @@ final class MakeProjectCommand extends Command
             "tests/AuthTest.php",
             "tests/EnvironmentConfigTest.php",
             "tests/FnllaWebGuardTest.php",
+            "tests/FnllaWebSyncCommandTest.php",
             "tests/FrameworkExtensionsTest.php",
             "tests/MakeProjectCommandTest.php",
             "tests/PageMetaTest.php",

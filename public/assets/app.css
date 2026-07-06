@@ -68,23 +68,16 @@ body {
   box-shadow: none;
 }
 
-.site-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  margin-right: 0.75rem;
-  border-radius: 999px;
-  background: var(--fnlla-php-brand-bg);
-  color: var(--fnlla-php-brand-text);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
 .site-brand-text {
   display: inline-flex;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.site-brand-logo {
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
 }
 
 .site-main {

@@ -19,6 +19,9 @@ Purpose:
 */
 
 $pageStatus = flash("status");
+$currentPath = current_path();
+$hasDocumentationWorkspace = has_local_docs_workspace();
+$isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
 $pageMeta = page_meta([
     "site" => (string) config("app.name"),
     "page" => (string) ($pageTitle ?? ""),
@@ -51,44 +54,35 @@ $pageMeta = page_meta([
         <nav class="navbar" aria-label="Primary navigation">
           <a class="navbar-brand" href="<?= h(route("home")) ?>">
             <span class="site-brand-text">
-              <span class="site-brand-mark">FP</span>
+              <img class="site-brand-logo" src="<?= h(asset("assets/brand/fnlla-mark.svg")) ?>" alt="FNLLA logo">
               <?= h(config("app.name")) ?>
             </span>
           </a>
           <button class="btn btn-outline btn-sm navbar-toggle" type="button" data-fnlla-nav-toggle aria-controls="primary-navigation-panel" aria-expanded="false" aria-label="Toggle navigation menu">Menu</button>
           <div class="navbar-panel" id="primary-navigation-panel">
             <ul class="navbar-menu">
-              <li><a href="<?= h(route("home")) ?>" <?= is_current_path("/") ? 'aria-current="page"' : "" ?>>Home</a></li>
-              <li><a href="<?= h(route("platform")) ?>" <?= is_current_path("/platform") ? 'aria-current="page"' : "" ?>>Platform</a></li>
-              <li><a href="<?= h(route("about")) ?>" <?= is_current_path("/about") ? 'aria-current="page"' : "" ?>>About</a></li>
-              <li><a href="<?= h(route("contact")) ?>" <?= is_current_path("/contact") ? 'aria-current="page"' : "" ?>>Contact</a></li>
-              <?php if (auth()->check()): ?>
-              <li><a href="<?= h(route("dashboard")) ?>" <?= is_current_path("/dashboard") ? 'aria-current="page"' : "" ?>>Dashboard</a></li>
-              <?php if (gate()->allows("manage-admin-area")): ?>
-              <li><a href="<?= h(route("admin")) ?>" <?= is_current_path("/admin") ? 'aria-current="page"' : "" ?>>Admin</a></li>
+              <li><a href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
+              <li><a href="<?= h(route("platform")) ?>" <?= $currentPath === "/platform" ? 'aria-current="page"' : "" ?>>Platform</a></li>
+              <?php if ($hasDocumentationWorkspace): ?>
+              <li><a href="<?= h(route("docs.home")) ?>" <?= $isDocsPath ? 'aria-current="page"' : "" ?>>Docs</a></li>
               <?php endif; ?>
-              <?php else: ?>
-              <li><a href="<?= h(route("login")) ?>" <?= is_current_path("/login") ? 'aria-current="page"' : "" ?>>Login</a></li>
-              <?php endif; ?>
+              <li><a href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
+              <li><a href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
               <li class="dropdown" data-fnlla-dropdown>
                 <button class="btn btn-outline btn-sm" id="resource-menu-trigger" type="button" data-fnlla-dropdown-toggle aria-expanded="false" aria-controls="resource-menu">Resources</button>
                 <div class="dropdown-menu" id="resource-menu" aria-labelledby="resource-menu-trigger">
                   <a class="dropdown-item" href="<?= h(route("platform")) ?>">Platform overview</a>
+                  <?php if ($hasDocumentationWorkspace): ?>
+                  <a class="dropdown-item" href="<?= h(route("docs.home")) ?>">Documentation hub</a>
+                  <a class="dropdown-item" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Starter export guide</a>
+                  <?php endif; ?>
                   <a class="dropdown-item" href="<?= h(route("api.health")) ?>">JSON health route</a>
                   <a class="dropdown-item" href="https://github.com/fnlla/web" target="_blank" rel="noreferrer">FNLLA Web repo</a>
                 </div>
               </li>
             </ul>
             <div class="navbar-actions">
-              <button class="btn btn-ghost btn-sm" type="button" data-fnlla-offcanvas-open="#starter-panel" aria-controls="starter-panel">Starter notes</button>
-              <?php if (auth()->check()): ?>
-              <form action="<?= h(route("logout")) ?>" method="post" class="d-inline">
-                <?= csrf_field() ?>
-                <button class="btn btn-primary btn-sm" type="submit">Sign out</button>
-              </form>
-              <?php else: ?>
-              <a class="btn btn-primary btn-sm" href="<?= h(route("login")) ?>">Sign in</a>
-              <?php endif; ?>
+              <a class="btn btn-primary btn-sm" href="<?= h(route("contact")) ?>">Contact</a>
             </div>
           </div>
         </nav>
@@ -156,6 +150,9 @@ $pageMeta = page_meta([
                 <div class="footer-links">
                   <a href="<?= h(route("home")) ?>">Home</a>
                   <a href="<?= h(route("platform")) ?>">Platform</a>
+                  <?php if ($hasDocumentationWorkspace): ?>
+                  <a href="<?= h(route("docs.home")) ?>">Docs</a>
+                  <?php endif; ?>
                   <a href="<?= h(route("about")) ?>">About</a>
                   <a href="<?= h(route("contact")) ?>">Contact</a>
                 </div>
@@ -164,8 +161,10 @@ $pageMeta = page_meta([
               <div class="footer-link-group">
                 <h3 class="footer-heading">Starter flow</h3>
                 <div class="footer-links">
-                  <a href="<?= h(route("login")) ?>">Sign in demo</a>
                   <a href="<?= h(route("api.health")) ?>">Health endpoint</a>
+                  <?php if ($hasDocumentationWorkspace): ?>
+                  <a href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">New project guide</a>
+                  <?php endif; ?>
                   <a href="https://github.com/fnlla/web" target="_blank" rel="noreferrer">FNLLA Web repo</a>
                 </div>
               </div>
@@ -291,32 +290,6 @@ $pageMeta = page_meta([
         <button class="btn btn-primary btn-sm" type="button" data-fnlla-consent-save>Save preferences</button>
         <button class="btn btn-outline btn-sm" type="button" data-fnlla-consent-accept="all">Accept all</button>
         <button class="btn btn-ghost btn-sm" type="button" data-fnlla-consent-reset>Reset stored choice</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="offcanvas offcanvas-end" id="starter-panel" data-fnlla-offcanvas role="dialog" aria-modal="true" aria-labelledby="starter-panel-title" aria-describedby="starter-panel-description" hidden>
-    <div class="offcanvas-panel">
-      <div class="offcanvas-header">
-        <div>
-          <h2 class="content-title mb-1" id="starter-panel-title">Starter project notes</h2>
-          <p class="content-text" id="starter-panel-description">This panel shows how FNLLA PHP can use FNLLA Web overlays without any custom JavaScript glue.</p>
-        </div>
-        <button class="btn btn-ghost btn-sm" type="button" data-fnlla-offcanvas-close data-fnlla-offcanvas-initial-focus>Close</button>
-      </div>
-      <div class="offcanvas-body">
-        <section class="offcanvas-section" aria-label="What is included">
-          <p class="offcanvas-kicker">Included</p>
-          <div class="list-group list-group-nav">
-            <div class="list-group-item"><span class="list-group-link">Plain PHP router and controller flow</span></div>
-            <div class="list-group-item"><span class="list-group-link">FNLLA Web runtime vendored locally</span></div>
-            <div class="list-group-item"><span class="list-group-link">Form validation, flashes and CSRF token handling</span></div>
-          </div>
-        </section>
-        <div class="d-flex flex-wrap gap-md">
-          <a class="btn btn-primary btn-sm" href="<?= h(route("contact")) ?>">Open contact flow</a>
-          <a class="btn btn-outline btn-sm" href="<?= h(route("api.health")) ?>">Open JSON route</a>
-        </div>
       </div>
     </div>
   </div>

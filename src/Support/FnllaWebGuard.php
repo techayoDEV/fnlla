@@ -53,9 +53,14 @@ final class FnllaWebGuard
 
     public static function syncNow(): void
     {
+        self::syncNowWithOptions([]);
+    }
+
+    public static function syncNowWithOptions(array $options): void
+    {
         $config = self::config();
 
-        self::runSync($config);
+        self::runSync($config, $options);
         self::validateLocalContract($config);
     }
 
@@ -120,7 +125,7 @@ final class FnllaWebGuard
             return;
         }
 
-        self::runSync($config);
+        self::runSync($config, []);
         $syncedVersion = self::readLocalVersion((string) ($config["version_file"] ?? public_path("vendor/fnlla-web/VERSION")));
 
         self::saveState($statePath, [
@@ -129,7 +134,7 @@ final class FnllaWebGuard
         ]);
     }
 
-    private static function runSync(array $config): void
+    private static function runSync(array $config, array $options): void
     {
         /* GitHub-driven sync is delegated to the maintained PowerShell script so clone safety stays in one place. */
         $scriptPath = base_path((string) ($config["sync_script"] ?? "scripts/sync-fnlla-web.ps1"));
@@ -138,13 +143,14 @@ final class FnllaWebGuard
             throw new RuntimeException("FNLLA Web sync script is missing: " . $scriptPath);
         }
 
+        $commandArguments = self::buildSyncScriptArguments($scriptPath, $options);
         $commands = [];
 
         if (DIRECTORY_SEPARATOR === "\\") {
-            $commands[] = ["powershell", "-ExecutionPolicy", "Bypass", "-File", $scriptPath];
+            $commands[] = array_merge(["powershell", "-ExecutionPolicy", "Bypass"], $commandArguments);
         }
 
-        $commands[] = ["pwsh", "-ExecutionPolicy", "Bypass", "-File", $scriptPath];
+        $commands[] = array_merge(["pwsh", "-ExecutionPolicy", "Bypass"], $commandArguments);
         $errors = [];
 
         foreach ($commands as $command) {
@@ -162,6 +168,37 @@ final class FnllaWebGuard
         }
 
         throw new RuntimeException("FNLLA Web sync failed. " . implode(" | ", $errors));
+    }
+
+    private static function buildSyncScriptArguments(string $scriptPath, array $options): array
+    {
+        $arguments = ["-File", $scriptPath];
+        $optionMap = [
+            "source" => "SourcePath",
+            "repo_url" => "RepoUrl",
+            "repository" => "Repository",
+            "working_clone_path" => "WorkingClonePath",
+            "ref" => "Ref",
+        ];
+
+        foreach ($optionMap as $optionKey => $parameterName) {
+            $value = $options[$optionKey] ?? null;
+
+            if (!is_string($value)) {
+                continue;
+            }
+
+            $value = trim($value);
+
+            if ($value === "") {
+                continue;
+            }
+
+            $arguments[] = "-" . $parameterName;
+            $arguments[] = $value;
+        }
+
+        return $arguments;
     }
 
     private static function assertRuntimeFilesExist(array $requiredFiles): void
