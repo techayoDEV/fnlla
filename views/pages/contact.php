@@ -20,7 +20,8 @@ Purpose:
 
 $nameError = error_for("name");
 $emailError = error_for("email");
-$briefError = error_for("brief");
+$topicError = error_for("topic");
+$messageError = error_for("message");
 $allErrors = errors();
 ?>
 <section class="section pt-1">
@@ -33,22 +34,11 @@ $allErrors = errors();
           <span class="badge">CSRF</span>
           <span class="badge">Flash feedback</span>
         </div>
-        <h1 class="hero-title">A real contact flow is already part of the starter, not just static demo markup.</h1>
-        <p class="hero-text">This page demonstrates how FNLLA PHP and FNLLA Web work together in a practical user journey: page rendering, form structure, validation, redirect-after-post and visible success or error feedback.</p>
-        <ul class="hero-proof-list">
-          <li>Failed submits keep old values and return field-level messages.</li>
-          <li>Successful submits flash confirmation into the next request.</li>
-          <li>The entire form remains inside the shared FNLLA Web layout and component contract.</li>
-        </ul>
-      </div>
-      <div class="hero-inline-facts" aria-label="Contact page support facts">
-        <div class="hero-inline-fact">
-          <span class="badge">Good for</span>
-          <p class="content-text mb-0">Service requests, onboarding forms, internal intake flows and protected admin submissions.</p>
-        </div>
-        <div class="hero-inline-fact">
-          <span class="badge">Replace first</span>
-          <p class="content-text mb-0">Swap the demo copy, mail destination, service tracks and validation rules for your real project context.</p>
+        <h1 class="hero-title">A real project contact flow is already part of the starter application shell.</h1>
+        <p class="hero-text">Use this page as one of the first delivery surfaces to reshape: replace the placeholder copy, point it at the real mailbox or CRM, and adjust the validation to the actual project workflow.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="<?= h(route("project.launch")) ?>">Review project launch flow</a>
+          <a class="btn btn-outline" href="<?= h(route("home")) ?>">Back to home</a>
         </div>
       </div>
     </section>
@@ -57,17 +47,18 @@ $allErrors = errors();
 
 <section class="section">
   <div class="container">
-    <section class="feature-section" aria-label="Engagement tracks">
+    <section class="process-section" aria-label="Contact flow process">
       <div class="section-header mb-0">
-        <p class="feature-kicker">Project use cases</p>
-        <h2 class="section-title">Three starter-friendly tracks for the kind of work this example is meant to model.</h2>
-        <p class="section-text">The cards below are demo content, but the section pattern itself is the useful part: compact offer framing before the form takes over.</p>
+        <p class="process-kicker">Delivery sequence</p>
+        <h2 class="section-title">This flow is simple on purpose, but it models the same pattern that should scale into real project work.</h2>
+        <p class="section-text">Treat it as a reusable request-capture baseline rather than static demonstration copy.</p>
       </div>
-      <div class="grid grid-3 gap-md">
-        <?php foreach ($engagementTracks as $track): ?>
-        <article class="feature-card">
-          <h3 class="content-title"><?= h($track["title"]) ?></h3>
-          <p class="content-text"><?= h($track["text"]) ?></p>
+      <div class="process-grid">
+        <?php foreach ($deliverySteps as $step): ?>
+        <article class="process-step">
+          <span class="process-step-number"><?= h($step["number"]) ?></span>
+          <h3 class="process-step-title"><?= h($step["title"]) ?></h3>
+          <p class="process-step-text"><?= h($step["text"]) ?></p>
         </article>
         <?php endforeach; ?>
       </div>
@@ -138,80 +129,37 @@ $allErrors = errors();
               </div>
 
               <div class="form-group contact-field">
-                <label class="label" for="contact-scope">Service area</label>
-                <select class="select" id="contact-scope" name="scope">
-                  <?php $selectedScope = (string) old("scope", "Implementation support"); ?>
-                  <?php foreach (["Platform advisory", "Implementation support", "Operational support"] as $scopeOption): ?>
-                  <option value="<?= h($scopeOption) ?>" <?= $selectedScope === $scopeOption ? "selected" : "" ?>><?= h($scopeOption) ?></option>
+                <label class="label" for="contact-topic">Topic</label>
+                <select class="select" id="contact-topic" name="topic" aria-describedby="<?= $topicError ? 'contact-topic-error' : 'contact-topic-help' ?>" <?= $topicError ? 'aria-invalid="true"' : "" ?>>
+                  <?php $selectedTopic = (string) old("topic", "Portal or application"); ?>
+                  <?php foreach ($contactTopics as $topicOption): ?>
+                  <option value="<?= h($topicOption) ?>" <?= $selectedTopic === $topicOption ? "selected" : "" ?>><?= h($topicOption) ?></option>
                   <?php endforeach; ?>
                 </select>
-                <p class="help-text">Choose the track that best matches the requested work.</p>
+                <?php if ($topicError): ?>
+                <p class="error-text" id="contact-topic-error"><?= h($topicError) ?></p>
+                <?php else: ?>
+                <p class="help-text" id="contact-topic-help">Choose the path that best matches the project request.</p>
+                <?php endif; ?>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="label" for="contact-brief">Project brief</label>
-              <textarea class="textarea" id="contact-brief" name="brief" placeholder="Outline requirements, preferred timing and any implementation notes." aria-describedby="<?= $briefError ? 'contact-brief-error' : 'contact-brief-help' ?>" <?= $briefError ? 'aria-invalid="true"' : "" ?>><?= h((string) old("brief")) ?></textarea>
-              <?php if ($briefError): ?>
-              <p class="error-text" id="contact-brief-error"><?= h($briefError) ?></p>
+              <label class="label" for="contact-message">Message</label>
+              <textarea class="textarea" id="contact-message" name="message" placeholder="Outline the goals, timing and any important implementation notes." aria-describedby="<?= $messageError ? 'contact-message-error' : 'contact-message-help' ?>" <?= $messageError ? 'aria-invalid="true"' : "" ?>><?= h((string) old("message")) ?></textarea>
+              <?php if ($messageError): ?>
+              <p class="error-text" id="contact-message-error"><?= h($messageError) ?></p>
               <?php else: ?>
-              <p class="help-text" id="contact-brief-help">A short implementation summary is enough for the demo.</p>
+              <p class="help-text" id="contact-message-help">A short project summary is enough for the initial application shell.</p>
               <?php endif; ?>
             </div>
 
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit">Submit request</button>
-              <a class="btn btn-ghost" href="<?= h(route("platform")) ?>">Review the platform</a>
+              <a class="btn btn-ghost" href="<?= h(route("project.launch")) ?>">Open project launch</a>
             </div>
           </form>
         </article>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <section class="process-section" aria-label="Contact flow process">
-      <div class="section-header mb-0">
-        <p class="process-kicker">Delivery sequence</p>
-        <h2 class="section-title">The example is simple, but it follows a pattern that scales into real product work.</h2>
-        <p class="section-text">Treat this as a reusable shape for request capture, not as demo-only decoration.</p>
-      </div>
-      <div class="process-grid">
-        <?php foreach ($deliverySteps as $step): ?>
-        <article class="process-step">
-          <span class="process-step-number"><?= h($step["number"]) ?></span>
-          <h3 class="process-step-title"><?= h($step["title"]) ?></h3>
-          <p class="process-step-text"><?= h($step["text"]) ?></p>
-        </article>
-        <?php endforeach; ?>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <section class="faq-section" aria-label="Contact FAQ">
-      <div class="faq-layout">
-        <div class="section-header mb-0">
-          <p class="feature-kicker">Form FAQ</p>
-          <h2 class="section-title">A couple of practical clarifications for teams treating this page as a starter reference.</h2>
-        </div>
-        <div class="accordion" data-fnlla-accordion data-fnlla-accordion-single>
-          <?php foreach ($contactFaqs as $index => $faqItem): ?>
-          <?php $isOpen = $index === 0; ?>
-          <div class="accordion-item<?= $isOpen ? " is-open" : "" ?>">
-            <button class="accordion-button" id="contact-faq-trigger-<?= $index + 1 ?>" type="button" data-fnlla-accordion-button aria-expanded="<?= $isOpen ? "true" : "false" ?>" aria-controls="contact-faq-panel-<?= $index + 1 ?>">
-              <?= h($faqItem["question"]) ?>
-            </button>
-            <div class="accordion-panel" id="contact-faq-panel-<?= $index + 1 ?>" role="region" aria-labelledby="contact-faq-trigger-<?= $index + 1 ?>">
-              <p class="content-text"><?= h($faqItem["answer"]) ?></p>
-            </div>
-          </div>
-          <?php endforeach; ?>
-        </div>
       </div>
     </section>
   </div>

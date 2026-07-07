@@ -275,7 +275,6 @@ final class MakeProjectCommand extends Command
         $this->rewriteAppConfig($targetRoot, $appName);
         $this->rewriteComposerMetadata($targetRoot, $appName, $packageSlug);
         $this->rewriteStarterReadme($targetRoot, $appName);
-        $this->rewriteApplicationSurface($targetRoot, $appName);
         $this->rewriteDatabaseSurface($targetRoot);
         $this->rewriteProjectTests($targetRoot);
         $this->rewriteConsoleLaunchers($targetRoot);

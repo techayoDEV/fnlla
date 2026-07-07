@@ -18,7 +18,6 @@ Purpose:
 - Defines a maintained page template for the official FNLLA PHP demonstration surface.
 */
 
-$hasDocumentationWorkspace = has_local_docs_workspace();
 ?>
 <section class="section pt-1">
   <div class="container site-page-stack">
@@ -26,53 +25,47 @@ $hasDocumentationWorkspace = has_local_docs_workspace();
       <div class="grid gap-md hero-copy hero-background-copy">
         <div class="d-flex flex-wrap items-center gap-md">
           <span class="tag">FNLLA PHP starter</span>
-          <span class="badge">FNLLA Web only</span>
+          <span class="badge">Project base</span>
           <span class="badge">Server-rendered by default</span>
         </div>
-        <h1 class="hero-title">Professional PHP delivery with a smaller, more legible runtime surface.</h1>
-        <p class="hero-text">FNLLA PHP gives teams a focused application core for routes, controllers, views, forms and release hygiene while FNLLA Web handles the reusable section, component and interaction system.</p>
+        <h1 class="hero-title">Build the real web project by modifying the starter itself, not by replacing it with a second front beside the framework.</h1>
+        <p class="hero-text">FNLLA PHP now treats the shipped public starter as the beginning of the downstream application. Maintenance, health and CLI stay linked around it as framework capabilities instead of competing with the public project surface.</p>
         <ul class="hero-proof-list">
-          <li>Start from a real exported project instead of building client work inside the framework repo.</li>
-          <li>Keep the UI contract local under <code>public/vendor/fnlla-web/</code> without third-party CDNs.</li>
-          <li>Ship with explicit tests, lint, FNLLA Web validation and version metadata checks already in place.</li>
+          <li>Use the starter routes, views and assets as the real basis of the project and replace them deliberately with product-specific content.</li>
+          <li>Keep the UI contract local under <code>public/vendor/fnlla-web/</code> without third-party CDNs or a second design system.</li>
+          <li>Leave framework checks, health review and update tooling attached, but outside the core public information architecture.</li>
         </ul>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-xl" href="<?= h(route("platform")) ?>">Explore the platform</a>
-          <?php if ($hasDocumentationWorkspace): ?>
-          <a class="btn btn-outline" href="<?= h(route("docs.home")) ?>">Read the docs</a>
+          <a class="btn btn-primary btn-xl" href="<?= h(route("project.launch")) ?>">Open the project launch guide</a>
+          <a class="btn btn-outline" href="<?= h(route("contact")) ?>">Open the working form flow</a>
+          <?php if (!empty($showDocsWorkspace)): ?>
+          <a class="btn btn-outline" href="<?= h(route("docs.home")) ?>">Read maintainer docs</a>
           <?php endif; ?>
-          <a class="btn btn-outline" href="<?= h(route("contact")) ?>">Open the contact flow</a>
         </div>
         <div class="hero-background-meta">
+          <?php foreach ($foundationCards as $foundationCard): ?>
           <article class="hero-background-chip">
-            <span class="badge">Framework boundary</span>
-            <p class="content-text mb-0">`fnlla/php` stays the maintainer workspace; each exported starter becomes the real downstream application repo.</p>
+            <span class="badge"><?= h($foundationCard["title"]) ?></span>
+            <p class="content-text mb-0"><?= h($foundationCard["text"]) ?></p>
           </article>
-          <article class="hero-background-chip">
-            <span class="badge">Delivery model</span>
-            <p class="content-text mb-0">Plain PHP request flow, one shared FNLLA Web shell, then only the application-specific logic your project actually needs.</p>
-          </article>
-          <article class="hero-background-chip">
-            <span class="badge">Operational rule</span>
-            <p class="content-text mb-0">Runtime sync, release metadata and project validation remain visible commands instead of hidden packaging side effects.</p>
-          </article>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
   </div>
 </section>
 
-<?php if ($hasDocumentationWorkspace): ?>
+<?php if (!empty($showDocsWorkspace)): ?>
 <section class="section">
   <div class="container">
     <div class="grid grid-2 gap-md">
       <article class="card site-card-muted">
         <span class="tag">Maintainer workspace</span>
-        <h2 class="card-title mt-3">This browser surface is the framework repo, not the downstream project you normally ship.</h2>
-        <p class="card-text">Use the running demo to inspect the request flow and shared UI contract. Use the local docs to understand the export workflow, delivery boundaries and the files a real project should change first.</p>
+        <h2 class="card-title mt-3">The framework repo now mirrors the shipped starter model, but it is still the upstream source of truth.</h2>
+        <p class="card-text">Use the running starter to inspect the actual project base, then use the local docs to understand export workflow, framework boundaries and the maintainer-only parts that should not leak into downstream application repos.</p>
         <div class="grid gap-2">
-          <p class="mb-0"><code>fnlla/php</code> stays the framework source of truth and docs workspace.</p>
-          <p class="mb-0"><code>php fnlla make:project ../my-app "My App"</code> creates the real downstream repository.</p>
+          <p class="mb-0"><code>fnlla/php</code> still owns the shared runtime, docs and framework update contract.</p>
+          <p class="mb-0"><code>php fnlla make:project ../my-app "My App"</code> exports this same starter into the real downstream repository.</p>
         </div>
         <div class="d-flex flex-wrap gap-md mt-3">
           <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">See the starter workflow</a>
@@ -109,62 +102,11 @@ $hasDocumentationWorkspace = has_local_docs_workspace();
   <div class="container">
     <section class="stats-section" aria-label="FNLLA PHP summary stats">
       <div class="section-header mb-0">
-        <h2 class="section-title">A starter that stays compact, but no longer feels like a toy</h2>
-        <p class="section-text">The platform is intentionally smaller than the largest PHP frameworks, but it already covers the concrete delivery surfaces that teams actually need for websites, portals and internal tools.</p>
-      </div>
-      <div class="stats-grid">
-        <?php foreach ($platformStats as $stat): ?>
-        <article class="stat-card">
-          <p class="stat-value"><?= h($stat["value"]) ?></p>
-          <p class="stat-label"><?= h($stat["label"]) ?></p>
-        </article>
-        <?php endforeach; ?>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <section class="feature-section" aria-label="Landing proof section">
-      <div class="section-header mb-0">
-        <p class="feature-kicker">Why teams can move faster here</p>
-        <h2 class="section-title">The starter is designed to remove repeated delivery friction, not to impress with hidden abstraction.</h2>
-        <p class="section-text">What matters is not how many layers the framework can hide. What matters is how quickly a team can understand the project, change it safely and release it with confidence.</p>
-      </div>
-      <div class="feature-grid">
-        <div class="grid grid-3 gap-md">
-          <?php foreach ($proofCards as $proofCard): ?>
-          <article class="feature-card">
-            <h3 class="content-title"><?= h($proofCard["title"]) ?></h3>
-            <p class="content-text"><?= h($proofCard["text"]) ?></p>
-          </article>
-          <?php endforeach; ?>
-        </div>
-        <aside class="feature-section-aside">
-          <h3 class="content-title">Best fit</h3>
-          <ul class="feature-list">
-            <li>service websites that need more structure than a static site</li>
-            <li>authenticated client or staff portals built with plain PHP</li>
-            <li>internal tools that benefit from a local UI runtime and explicit request flow</li>
-            <li>teams that want maintainable delivery without a front-end build dependency</li>
-          </ul>
-        </aside>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <section class="process-section" aria-label="Starter workflow">
-      <div class="section-header mb-0">
-        <p class="process-kicker">Suggested path</p>
-        <h2 class="section-title">A healthier way to start a real FNLLA PHP project</h2>
-        <p class="section-text">The framework repo and the downstream project are no longer treated as the same thing. That separation makes release history, ownership and maintenance much easier to keep honest.</p>
+        <h2 class="section-title">The starter stays compact, but it now behaves like the real beginning of the application.</h2>
+        <p class="section-text">The goal is not a second framework showcase. The goal is a clean public base that downstream teams can own immediately while keeping framework capabilities close and explicit.</p>
       </div>
       <div class="process-grid">
-        <?php foreach ($workflowSteps as $step): ?>
+        <?php foreach ($deliverySteps as $step): ?>
         <article class="process-step">
           <span class="process-step-number"><?= h($step["number"]) ?></span>
           <h3 class="process-step-title"><?= h($step["title"]) ?></h3>
@@ -178,26 +120,51 @@ $hasDocumentationWorkspace = has_local_docs_workspace();
 
 <section class="section">
   <div class="container">
-    <section class="faq-section" aria-label="Starter FAQ">
-      <div class="faq-layout">
-        <div class="section-header mb-0">
-          <p class="feature-kicker">Starter FAQ</p>
-          <h2 class="section-title">The practical questions teams usually ask before committing to a smaller framework base</h2>
-          <p class="section-text">This starter is meant to be approachable without being flimsy. These answers explain the intended working model more directly than a generic marketing promise would.</p>
-        </div>
-        <div class="accordion" data-fnlla-accordion data-fnlla-accordion-single>
-          <?php foreach ($faqItems as $index => $faqItem): ?>
-          <?php $isOpen = $index === 0; ?>
-          <div class="accordion-item<?= $isOpen ? " is-open" : "" ?>">
-            <button class="accordion-button" id="home-faq-trigger-<?= $index + 1 ?>" type="button" data-fnlla-accordion-button aria-expanded="<?= $isOpen ? "true" : "false" ?>" aria-controls="home-faq-panel-<?= $index + 1 ?>">
-              <?= h($faqItem["question"]) ?>
-            </button>
-            <div class="accordion-panel" id="home-faq-panel-<?= $index + 1 ?>" role="region" aria-labelledby="home-faq-trigger-<?= $index + 1 ?>">
-              <p class="content-text"><?= h($faqItem["answer"]) ?></p>
-            </div>
-          </div>
+    <section class="feature-section" aria-label="Landing proof section">
+      <div class="section-header mb-0">
+        <p class="feature-kicker">Starter ownership</p>
+        <h2 class="section-title">Downstream teams should feel like they are editing the app, not orbiting around a framework demo.</h2>
+        <p class="section-text">That means the shipped surface should already resemble a project skeleton worth keeping, while framework-only concerns stay linked and explicit around it.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="grid grid-3 gap-md">
+          <?php foreach ($foundationCards as $proofCard): ?>
+          <article class="feature-card">
+            <h3 class="content-title"><?= h($proofCard["title"]) ?></h3>
+            <p class="content-text"><?= h($proofCard["text"]) ?></p>
+          </article>
           <?php endforeach; ?>
         </div>
+        <aside class="feature-section-aside">
+          <h3 class="content-title">Best fit</h3>
+          <ul class="feature-list">
+            <li>service websites that need a real application base from day one</li>
+            <li>authenticated portals and internal tools that grow from one working starter shell</li>
+            <li>teams that want maintainable server-rendered delivery without a front-end build dependency</li>
+            <li>projects that want operator routes available without putting them in the public navigation core</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <section class="process-section" aria-label="Starter workflow">
+      <div class="section-header mb-0">
+        <p class="process-kicker">Launch tracks</p>
+        <h2 class="section-title">The first project pass should turn the starter into the product, not replace it with a parallel surface.</h2>
+        <p class="section-text">These tracks are the intended shape of that work across public content, application logic, operations and the upstream/downstream boundary.</p>
+      </div>
+      <div class="process-grid">
+        <?php foreach ($launchTracks as $step): ?>
+        <article class="process-step">
+          <span class="process-step-number"><?= h($step["number"]) ?></span>
+          <h3 class="process-step-title"><?= h($step["title"]) ?></h3>
+          <p class="process-step-text"><?= h($step["text"]) ?></p>
+        </article>
+        <?php endforeach; ?>
       </div>
     </section>
   </div>
@@ -210,54 +177,54 @@ $hasDocumentationWorkspace = has_local_docs_workspace();
         <div class="grid gap-md cta-copy">
           <div class="d-flex flex-wrap items-center gap-md">
             <span class="tag">Next step</span>
-            <span class="badge">Delivery-ready starter</span>
+            <span class="badge">Project-owned starter</span>
           </div>
-          <h2 class="content-title">Use the current starter as the base, then replace the demo with the real product flow for your project.</h2>
-          <p class="content-text">The best next move is usually not another framework evaluation. It is defining the project map, exporting a clean starter and validating the actual route, form and runtime boundary you plan to ship.</p>
-          <ul class="hero-proof-list">
-            <li>Start with <code>php fnlla make:project</code> so the application repo has its own lifecycle.</li>
-            <li>Keep FNLLA Web synced locally and validate the contract before release work.</li>
-            <li>Use the current demo pages only as a reference pattern, not as final product content.</li>
+          <h2 class="content-title">Start from this shell, then replace it with the real product flow for the downstream application.</h2>
+          <p class="content-text">The healthiest next move is not building beside the starter. It is exporting the starter, reshaping its routes, copy and views into the actual product, and keeping framework work attached through maintenance and validation.</p>
+          <ul class="contact-list">
+            <?php foreach ($launchChecklist as $checkItem): ?>
+            <li><?= h($checkItem) ?></li>
+            <?php endforeach; ?>
           </ul>
           <div class="d-flex flex-wrap gap-md">
-            <a class="btn btn-primary btn-xl" href="<?= h(route("contact")) ?>">Review the form flow</a>
-            <a class="btn btn-outline" href="<?= h(route("about")) ?>">Read the framework model</a>
+            <a class="btn btn-primary btn-xl" href="<?= h(route("project.launch")) ?>">Open project launch</a>
+            <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Open framework updates</a>
           </div>
           <div class="cta-inline-notes">
-            <p class="help-text mb-0">Good starting point for portals, service sites and internal operational surfaces.</p>
-            <p class="help-text mb-0">Built to stay inside the supported FNLLA Web contract.</p>
+            <p class="help-text mb-0">Use <code>make:project</code> when you want the same starter in a real downstream repo.</p>
+            <p class="help-text mb-0">Built to stay inside the supported FNLLA Web contract while leaving operator tooling linked rather than embedded.</p>
           </div>
         </div>
         <div class="grid grid-2 gap-md cta-proof-grid">
           <article class="cta-proof">
-            <p class="cta-proof-title">Project export</p>
-            <p class="cta-proof-text">The starter now exports a cleaner downstream project surface instead of copying the whole maintainer docs workspace.</p>
+            <p class="cta-proof-title">Public base</p>
+            <p class="cta-proof-text">The starter is now the real application base teams extend, not a framework showcase they build around.</p>
           </article>
           <article class="cta-proof">
-            <p class="cta-proof-title">Validation</p>
-            <p class="cta-proof-text">Tests, lint, FNLLA Web checks and version checks already exist as first-party project commands.</p>
+            <p class="cta-proof-title">Export parity</p>
+            <p class="cta-proof-text">`make:project` exports the same starter model that the maintainer repo now serves locally.</p>
           </article>
           <article class="cta-proof">
-            <p class="cta-proof-title">UI contract</p>
-            <p class="cta-proof-text">Shared layout, navigation, overlays, forms and landing sections are all powered by the vendored FNLLA Web runtime.</p>
+            <p class="cta-proof-title">Operator separation</p>
+            <p class="cta-proof-text">Maintenance and health stay available as linked surfaces without taking over the public navigation core.</p>
           </article>
           <article class="cta-proof">
             <p class="cta-proof-title">Scaling path</p>
-            <p class="cta-proof-text">Routes, auth, migrations, queueing and scheduling allow the starter to grow beyond a brochure site without pivoting frameworks immediately.</p>
+            <p class="cta-proof-text">Routes, auth, migrations, queueing and scheduling still let the starter grow into larger application work without pivoting stacks.</p>
           </article>
         </div>
         <div class="cta-support">
           <div class="hero-inline-fact">
             <span class="badge">Public routes</span>
-            <p class="content-text mb-0">Home, Platform, About and Contact already model a multi-page landing shell.</p>
+            <p class="content-text mb-0">Home, project launch and contact now model a project-facing starter shell instead of framework marketing pages.</p>
           </div>
           <div class="hero-inline-fact">
             <span class="badge">Framework capability</span>
-            <p class="content-text mb-0">Auth, authorization and protected areas remain available in the framework even when the starter surface no longer presents demo sign-in pages.</p>
+            <p class="content-text mb-0">Auth, authorization and protected areas remain available in the framework even when the starter stays focused on the public application base.</p>
           </div>
           <div class="hero-inline-fact">
             <span class="badge">Operational check</span>
-            <p class="content-text mb-0">Use the health endpoint and validation scripts whenever the starter is reshaped into a real application.</p>
+            <p class="content-text mb-0">Use maintenance, health and validation scripts whenever the starter is being reshaped into a real application.</p>
           </div>
         </div>
       </div>

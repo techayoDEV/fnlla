@@ -33,26 +33,17 @@ if (has_local_docs_workspace()) {
 }
 
 $router->get("/", [HomeController::class, "home"])->name("home");
-$router->get("/platform", [HomeController::class, "platform"])->name("platform");
-$router->get("/about", [HomeController::class, "about"])->name("about");
+$router->get("/project/launch", [HomeController::class, "projectLaunch"])->name("project.launch");
+$router->get("/health", [HomeController::class, "redirectHealthToMaintenance"]);
 $router->get("/contact", [HomeController::class, "contact"])->name("contact");
 $router->post("/contact", [HomeController::class, "sendContact"])->middleware("csrf")->throttle(5, 1)->name("contact.submit");
-$router->get("/projects/{project}", static fn (string $project): array => [
-    "project" => $project,
-    "status" => "ok",
-])->name("projects.show");
 
 $router->group([
     "prefix" => "api",
     "as" => "api.",
     "middleware" => "throttle",
 ], static function ($router): void {
-    $router->get("/health", static fn (Request $request): Response => Response::json([
-        "name" => config("app.name"),
-        "status" => "ok",
-        "timestamp" => gmdate(DATE_ATOM),
-        "request_path" => $request->path(),
-    ]))->name("health");
+    $router->get("/health", [HomeController::class, "healthApi"])->name("health");
 
     $router->get("/profile", static fn (): JsonResource => new class([
         "name" => config("app.name"),

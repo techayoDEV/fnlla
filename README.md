@@ -186,7 +186,14 @@ Use:
 php fnlla make:project ..\my-new-project "My New Project"
 ```
 
-Then open the exported directory, initialize its own Git repository and build the real project there.
+Then open the exported directory, initialize its own Git repository and build the real project there by modifying the shipped starter itself.
+
+The intended model is:
+
+- the starter is the base public application shell
+- downstream teams replace and extend that shell directly
+- maintenance, health and CLI remain linked framework capabilities around the app
+- the framework repo stays the source of truth for shared runtime, docs and update rules
 
 Use [`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md) for the exact workflow and rationale.
 

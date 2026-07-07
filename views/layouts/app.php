@@ -22,6 +22,7 @@ $pageStatus = flash("status");
 $currentPath = current_path();
 $hasDocumentationWorkspace = has_local_docs_workspace();
 $isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
+$isOperationsSurface = str_starts_with($currentPath, "/maintenance") || $currentPath === "/api/health" || $currentPath === "/health";
 $pageMeta = page_meta([
     "site" => (string) config("app.name"),
     "page" => (string) ($pageTitle ?? ""),
@@ -62,27 +63,15 @@ $pageMeta = page_meta([
           <div class="navbar-panel" id="primary-navigation-panel">
             <ul class="navbar-menu">
               <li><a href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
-              <li><a href="<?= h(route("platform")) ?>" <?= $currentPath === "/platform" ? 'aria-current="page"' : "" ?>>Platform</a></li>
+              <li><a href="<?= h(route("project.launch")) ?>" <?= $currentPath === "/project/launch" ? 'aria-current="page"' : "" ?>>Project Launch</a></li>
+              <li><a href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
+              <li><a href="<?= h(route("maintenance.home")) ?>" <?= str_starts_with($currentPath, "/maintenance") ? 'aria-current="page"' : "" ?>>Maintenance</a></li>
               <?php if ($hasDocumentationWorkspace): ?>
               <li><a href="<?= h(route("docs.home")) ?>" <?= $isDocsPath ? 'aria-current="page"' : "" ?>>Docs</a></li>
               <?php endif; ?>
-              <li><a href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
-              <li><a href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
-              <li class="dropdown" data-fnlla-dropdown>
-                <button class="btn btn-outline btn-sm" id="resource-menu-trigger" type="button" data-fnlla-dropdown-toggle aria-expanded="false" aria-controls="resource-menu">Resources</button>
-                <div class="dropdown-menu" id="resource-menu" aria-labelledby="resource-menu-trigger">
-                  <a class="dropdown-item" href="<?= h(route("platform")) ?>">Platform overview</a>
-                  <?php if ($hasDocumentationWorkspace): ?>
-                  <a class="dropdown-item" href="<?= h(route("docs.home")) ?>">Documentation hub</a>
-                  <a class="dropdown-item" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Starter export guide</a>
-                  <?php endif; ?>
-                  <a class="dropdown-item" href="<?= h(route("api.health")) ?>">JSON health route</a>
-                  <a class="dropdown-item" href="https://github.com/fnlla/web" target="_blank" rel="noreferrer">FNLLA Web repo</a>
-                </div>
-              </li>
             </ul>
             <div class="navbar-actions">
-              <a class="btn btn-primary btn-sm" href="<?= h(route("contact")) ?>">Contact</a>
+              <a class="btn btn-primary btn-sm" href="<?= h($isOperationsSurface ? route("api.health") : route("project.launch")) ?>"><?= $isOperationsSurface ? "Health JSON" : "Start the project" ?></a>
             </div>
           </div>
         </nav>
@@ -110,21 +99,21 @@ $pageMeta = page_meta([
           <div class="footer-top">
             <div class="footer-lead">
               <p class="help-text mb-1">FNLLA PHP starter</p>
-              <h2 class="footer-heading">A cleaner foundation for teams that want professional server-rendered delivery without a bloated framework shell.</h2>
-              <p class="footer-note">The starter keeps request flow, UI runtime boundaries and validation commands visible, while FNLLA Web carries the reusable presentation system.</p>
+              <h2 class="footer-heading">The starter is the beginning of the real application, while maintenance and CLI stay linked as framework capabilities.</h2>
+              <p class="footer-note">That keeps the public shell project-owned, but still leaves health, update checks and version validation available without inventing a second front-end beside the starter.</p>
             </div>
             <div class="footer-pillars">
               <article class="footer-pillar">
-                <span class="badge">Readable request flow</span>
-                <p class="footer-note">Trace bootstrap, routes, controllers and views without hidden generated layers.</p>
+                <span class="badge">Starter-first</span>
+                <p class="footer-note">Modify the shipped public starter directly instead of replacing a framework showcase beside it.</p>
               </article>
               <article class="footer-pillar">
-                <span class="badge">Local UI runtime</span>
-                <p class="footer-note">Vendored FNLLA Web assets ship inside the project, with no external CDN dependency.</p>
+                <span class="badge">Linked maintenance</span>
+                <p class="footer-note">Framework upkeep lives on dedicated routes without taking over the public information architecture.</p>
               </article>
               <article class="footer-pillar">
-                <span class="badge">Release hygiene</span>
-                <p class="footer-note">Validation, version metadata and runtime sync remain explicit project commands.</p>
+                <span class="badge">One UI contract</span>
+                <p class="footer-note">FNLLA Web remains the single supported runtime underneath the evolving project surface.</p>
               </article>
             </div>
           </div>
@@ -133,7 +122,7 @@ $pageMeta = page_meta([
             <div class="footer-grid">
               <div class="footer-brand-block">
                 <h3 class="footer-heading"><?= h(config("app.name")) ?></h3>
-                <p class="footer-note">Use this starter for service websites, internal tools, authenticated portals and delivery surfaces that benefit from clarity, composability and an inspectable runtime contract.</p>
+                <p class="footer-note">Use this starter as the real base for service websites, portals, internal tools and other server-rendered application surfaces that grow by replacing starter content with project-specific delivery logic.</p>
                 <div class="footer-status">
                   <span class="badge">FNLLA Web only</span>
                   <span class="badge">PHP 8.3</span>
@@ -149,23 +138,22 @@ $pageMeta = page_meta([
                 <h3 class="footer-heading">Explore</h3>
                 <div class="footer-links">
                   <a href="<?= h(route("home")) ?>">Home</a>
-                  <a href="<?= h(route("platform")) ?>">Platform</a>
+                  <a href="<?= h(route("project.launch")) ?>">Project launch</a>
+                  <a href="<?= h(route("contact")) ?>">Contact</a>
                   <?php if ($hasDocumentationWorkspace): ?>
                   <a href="<?= h(route("docs.home")) ?>">Docs</a>
                   <?php endif; ?>
-                  <a href="<?= h(route("about")) ?>">About</a>
-                  <a href="<?= h(route("contact")) ?>">Contact</a>
+                  <a href="<?= h(route("maintenance.home")) ?>">Maintenance</a>
                 </div>
               </div>
 
               <div class="footer-link-group">
-                <h3 class="footer-heading">Starter flow</h3>
+                <h3 class="footer-heading">Operator links</h3>
                 <div class="footer-links">
+                  <a href="<?= h(route("maintenance.home")) ?>">Maintenance hub</a>
+                  <a href="<?= h(route("maintenance.framework_update")) ?>">Framework updates</a>
                   <a href="<?= h(route("api.health")) ?>">Health endpoint</a>
-                  <?php if ($hasDocumentationWorkspace): ?>
-                  <a href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">New project guide</a>
-                  <?php endif; ?>
-                  <a href="https://github.com/fnlla/web" target="_blank" rel="noreferrer">FNLLA Web repo</a>
+                  <a href="<?= h(route("health")) ?>">Health view</a>
                 </div>
               </div>
 
@@ -183,7 +171,7 @@ $pageMeta = page_meta([
 
           <div class="footer-meta-bar mt-4">
             <div class="grid gap-2 footer-meta-copy">
-              <p class="footer-note">FNLLA PHP starter ships with the browser-title contract, an optional cookie-consent shell and one-way dependency on the vendored FNLLA Web runtime.</p>
+              <p class="footer-note">FNLLA PHP starter ships as the application base itself, while docs, maintenance and validation remain linked capabilities around that base.</p>
             </div>
             <nav class="footer-legal" aria-label="Starter footer tools">
               <button class="btn btn-ghost btn-sm" type="button" data-fnlla-consent-open>Cookie settings</button>

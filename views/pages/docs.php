@@ -37,7 +37,7 @@ Purpose:
         <div class="hero-actions">
           <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "index.html"])) ?>">Open docs overview</a>
           <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Read the starter workflow</a>
-          <a class="btn btn-ghost" href="<?= h(route("platform")) ?>">Back to platform</a>
+          <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to starter</a>
         </div>
       </div>
       <div class="hero-inline-facts" aria-label="Documentation hub support facts">

@@ -91,6 +91,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "FrameworkExtensionsTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "ValidationTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "platform.php"));
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "login.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "app.log"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "fnlla-web-guard.json"));
@@ -217,10 +218,14 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("GET     /", $routeListOutput);
         self::assertStringContainsString("GET     /project/launch", $routeListOutput);
         self::assertStringContainsString("GET     /contact", $routeListOutput);
+        self::assertStringContainsString("GET     /maintenance", $routeListOutput);
+        self::assertStringContainsString("GET     /maintenance/health", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/framework-update", $routeListOutput);
+        self::assertStringContainsString("GET     /health", $routeListOutput);
         self::assertStringContainsString("GET     /api/health", $routeListOutput);
         self::assertFalse(str_contains($routeListOutput, "/starter/update"));
         self::assertFalse(str_contains($routeListOutput, "/platform"));
+        self::assertFalse(str_contains($routeListOutput, "/about"));
         self::assertFalse(str_contains($routeListOutput, "/login"));
         self::assertFalse(str_contains($routeListOutput, "/dashboard"));
     }

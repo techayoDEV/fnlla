@@ -21,6 +21,9 @@ Purpose:
 */
 
 use Fnlla\Php\Controllers\FrameworkUpdateController;
+use Fnlla\Php\Controllers\HomeController;
 
+$router->get("/maintenance", [HomeController::class, "maintenanceHome"])->name("maintenance.home");
+$router->get("/maintenance/health", [HomeController::class, "healthPage"])->name("health");
 $router->get("/maintenance/framework-update", [FrameworkUpdateController::class, "show"])->name("maintenance.framework_update");
 $router->post("/maintenance/framework-update/run", [FrameworkUpdateController::class, "run"])->middleware("csrf")->throttle(5, 1)->name("maintenance.framework_update.run");

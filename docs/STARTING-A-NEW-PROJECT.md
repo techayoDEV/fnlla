@@ -35,6 +35,10 @@ php fnlla make:project ..\my-new-project "My New Project"
 
 That command exports a clean working starter into a new directory outside the framework repository.
 
+Treat that exported surface as the real beginning of the application itself.
+Do not build a second public front beside it.
+Replace and extend the starter routes, views, assets and controllers directly, while leaving maintenance, health and CLI as linked framework capabilities around the project.
+
 ## What the export gives you
 
 The exported project already includes:
