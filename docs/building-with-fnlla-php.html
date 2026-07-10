@@ -82,7 +82,7 @@
               <li>MySQL</li>
             </ul>
             <p>If you follow the patterns below, your project will stay aligned with the current framework contract and with the intended TechAyo LTD delivery style.</p>
-            <p>Before using this guide for a real delivery, read <a href="./starting-a-new-project.html"><code>STARTING-A-NEW-PROJECT.md</code></a>. That document explains the official starter-export workflow and when not to build directly inside the maintained <code>fnlla/php</code> repository.</p>
+            <p>Before using this guide for a real delivery, read <a href="./starting-a-new-project.html"><code>STARTING-A-NEW-PROJECT.md</code></a>. That document explains the official starter-export workflow and when not to build directly inside the maintained <code>techayoDEV/fnlla-php</code> repository.</p>
             <p>When you need the exact responsibilities of the project scripts and validation commands, read <a href="./project-scripts-reference.html"><code>PROJECT-SCRIPTS-REFERENCE.md</code></a>.</p>
             <h2 id="the-working-model">The working model</h2>
             <p>FNLLA PHP is built around a small and explicit request flow:</p>
@@ -145,7 +145,7 @@ php fnlla fnlla-web:validate
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php</code></pre>
-            <p>Those commands are intentionally the downstream-project subset. The framework docs builder stays in the upstream <code>fnlla/php</code> repository and is not part of the exported starter.</p>
+            <p>Those commands are intentionally the downstream-project subset. The framework docs builder stays in the upstream <code>techayoDEV/fnlla-php</code> repository and is not part of the exported starter.</p>
             <p>Start the local server:</p>
             <pre><code class="language-bash">php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
             <p>Then open <code>http://127.0.0.1:8080</code>.</p>

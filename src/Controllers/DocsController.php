@@ -70,7 +70,7 @@ final class DocsController extends Controller
         [
             "file" => "starting-a-new-project.html",
             "title" => "Starting a New Project",
-            "summary" => "The official workflow for exporting a downstream project instead of building directly inside fnlla/php.",
+            "summary" => "The official workflow for exporting a downstream project instead of building directly inside techayoDEV/fnlla-php.",
             "kind" => "Guide",
         ],
         [

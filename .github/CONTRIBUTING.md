@@ -64,7 +64,7 @@ When a change is accepted for implementation:
 - keep `README.md`, `VERSION`, `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` aligned when release-facing behavior changes
 - preserve the documented MySQL-only database boundary unless an explicit product decision changes it
 - preserve the FNLLA Web runtime boundary under `public/vendor/fnlla-web/`
-- keep GitHub as the source of truth for both `fnlla/php` and `fnlla/web`
+- keep GitHub as the source of truth for both `techayoDEV/fnlla-php` and `techayoDEV/fnlla-web`
 
 ## Maintainer workflow
 

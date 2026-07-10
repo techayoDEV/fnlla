@@ -64,7 +64,7 @@ Purpose:
         <h2 class="card-title mt-3">The framework repo now mirrors the shipped starter model, but it is still the upstream source of truth.</h2>
         <p class="card-text">Use the running starter to inspect the actual project base, then use the local docs to understand export workflow, framework boundaries and the maintainer-only parts that should not leak into downstream application repos.</p>
         <div class="grid gap-2">
-          <p class="mb-0"><code>fnlla/php</code> still owns the shared runtime, docs and framework update contract.</p>
+          <p class="mb-0"><code>techayoDEV/fnlla-php</code> still owns the shared runtime, docs and framework update contract.</p>
           <p class="mb-0"><code>php fnlla make:project ../my-app "My App"</code> exports this same starter into the real downstream repository.</p>
         </div>
         <div class="d-flex flex-wrap gap-md mt-3">

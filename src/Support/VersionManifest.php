@@ -70,7 +70,7 @@ final class VersionManifest
                 "version" => $frameworkVersion,
                 "owner" => "TechAyo LTD (techayo.co.uk)",
                 "origin" => "Finella Gardens in Dundee, UK",
-                "repository" => "https://github.com/fnlla/php.git",
+                "repository" => "https://github.com/techayoDEV/fnlla-php.git",
                 "source_of_truth" => "github",
             ],
             "runtime" => [
@@ -84,7 +84,7 @@ final class VersionManifest
             "ui_runtime" => [
                 "name" => "FNLLA Web",
                 "slug" => "fnlla-web",
-                "repository" => "https://github.com/fnlla/web.git",
+                "repository" => "https://github.com/techayoDEV/fnlla-web.git",
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
                 "vendored_version" => $uiVersion,

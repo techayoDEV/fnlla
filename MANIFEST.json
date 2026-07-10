@@ -6,7 +6,7 @@
         "version": "1.0.15",
         "owner": "TechAyo LTD (techayo.co.uk)",
         "origin": "Finella Gardens in Dundee, UK",
-        "repository": "https://github.com/fnlla/php.git",
+        "repository": "https://github.com/techayoDEV/fnlla-php.git",
         "source_of_truth": "github"
     },
     "runtime": {
@@ -20,7 +20,7 @@
     "ui_runtime": {
         "name": "FNLLA Web",
         "slug": "fnlla-web",
-        "repository": "https://github.com/fnlla/web.git",
+        "repository": "https://github.com/techayoDEV/fnlla-web.git",
         "source_of_truth": "github",
         "version_path": "public/vendor/fnlla-web/VERSION",
         "vendored_version": "1.1.0",

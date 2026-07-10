@@ -116,7 +116,7 @@ Important operational rules:
 - do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI into the official FNLLA PHP stack
 - do not load FNLLA Web assets from third-party CDNs
 - keep the vendored runtime under `public/vendor/fnlla-web/`
-- treat the GitHub `fnlla/web` repository as the only supported source of truth for FNLLA Web updates
+- treat the GitHub `techayoDEV/fnlla-web` repository as the only supported source of truth for FNLLA Web updates
 
 ## CSS variables and tokens
 
@@ -172,11 +172,11 @@ No Packagist download step is required for the framework itself.
 
 ## How to start a real new project
 
-For an actual new website or web application, the recommended workflow is not to clone `fnlla/php` and build the downstream project directly inside the framework repository.
+For an actual new website or web application, the recommended workflow is not to clone `techayoDEV/fnlla-php` and build the downstream project directly inside the framework repository.
 
 Instead:
 
-1. keep `fnlla/php` as the maintained framework source
+1. keep `techayoDEV/fnlla-php` as the maintained framework source
 2. export a clean starter into a separate project directory
 3. build the real website or application in that exported directory
 
@@ -304,7 +304,7 @@ FNLLA PHP and FNLLA Web are intended to be maintained from GitHub repositories o
 For the official stack:
 
 - `fnlla-php` repository is the source of truth for the PHP framework
-- `fnlla/web` repository is the source of truth for the UI runtime
+- `techayoDEV/fnlla-web` repository is the source of truth for the UI runtime
 
 Packagist, npm-style registry distribution and third-party mirrors are intentionally out of scope for the official maintainer workflow.
 
@@ -321,7 +321,7 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-web.php` validates the enforced FNLLA Web contract
 - `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
-- `scripts/audit-fnlla-ecosystem.ps1` audits local `fnlla-php`, sibling `fnlla-web`, the shared `fnlla/.github` defaults and the upstream `fnlla/web` release tag before cross-repository release work
+- `scripts/audit-fnlla-ecosystem.ps1` audits local `fnlla-php`, sibling `fnlla-web`, the shared `techayoDEV/.github` defaults and the upstream `techayoDEV/fnlla-web` release tag before cross-repository release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
 - exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
@@ -333,7 +333,7 @@ Authoritative maintainer scripts and checkpoints:
 Important boundary:
 
 - `php fnlla framework:update` is a downstream project command and expects `.fnlla/framework-lock.json`
-- use it from an exported application repository, not from the maintainer `fnlla/php` repository root itself
+- use it from an exported application repository, not from the maintainer `techayoDEV/fnlla-php` repository root itself
 
 Recommended maintainer sequence:
 

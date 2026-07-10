@@ -73,7 +73,7 @@
       <div class="doc-guide-layout">
         <article class="card doc-guide-card doc-guide-prose doc-guide-prose-numbered">
             <h2 id="why-this-guide-exists">Why this guide exists</h2>
-            <p><code>fnlla/php</code> now separates two concerns more deliberately:</p>
+            <p><code>techayoDEV/fnlla-php</code> now separates two concerns more deliberately:</p>
             <ol>
               <li>the maintained framework repository</li>
               <li>the downstream project exported by <code>php fnlla make:project</code></li>
@@ -100,7 +100,7 @@
             <ul>
               <li><code>/maintenance/framework-update</code></li>
             </ul>
-            <p>The exported project also keeps only a lean downstream smoke-test subset under <code>tests/</code>. Framework-internal export coverage and the <code>make:*</code> scaffolding commands stay in the upstream <code>fnlla/php</code> repository.</p>
+            <p>The exported project also keeps only a lean downstream smoke-test subset under <code>tests/</code>. Framework-internal export coverage and the <code>make:*</code> scaffolding commands stay in the upstream <code>techayoDEV/fnlla-php</code> repository.</p>
             <p>The maintainer-only docs builder stays in the framework repository:</p>
             <ul>
               <li><code>scripts/build-docs.php</code></li>
@@ -213,17 +213,17 @@
             <ul>
               <li>the project needs a newer FNLLA Web release</li>
               <li>the local vendored runtime is missing or damaged</li>
-              <li>you want to re-sync from the authoritative <code>fnlla/web</code> repository</li>
+              <li>you want to re-sync from the authoritative <code>techayoDEV/fnlla-web</code> repository</li>
             </ul>
             <p>Important boundary:</p>
             <ul>
               <li>this script is about the downstream vendored runtime</li>
-              <li>it does not maintain the upstream <code>fnlla/web</code> repository itself</li>
+              <li>it does not maintain the upstream <code>techayoDEV/fnlla-web</code> repository itself</li>
             </ul>
             <h3 id="php-fnlla-framework-update"><code>php fnlla framework:update</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>compares the current downstream project against a fresh application export generated from a maintained <code>fnlla/php</code> repository</li>
+              <li>compares the current downstream project against a fresh application export generated from a maintained <code>techayoDEV/fnlla-php</code> repository</li>
               <li>checks only framework-managed files recorded in <code>.fnlla/framework-lock.json</code></li>
               <li>protects application-owned files such as routes, views, the project README and project-specific migrations from blind overwrite</li>
             </ul>
@@ -242,7 +242,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <ul>
               <li>by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under <code>storage/framework/updates/</code></li>
               <li>the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base</li>
-              <li>when <code>--source</code> is used, the command expects a maintained <code>fnlla/php</code> source repository path</li>
+              <li>when <code>--source</code> is used, the command expects a maintained <code>techayoDEV/fnlla-php</code> source repository path</li>
               <li>the GitHub-backed workflow depends on network access plus a working local <code>git</code> binary so the published release can be cached locally</li>
               <li>it updates only files that the framework lock marks as framework-managed</li>
               <li>a hidden <code>php fnlla starter:update</code> alias remains available for legacy project workflows</li>
@@ -263,7 +263,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
             <p>Important boundary:</p>
             <ul>
               <li>it is meant for local or explicitly enabled maintenance usage, not for general public exposure</li>
-              <li>it can fetch the latest published FNLLA PHP release from GitHub or rely on a maintained local <code>fnlla/php</code> source path when a maintainer checkout is preferred</li>
+              <li>it can fetch the latest published FNLLA PHP release from GitHub or rely on a maintained local <code>techayoDEV/fnlla-php</code> source path when a maintainer checkout is preferred</li>
             </ul>
             <p>Operational note:</p>
             <ul>
@@ -271,7 +271,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
               <li><code>FRAMEWORK_UPDATE_UI_LOCAL_ONLY</code> keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when <code>TRUSTED_PROXIES</code> explicitly names the proxy</li>
               <li><code>FRAMEWORK_UPDATE_UI_APPLY_ENABLED</code> controls whether the browser UI may run safe apply or only drift checks</li>
               <li><code>FRAMEWORK_UPDATE_GITHUB_ENABLED</code> controls whether the maintenance page may contact GitHub directly for published release checks</li>
-              <li><code>FRAMEWORK_UPDATE_SOURCE_PATH</code> lets the project prefill the maintained <code>fnlla/php</code> source path</li>
+              <li><code>FRAMEWORK_UPDATE_SOURCE_PATH</code> lets the project prefill the maintained <code>techayoDEV/fnlla-php</code> source path</li>
             </ul>
             <h2 id="what-stays-maintainer-only">What stays maintainer-only</h2>
             <h3 id="scripts-build-docs-php"><code>scripts/build-docs.php</code></h3>
@@ -327,7 +327,7 @@ php fnlla version:status</code></pre>
             <p>Treat <code>scripts/</code> in the framework repository as two overlapping groups:</p>
             <ul>
               <li>project-facing validation and sync tools that belong in exported projects</li>
-              <li>maintainer-only documentation and organization helpers that should stay in <code>fnlla/php</code></li>
+              <li>maintainer-only documentation and organization helpers that should stay in <code>techayoDEV/fnlla-php</code></li>
             </ul>
             <p>That split keeps downstream projects leaner and makes the project export easier to understand.</p>
         </article>

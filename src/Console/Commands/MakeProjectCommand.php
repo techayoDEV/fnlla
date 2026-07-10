@@ -341,7 +341,7 @@ final class MakeProjectCommand extends Command
         $readme = <<<MD
 # {$appName}
 
-This repository is a working application export generated from `fnlla/php`.
+This repository is a working application export generated from `techayoDEV/fnlla-php`.
 
 It is intended to be the beginning of a new server-rendered website or web application built on:
 
@@ -397,7 +397,7 @@ Before production deployment, switch the environment back to production-safe val
 
 ## What the export intentionally leaves behind
 
-This exported application does not copy the full maintainer workspace from `fnlla/php`.
+This exported application does not copy the full maintainer workspace from `techayoDEV/fnlla-php`.
 
 It intentionally leaves behind:
 
@@ -440,9 +440,9 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla version:sync` regenerates `MANIFEST.json` after an intentional version change
 - `php fnlla fnlla-web:sync` or `update-fnlla-web.cmd` refresh the vendored FNLLA Web runtime from GitHub
 
-The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `fnlla/php` repository.
+The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla-php` repository.
 
-The full framework documentation remains in the upstream `fnlla/php` repository.
+The full framework documentation remains in the upstream `techayoDEV/fnlla-php` repository.
 
 The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA PHP release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release starter builds.
 

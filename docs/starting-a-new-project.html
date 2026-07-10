@@ -73,16 +73,16 @@
       <div class="doc-guide-layout">
         <article class="card doc-guide-card doc-guide-prose doc-guide-prose-numbered">
             <h2 id="short-answer">Short answer</h2>
-            <p>Do not treat the <code>fnlla/php</code> repository itself as the normal place where a new client website or new web application should be built.</p>
+            <p>Do not treat the <code>techayoDEV/fnlla-php</code> repository itself as the normal place where a new client website or new web application should be built.</p>
             <p>The recommended workflow is:</p>
             <ol>
-              <li>Keep <code>fnlla/php</code> as the framework source and starter-export base.</li>
+              <li>Keep <code>techayoDEV/fnlla-php</code> as the framework source and starter-export base.</li>
               <li>Export a new working project into its own directory.</li>
               <li>Give that new directory its own project name and its own Git repository.</li>
               <li>Build the actual website or application there.</li>
             </ol>
             <h2 id="why-not-just-clone-fnlla-php-and-build-directly-inside-it">Why not just clone fnlla-php and build directly inside it</h2>
-            <p>If you clone <code>fnlla/php</code> and start editing it directly for every new website, you mix together two different concerns:</p>
+            <p>If you clone <code>techayoDEV/fnlla-php</code> and start editing it directly for every new website, you mix together two different concerns:</p>
             <ul>
               <li>framework maintenance</li>
               <li>one specific downstream project</li>
@@ -95,7 +95,7 @@
               <li>every new project starts from a manual copy decision instead of a repeatable process</li>
             </ul>
             <h2 id="official-recommended-workflow">Official recommended workflow</h2>
-            <p>Use the built-in starter export command from the maintained <code>fnlla/php</code> repository:</p>
+            <p>Use the built-in starter export command from the maintained <code>techayoDEV/fnlla-php</code> repository:</p>
             <pre><code class="language-bash">php fnlla make:project ..\my-new-project &quot;My New Project&quot;</code></pre>
             <p>That command exports a clean working starter into a new directory outside the framework repository.</p>
             <p>Treat that exported surface as the real beginning of the application itself. Do not build a second public front beside it. Replace and extend the starter routes, views, assets and controllers directly, while leaving maintenance, health and CLI as linked framework capabilities around the project.</p>
@@ -126,7 +126,7 @@
             <p>The exported directory should become the actual website or application repository.</p>
             <p>That means the normal flow is:</p>
             <ol>
-              <li>Clone or pull the latest <code>fnlla/php</code>.</li>
+              <li>Clone or pull the latest <code>techayoDEV/fnlla-php</code>.</li>
               <li>Run <code>php fnlla make:project</code>.</li>
               <li>Open the exported directory.</li>
               <li>Initialize a new Git repository there.</li>
@@ -190,7 +190,7 @@ php scripts/validate-version-manifest.php</code></pre>
             <p>The export command is safer because it always uses the current maintained repository state as the source of truth.</p>
             <p>It is also cleaner because it now exports the downstream application surface rather than copying the whole maintainer workspace.</p>
             <h2 id="when-cloning-the-repository-directly-is-still-acceptable">When cloning the repository directly is still acceptable</h2>
-            <p>Cloning <code>fnlla/php</code> directly is still fine when the goal is:</p>
+            <p>Cloning <code>techayoDEV/fnlla-php</code> directly is still fine when the goal is:</p>
             <ul>
               <li>framework maintenance</li>
               <li>hardening the starter base itself</li>
@@ -199,7 +199,7 @@ php scripts/validate-version-manifest.php</code></pre>
             </ul>
             <p>That is framework work, not downstream project work.</p>
             <h2 id="final-rule">Final rule</h2>
-            <p>Treat <code>fnlla/php</code> as:</p>
+            <p>Treat <code>techayoDEV/fnlla-php</code> as:</p>
             <ul>
               <li>the maintained framework repository</li>
               <li>the official starter export source</li>

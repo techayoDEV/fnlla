@@ -171,7 +171,7 @@ final class FrameworkUpdater
             }
 
             throw new RuntimeException(
-                "framework:update could not auto-detect a maintained fnlla/php repository. "
+                "framework:update could not auto-detect a maintained techayoDEV/fnlla-php repository. "
                 . "Set FRAMEWORK_UPDATE_SOURCE_PATH, use the browser maintenance page, or pass --source <path-to-fnlla-php>."
             );
         }
@@ -185,7 +185,7 @@ final class FrameworkUpdater
         }
 
         if (!self::isMaintainedSourceRoot($resolved)) {
-            throw new RuntimeException("framework:update source must be a maintained fnlla/php repository: " . $resolved);
+            throw new RuntimeException("framework:update source must be a maintained techayoDEV/fnlla-php repository: " . $resolved);
         }
 
         return [$resolved, "manual source path"];

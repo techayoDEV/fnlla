@@ -427,7 +427,7 @@ views/</code></pre>
         <article class="card">
           <h2 class="card-title">Build real projects outside this repo</h2>
           <ul class="doc-checklist">
-            <li><strong>Framework mode:</strong> maintain <code>fnlla/php</code>, its scripts, docs and shared delivery foundations here.</li>
+            <li><strong>Framework mode:</strong> maintain <code>techayoDEV/fnlla-php</code>, its scripts, docs and shared delivery foundations here.</li>
             <li><strong>Project mode:</strong> export a downstream starter with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
             <li><strong>UI rule:</strong> keep FNLLA Web as the only supported UI runtime under <code>public/vendor/fnlla-web/</code>.</li>
           </ul>
@@ -766,7 +766,7 @@ php scripts/validate-version-manifest.php</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">When to stay in this repo</h2>
-        <p class="section-text">Direct work inside <code>fnlla/php</code> is still the right move when the goal is framework maintenance rather than project delivery.</p>
+        <p class="section-text">Direct work inside <code>techayoDEV/fnlla-php</code> is still the right move when the goal is framework maintenance rather than project delivery.</p>
       </div>
 
       <div class="doc-mini-grid">

@@ -141,7 +141,7 @@ function Test-OrganizationBranding {
         ".github\ISSUE_TEMPLATE\bug-report.yml",
         ".github\ISSUE_TEMPLATE\feature-request.yml"
     )
-    $legacyPattern = "FNLLA UI|fnlla/ui|fnlla-ui"
+    $legacyPattern = "FNLLA Web|techayoDEV/fnlla-web|fnlla-ui"
 
     foreach ($relativePath in $targets) {
         $absolutePath = Join-Path $RepositoryPath $relativePath
@@ -154,7 +154,7 @@ function Test-OrganizationBranding {
         $matches = Select-String -Path $absolutePath -Pattern $legacyPattern
 
         foreach ($match in $matches) {
-            Add-Error -Errors $Errors -Message ("Organization defaults still use legacy FNLLA UI naming in {0}:{1}" -f $relativePath, $match.LineNumber)
+            Add-Error -Errors $Errors -Message ("Organization defaults still use legacy FNLLA Web naming in {0}:{1}" -f $relativePath, $match.LineNumber)
         }
     }
 }
@@ -211,13 +211,13 @@ try {
     }
 
     if (-not $SkipRemoteChecks) {
-        Assert-RemoteTagExists -RepositoryUrl "https://github.com/fnlla/web.git" -Tag ("v" + $vendoredWebVersion) -Errors $errors
+        Assert-RemoteTagExists -RepositoryUrl "https://github.com/techayoDEV/fnlla-web.git" -Tag ("v" + $vendoredWebVersion) -Errors $errors
 
         $orgRepoPath = $resolvedFnllaOrgGithubPath
         $clonedOrgRepo = $false
 
         if (-not (Test-Path -LiteralPath $orgRepoPath -PathType Container)) {
-            $orgRepoPath = New-TemporaryClone -RepositoryUrl "https://github.com/fnlla/.github.git" -Prefix "fnlla-org-github-audit"
+            $orgRepoPath = New-TemporaryClone -RepositoryUrl "https://github.com/techayoDEV/.github.git" -Prefix "fnlla-org-github-audit"
             $temporaryPaths.Add($orgRepoPath) | Out-Null
             $clonedOrgRepo = $true
         }
@@ -225,7 +225,7 @@ try {
         Test-OrganizationBranding -RepositoryPath $orgRepoPath -Errors $errors
 
         if ($clonedOrgRepo) {
-            Write-Host "Remote fnlla/.github defaults were cloned into a temporary workspace for branding validation."
+            Write-Host "Remote techayoDEV/.github defaults were cloned into a temporary workspace for branding validation."
         }
     }
 

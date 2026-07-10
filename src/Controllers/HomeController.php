@@ -86,7 +86,7 @@ final class HomeController extends Controller
                 [
                     "number" => "4",
                     "title" => "Maintainer clarity",
-                    "text" => "The `fnlla/php` repository remains the framework source of truth, but the shipped starter is now the same application base downstream teams really edit.",
+                    "text" => "The `techayoDEV/fnlla-php` repository remains the framework source of truth, but the shipped starter is now the same application base downstream teams really edit.",
                 ],
             ],
             "launchChecklist" => [

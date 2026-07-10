@@ -139,7 +139,7 @@ final class FnllaWebSyncCommand extends Command
     private function printUsage(): void
     {
         $this->line("Usage: php fnlla fnlla-web:sync [--source <path-to-fnlla-web-or-runtime-export>]");
-        $this->line("   or: php fnlla fnlla-web:sync [--repo-url <git-url>] [--repository fnlla/web] [--working-clone-path <path>] [--ref <git-ref>]");
+        $this->line("   or: php fnlla fnlla-web:sync [--repo-url <git-url>] [--repository techayoDEV/fnlla-web] [--working-clone-path <path>] [--ref <git-ref>]");
         $this->line("If --source is provided, FNLLA PHP syncs from the local runtime export or from dist\\fnlla-web in a local source checkout.");
         $this->line("If --source is omitted, FNLLA PHP clones the maintained repository and syncs from the published runtime export.");
     }
