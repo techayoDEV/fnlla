@@ -17,7 +17,7 @@ Purpose:
 param(
     [string]$SourcePath,
     [string]$RepoUrl,
-    [string]$Repository = "techayoDEV/fnlla-web",
+    [string]$Repository = "techayoDEV/fnlla",
     [string]$WorkingClonePath,
     [string]$Ref
 )
@@ -130,12 +130,12 @@ function Try-CloneSource {
         $attempts += @{
             Label = "git"
             FilePath = $gitPath
-            Arguments = @("clone", "--depth", "1", "git@github.com:techayoDEV/fnlla-web.git", $ClonePath)
+            Arguments = @("clone", "--depth", "1", "git@github.com:techayoDEV/fnlla.git", $ClonePath)
         }
         $attempts += @{
             Label = "git"
             FilePath = $gitPath
-            Arguments = @("clone", "--depth", "1", "https://github.com/techayoDEV/fnlla-web.git", $ClonePath)
+            Arguments = @("clone", "--depth", "1", "https://github.com/techayoDEV/fnlla.git", $ClonePath)
         }
 
         $errors = New-Object System.Collections.Generic.List[string]
@@ -153,7 +153,7 @@ function Try-CloneSource {
             }
         }
 
-        throw "Unable to clone private repository techayoDEV/fnlla-web. Attempts failed: $($errors -join ' | ')"
+        throw "Unable to clone maintained repository $ProjectRepository. Attempts failed: $($errors -join ' | ')"
     }
     finally {
         $env:GIT_TERMINAL_PROMPT = $previousPrompt

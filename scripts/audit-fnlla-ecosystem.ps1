@@ -10,8 +10,8 @@ FNLLA PHP is produced, maintained and distributed by TechAyo LTD
 the public MIT-licensed FNLLA PHP framework.
 
 Purpose:
-- audits fnlla-php against the vendored FNLLA Web runtime, sibling local repos
-  and the public GitHub ecosystem contract before cross-repository release work
+- audits fnlla-php against the vendored FNLLA Web runtime, shared GitHub defaults
+  and the public repository contract before release work
 #>
 
 [CmdletBinding()]
@@ -211,7 +211,9 @@ try {
     }
 
     if (-not $SkipRemoteChecks) {
-        Assert-RemoteTagExists -RepositoryUrl "https://github.com/techayoDEV/fnlla-web.git" -Tag ("v" + $vendoredWebVersion) -Errors $errors
+        if ($projectManifest.ui_runtime.repository -ne "https://github.com/techayoDEV/fnlla.git") {
+            Add-Error -Errors $errors -Message "fnlla-php MANIFEST.json ui_runtime.repository does not point at techayoDEV/fnlla."
+        }
 
         $orgRepoPath = $resolvedFnllaOrgGithubPath
         $clonedOrgRepo = $false

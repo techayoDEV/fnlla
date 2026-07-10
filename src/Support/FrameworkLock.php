@@ -127,7 +127,7 @@ final class FrameworkLock
                     "name" => "FNLLA Web",
                     "slug" => "fnlla-web",
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-web" . DIRECTORY_SEPARATOR . "VERSION"),
-                    "repository" => "https://github.com/techayoDEV/fnlla-web.git",
+                    "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
                 "lock_file" => self::LOCK_FILE,
                 "managed_files" => self::managedFileHashes($projectRoot),

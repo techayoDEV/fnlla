@@ -20,7 +20,7 @@
     "ui_runtime": {
         "name": "FNLLA Web",
         "slug": "fnlla-web",
-        "repository": "https://github.com/techayoDEV/fnlla-web.git",
+        "repository": "https://github.com/techayoDEV/fnlla.git",
         "source_of_truth": "github",
         "version_path": "public/vendor/fnlla-web/VERSION",
         "vendored_version": "1.1.0",

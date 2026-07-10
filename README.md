@@ -116,7 +116,7 @@ Important operational rules:
 - do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI into the official FNLLA PHP stack
 - do not load runtime assets from third-party CDNs
 - keep the vendored runtime under `public/vendor/fnlla-web/`
-- use the official TechAyo-maintained runtime workflow when syncing UI runtime updates
+- use the runtime workflow maintained inside `techayoDEV/fnlla` when syncing UI runtime updates
 
 ## CSS variables and tokens
 
@@ -301,7 +301,7 @@ Important commands:
 
 FNLLA PHP is the public source of truth for the official FNLLA framework stack maintained by TechAyo LTD.
 
-The vendored UI runtime remains part of the same TechAyo-controlled maintainer workflow, but the public entry point for the stack is this repository.
+The vendored UI runtime remains part of the same TechAyo-controlled maintainer workflow, and the public entry point for both the framework and the integrated runtime is this repository.
 
 Packagist, npm-style registry distribution and third-party mirrors are intentionally out of scope for the official maintainer workflow.
 
@@ -313,12 +313,12 @@ Generated runtime state, local queue files, session files and logs should not be
 
 Authoritative maintainer scripts and checkpoints:
 
-- `scripts/sync-fnlla-web.ps1` syncs the vendored UI runtime from the TechAyo-maintained source
+- `scripts/sync-fnlla-web.ps1` syncs the vendored UI runtime from the integrated maintainer source inside this repository
 - `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-web.php` validates the enforced UI runtime contract
 - `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
-- `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, the linked runtime source and shared TechAyo defaults before release work
+- `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
 - exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows

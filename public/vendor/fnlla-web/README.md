@@ -33,4 +33,4 @@ It contains the same supported browser runtime contract that lives under the rep
 - Current framework metadata remains governed by README.md, VERSION, LICENSE.md, SUPPORT.md and TRADEMARKS.md in the repository root.
 - Support and trademark boundaries remain governed by SUPPORT.md and TRADEMARKS.md in the repository root.
 - Machine-readable runtime metadata remains governed by MANIFEST.json in the repository root.
-- The repository root remains the authoritative maintainer workspace and documentation source of truth.
+- The repository root of `techayoDEV/fnlla` remains the authoritative maintainer workspace and documentation source of truth.
