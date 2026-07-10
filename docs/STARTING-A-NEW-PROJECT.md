@@ -44,11 +44,11 @@ Replace and extend the starter routes, views, assets and controllers directly, w
 The exported project already includes:
 
 - the FNLLA PHP runtime
-- the vendored FNLLA Web runtime
+- the vendored UI runtime under `public/vendor/fnlla-web/`
 - routes, controllers and views
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
-- lint, test and FNLLA Web validation scripts
+- lint, test and runtime validation scripts
 - a dedicated `/project/launch` page for developer onboarding
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - a project README that explains the next steps

@@ -88,7 +88,7 @@ Important boundary:
 
 Purpose:
 
-- validates that the current project still respects the FNLLA Web contract
+- validates that the current project still respects the built-in UI runtime contract
 - confirms the vendored runtime exists where FNLLA PHP expects it
 - catches unsupported UI drift in the official stack
 
@@ -96,7 +96,7 @@ Use it when:
 
 - the vendored `public/vendor/fnlla-web/` runtime was updated
 - the shared layout or page structure changed
-- you want to confirm the project still stays inside the supported FNLLA Web boundary
+- you want to confirm the project still stays inside the supported UI runtime boundary
 
 Important boundary:
 
@@ -108,12 +108,12 @@ Important boundary:
 Purpose:
 
 - validates the machine-readable version contract for the current project
-- checks that `VERSION` and `MANIFEST.json` agree with the vendored FNLLA Web version state
+- checks that `VERSION` and `MANIFEST.json` agree with the vendored runtime version state
 
 Use it when:
 
 - the project version changed intentionally
-- FNLLA Web was synced
+- the vendored runtime was synced
 - you want proof that release metadata is not drifting
 
 Important boundary:
@@ -125,12 +125,12 @@ Important boundary:
 
 Purpose:
 
-- regenerates `MANIFEST.json` from the current `VERSION` file plus the vendored FNLLA Web runtime state
+- regenerates `MANIFEST.json` from the current `VERSION` file plus the vendored runtime state
 
 Use it when:
 
 - you intentionally changed the project version
-- you synced FNLLA Web and want the machine-readable manifest refreshed
+- you synced the vendored runtime and want the machine-readable manifest refreshed
 
 Typical outcome:
 
@@ -145,7 +145,7 @@ Important boundary:
 
 Purpose:
 
-- refreshes the vendored FNLLA Web runtime under `public/vendor/fnlla-web/`
+- refreshes the vendored UI runtime under `public/vendor/fnlla-web/`
 - can work from a provided local source path or by cloning the GitHub source of truth
 - detects whether the provided source is a published runtime export or a source checkout
 - when needed, publishes the runtime first and then mirrors the exported `dist/fnlla-web/` output
@@ -153,14 +153,14 @@ Purpose:
 
 Use it when:
 
-- the project needs a newer FNLLA Web release
+- the project needs a newer published runtime snapshot
 - the local vendored runtime is missing or damaged
-- you want to re-sync from the authoritative `techayoDEV/fnlla-web` repository
+- you want to re-sync from the authoritative TechAyo-maintained runtime source
 
 Important boundary:
 
 - this script is about the downstream vendored runtime
-- it does not maintain the upstream `techayoDEV/fnlla-web` repository itself
+- it does not maintain the upstream runtime source itself
 
 ### `php fnlla framework:update`
 
@@ -256,7 +256,7 @@ The exported project intentionally does not copy:
 - `.github/`
 - `CODE_OF_CONDUCT.md`
 - `SECURITY.md`
-- runtime residue from `storage/` such as logs, cache files, queue files, session files and FNLLA Web guard state
+- runtime residue from `storage/` such as logs, cache files, queue files, session files and UI runtime guard state
 - the `make:*` scaffolding commands, the `make:project` export command and their maintainer-only regression coverage
 
 That keeps the exported project closer to what a delivery repository should actually own.
@@ -277,7 +277,7 @@ php fnlla version:status
 Use this order when:
 
 - you want to prove the exported project is healthy before heavier project work
-- FNLLA Web was just synced
+- the vendored runtime was just synced
 - you want a compact pre-commit or pre-release project check
 
 Use the local `--source` override only when you intentionally want to compare the project against an unpublished maintainer checkout instead of the latest GitHub release.

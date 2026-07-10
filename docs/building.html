@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Building - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-web.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -17,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.14</span>
+        <span class="doc-status">Stable 1.0.15</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -35,7 +35,7 @@
           <span class="doc-brand-separator" aria-hidden="true">-</span>
           <p class="doc-display">Documentation</p>
         </div>
-        <p class="doc-lead">The practical delivery model for routes, controllers, views, validation, persistence, auth and FNLLA Web page composition.</p>
+        <p class="doc-lead">The practical delivery model for routes, controllers, views, validation, persistence, auth and vendored UI runtime page composition.</p>
       </div>
     </header>
 
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">FNLLA Web</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-outline btn-sm" href="./building.html" aria-current="page">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -119,7 +119,7 @@ public function services(Request $request): Response
     &lt;div class="grid grid-2 gap-md"&gt;...&lt;/div&gt;
   &lt;/div&gt;
 &lt;/section&gt;</code></pre>
-          <p class="card-text">Keep page templates under <code>views/pages/</code> and let the shared layout own the document shell and shared FNLLA Web assets.</p>
+          <p class="card-text">Keep page templates under <code>views/pages/</code> and let the shared layout own the document shell and shared vendored runtime assets.</p>
         </article>
       </div>
     </section>

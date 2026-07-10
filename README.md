@@ -1,13 +1,13 @@
 # FNLLA PHP
 
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
-[![Web Contract](https://img.shields.io/badge/web-fnlla--web%20required-0f766e?style=flat-square)](./public/vendor/fnlla-web/README.md)
+[![UI Contract](https://img.shields.io/badge/ui-integrated%20runtime-0f766e?style=flat-square)](./public/vendor/fnlla-web/README.md)
 [![Runtime](https://img.shields.io/badge/runtime-php%208.3%20%2B%20mysql-2f65eb?style=flat-square)](./VERSION)
 [![Development](https://img.shields.io/badge/source-github%20only-c26d00?style=flat-square)](./scripts/sync-fnlla-web.ps1)
 
 ## What FNLLA PHP is
 
-FNLLA PHP is a compact open-source PHP framework for server-rendered websites and application surfaces that are built on top of the FNLLA Web runtime.
+FNLLA PHP is a compact open-source PHP framework for server-rendered websites and application surfaces that ship with the official vendored FNLLA UI runtime.
 
 It intentionally stays small enough that one maintainer or one delivery team can trace the whole request lifecycle without hidden framework magic, while still shipping the practical foundations needed for production work.
 
@@ -18,7 +18,7 @@ The supported application contract includes:
 - `src/` for framework source code
 - `views/` for plain PHP templates
 - `routes/` for HTTP and console route definitions
-- `public/vendor/fnlla-web/` for the vendored authoritative FNLLA Web runtime
+- `public/vendor/fnlla-web/` for the vendored authoritative UI runtime
 
 FNLLA PHP is produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
 
@@ -26,7 +26,7 @@ Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 
 ## Name origin
 
-The name `FNLLA` comes from Finella, and more specifically from Finella Gardens in Dundee, UK. That location is the origin point of both `FNLLA Web` and `FNLLA PHP`.
+The name `FNLLA` comes from Finella, and more specifically from Finella Gardens in Dundee, UK. That location is the origin point of the `FNLLA PHP` framework line.
 
 ## Ownership and license
 
@@ -71,9 +71,9 @@ FNLLA PHP currently ships with:
 - file cache and file-backed queue primitives
 - a simple scheduler and CLI command surface
 - localization helpers
-- a built-in cookie consent banner and settings modal powered by FNLLA Web only
+- a built-in cookie consent banner and settings modal powered by the vendored UI runtime
 - a server-side page-title contract that feeds professional browser-tab titles into the shared layout
-- FNLLA Web contract enforcement and GitHub-only UI runtime synchronization
+- built-in UI runtime contract enforcement and TechAyo-maintained runtime synchronization
 
 ## Support and release expectations
 
@@ -96,7 +96,7 @@ Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding
 - `database/factories/` contains factories
 - `docs/` contains maintainer and delivery guides for building on top of the framework
 - `lang/` contains translation lines
-- `public/` contains the public entrypoints, static assets and the vendored FNLLA Web runtime
+- `public/` contains the public entrypoints, static assets and the vendored UI runtime
 - `routes/` contains HTTP and console route definitions
 - `scripts/` contains maintainer and validation scripts
 - `src/` contains the framework source code
@@ -104,23 +104,23 @@ Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding
 - `tests/` contains the local repository test harness and framework test coverage
 - `views/` contains the server-rendered PHP templates
 
-## FNLLA Web dependency boundary
+## Built-in UI runtime boundary
 
 FNLLA PHP is not a UI-agnostic framework in the official stack.
 
-FNLLA Web is the only supported UI layer for this repository and for downstream development based on this framework.
+The vendored runtime under `public/vendor/fnlla-web/` is the only supported UI layer for this repository and for downstream development based on this framework.
 
 Important operational rules:
 
-- do not replace FNLLA Web with another CSS framework
+- do not replace the vendored runtime with another CSS framework
 - do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI into the official FNLLA PHP stack
-- do not load FNLLA Web assets from third-party CDNs
+- do not load runtime assets from third-party CDNs
 - keep the vendored runtime under `public/vendor/fnlla-web/`
-- treat the GitHub `techayoDEV/fnlla-web` repository as the only supported source of truth for FNLLA Web updates
+- use the official TechAyo-maintained runtime workflow when syncing UI runtime updates
 
 ## CSS variables and tokens
 
-FNLLA Web is the source of truth for shared CSS variables in the official stack.
+The vendored runtime is the source of truth for shared CSS variables in the official stack.
 
 That means:
 
@@ -130,22 +130,22 @@ That means:
 
 Practical rule:
 
-- use `--fnlla-color-*`, `--fnlla-space-*`, `--fnlla-font-*`, `--fnlla-radius-*` and related FNLLA Web tokens first
+- use `--fnlla-color-*`, `--fnlla-space-*`, `--fnlla-font-*`, `--fnlla-radius-*` and related runtime tokens first
 - add `--fnlla-php-*` only for delivery-shell specifics that do not belong back in the shared UI runtime
-- avoid scattering new hardcoded colors through `public/assets/app.css` when an existing FNLLA Web token already expresses the same design intent
+- avoid scattering new hardcoded colors through `public/assets/app.css` when an existing runtime token already expresses the same design intent
 
 ## Strict development contract
 
-FNLLA PHP enforces the FNLLA Web contract during development.
+FNLLA PHP enforces the built-in UI runtime contract during development.
 
 That enforcement currently includes:
 
-- validating that the vendored FNLLA Web runtime exists locally
-- validating that the shared layout keeps the FNLLA Web shell structure
+- validating that the vendored UI runtime exists locally
+- validating that the shared layout keeps the expected runtime shell structure
 - validating that page templates keep the section and container conventions
 - rejecting markers that suggest unsupported alternate CSS frameworks
-- refreshing local FNLLA Web guard state on a timed interval during development bootstraps
-- auto-repairing a missing vendored runtime through the GitHub sync script and dedicated `fnlla-web:*` commands
+- refreshing local UI runtime guard state on a timed interval during development bootstraps
+- auto-repairing a missing vendored runtime through the sync script and dedicated `fnlla-web:*` commands
 
 If the UI contract is broken, the application and CLI fail fast until the repository is brought back into compliance.
 
@@ -193,7 +193,7 @@ The intended model is:
 - the starter is the base public application shell
 - downstream teams replace and extend that shell directly
 - maintenance, health and CLI remain linked framework capabilities around the app
-- the framework repo stays the source of truth for shared runtime, docs and update rules
+- the framework repo stays the public source of truth for the shared runtime contract, docs and update rules
 
 Use [`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md) for the exact workflow and rationale.
 
@@ -249,11 +249,11 @@ That guide covers:
 - how to structure forms, validation and flash feedback
 - how to use MySQL, migrations and the query builder
 - how to protect pages with auth and authorization
-- how to stay inside the FNLLA Web contract during delivery
+- how to stay inside the built-in UI runtime contract during delivery
 
 ## Documentation set
 
-The repository also ships a browsable docs set under [`docs/index.html`](./docs/index.html), styled on top of the vendored FNLLA Web runtime.
+The repository also ships a browsable docs set under [`docs/index.html`](./docs/index.html), styled on top of the vendored UI runtime.
 
 Primary pages:
 
@@ -297,14 +297,11 @@ Important commands:
 - `php fnlla version:status`
 - `php fnlla version:sync`
 
-## GitHub-only source of truth
+## Public source of truth
 
-FNLLA PHP and FNLLA Web are intended to be maintained from GitHub repositories owned or controlled by TechAyo LTD.
+FNLLA PHP is the public source of truth for the official FNLLA framework stack maintained by TechAyo LTD.
 
-For the official stack:
-
-- `fnlla-php` repository is the source of truth for the PHP framework
-- `techayoDEV/fnlla-web` repository is the source of truth for the UI runtime
+The vendored UI runtime remains part of the same TechAyo-controlled maintainer workflow, but the public entry point for the stack is this repository.
 
 Packagist, npm-style registry distribution and third-party mirrors are intentionally out of scope for the official maintainer workflow.
 
@@ -316,19 +313,19 @@ Generated runtime state, local queue files, session files and logs should not be
 
 Authoritative maintainer scripts and checkpoints:
 
-- `scripts/sync-fnlla-web.ps1` syncs the vendored FNLLA Web runtime from GitHub
+- `scripts/sync-fnlla-web.ps1` syncs the vendored UI runtime from the TechAyo-maintained source
 - `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
-- `scripts/validate-fnlla-web.php` validates the enforced FNLLA Web contract
+- `scripts/validate-fnlla-web.php` validates the enforced UI runtime contract
 - `scripts/validate-version-manifest.php` validates framework and vendored runtime version metadata
-- `scripts/audit-fnlla-ecosystem.ps1` audits local `fnlla-php`, sibling `fnlla-web`, the shared `techayoDEV/.github` defaults and the upstream `techayoDEV/fnlla-web` release tag before cross-repository release work
+- `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, the linked runtime source and shared TechAyo defaults before release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
 - exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
 - the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release starter builds
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
-- `bootstrap/common.php` enforces the shared FNLLA Web guard during bootstrap
+- `bootstrap/common.php` enforces the shared UI runtime guard during bootstrap
 
 Important boundary:
 
@@ -371,15 +368,15 @@ Treat these as delivery-layer templates that still belong to the framework repos
 - `views/layouts/`
 - `views/pages/`
 
-## Related product identity
+## Product identity
 
-FNLLA Web and FNLLA PHP are related MIT-licensed framework products maintained under the same product family.
+FNLLA PHP is the public framework identity in the FNLLA line.
 
-They share:
+The integrated runtime and the framework repository still share:
 
 - the `FNLLA` naming origin
 - TechAyo LTD ownership
 - the same delivery direction and support boundary
 - the same expectation that repository metadata should clearly identify the maintainer and ownership boundary
 
-Use the repos as a coordinated pair, not as unrelated framework projects.
+Treat the vendored runtime as part of the FNLLA PHP stack, not as a separate first-stop public product.

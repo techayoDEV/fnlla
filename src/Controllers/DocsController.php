@@ -39,8 +39,8 @@ final class DocsController extends Controller
         ],
         [
             "file" => "fnlla-web.html",
-            "title" => "FNLLA Web",
-            "summary" => "The one supported UI runtime boundary and the operational rules around the vendored web layer.",
+            "title" => "UI Runtime",
+            "summary" => "The one supported UI runtime boundary and the operational rules around the vendored runtime layer.",
             "kind" => "Reference",
         ],
         [
@@ -139,7 +139,7 @@ final class DocsController extends Controller
 
     public function brandIcon(): Response
     {
-        return $this->assetResponse("docs/assets/brand/fnlla-web.svg", "image/svg+xml");
+        return $this->assetResponse("docs/assets/brand/fnlla-php.svg", "image/svg+xml");
     }
 
     private function assetResponse(string $relativePath, string $contentType): Response
@@ -170,12 +170,14 @@ final class DocsController extends Controller
                 "./assets/docs.css",
                 "./assets/docs.js",
                 "./assets/brand/fnlla-web.svg",
+                "./assets/brand/fnlla-php.svg",
             ],
             [
                 asset("vendor/fnlla-web/assets/css/fnlla-web.css"),
                 asset("vendor/fnlla-web/assets/js/fnlla-web.js"),
                 route("docs.asset.stylesheet"),
                 route("docs.asset.script"),
+                route("docs.asset.brand"),
                 route("docs.asset.brand"),
             ],
             $contents

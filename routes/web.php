@@ -28,7 +28,8 @@ if (has_local_docs_workspace()) {
     $router->get("/docs", [DocsController::class, "index"])->name("docs.home");
     $router->get("/docs/assets/docs.css", [DocsController::class, "stylesheet"])->name("docs.asset.stylesheet");
     $router->get("/docs/assets/docs.js", [DocsController::class, "script"])->name("docs.asset.script");
-    $router->get("/docs/assets/brand/fnlla-web.svg", [DocsController::class, "brandIcon"])->name("docs.asset.brand");
+    $router->get("/docs/assets/brand/fnlla-web.svg", [DocsController::class, "brandIcon"]);
+    $router->get("/docs/assets/brand/fnlla-php.svg", [DocsController::class, "brandIcon"])->name("docs.asset.brand");
     $router->get("/docs/{page}", [DocsController::class, "page"])->name("docs.page");
 }
 

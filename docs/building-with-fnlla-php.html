@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Building with FNLLA PHP - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-web.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -17,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.14</span>
+        <span class="doc-status">Stable 1.0.15</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">FNLLA Web</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -77,7 +77,7 @@
             <p>It is written for the official stack:</p>
             <ul>
               <li><code>fnlla-php</code> as the application framework</li>
-              <li><code>fnlla-web</code> as the only supported UI runtime</li>
+              <li>the vendored runtime under <code>public/vendor/fnlla-web/</code> as the only supported UI layer</li>
               <li>PHP 8.3</li>
               <li>MySQL</li>
             </ul>
@@ -96,12 +96,12 @@
             </ol>
             <p>Keep that flow in mind when building anything new. The framework is intentionally small enough that most delivery work should fit into that lifecycle without extra abstraction layers.</p>
             <h2 id="official-ui-rule">Official UI rule</h2>
-            <p>Every new website or application built on <code>fnlla-php</code> must use <code>fnlla-web</code>.</p>
+            <p>Every new website or application built on <code>fnlla-php</code> must use the built-in vendored UI runtime shipped with the framework.</p>
             <p>That means:</p>
             <ul>
               <li>keep the shared shell structure from <code>views/layouts/app.php</code></li>
               <li>keep using <code>public/vendor/fnlla-web/</code> as the source of runtime UI assets</li>
-              <li>keep <code>section</code>, <code>container</code>, <code>card</code>, grid and related FNLLA Web layout conventions</li>
+              <li>keep <code>section</code>, <code>container</code>, <code>card</code>, grid and the related runtime layout conventions</li>
               <li>do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI</li>
             </ul>
             <p>The framework already enforces parts of that contract during bootstrap and validation.</p>
@@ -109,7 +109,7 @@
             <p>When starting a new delivery on top of FNLLA PHP, the safest sequence is:</p>
             <ol>
               <li>Set local environment values in <code>.env</code>.</li>
-              <li>Confirm FNLLA Web is synced and valid.</li>
+              <li>Confirm the vendored runtime is synced and valid.</li>
               <li>Define the pages and flows you need.</li>
               <li>Add routes.</li>
               <li>Add or extend controllers.</li>
@@ -117,7 +117,7 @@
               <li>Add forms, validation and flash feedback where needed.</li>
               <li>Add database tables and migrations when persistence is required.</li>
               <li>Add auth or authorization boundaries when a page is protected.</li>
-              <li>Run tests, lint and FNLLA Web validation before shipping.</li>
+              <li>Run tests, lint and runtime validation before shipping.</li>
             </ol>
             <h2 id="local-setup-for-a-new-project">Local setup for a new project</h2>
             <p>Copy the environment template:</p>
@@ -183,7 +183,7 @@ php scripts/validate-version-manifest.php</code></pre>
     &lt;div class=&quot;stack gap-lg&quot;&gt;
       &lt;header class=&quot;stack gap-sm&quot;&gt;
         &lt;h1&gt;Services&lt;/h1&gt;
-        &lt;p class=&quot;content-text&quot;&gt;Build the page with FNLLA Web primitives and plain PHP data output.&lt;/p&gt;
+        &lt;p class=&quot;content-text&quot;&gt;Build the page with the shipped runtime primitives and plain PHP data output.&lt;/p&gt;
       &lt;/header&gt;
 
       &lt;div class=&quot;grid grid-2 gap-md&quot;&gt;
@@ -204,7 +204,7 @@ php scripts/validate-version-manifest.php</code></pre>
               <li>let <code>views/layouts/app.php</code> own the global shell, header, footer and shared assets</li>
               <li>keep page templates focused on page content, not full HTML documents</li>
               <li>use helper functions like <code>h()</code>, <code>route()</code>, <code>asset()</code>, <code>auth()</code> and <code>csrf_field()</code> where appropriate</li>
-              <li>keep markup aligned with FNLLA Web classes and layout patterns</li>
+              <li>keep markup aligned with the shipped runtime classes and layout patterns</li>
             </ul>
             <p>Good default page structure:</p>
             <pre><code class="language-html">&lt;section class=&quot;section&quot;&gt;
@@ -416,14 +416,14 @@ php fnlla db:seed</code></pre>
             <h2 id="styling-and-page-composition-rules">Styling and page composition rules</h2>
             <p>When building pages:</p>
             <ul>
-              <li>compose layouts with FNLLA Web primitives first</li>
+              <li>compose layouts with the shipped runtime primitives first</li>
               <li>avoid one-off CSS unless the page truly needs it</li>
               <li>keep custom CSS in <code>public/assets/app.css</code></li>
               <li>prefer reusable structural patterns over ad hoc markup</li>
             </ul>
             <p>A good rule is:</p>
             <ul>
-              <li>use FNLLA Web for layout, spacing, cards, grid, buttons, alerts and shells</li>
+              <li>use the shipped runtime for layout, spacing, cards, grid, buttons, alerts and shells</li>
               <li>use project CSS only for branding or delivery-specific refinements</li>
             </ul>
             <h2 id="what-to-avoid">What to avoid</h2>
@@ -445,7 +445,7 @@ php fnlla db:seed</code></pre>
               <li>Add migrations for those entities.</li>
               <li>Add routes for public pages, auth flows and admin flows.</li>
               <li>Build controllers page by page.</li>
-              <li>Build views using FNLLA Web structure.</li>
+              <li>Build views using the shipped runtime structure.</li>
               <li>Add validation and flash feedback to every form.</li>
               <li>Add auth and authorization guards.</li>
               <li>Add seed data if it improves local setup.</li>
@@ -468,7 +468,7 @@ php fnlla route:list</code></pre>
               <li>views plain</li>
               <li>validation early</li>
               <li>MySQL usage disciplined</li>
-              <li>UI work inside the FNLLA Web contract</li>
+              <li>UI work inside the built-in runtime contract</li>
               <li>release hygiene consistent</li>
             </ul>
             <p>If a new website or application follows those rules, <code>fnlla-php</code> becomes a fast and stable base instead of a pile of custom exceptions.</p>

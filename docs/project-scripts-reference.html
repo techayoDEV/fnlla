@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>Project Scripts Reference - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-web.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
@@ -17,7 +17,7 @@
     <header class="doc-header" aria-label="FNLLA PHP documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.14</span>
+        <span class="doc-status">Stable 1.0.15</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">FNLLA Web</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -149,7 +149,7 @@
             <h3 id="scripts-validate-fnlla-web-php"><code>scripts/validate-fnlla-web.php</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>validates that the current project still respects the FNLLA Web contract</li>
+              <li>validates that the current project still respects the built-in UI runtime contract</li>
               <li>confirms the vendored runtime exists where FNLLA PHP expects it</li>
               <li>catches unsupported UI drift in the official stack</li>
             </ul>
@@ -157,7 +157,7 @@
             <ul>
               <li>the vendored <code>public/vendor/fnlla-web/</code> runtime was updated</li>
               <li>the shared layout or page structure changed</li>
-              <li>you want to confirm the project still stays inside the supported FNLLA Web boundary</li>
+              <li>you want to confirm the project still stays inside the supported UI runtime boundary</li>
             </ul>
             <p>Important boundary:</p>
             <ul>
@@ -168,12 +168,12 @@
             <p>Purpose:</p>
             <ul>
               <li>validates the machine-readable version contract for the current project</li>
-              <li>checks that <code>VERSION</code> and <code>MANIFEST.json</code> agree with the vendored FNLLA Web version state</li>
+              <li>checks that <code>VERSION</code> and <code>MANIFEST.json</code> agree with the vendored runtime version state</li>
             </ul>
             <p>Use it when:</p>
             <ul>
               <li>the project version changed intentionally</li>
-              <li>FNLLA Web was synced</li>
+              <li>the vendored runtime was synced</li>
               <li>you want proof that release metadata is not drifting</li>
             </ul>
             <p>Important boundary:</p>
@@ -184,12 +184,12 @@
             <h3 id="scripts-sync-version-manifest-php"><code>scripts/sync-version-manifest.php</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>regenerates <code>MANIFEST.json</code> from the current <code>VERSION</code> file plus the vendored FNLLA Web runtime state</li>
+              <li>regenerates <code>MANIFEST.json</code> from the current <code>VERSION</code> file plus the vendored runtime state</li>
             </ul>
             <p>Use it when:</p>
             <ul>
               <li>you intentionally changed the project version</li>
-              <li>you synced FNLLA Web and want the machine-readable manifest refreshed</li>
+              <li>you synced the vendored runtime and want the machine-readable manifest refreshed</li>
             </ul>
             <p>Typical outcome:</p>
             <ul>
@@ -203,7 +203,7 @@
             <h3 id="scripts-sync-fnlla-web-ps1"><code>scripts/sync-fnlla-web.ps1</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>refreshes the vendored FNLLA Web runtime under <code>public/vendor/fnlla-web/</code></li>
+              <li>refreshes the vendored UI runtime under <code>public/vendor/fnlla-web/</code></li>
               <li>can work from a provided local source path or by cloning the GitHub source of truth</li>
               <li>detects whether the provided source is a published runtime export or a source checkout</li>
               <li>when needed, publishes the runtime first and then mirrors the exported <code>dist/fnlla-web/</code> output</li>
@@ -211,14 +211,14 @@
             </ul>
             <p>Use it when:</p>
             <ul>
-              <li>the project needs a newer FNLLA Web release</li>
+              <li>the project needs a newer published runtime snapshot</li>
               <li>the local vendored runtime is missing or damaged</li>
-              <li>you want to re-sync from the authoritative <code>techayoDEV/fnlla-web</code> repository</li>
+              <li>you want to re-sync from the authoritative TechAyo-maintained runtime source</li>
             </ul>
             <p>Important boundary:</p>
             <ul>
               <li>this script is about the downstream vendored runtime</li>
-              <li>it does not maintain the upstream <code>techayoDEV/fnlla-web</code> repository itself</li>
+              <li>it does not maintain the upstream runtime source itself</li>
             </ul>
             <h3 id="php-fnlla-framework-update"><code>php fnlla framework:update</code></h3>
             <p>Purpose:</p>
@@ -304,7 +304,7 @@ php fnlla framework:update --apply --source ..\fnlla-php</code></pre>
               <li><code>.github/</code></li>
               <li><code>CODE_OF_CONDUCT.md</code></li>
               <li><code>SECURITY.md</code></li>
-              <li>runtime residue from <code>storage/</code> such as logs, cache files, queue files, session files and FNLLA Web guard state</li>
+              <li>runtime residue from <code>storage/</code> such as logs, cache files, queue files, session files and UI runtime guard state</li>
               <li>the <code>make:*</code> scaffolding commands, the <code>make:project</code> export command and their maintainer-only regression coverage</li>
             </ul>
             <p>That keeps the exported project closer to what a delivery repository should actually own.</p>
@@ -319,7 +319,7 @@ php fnlla version:status</code></pre>
             <p>Use this order when:</p>
             <ul>
               <li>you want to prove the exported project is healthy before heavier project work</li>
-              <li>FNLLA Web was just synced</li>
+              <li>the vendored runtime was just synced</li>
               <li>you want a compact pre-commit or pre-release project check</li>
             </ul>
             <p>Use the local <code>--source</code> override only when you intentionally want to compare the project against an unpublished maintainer checkout instead of the latest GitHub release.</p>
