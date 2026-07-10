@@ -1,6 +1,6 @@
 {
-    "name": "techayoDEV/fnlla-php",
-    "description": "Open-source server-rendered PHP framework by TechAyo LTD for FNLLA Web based productions.",
+    "name": "techayoDEV/fnlla",
+    "description": "Open-source server-rendered PHP framework by TechAyo LTD. Public home of the FNLLA stack.",
     "type": "project",
     "license": "MIT",
     "homepage": "https://techayo.co.uk",
@@ -12,8 +12,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/techayoDEV/fnlla-php/issues",
-        "source": "https://github.com/techayoDEV/fnlla-php"
+        "issues": "https://github.com/techayoDEV/fnlla/issues",
+        "source": "https://github.com/techayoDEV/fnlla"
     },
     "require": {
         "php": "^8.3"

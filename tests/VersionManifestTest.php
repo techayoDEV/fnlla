@@ -29,8 +29,8 @@ final class VersionManifestTest extends TestCase
     {
         $manifest = VersionManifest::buildRepositoryManifest();
 
-        self::assertSame("FNLLA PHP", $manifest["product"]["name"] ?? null);
-        self::assertSame("fnlla-php", $manifest["product"]["slug"] ?? null);
+        self::assertSame("FNLLA", $manifest["product"]["name"] ?? null);
+        self::assertSame("fnlla", $manifest["product"]["slug"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["product"]["version"] ?? "")));
         self::assertSame("FNLLA Web", $manifest["ui_runtime"]["name"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["vendored_version"] ?? "")));

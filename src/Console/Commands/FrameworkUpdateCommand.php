@@ -144,8 +144,8 @@ final class FrameworkUpdateCommand extends Command
 
     private function printUsage(): void
     {
-        $this->line("Usage: php fnlla framework:update --check [--source <path-to-fnlla-php>]");
-        $this->line("   or: php fnlla framework:update --apply [--source <path-to-fnlla-php>]");
+        $this->line("Usage: php fnlla framework:update --check [--source <path-to-fnlla>]");
+        $this->line("   or: php fnlla framework:update --apply [--source <path-to-fnlla>]");
         $this->line("   or: php fnlla framework:update --check --github [--release-tag v1.0.x]");
         $this->line("   or: php fnlla framework:update --apply --github [--release-tag v1.0.x]");
         $this->line("If --source is omitted, FNLLA PHP will try to auto-detect a sibling maintained repository.");

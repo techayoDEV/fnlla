@@ -2,18 +2,18 @@
 
 ## Short answer
 
-Do not treat the `techayoDEV/fnlla-php` repository itself as the normal place where a new client website or new web application should be built.
+Do not treat the `techayoDEV/fnlla` repository itself as the normal place where a new client website or new web application should be built.
 
 The recommended workflow is:
 
-1. Keep `techayoDEV/fnlla-php` as the framework source and starter-export base.
+1. Keep `techayoDEV/fnlla` as the framework source and starter-export base.
 2. Export a new working project into its own directory.
 3. Give that new directory its own project name and its own Git repository.
 4. Build the actual website or application there.
 
 ## Why not just clone fnlla-php and build directly inside it
 
-If you clone `techayoDEV/fnlla-php` and start editing it directly for every new website, you mix together two different concerns:
+If you clone `techayoDEV/fnlla` and start editing it directly for every new website, you mix together two different concerns:
 
 - framework maintenance
 - one specific downstream project
@@ -27,7 +27,7 @@ That quickly becomes messy because:
 
 ## Official recommended workflow
 
-Use the built-in starter export command from the maintained `techayoDEV/fnlla-php` repository:
+Use the built-in starter export command from the maintained `techayoDEV/fnlla` repository:
 
 ```bash
 php fnlla make:project ..\my-new-project "My New Project"
@@ -70,7 +70,7 @@ The exported directory should become the actual website or application repositor
 
 That means the normal flow is:
 
-1. Clone or pull the latest `techayoDEV/fnlla-php`.
+1. Clone or pull the latest `techayoDEV/fnlla`.
 2. Run `php fnlla make:project`.
 3. Open the exported directory.
 4. Initialize a new Git repository there.
@@ -162,7 +162,7 @@ It is also cleaner because it now exports the downstream application surface rat
 
 ## When cloning the repository directly is still acceptable
 
-Cloning `techayoDEV/fnlla-php` directly is still fine when the goal is:
+Cloning `techayoDEV/fnlla` directly is still fine when the goal is:
 
 - framework maintenance
 - hardening the starter base itself
@@ -173,7 +173,7 @@ That is framework work, not downstream project work.
 
 ## Final rule
 
-Treat `techayoDEV/fnlla-php` as:
+Treat `techayoDEV/fnlla` as:
 
 - the maintained framework repository
 - the official starter export source

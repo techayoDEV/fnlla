@@ -86,7 +86,7 @@ final class HomeController extends Controller
                 [
                     "number" => "4",
                     "title" => "Maintainer clarity",
-                    "text" => "The `techayoDEV/fnlla-php` repository remains the framework source of truth, but the shipped starter is now the same application base downstream teams really edit.",
+                    "text" => "The `techayoDEV/fnlla` repository remains the framework source of truth, but the shipped starter is now the same application base downstream teams really edit.",
                 ],
             ],
             "launchChecklist" => [
@@ -422,7 +422,7 @@ final class HomeController extends Controller
                 "latest_cached_version" => (string) ($cachedRelease["version"] ?? ""),
                 "comparison" => (string) ($cachedRelease["comparison"] ?? "unknown"),
                 "checked_at_utc" => (string) ($cachedRelease["checked_at_utc"] ?? ""),
-                "cache_path" => (string) ($cachedRelease["cache_path"] ?? storage_path("framework/updates/fnlla-php")),
+                "cache_path" => (string) ($cachedRelease["cache_path"] ?? storage_path("framework/updates/fnlla")),
                 "notes_preview_available" => trim((string) ($cachedRelease["notes"] ?? "")) !== "",
                 "notes_preview" => trim((string) ($cachedRelease["notes"] ?? "")),
                 "published_at_utc" => (string) ($cachedRelease["published_at_utc"] ?? ""),

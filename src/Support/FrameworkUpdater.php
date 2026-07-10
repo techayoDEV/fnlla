@@ -67,7 +67,8 @@ final class FrameworkUpdater
         }
 
         foreach ([
-            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla-php" => "auto-detected sibling repository",
+            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla" => "auto-detected sibling repository",
+            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla-php" => "auto-detected legacy sibling repository",
             $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla" . DIRECTORY_SEPARATOR . "php" => "auto-detected nested sibling repository",
         ] as $candidatePath => $origin) {
             $candidate = self::buildSourceCandidate($candidatePath, $projectRoot, $origin);
@@ -171,8 +172,8 @@ final class FrameworkUpdater
             }
 
             throw new RuntimeException(
-                "framework:update could not auto-detect a maintained techayoDEV/fnlla-php repository. "
-                . "Set FRAMEWORK_UPDATE_SOURCE_PATH, use the browser maintenance page, or pass --source <path-to-fnlla-php>."
+                "framework:update could not auto-detect a maintained techayoDEV/fnlla repository. "
+                . "Set FRAMEWORK_UPDATE_SOURCE_PATH, use the browser maintenance page, or pass --source <path-to-fnlla>."
             );
         }
 
@@ -185,7 +186,7 @@ final class FrameworkUpdater
         }
 
         if (!self::isMaintainedSourceRoot($resolved)) {
-            throw new RuntimeException("framework:update source must be a maintained techayoDEV/fnlla-php repository: " . $resolved);
+            throw new RuntimeException("framework:update source must be a maintained techayoDEV/fnlla repository: " . $resolved);
         }
 
         return [$resolved, "manual source path"];
@@ -193,7 +194,7 @@ final class FrameworkUpdater
 
     private static function createTempWorkspace(): string
     {
-        $workspace = rtrim(sys_get_temp_dir(), "\\/") . DIRECTORY_SEPARATOR . "fnlla-php-framework-update-" . bin2hex(random_bytes(8));
+        $workspace = rtrim(sys_get_temp_dir(), "\\/") . DIRECTORY_SEPARATOR . "fnlla-framework-update-" . bin2hex(random_bytes(8));
 
         if (!mkdir($workspace, 0777, true) && !is_dir($workspace)) {
             throw new RuntimeException("Unable to create temporary framework update workspace.");

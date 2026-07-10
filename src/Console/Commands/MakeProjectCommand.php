@@ -328,7 +328,7 @@ final class MakeProjectCommand extends Command
         }
 
         $decoded["name"] = "project/" . $packageSlug;
-        $decoded["description"] = $appName . " built on FNLLA PHP and FNLLA Web.";
+        $decoded["description"] = $appName . " built on FNLLA and FNLLA Web.";
 
         file_put_contents(
             $path,
@@ -341,7 +341,7 @@ final class MakeProjectCommand extends Command
         $readme = <<<MD
 # {$appName}
 
-This repository is a working application export generated from `techayoDEV/fnlla-php`.
+This repository is a working application export generated from `techayoDEV/fnlla`.
 
 It is intended to be the beginning of a new server-rendered website or web application built on:
 
@@ -397,7 +397,7 @@ Before production deployment, switch the environment back to production-safe val
 
 ## What the export intentionally leaves behind
 
-This exported application does not copy the full maintainer workspace from `techayoDEV/fnlla-php`.
+This exported application does not copy the full maintainer workspace from `techayoDEV/fnlla`.
 
 It intentionally leaves behind:
 
@@ -434,15 +434,15 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php scripts/validate-fnlla-web.php` checks that the exported project still respects the FNLLA Web runtime contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the vendored FNLLA Web version stay aligned
 - `php fnlla framework:update --check --github` checks the latest published FNLLA PHP release from GitHub and caches the release source locally before comparing drift
-- `php fnlla framework:update --check [--source <path-to-fnlla-php>]` checks framework drift against a maintained FNLLA PHP source repository when a local maintainer checkout is preferred
+- `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
 - `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
 - `/project/launch` gives the downstream developer a built-in delivery guide for the first project implementation pass
 - `php fnlla version:sync` regenerates `MANIFEST.json` after an intentional version change
 - `php fnlla fnlla-web:sync` or `update-fnlla-web.cmd` refresh the vendored FNLLA Web runtime from GitHub
 
-The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla-php` repository.
+The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
 
-The full framework documentation remains in the upstream `techayoDEV/fnlla-php` repository.
+The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
 
 The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA PHP release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release starter builds.
 
@@ -451,7 +451,7 @@ php fnlla list
 php fnlla fnlla-web:sync
 php fnlla fnlla-web:validate
 php fnlla framework:update --check --github
-php fnlla framework:update --check --source ..\fnlla-php  # optional local override
+php fnlla framework:update --check --source ..\fnlla  # optional local override
 php fnlla route:list
 php fnlla migrate
 php fnlla migrate:rollback

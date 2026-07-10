@@ -1,4 +1,4 @@
-# FNLLA PHP
+# FNLLA
 
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![UI Contract](https://img.shields.io/badge/ui-integrated%20runtime-0f766e?style=flat-square)](./public/vendor/fnlla-web/README.md)
@@ -152,7 +152,7 @@ If the UI contract is broken, the application and CLI fail fast until the reposi
 ## How to run it locally
 
 ```bash
-cd <path-to-fnlla-php>
+cd <path-to-fnlla>
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
@@ -172,11 +172,11 @@ No Packagist download step is required for the framework itself.
 
 ## How to start a real new project
 
-For an actual new website or web application, the recommended workflow is not to clone `techayoDEV/fnlla-php` and build the downstream project directly inside the framework repository.
+For an actual new website or web application, the recommended workflow is not to clone `techayoDEV/fnlla` and build the downstream project directly inside the framework repository.
 
 Instead:
 
-1. keep `techayoDEV/fnlla-php` as the maintained framework source
+1. keep `techayoDEV/fnlla` as the maintained framework source
 2. export a clean starter into a separate project directory
 3. build the real website or application in that exported directory
 
@@ -285,7 +285,7 @@ Important commands:
 - `php fnlla fnlla-web:sync`
 - `php fnlla fnlla-web:validate`
 - `php fnlla framework:update --check --github`
-- `php fnlla framework:update --check [--source <path-to-fnlla-php>]`
+- `php fnlla framework:update --check [--source <path-to-fnlla>]`
 - `php fnlla migrate`
 - `php fnlla migrate:rollback`
 - `php fnlla migrate:status`
@@ -330,7 +330,7 @@ Authoritative maintainer scripts and checkpoints:
 Important boundary:
 
 - `php fnlla framework:update` is a downstream project command and expects `.fnlla/framework-lock.json`
-- use it from an exported application repository, not from the maintainer `techayoDEV/fnlla-php` repository root itself
+- use it from an exported application repository, not from the maintainer `techayoDEV/fnlla` repository root itself
 
 Recommended maintainer sequence:
 

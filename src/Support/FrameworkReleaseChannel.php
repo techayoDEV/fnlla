@@ -438,10 +438,10 @@ final class FrameworkReleaseChannel
 
     private static function cacheRoot(string $projectRoot): string
     {
-        $configured = trim((string) config("framework_update.download_cache_path", "framework/updates/fnlla-php"));
+        $configured = trim((string) config("framework_update.download_cache_path", "framework/updates/fnlla"));
 
         if ($configured === "") {
-            $configured = "framework/updates/fnlla-php";
+            $configured = "framework/updates/fnlla";
         }
 
         if (preg_match('/^[A-Za-z]:[\\\\\\/]/', $configured) === 1 || str_starts_with($configured, "\\\\") || str_starts_with($configured, "/")) {

@@ -101,7 +101,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
               <article class="feature-card">
                 <p class="feature-kicker">Latest cached release</p>
                 <h3 class="content-title mb-xs"><?= $cachedReleaseTag !== "" ? h($cachedReleaseTag) : "Not fetched yet" ?></h3>
-                <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla-php")) : "Run a GitHub check to cache the latest release baseline locally." ?></p>
+                <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla")) : "Run a GitHub check to cache the latest release baseline locally." ?></p>
               </article>
               <article class="feature-card">
                 <p class="feature-kicker">Release notes preview</p>
@@ -127,8 +127,8 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
             <p class="contact-text">Use this path-based workflow when you need to compare against a local maintainer checkout instead of the latest public GitHub release.</p>
 
           <div class="form-group">
-            <label class="label" for="framework-update-source">Maintained FNLLA PHP source repository</label>
-            <input class="input" id="framework-update-source" name="source_path" type="text" placeholder="Leave blank to use an auto-detected sibling fnlla-php repo, or enter C:\path\to\fnlla-php" value="<?= h($sourcePathValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+            <label class="label" for="framework-update-source">Maintained FNLLA source repository</label>
+            <input class="input" id="framework-update-source" name="source_path" type="text" placeholder="Leave blank to use an auto-detected sibling fnlla repo, or enter C:\path\to\fnlla" value="<?= h($sourcePathValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
             <p class="help-text">Leave this blank when the maintained repository sits next to the application. Use a manual path only when the source repository lives elsewhere.</p>
             <?php if ($detectedSourcePath !== ""): ?>
             <p class="help-text mb-0"><strong>Detected now:</strong> <?= h($detectedSourcePath) ?> (<?= h($detectedSourceOrigin) ?>)</p>
@@ -143,7 +143,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
 
           <div class="form-message" role="status">
             <h3 class="form-message-title">Recommended sequence</h3>
-            <p class="form-message-text mb-0">1. Check the latest GitHub release and let FNLLA PHP cache it locally. 2. Review safe changes, conflicts and release notes. 3. Apply only when the report and post-install checks stay healthy.</p>
+            <p class="form-message-text mb-0">1. Check the latest GitHub release and let FNLLA cache it locally. 2. Review safe changes, conflicts and release notes. 3. Apply only when the report and post-install checks stay healthy.</p>
           </div>
         </form>
       </article>
@@ -163,7 +163,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         <article class="process-step">
           <span class="process-step-number">1</span>
           <h3 class="process-step-title">Resolve the release source</h3>
-          <p class="process-step-text">FNLLA PHP can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and auto-detected sibling <code>fnlla-php</code> repository when a maintainer checkout is preferred.</p>
+          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository when a maintainer checkout is preferred.</p>
         </article>
         <article class="process-step">
           <span class="process-step-number">2</span>

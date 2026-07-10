@@ -65,12 +65,12 @@ final class VersionManifest
         return [
             "schema_version" => 1,
             "product" => [
-                "name" => "FNLLA PHP",
-                "slug" => "fnlla-php",
+                "name" => "FNLLA",
+                "slug" => "fnlla",
                 "version" => $frameworkVersion,
                 "owner" => "TechAyo LTD (techayo.co.uk)",
                 "origin" => "Finella Gardens in Dundee, UK",
-                "repository" => "https://github.com/techayoDEV/fnlla-php.git",
+                "repository" => "https://github.com/techayoDEV/fnlla.git",
                 "source_of_truth" => "github",
             ],
             "runtime" => [

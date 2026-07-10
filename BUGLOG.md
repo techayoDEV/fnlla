@@ -2,13 +2,13 @@
 
 This file is the lightweight maintenance log for framework-level defects,
 regressions, export mismatches and release-quality follow-up work discovered
-while building downstream projects on top of `techayoDEV/fnlla-php`.
+while building downstream projects on top of `techayoDEV/fnlla`.
 
 Use it when:
 - a downstream project exposes a real framework bug
 - a generated starter behaves differently than the maintainer repository
 - docs, tests or version contracts drift from actual framework behavior
-- a fix should be tracked before it is implemented in `techayoDEV/fnlla-php`
+- a fix should be tracked before it is implemented in `techayoDEV/fnlla`
 
 Entry template:
 
@@ -25,5 +25,5 @@ Entry template:
 
 Current state:
 - No open framework defects are intentionally parked here right now.
-- The preferred workflow is still to fix confirmed `techayoDEV/fnlla-php` issues
+- The preferred workflow is still to fix confirmed `techayoDEV/fnlla` issues
   immediately when the change is low-risk and well understood.

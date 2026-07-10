@@ -2,7 +2,7 @@
 
 ## Why this guide exists
 
-`techayoDEV/fnlla-php` now separates two concerns more deliberately:
+`techayoDEV/fnlla` now separates two concerns more deliberately:
 
 1. the maintained framework repository
 2. the downstream project exported by `php fnlla make:project`
@@ -27,14 +27,14 @@ For a normal exported project, the important script set is:
 The exported application also keeps one framework-update command on purpose:
 
 - `php fnlla framework:update --check --github`
-- `php fnlla framework:update --check [--source <path-to-fnlla-php>]`
+- `php fnlla framework:update --check [--source <path-to-fnlla>]`
 
 And the application now keeps one browser-facing maintenance page on purpose:
 
 - `/maintenance/framework-update`
 
 The exported project also keeps only a lean downstream smoke-test subset under `tests/`.
-Framework-internal export coverage and the `make:*` scaffolding commands stay in the upstream `techayoDEV/fnlla-php` repository.
+Framework-internal export coverage and the `make:*` scaffolding commands stay in the upstream `techayoDEV/fnlla` repository.
 
 The maintainer-only docs builder stays in the framework repository:
 
@@ -166,7 +166,7 @@ Important boundary:
 
 Purpose:
 
-- compares the current downstream project against a fresh application export generated from a maintained `techayoDEV/fnlla-php` repository
+- compares the current downstream project against a fresh application export generated from a maintained `techayoDEV/fnlla` repository
 - checks only framework-managed files recorded in `.fnlla/framework-lock.json`
 - protects application-owned files such as routes, views, the project README and project-specific migrations from blind overwrite
 
@@ -181,15 +181,15 @@ Typical examples:
 ```bash
 php fnlla framework:update --check --github
 php fnlla framework:update --apply --github
-php fnlla framework:update --check --source ..\fnlla-php
-php fnlla framework:update --apply --source ..\fnlla-php
+php fnlla framework:update --check --source ..\fnlla
+php fnlla framework:update --apply --source ..\fnlla
 ```
 
 Important boundary:
 
 - by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under `storage/framework/updates/`
 - the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base
-- when `--source` is used, the command expects a maintained `techayoDEV/fnlla-php` source repository path
+- when `--source` is used, the command expects a maintained `techayoDEV/fnlla` source repository path
 - the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
 - it updates only files that the framework lock marks as framework-managed
 - a hidden `php fnlla starter:update` alias remains available for legacy project workflows
@@ -211,7 +211,7 @@ Use it when:
 Important boundary:
 
 - it is meant for local or explicitly enabled maintenance usage, not for general public exposure
-- it can fetch the latest published FNLLA PHP release from GitHub or rely on a maintained local `techayoDEV/fnlla-php` source path when a maintainer checkout is preferred
+- it can fetch the latest published FNLLA release from GitHub or rely on a maintained local `techayoDEV/fnlla` source path when a maintainer checkout is preferred
 
 Operational note:
 
@@ -219,7 +219,7 @@ Operational note:
 - `FRAMEWORK_UPDATE_UI_LOCAL_ONLY` keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when `TRUSTED_PROXIES` explicitly names the proxy
 - `FRAMEWORK_UPDATE_UI_APPLY_ENABLED` controls whether the browser UI may run safe apply or only drift checks
 - `FRAMEWORK_UPDATE_GITHUB_ENABLED` controls whether the maintenance page may contact GitHub directly for published release checks
-- `FRAMEWORK_UPDATE_SOURCE_PATH` lets the project prefill the maintained `techayoDEV/fnlla-php` source path
+- `FRAMEWORK_UPDATE_SOURCE_PATH` lets the project prefill the maintained `techayoDEV/fnlla` source path
 
 ## What stays maintainer-only
 
@@ -287,6 +287,6 @@ Use the local `--source` override only when you intentionally want to compare th
 Treat `scripts/` in the framework repository as two overlapping groups:
 
 - project-facing validation and sync tools that belong in exported projects
-- maintainer-only documentation and organization helpers that should stay in `techayoDEV/fnlla-php`
+- maintainer-only documentation and organization helpers that should stay in `techayoDEV/fnlla`
 
 That split keeps downstream projects leaner and makes the project export easier to understand.

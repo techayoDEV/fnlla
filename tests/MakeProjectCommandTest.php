@@ -149,7 +149,7 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "php fnlla framework:update --check [--source <path-to-fnlla-php>]",
+            "php fnlla framework:update --check [--source <path-to-fnlla>]",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(

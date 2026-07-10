@@ -118,10 +118,10 @@ final class FrameworkLock
                     "package_slug" => $packageSlug,
                 ],
                 "framework" => [
-                    "name" => "FNLLA PHP",
-                    "slug" => "fnlla-php",
+                    "name" => "FNLLA",
+                    "slug" => "fnlla",
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "VERSION"),
-                    "repository" => "https://github.com/techayoDEV/fnlla-php.git",
+                    "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
                 "ui_runtime" => [
                     "name" => "FNLLA Web",

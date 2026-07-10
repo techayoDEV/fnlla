@@ -427,7 +427,7 @@ views/</code></pre>
         <article class="card">
           <h2 class="card-title">Build real projects outside this repo</h2>
           <ul class="doc-checklist">
-            <li><strong>Framework mode:</strong> maintain <code>techayoDEV/fnlla-php</code>, its scripts, docs and shared delivery foundations here.</li>
+            <li><strong>Framework mode:</strong> maintain <code>techayoDEV/fnlla</code>, its scripts, docs and shared delivery foundations here.</li>
             <li><strong>Project mode:</strong> export a downstream starter with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
             <li><strong>UI rule:</strong> keep the vendored runtime under <code>public/vendor/fnlla-web/</code> as the only supported UI layer.</li>
           </ul>
@@ -708,7 +708,7 @@ function render_getting_started_content(): string
       <div class="grid">
         <article class="card">
           <h2 class="card-title">Run the maintained framework locally</h2>
-          <pre><code>cd /workspace/fnlla-php
+          <pre><code>cd /workspace/fnlla
 php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <p class="card-text">Open <code>http://127.0.0.1:8080</code>. For Apache-based hosting, set the document root to <code>public/</code> and keep <code>public/.htaccess</code> in place.</p>
         </article>
@@ -766,7 +766,7 @@ php scripts/validate-version-manifest.php</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">When to stay in this repo</h2>
-        <p class="section-text">Direct work inside <code>techayoDEV/fnlla-php</code> is still the right move when the goal is framework maintenance rather than project delivery.</p>
+        <p class="section-text">Direct work inside <code>techayoDEV/fnlla</code> is still the right move when the goal is framework maintenance rather than project delivery.</p>
       </div>
 
       <div class="doc-mini-grid">
@@ -977,7 +977,7 @@ throttle</code></pre>
             <li><code>php fnlla fnlla-web:sync</code></li>
             <li><code>php fnlla fnlla-web:validate</code></li>
             <li><code>php fnlla framework:update --check --github</code></li>
-            <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla-php&gt;</code> when a local maintainer checkout is preferred</li>
+            <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla version:status</code> and <code>php fnlla version:sync</code></li>
           </ul>
@@ -1012,7 +1012,7 @@ throttle</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Source of truth</h3>
-          <p class="card-text">FNLLA PHP is the public source of truth for the official stack maintained by TechAyo LTD. Third-party package registries are outside the official maintainer workflow.</p>
+          <p class="card-text">FNLLA is the public source of truth for the official stack maintained by TechAyo LTD. Third-party package registries are outside the official maintainer workflow.</p>
         </article>
       </div>
     </section>

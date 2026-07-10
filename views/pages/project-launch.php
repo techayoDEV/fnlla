@@ -79,7 +79,7 @@ declare(strict_types=1);
             <span class="badge">Framework maintenance included</span>
           </div>
           <h2 class="content-title">Use <code>/maintenance/framework-update</code> as the controlled path for downstream framework updates.</h2>
-          <p class="content-text">The maintenance surface can auto-detect a sibling <code>fnlla-php</code> repository when one exists, produce a structured drift report and apply only safe framework-managed changes. That keeps framework work explicit without requiring every developer to memorize the update internals.</p>
+          <p class="content-text">The maintenance surface can auto-detect a sibling <code>fnlla</code> repository when one exists, while still tolerating older local <code>fnlla-php</code> checkouts, produce a structured drift report and apply only safe framework-managed changes. That keeps framework work explicit without requiring every developer to memorise the update internals.</p>
           <div class="d-flex flex-wrap gap-md">
             <a class="btn btn-primary btn-xl" href="<?= h(route("maintenance.framework_update")) ?>">Open framework updates</a>
             <a class="btn btn-outline" href="<?= h(route("home")) ?>">Back to home</a>

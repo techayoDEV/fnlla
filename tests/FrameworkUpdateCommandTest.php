@@ -130,7 +130,11 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(0, $checkExitCode, $checkOutput);
         self::assertStringContainsString("Source repository: ", $checkOutput);
-        self::assertStringContainsString("auto-detected sibling repository", $checkOutput);
+        self::assertTrue(
+            str_contains($checkOutput, "auto-detected sibling repository")
+            || str_contains($checkOutput, "auto-detected legacy sibling repository"),
+            $checkOutput
+        );
     }
 
     private function exportProject(string $appName): string
