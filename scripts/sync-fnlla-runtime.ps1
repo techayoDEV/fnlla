@@ -168,6 +168,7 @@ function Resolve-RuntimeExportPath {
 
     $base = Resolve-AbsolutePath -Path $BasePath
     $distPath = Join-Path $base "dist\fnlla-runtime"
+    $integratedVendoredPath = Join-Path $base "public\vendor\fnlla-runtime"
     $assetsPath = Join-Path $base "assets"
     $versionPath = Join-Path $base "VERSION"
     $sourceRepoMarkers = @(
@@ -183,6 +184,10 @@ function Resolve-RuntimeExportPath {
         return $distPath
     }
 
+    if ((Test-Path -LiteralPath $integratedVendoredPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $integratedVendoredPath "VERSION") -PathType Leaf)) {
+        return $integratedVendoredPath
+    }
+
     $looksLikeSourceRepo = $false
     foreach ($marker in $sourceRepoMarkers) {
         if (Test-Path -LiteralPath (Join-Path $base $marker)) {
@@ -194,7 +199,7 @@ function Resolve-RuntimeExportPath {
     if ($looksLikeSourceRepo) {
         $publishScriptPath = Resolve-PublishScriptPath -BasePath $base
         if ($null -eq $publishScriptPath) {
-            throw "The provided FNLLA Runtime path looks like a source repository checkout, but no publish script was found. Publish FNLLA Runtime first and sync from dist\\fnlla-runtime."
+            throw "The provided path looks like a source repository checkout, but no runtime export was found. Use public\\vendor\\fnlla-runtime from a fnlla checkout, or publish the dedicated runtime source and sync from dist\\fnlla-runtime."
         }
 
         $nodePath = Assert-CommandExists -Name "node"

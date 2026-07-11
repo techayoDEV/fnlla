@@ -9,11 +9,11 @@
     "repository": "https://github.com/techayoDEV/fnlla.git",
     "source_of_truth": "github"
   },
-  "runtime": {
-    "css_entrypoint": "assets/css/fnlla-runtime.css",
-    "js_entrypoint": "assets/js/fnlla-runtime.js",
-    "icons_directory": "assets/icons",
-    "distribution_root": "dist/fnlla-runtime",
+    "runtime": {
+        "css_entrypoint": "assets/css/fnlla-runtime.css",
+        "js_entrypoint": "assets/js/fnlla-runtime.js",
+        "icons_directory": "assets/icons",
+        "distribution_root": ".",
     "release_files": [
       "MANIFEST.json",
       "LICENSE.md",

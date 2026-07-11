@@ -22,6 +22,7 @@ namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Support\FnllaRuntimeGuard;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class FnllaRuntimeGuardTest extends TestCase
 {
@@ -77,6 +78,16 @@ final class FnllaRuntimeGuardTest extends TestCase
                 'class="section',
                 'class="container',
             ],
+            "required_text_markers" => [
+                public_path("vendor/fnlla-runtime/README.md") => [
+                    "built-in FNLLA runtime handoff for downstream projects",
+                ],
+            ],
+            "forbidden_text_markers" => [
+                public_path("vendor/fnlla-runtime/README.md") => [
+                    '/publish-fnlla-runtime\.mjs/i',
+                ],
+            ],
             "scan_paths" => [],
             "forbidden_markers" => [],
         ]);
@@ -92,5 +103,58 @@ final class FnllaRuntimeGuardTest extends TestCase
         self::assertTrue(is_array($state));
         self::assertSame($currentVersion, $state["local_version"] ?? null);
         self::assertTrue(((int) ($state["last_checked_at"] ?? 0)) > 0);
+    }
+
+    public function testValidateOnlyRejectsStaleRuntimeMetadataMarkers(): void
+    {
+        $runtimeReadme = storage_path("framework/fnlla-runtime-guard-readme-test.md");
+        file_put_contents($runtimeReadme, "legacy publish-fnlla-runtime.mjs reference" . PHP_EOL);
+
+        config_set("fnlla_runtime", [
+            "enforce" => true,
+            "auto_sync" => false,
+            "layout_path" => base_path("views/layouts/app.php"),
+            "page_view_glob" => base_path("views/pages/*.php"),
+            "required_runtime_files" => [
+                public_path("vendor/fnlla-runtime/assets/css/fnlla-runtime.css"),
+                public_path("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"),
+                public_path("vendor/fnlla-runtime/assets/icons"),
+                public_path("vendor/fnlla-runtime/VERSION"),
+            ],
+            "required_layout_markers" => [
+                "<header",
+                "<main",
+                "<footer",
+            ],
+            "required_page_markers" => [
+                'class="section',
+                'class="container',
+            ],
+            "required_text_markers" => [
+                $runtimeReadme => [
+                    "legacy",
+                ],
+            ],
+            "forbidden_text_markers" => [
+                $runtimeReadme => [
+                    '/publish-fnlla-runtime\.mjs/i',
+                ],
+            ],
+            "scan_paths" => [],
+            "forbidden_markers" => [],
+        ]);
+
+        try {
+            try {
+                FnllaRuntimeGuard::validateOnly();
+                self::fail("Expected runtime metadata drift to throw.");
+            } catch (RuntimeException $exception) {
+                self::assertStringContainsString("FNLLA runtime metadata drift detected", $exception->getMessage());
+            }
+        } finally {
+            if (is_file($runtimeReadme)) {
+                unlink($runtimeReadme);
+            }
+        }
     }
 }

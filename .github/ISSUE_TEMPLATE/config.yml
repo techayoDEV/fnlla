@@ -1,20 +1,20 @@
 blank_issues_enabled: false
 contact_links:
   - name: FNLLA Contributing Guide
-    url: https://github.com/fnlla/php/blob/main/.github/CONTRIBUTING.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/.github/CONTRIBUTING.md
     about: Review repository scope, contribution expectations and maintainer workflow before opening implementation work.
   - name: FNLLA Security Policy
-    url: https://github.com/fnlla/php/blob/main/SECURITY.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/SECURITY.md
     about: Use this private route for vulnerabilities instead of opening a public issue.
   - name: FNLLA Support
-    url: https://github.com/fnlla/php/blob/main/.github/SUPPORT.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/.github/SUPPORT.md
     about: Find the right support, licensing or conduct route for non-bug requests.
   - name: FNLLA Trademark Notice
-    url: https://github.com/fnlla/php/blob/main/TRADEMARKS.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/TRADEMARKS.md
     about: Review branding and endorsement rules before presenting a fork, derivative or integration as official FNLLA work.
   - name: FNLLA README
-    url: https://github.com/fnlla/php/blob/main/README.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/README.md
     about: Review the framework contract, repository structure and maintainer workflow before opening an issue.
-  - name: FNLLA v1.0.14 release notes
-    url: https://github.com/fnlla/php/releases/tag/v1.0.14
+  - name: FNLLA releases
+    url: https://github.com/techayoDEV/fnlla/releases
     about: Check the current stable release scope before reporting a regression or release gap.

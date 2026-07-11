@@ -87,6 +87,8 @@ final class FnllaRuntimeGuard
             (string) ($config["page_view_glob"] ?? base_path("views/pages/*.php")),
             (array) ($config["required_page_markers"] ?? [])
         );
+        self::assertRequiredTextMarkers((array) ($config["required_text_markers"] ?? []));
+        self::assertForbiddenTextMarkers((array) ($config["forbidden_text_markers"] ?? []));
         self::assertForbiddenMarkers(
             (array) ($config["forbidden_markers"] ?? []),
             (array) ($config["scan_paths"] ?? [])
@@ -289,6 +291,56 @@ final class FnllaRuntimeGuard
                     if (preg_match($pattern, $contents) === 1) {
                         throw new RuntimeException("Forbidden UI marker detected in {$file}: {$pattern}");
                     }
+                }
+            }
+        }
+    }
+
+    private static function assertRequiredTextMarkers(array $requiredByPath): void
+    {
+        foreach ($requiredByPath as $path => $markers) {
+            if (!is_string($path) || $path === "") {
+                continue;
+            }
+
+            if (!is_file($path)) {
+                throw new RuntimeException("FNLLA runtime metadata file is missing: " . $path);
+            }
+
+            $contents = (string) file_get_contents($path);
+
+            foreach ((array) $markers as $marker) {
+                if (!is_string($marker) || $marker === "") {
+                    continue;
+                }
+
+                if (!str_contains($contents, $marker)) {
+                    throw new RuntimeException("FNLLA runtime metadata drift detected in {$path}. Missing marker: {$marker}");
+                }
+            }
+        }
+    }
+
+    private static function assertForbiddenTextMarkers(array $forbiddenByPath): void
+    {
+        foreach ($forbiddenByPath as $path => $patterns) {
+            if (!is_string($path) || $path === "") {
+                continue;
+            }
+
+            if (!is_file($path)) {
+                throw new RuntimeException("FNLLA runtime metadata file is missing: " . $path);
+            }
+
+            $contents = (string) file_get_contents($path);
+
+            foreach ((array) $patterns as $pattern) {
+                if (!is_string($pattern) || $pattern === "") {
+                    continue;
+                }
+
+                if (preg_match($pattern, $contents) === 1) {
+                    throw new RuntimeException("FNLLA runtime metadata drift detected in {$path}. Forbidden marker: {$pattern}");
                 }
             }
         }

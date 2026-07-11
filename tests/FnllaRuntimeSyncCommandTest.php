@@ -70,6 +70,23 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         self::assertStringContainsString("Unknown option for fnlla-runtime:sync: --unknown-option", $output);
     }
 
+    public function testFnllaRuntimeSyncAcceptsMaintainerRepositorySourcePath(): void
+    {
+        $projectRoot = $this->exportProject("FNLLA Runtime Maintainer Sync Test");
+
+        [$exitCode, $output] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["fnlla-runtime:sync", "--source", base_path()]
+        );
+
+        self::assertSame(0, $exitCode, $output);
+        self::assertStringContainsString("FNLLA built-in runtime sync completed.", $output);
+        self::assertSame(
+            trim((string) strtok((string) file_get_contents(base_path() . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n")),
+            trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n"))
+        );
+    }
+
     private function exportProject(string $appName): string
     {
         $targetPath = $this->makeTempPath("fnlla-fnlla-runtime-sync-project-");
@@ -101,12 +118,25 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
                 "name" => "FNLLA Runtime",
                 "version" => $version,
             ],
+            "runtime" => [
+                "distribution_root" => ".",
+            ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
-        file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "README.md", "# FNLLA Runtime Test Export" . PHP_EOL);
+        file_put_contents(
+            $runtimeRoot . DIRECTORY_SEPARATOR . "README.md",
+            "# FNLLA Runtime Test Export" . PHP_EOL
+            . PHP_EOL
+            . "This is a built-in FNLLA runtime handoff for downstream projects." . PHP_EOL
+            . "It lives under public/vendor/fnlla-runtime/ in exported projects." . PHP_EOL
+            . "Use scripts/sync-fnlla-runtime.ps1 to keep it aligned." . PHP_EOL
+        );
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "LICENSE.md", "MIT License" . PHP_EOL);
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "SUPPORT.md", "Support Policy" . PHP_EOL);
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "TRADEMARKS.md", "Trademark Notice" . PHP_EOL);
-        file_put_contents($cssPath . DIRECTORY_SEPARATOR . "fnlla-runtime.css", "/* test runtime */" . PHP_EOL);
+        file_put_contents(
+            $cssPath . DIRECTORY_SEPARATOR . "fnlla-runtime.css",
+            "/* Integrated vendored runtime stylesheet shipped from public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css. */" . PHP_EOL
+        );
         file_put_contents($jsPath . DIRECTORY_SEPARATOR . "fnlla-runtime.js", "window.FNLLARUNTIME = window.FNLLARUNTIME || {};" . PHP_EOL);
         file_put_contents($iconsPath . DIRECTORY_SEPARATOR . "test.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>" . PHP_EOL);
 

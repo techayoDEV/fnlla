@@ -326,8 +326,8 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/validate-fnlla-runtime.php` validates the enforced UI runtime contract
 - `scripts/validate-version-manifest.php` validates framework and built-in runtime version metadata
 - `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
-- exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock and a compatibility copy at `.fnlla/starter-lock.json`
-- exported projects also keep `php fnlla framework:update` plus a hidden legacy `starter:update` alias for downstream framework-update checks
+- exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock, while older compatibility artifacts stay internal to update flows
+- exported projects keep `php fnlla framework:update` as the public downstream update command, while older compatibility aliases stay hidden
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
 - the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release starter builds
 - `scripts/test.php` runs the repository-local framework tests

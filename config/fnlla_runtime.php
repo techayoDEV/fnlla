@@ -47,6 +47,33 @@ return [
         'class="section',
         'class="container',
     ],
+    "required_text_markers" => [
+        public_path("vendor/fnlla-runtime/README.md") => [
+            "built-in FNLLA runtime handoff for downstream projects",
+            "public/vendor/fnlla-runtime/",
+            "scripts/sync-fnlla-runtime.ps1",
+        ],
+        public_path("vendor/fnlla-runtime/MANIFEST.json") => [
+            '"distribution_root": "."',
+        ],
+        public_path("vendor/fnlla-runtime/assets/css/fnlla-runtime.css") => [
+            "Integrated vendored runtime stylesheet shipped from public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css.",
+        ],
+    ],
+    "forbidden_text_markers" => [
+        public_path("vendor/fnlla-runtime/README.md") => [
+            '/publish-fnlla-runtime\.mjs/i',
+            '/dist\/fnlla-runtime/i',
+            '/repository root `assets\/` tree/i',
+        ],
+        public_path("vendor/fnlla-runtime/MANIFEST.json") => [
+            '/"distribution_root": "dist\/fnlla-runtime"/',
+        ],
+        public_path("vendor/fnlla-runtime/assets/css/fnlla-runtime.css") => [
+            '/src\/css\//i',
+            '/publish-fnlla-runtime\.mjs/i',
+        ],
+    ],
     "scan_paths" => [
         base_path("views/layouts/*.php"),
         base_path("views/pages/*.php"),

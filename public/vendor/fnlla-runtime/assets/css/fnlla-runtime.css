@@ -2,7 +2,7 @@
   FNLLA runtime stylesheet.
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   Produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
-  Published from readable source modules in src/css/ via scripts/publish-fnlla-runtime.mjs.
+  Integrated vendored runtime stylesheet shipped from public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css.
 */
 
 /*

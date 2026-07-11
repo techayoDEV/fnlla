@@ -228,7 +228,7 @@ $writtenFiles = [];
 
 foreach ($pagesToWrite as $page) {
     $target = $page["target"];
-    $content = normalize_line_endings($page["content"]);
+    $content = normalize_line_endings(minify_docs_html($page["content"]));
     $current = is_file($target) ? normalize_line_endings((string) file_get_contents($target)) : null;
 
     if ($current === $content) {
@@ -359,6 +359,28 @@ function render_docs_page(array $page): string
 </body>
 </html>
 HTML;
+}
+
+function minify_docs_html(string $html): string
+{
+    $preservedBlocks = [];
+
+    $html = preg_replace_callback('/<pre\b[^>]*>.*?<\/pre>/si', static function (array $matches) use (&$preservedBlocks): string {
+        $token = '@@FNLLA_PRE_' . count($preservedBlocks) . '@@';
+        $preservedBlocks[$token] = $matches[0];
+
+        return $token;
+    }, $html) ?? $html;
+
+    $html = preg_replace('/^\h+|\h+$/m', '', $html) ?? $html;
+    $html = preg_replace('/>\s+</', '><', $html) ?? $html;
+    $html = preg_replace('/\R{2,}/', "\n", $html) ?? $html;
+
+    if ($preservedBlocks !== []) {
+        $html = strtr($html, $preservedBlocks);
+    }
+
+    return trim($html) . PHP_EOL;
 }
 
 function render_root_navigation(array $rootPages, string $activeLabel, ?string $ariaCurrentLabel = null): string

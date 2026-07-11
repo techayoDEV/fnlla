@@ -148,7 +148,8 @@ Purpose:
 - refreshes the built-in runtime under `public/vendor/fnlla-runtime/`
 - can work from a provided local source path or by cloning the GitHub source of truth
 - detects whether the provided source is a published runtime export or a source checkout
-- when needed, publishes the runtime first and then mirrors the exported `dist/fnlla-runtime/` output
+- accepts the integrated `techayoDEV/fnlla` repository as a source and mirrors `public/vendor/fnlla-runtime/`
+- can also work from a dedicated runtime export rooted elsewhere when that is the maintained source you have locally
 - finishes by running `scripts/sync-version-manifest.php`
 
 Use it when:
@@ -192,7 +193,7 @@ Important boundary:
 - when `--source` is used, the command expects a maintained `techayoDEV/fnlla` source repository path
 - the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
 - it updates only files that the framework lock marks as framework-managed
-- a hidden `php fnlla starter:update` alias remains available for legacy project workflows
+- older compatibility paths remain intentionally hidden so the public downstream command surface stays centered on `php fnlla framework:update`
 
 ### `/maintenance/framework-update`
 
