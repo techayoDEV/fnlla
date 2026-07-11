@@ -98,3 +98,5 @@ Write-Host "FNLLA Runtime publish complete."
 Write-Host "Source runtime: $sourceRuntimePath"
 Write-Host "Published export: $distRoot"
 Write-Host "Version: $version"
+
+$global:LASTEXITCODE = 0
