@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP VALIDATION SOURCE
+FNLLA VALIDATION SOURCE
 File: src\Validation\Validator.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -81,8 +81,8 @@ final class Validator
                 "integer" => $this->assert($field, filter_var($value, FILTER_VALIDATE_INT) !== false, "This field must be an integer."),
                 "numeric" => $this->assert($field, is_numeric($value), "This field must be numeric."),
                 "url" => $this->assert($field, is_string($value) && filter_var($value, FILTER_VALIDATE_URL) !== false, "This field must be a valid URL."),
-                "min" => $this->assert($field, mb_strlen((string) $value) >= (int) $parameter, "This field must be at least " . (int) $parameter . " characters."),
-                "max" => $this->assert($field, mb_strlen((string) $value) <= (int) $parameter, "This field must not exceed " . (int) $parameter . " characters."),
+                "min" => $this->assert($field, $this->size($value) >= (float) $parameter, "This field must be at least " . (string) $parameter . "."),
+                "max" => $this->assert($field, $this->size($value) <= (float) $parameter, "This field must not exceed " . (string) $parameter . "."),
                 "boolean" => $this->assert($field, in_array($value, [true, false, 0, 1, "0", "1"], true), "This field must be boolean."),
                 "confirmed" => $this->assert($field, ($this->data[$field . "_confirmation"] ?? null) === $value, "This field confirmation does not match."),
                 "file" => $this->assert($field, $value instanceof UploadedFile && $value->isValid(), "This field must contain a valid uploaded file."),
@@ -105,5 +105,22 @@ final class Validator
         if (!$condition && !isset($this->errors[$field])) {
             $this->errors[$field] = $message;
         }
+    }
+
+    private function size(mixed $value): float|int
+    {
+        if ($value instanceof UploadedFile) {
+            return $value->size();
+        }
+
+        if (is_array($value)) {
+            return count($value);
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        return mb_strlen((string) $value);
     }
 }

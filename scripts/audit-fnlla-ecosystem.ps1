@@ -1,22 +1,22 @@
 <#
 ===============================================================================
-FNLLA PHP MAINTAINER SCRIPT
+FNLLA MAINTAINER SCRIPT
 File: scripts\audit-fnlla-ecosystem.ps1
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This script belongs to the maintained repository workflow for
-the public MIT-licensed FNLLA PHP framework.
+the public MIT-licensed FNLLA framework.
 
 Purpose:
-- audits fnlla-php against the vendored FNLLA Web runtime, shared GitHub defaults
+- audits fnlla against the vendored FNLLA runtime, shared GitHub defaults
   and the public repository contract before release work
 #>
 
 [CmdletBinding()]
 param(
-    [string]$FnllaWebPath,
+    [string]$FnllaRuntimePath,
     [string]$FnllaOrgGithubPath,
     [switch]$SkipLocalChecks,
     [switch]$SkipRemoteChecks
@@ -141,7 +141,7 @@ function Test-OrganizationBranding {
         ".github\ISSUE_TEMPLATE\bug-report.yml",
         ".github\ISSUE_TEMPLATE\feature-request.yml"
     )
-    $legacyPattern = "FNLLA Web|techayoDEV/fnlla-web|fnlla-ui"
+    $legacyPattern = "FNLLA Runtime|techayoDEV/fnlla-runtime|fnlla-ui"
 
     foreach ($relativePath in $targets) {
         $absolutePath = Join-Path $RepositoryPath $relativePath
@@ -154,53 +154,53 @@ function Test-OrganizationBranding {
         $matches = Select-String -Path $absolutePath -Pattern $legacyPattern
 
         foreach ($match in $matches) {
-            Add-Error -Errors $Errors -Message ("Organization defaults still use legacy FNLLA Web naming in {0}:{1}" -f $relativePath, $match.LineNumber)
+            Add-Error -Errors $Errors -Message ("Organization defaults still use legacy FNLLA Runtime naming in {0}:{1}" -f $relativePath, $match.LineNumber)
         }
     }
 }
 
 $projectRoot = Resolve-AbsolutePath -Path (Join-Path $PSScriptRoot "..")
 $workspaceRoot = Split-Path -Path $projectRoot -Parent
-$resolvedFnllaWebPath = if ($FnllaWebPath) { Resolve-AbsolutePath -Path $FnllaWebPath } else { Join-Path $workspaceRoot "fnlla-web" }
+$resolvedFnllaRuntimePath = if ($FnllaRuntimePath) { Resolve-AbsolutePath -Path $FnllaRuntimePath } else { Join-Path $workspaceRoot "fnlla-runtime" }
 $resolvedFnllaOrgGithubPath = if ($FnllaOrgGithubPath) { Resolve-AbsolutePath -Path $FnllaOrgGithubPath } else { Join-Path $workspaceRoot "fnlla-org-github" }
 $temporaryPaths = New-Object System.Collections.Generic.List[string]
 $errors = New-Object System.Collections.Generic.List[string]
 
 try {
     $frameworkVersion = Read-VersionFile -Path (Join-Path $projectRoot "VERSION")
-    $vendoredWebVersion = Read-VersionFile -Path (Join-Path $projectRoot "public\vendor\fnlla-web\VERSION")
+    $vendoredWebVersion = Read-VersionFile -Path (Join-Path $projectRoot "public\vendor\fnlla-runtime\VERSION")
     $projectManifest = Read-JsonFile -Path (Join-Path $projectRoot "MANIFEST.json")
 
     if ($projectManifest.product.version -ne $frameworkVersion) {
-        Add-Error -Errors $errors -Message "fnlla-php MANIFEST.json product.version does not match VERSION ($($projectManifest.product.version) vs $frameworkVersion)."
+        Add-Error -Errors $errors -Message "fnlla MANIFEST.json product.version does not match VERSION ($($projectManifest.product.version) vs $frameworkVersion)."
     }
 
     if ($projectManifest.ui_runtime.vendored_version -ne $vendoredWebVersion) {
-        Add-Error -Errors $errors -Message "fnlla-php MANIFEST.json ui_runtime.vendored_version does not match public/vendor/fnlla-web/VERSION ($($projectManifest.ui_runtime.vendored_version) vs $vendoredWebVersion)."
+        Add-Error -Errors $errors -Message "fnlla MANIFEST.json ui_runtime.vendored_version does not match public/vendor/fnlla-runtime/VERSION ($($projectManifest.ui_runtime.vendored_version) vs $vendoredWebVersion)."
     }
 
     if (-not $SkipLocalChecks) {
-        if (Test-Path -LiteralPath $resolvedFnllaWebPath -PathType Container) {
-            $localWebVersion = Read-VersionFile -Path (Join-Path $resolvedFnllaWebPath "VERSION")
-            $localWebManifest = Read-JsonFile -Path (Join-Path $resolvedFnllaWebPath "MANIFEST.json")
+        if (Test-Path -LiteralPath $resolvedFnllaRuntimePath -PathType Container) {
+            $localWebVersion = Read-VersionFile -Path (Join-Path $resolvedFnllaRuntimePath "VERSION")
+            $localWebManifest = Read-JsonFile -Path (Join-Path $resolvedFnllaRuntimePath "MANIFEST.json")
 
             if ($localWebVersion -ne $vendoredWebVersion) {
-                Add-Error -Errors $errors -Message "Local fnlla-web VERSION ($localWebVersion) does not match fnlla-php vendored FNLLA Web version ($vendoredWebVersion)."
+                Add-Error -Errors $errors -Message "Local fnlla-runtime VERSION ($localWebVersion) does not match fnlla vendored FNLLA Runtime version ($vendoredWebVersion)."
             }
 
             if ($localWebManifest.product.version -ne $localWebVersion) {
-                Add-Error -Errors $errors -Message "Local fnlla-web MANIFEST.json product.version does not match VERSION ($($localWebManifest.product.version) vs $localWebVersion)."
+                Add-Error -Errors $errors -Message "Local fnlla-runtime MANIFEST.json product.version does not match VERSION ($($localWebManifest.product.version) vs $localWebVersion)."
             }
 
-            $tagResult = Invoke-Git -Arguments @("-C", $resolvedFnllaWebPath, "tag", "--points-at", "HEAD")
+            $tagResult = Invoke-Git -Arguments @("-C", $resolvedFnllaRuntimePath, "tag", "--points-at", "HEAD")
             $releaseTags = @($tagResult.Output | Where-Object { $_ -match '^v\d+\.\d+\.\d+$' })
             if ($tagResult.ExitCode -eq 0 -and $releaseTags.Count -gt 0) {
-                Write-Host "Local fnlla-web checkout is exactly on tag $($releaseTags[0])."
+                Write-Host "Local fnlla-runtime checkout is exactly on tag $($releaseTags[0])."
             } else {
-                Write-Host "Local fnlla-web checkout is not exactly on a release tag; treat it as unpublished work unless that is intentional."
+                Write-Host "Local fnlla-runtime checkout is not exactly on a release tag; treat it as unpublished work unless that is intentional."
             }
         } else {
-            Write-Host "Skipping local fnlla-web check because the path does not exist: $resolvedFnllaWebPath"
+            Write-Host "Skipping local fnlla-runtime check because the path does not exist: $resolvedFnllaRuntimePath"
         }
 
         if (Test-Path -LiteralPath $resolvedFnllaOrgGithubPath -PathType Container) {
@@ -212,7 +212,7 @@ try {
 
     if (-not $SkipRemoteChecks) {
         if ($projectManifest.ui_runtime.repository -ne "https://github.com/techayoDEV/fnlla.git") {
-            Add-Error -Errors $errors -Message "fnlla-php MANIFEST.json ui_runtime.repository does not point at techayoDEV/fnlla."
+            Add-Error -Errors $errors -Message "fnlla MANIFEST.json ui_runtime.repository does not point at techayoDEV/fnlla."
         }
 
         $orgRepoPath = $resolvedFnllaOrgGithubPath
@@ -231,8 +231,8 @@ try {
         }
     }
 
-    Write-Host "FNLLA PHP version: $frameworkVersion"
-    Write-Host "Vendored FNLLA Web version: $vendoredWebVersion"
+    Write-Host "FNLLA version: $frameworkVersion"
+    Write-Host "Vendored FNLLA Runtime version: $vendoredWebVersion"
 
     if ($errors.Count -gt 0) {
         Write-Host ""

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST HARNESS SOURCE
+FNLLA TEST HARNESS SOURCE
 File: tests\PHPUnit\Framework\TestCase.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
-- Implements the repository-local test harness used by FNLLA PHP without Packagist dependencies.
+- Implements the repository-local test harness used by FNLLA without Packagist dependencies.
 */
 
 namespace PHPUnit\Framework;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP AUTHENTICATION SOURCE
+FNLLA AUTHENTICATION SOURCE
 File: src\Auth\Authorization\Gate.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -22,8 +22,6 @@ namespace Fnlla\Php\Auth\Authorization;
 
 use Fnlla\Php\Auth\AuthManager;
 use Fnlla\Php\Container\Container;
-use RuntimeException;
-
 final class Gate
 {
     private array $abilities = [];
@@ -49,10 +47,9 @@ final class Gate
 
         $user = $this->auth->user();
 
-        return (bool) $this->container->call($callback, [
+        return (bool) $this->container->call($callback, array_merge([
             "user" => $user,
-            ...$this->namedArguments($arguments),
-        ]);
+        ], array_values($arguments)));
     }
 
     public function authorize(string $ability, mixed ...$arguments): void
@@ -60,16 +57,5 @@ final class Gate
         if (!$this->allows($ability, ...$arguments)) {
             throw new AuthorizationException("This action is unauthorized.");
         }
-    }
-
-    private function namedArguments(array $arguments): array
-    {
-        $named = [];
-
-        foreach ($arguments as $index => $argument) {
-            $named["arg" . $index] = $argument;
-        }
-
-        return $named;
     }
 }

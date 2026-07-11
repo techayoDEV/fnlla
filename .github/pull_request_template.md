@@ -1,6 +1,6 @@
 ## Summary
 
-Describe the change in a few direct sentences and explain why it belongs in FNLLA PHP now.
+Describe the change in a few direct sentences and explain why it belongs in FNLLA now.
 
 If this change may be security-sensitive, stop and follow `SECURITY.md` instead of opening a normal PR.
 
@@ -11,14 +11,14 @@ If this change may be security-sensitive, stop and follow `SECURITY.md` instead 
 - Auth or session flow:
 - Database or migrations:
 - Views or rendering:
-- FNLLA Web contract:
+- FNLLA Runtime contract:
 - Release surface:
 
 ## Validation
 
 - [ ] `php scripts/test.php` was run where behavior changed
 - [ ] `php scripts/lint.php` was run
-- [ ] `php scripts/validate-fnlla-web.php` still passes when UI-facing templates or layout changed
+- [ ] `php scripts/validate-fnlla-runtime.php` still passes when UI-facing templates or layout changed
 - [ ] CLI behavior was checked where command or migration flow changed
 
 ## Release Notes

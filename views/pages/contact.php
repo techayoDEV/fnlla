@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP VIEW TEMPLATE
+FNLLA VIEW TEMPLATE
 File: views\pages\contact.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
-- Defines a maintained page template for the official FNLLA PHP demonstration surface.
+- Defines the starter contact page that downstream teams can adapt into the real
+  request or intake flow.
 */
 
 $nameError = error_for("name");
@@ -25,19 +26,18 @@ $messageError = error_for("message");
 $allErrors = errors();
 ?>
 <section class="section pt-1">
-  <div class="container site-page-stack">
-    <section class="hero hero-compact" aria-label="Contact page introduction">
+  <div class="container">
+    <section class="hero hero-compact" aria-label="Contact starter introduction">
       <div class="grid gap-md hero-copy">
         <div class="d-flex flex-wrap items-center gap-md">
-          <span class="tag">Working form example</span>
-          <span class="badge">Validation</span>
-          <span class="badge">CSRF</span>
-          <span class="badge">Flash feedback</span>
+          <span class="tag">Contact page</span>
+          <span class="badge">Working form</span>
+          <span class="badge">Project-ready starter</span>
         </div>
-        <h1 class="hero-title">A real project contact flow is already part of the starter application shell.</h1>
-        <p class="hero-text">Use this page as one of the first delivery surfaces to reshape: replace the placeholder copy, point it at the real mailbox or CRM, and adjust the validation to the actual project workflow.</p>
+        <h1 class="hero-title">The starter already includes a working contact flow that should evolve into the real request path of the application.</h1>
+        <p class="hero-text">Keep this page alive from the first day of delivery. Replace the placeholder wording, route it to the real mailbox or integration, and grow the form only when the project needs more capture fields or logic.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="<?= h(route("project.launch")) ?>">Review project launch flow</a>
+          <a class="btn btn-primary" href="<?= h(route("services")) ?>">View services</a>
           <a class="btn btn-outline" href="<?= h(route("home")) ?>">Back to home</a>
         </div>
       </div>
@@ -47,22 +47,14 @@ $allErrors = errors();
 
 <section class="section">
   <div class="container">
-    <section class="process-section" aria-label="Contact flow process">
-      <div class="section-header mb-0">
-        <p class="process-kicker">Delivery sequence</p>
-        <h2 class="section-title">This flow is simple on purpose, but it models the same pattern that should scale into real project work.</h2>
-        <p class="section-text">Treat it as a reusable request-capture baseline rather than static demonstration copy.</p>
-      </div>
-      <div class="process-grid">
-        <?php foreach ($deliverySteps as $step): ?>
-        <article class="process-step">
-          <span class="process-step-number"><?= h($step["number"]) ?></span>
-          <h3 class="process-step-title"><?= h($step["title"]) ?></h3>
-          <p class="process-step-text"><?= h($step["text"]) ?></p>
-        </article>
-        <?php endforeach; ?>
-      </div>
-    </section>
+    <div class="grid grid-3 gap-md">
+      <?php foreach ($contactReasons as $reason): ?>
+      <article class="feature-card">
+        <h2 class="content-title">Starter value</h2>
+        <p class="content-text"><?= h($reason) ?></p>
+      </article>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 
@@ -71,9 +63,9 @@ $allErrors = errors();
     <section class="contact-section" id="contact-form">
       <div class="contact-grid">
         <aside class="contact-card contact-summary-card" aria-label="Contact section summary">
-          <p class="contact-kicker">Flow summary</p>
-          <h2 class="contact-card-title">Use one reusable server-rendered intake pattern instead of rebuilding form feedback on every new page.</h2>
-          <p class="contact-text">The starter shows a complete baseline: request data capture, validation, flashed status and a real redirect-after-post flow.</p>
+          <p class="contact-kicker">Starter summary</p>
+          <h2 class="contact-card-title">Keep one reusable server-rendered intake pattern and adapt it to the real delivery flow.</h2>
+          <p class="contact-text">The starter already shows the full baseline: request data capture, validation, flashed status and a real redirect-after-post cycle.</p>
           <ul class="contact-list">
             <li>CSRF token verification on submit</li>
             <li>Session-backed flash messages</li>
@@ -156,7 +148,7 @@ $allErrors = errors();
 
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit">Submit request</button>
-              <a class="btn btn-ghost" href="<?= h(route("project.launch")) ?>">Open project launch</a>
+              <a class="btn btn-ghost" href="<?= h(route("about")) ?>">Read about the starter</a>
             </div>
           </form>
         </article>

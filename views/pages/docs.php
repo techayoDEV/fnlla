@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP VIEW TEMPLATE
+FNLLA VIEW TEMPLATE
 File: views\pages\docs.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -28,7 +28,7 @@ Purpose:
           <span class="badge">Local docs</span>
         </div>
         <h1 class="hero-title">Use this page to bridge the running demo and the deeper framework docs without pretending they are the same thing.</h1>
-        <p class="hero-text">The application surface shows how the starter behaves in a browser. The docs explain the repository contract, export workflow and delivery rules behind that surface.</p>
+        <p class="hero-text">The application surface shows how the starter behaves in a browser. The docs explain the repository contract, export workflow and how the built-in runtime should be used behind that surface.</p>
         <ul class="hero-proof-list">
           <li><code>/docs</code> is the app-native entry point for the local documentation workspace.</li>
           <li>The HTML docs remain the source for long-form reference and guide reading.</li>
@@ -85,7 +85,7 @@ Purpose:
     <section class="feature-section" aria-label="Reference documentation">
       <div class="section-header mb-0">
         <p class="feature-kicker">Reference set</p>
-        <h2 class="section-title">Use these pages to understand the maintained repository and runtime contract.</h2>
+        <h2 class="section-title">Use these pages to understand the maintained repository and built-in runtime.</h2>
         <p class="section-text">These are the shorter pages you typically read when mapping the framework surface, release boundary and supported stack assumptions.</p>
       </div>
       <div class="grid grid-3 gap-md">

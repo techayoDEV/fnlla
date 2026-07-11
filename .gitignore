@@ -1,5 +1,5 @@
 # ==============================================================================
-# FNLLA PHP REPOSITORY IGNORE RULES
+# FNLLA REPOSITORY IGNORE RULES
 # Copyright (c) 2026 TechAyo LTD (techayo.co.uk). All rights reserved.
 # Produced, maintained and distributed by TechAyo LTD.
 # These rules keep local runtime artifacts out of the maintained repository tree.
@@ -12,7 +12,7 @@
 !/storage/framework/cache/.gitignore
 /storage/framework/queue/*
 !/storage/framework/queue/.gitignore
-/storage/framework/fnlla-web-guard.json
+/storage/framework/fnlla-runtime-guard.json
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore
 /contact*.html

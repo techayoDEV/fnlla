@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP MAINTAINER SCRIPT
+FNLLA MAINTAINER SCRIPT
 File: scripts\test.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
 - Supports framework maintenance, validation, release hygiene or repository hardening.
 */
 
-define("FNLLA_WEB_SKIP_AUTO_GUARD", true);
+define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true);
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "bootstrap.php";
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "PHPUnit" . DIRECTORY_SEPARATOR . "Framework" . DIRECTORY_SEPARATOR . "TestCase.php";
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 
 /*
 Local harness note:
-- FNLLA PHP keeps a repository-local test runner so routine framework work does
+- FNLLA keeps a repository-local test runner so routine framework work does
   not depend on Packagist or an external PHPUnit install
 - the namespace-compatible TestCase shim under `tests/PHPUnit/Framework/`
   preserves a familiar test authoring surface for maintainers

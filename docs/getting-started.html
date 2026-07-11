@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
-  <title>Getting Started - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <title>Getting Started - FNLLA Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.15</span>
+        <span class="doc-status">Stable 1.0.16</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -39,7 +39,7 @@
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-runtime.html">Built-in Runtime</a>
         <a class="btn btn-outline btn-sm" href="./getting-started.html" aria-current="page">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -67,7 +67,7 @@
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Quickstart</h2>
-        <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a project for the real delivery, configure MySQL and validate the UI/runtime contract before building features.</p>
+        <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a project for the real delivery, configure MySQL and validate the built-in runtime before building features.</p>
       </div>
 
       <div class="grid">
@@ -101,14 +101,14 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Recommended first steps for a new downstream project</h2>
-        <p class="section-text">The exported project already runs, but the first pass should focus on wiring, contract validation and replacing the demonstration surface with the actual product flow.</p>
+        <p class="section-text">The exported project already runs, but the first pass should focus on wiring, runtime validation and replacing the demonstration surface with the actual product flow.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
           <h3 class="card-title">Initial commands</h3>
-          <pre><code>php fnlla fnlla-web:sync
-php fnlla fnlla-web:validate
+          <pre><code>php fnlla fnlla-runtime:sync
+php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
@@ -150,12 +150,12 @@ php scripts/validate-version-manifest.php</code></pre>
       </div>
     </section>
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>

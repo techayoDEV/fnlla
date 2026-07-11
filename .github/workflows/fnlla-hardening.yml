@@ -1,0 +1,55 @@
+name: FNLLA Hardening
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hardening:
+    runs-on: windows-latest
+    env:
+      FNLLA_WEB_AUTO_SYNC: false
+      FNLLA_WEB_ENFORCE: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Show PHP version
+        shell: pwsh
+        run: php -v
+
+      - name: Run repository tests
+        shell: pwsh
+        run: php .\scripts\test.php
+
+      - name: Run syntax lint
+        shell: pwsh
+        run: php .\scripts\lint.php
+
+      - name: Validate FNLLA Runtime contract
+        shell: pwsh
+        run: php .\scripts\validate-fnlla-runtime.php
+
+      - name: Validate version contract
+        shell: pwsh
+        run: php .\scripts\validate-version-manifest.php
+
+      - name: Audit cross-repository ecosystem contract
+        shell: pwsh
+        run: .\scripts\audit-fnlla-ecosystem.ps1 -SkipLocalChecks

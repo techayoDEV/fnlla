@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\ApplicationSurfaceTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -35,13 +35,14 @@ final class ApplicationSurfaceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->containerBackup = $GLOBALS["fnlla_php_container"] ?? null;
+        $this->containerBackup = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
         $this->sessionBackup = $_SESSION ?? [];
         $_SESSION = [];
     }
 
     protected function tearDown(): void
     {
+        $GLOBALS["fnlla_container"] = $this->containerBackup;
         $GLOBALS["fnlla_php_container"] = $this->containerBackup;
         $_SESSION = $this->sessionBackup;
     }
@@ -56,8 +57,28 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("Build the real web project by modifying the starter itself", $response->body());
-        self::assertStringContainsString("Project launch", $response->body());
+        self::assertStringContainsString("starter skeleton", $response->body());
+        self::assertStringContainsString("Services", $response->body());
+        self::assertStringContainsString("About", $response->body());
+    }
+
+    public function testStarterPagesAreAvailableThroughPublicRoutes(): void
+    {
+        $application = $this->makeApplication();
+
+        $aboutResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/about",
+            "REQUEST_METHOD" => "GET",
+        ]));
+        $servicesResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/services",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame(200, $aboutResponse->status());
+        self::assertSame(200, $servicesResponse->status());
+        self::assertStringContainsString("starter foundation", $aboutResponse->body());
+        self::assertStringContainsString("real product or service structure", $servicesResponse->body());
     }
 
     public function testHealthRouteRedirectsToMaintenanceSurface(): void
@@ -120,6 +141,7 @@ final class ApplicationSurfaceTest extends TestCase
             $provider->boot();
         }
 
+        $GLOBALS["fnlla_container"] = $container;
         $GLOBALS["fnlla_php_container"] = $container;
         $router = (static function (Container $container) {
             return require base_path("bootstrap/router.php");

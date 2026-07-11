@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\StarterUpdateCommandTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -113,11 +113,11 @@ final class FrameworkUpdateCommandTest extends TestCase
 
     public function testFrameworkUpdateCanAutoDetectSiblingSourceRepository(): void
     {
-        $workspaceRoot = $this->makeTempPath("fnlla-php-framework-update-workspace-");
+        $workspaceRoot = $this->makeTempPath("fnlla-framework-update-workspace-");
         mkdir($workspaceRoot, 0777, true);
 
         $projectRoot = $workspaceRoot . DIRECTORY_SEPARATOR . "project";
-        $sourceClone = $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla-php";
+        $sourceClone = $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla";
 
         $this->exportProjectTo($projectRoot, "Framework Auto Detect Test");
         mkdir($sourceClone, 0777, true);
@@ -139,7 +139,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
     private function exportProject(string $appName): string
     {
-        $targetPath = $this->makeTempPath("fnlla-php-framework-update-project-");
+        $targetPath = $this->makeTempPath("fnlla-framework-update-project-");
         $this->exportProjectTo($targetPath, $appName);
 
         return $targetPath;
@@ -147,7 +147,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
     private function exportProjectTo(string $targetPath, string $appName): void
     {
-        $container = $GLOBALS["fnlla_php_container"] ?? null;
+        $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
         self::assertInstanceOf(Container::class, $container);
 
         $command = new MakeProjectCommand($container);
@@ -157,7 +157,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
     private function cloneRepository(): string
     {
-        $targetPath = $this->makeTempPath("fnlla-php-framework-update-source-");
+        $targetPath = $this->makeTempPath("fnlla-framework-update-source-");
         mkdir($targetPath, 0777, true);
         $this->copyDirectory(base_path(), $targetPath);
 

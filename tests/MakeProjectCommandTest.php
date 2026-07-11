@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\MakeProjectCommandTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -34,7 +34,7 @@ final class MakeProjectCommandTest extends TestCase
     {
         $this->targetPath = sys_get_temp_dir()
             . DIRECTORY_SEPARATOR
-            . "fnlla-php-make-project-test-"
+            . "fnlla-make-project-test-"
             . bin2hex(random_bytes(4));
     }
 
@@ -62,7 +62,7 @@ final class MakeProjectCommandTest extends TestCase
 
     public function testExportedStarterIncludesProjectSurfaceWithoutMaintainerResidue(): void
     {
-        $container = $GLOBALS["fnlla_php_container"] ?? null;
+        $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
         self::assertInstanceOf(Container::class, $container);
 
         $command = new MakeProjectCommand($container);
@@ -87,14 +87,16 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Console" . DIRECTORY_SEPARATOR . "Commands" . DIRECTORY_SEPARATOR . "MakeCommandCommand.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Console" . DIRECTORY_SEPARATOR . "Commands" . DIRECTORY_SEPARATOR . "MakeProjectCommand.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "MakeProjectCommandTest.php"));
-        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "FnllaWebSyncCommandTest.php"));
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "FnllaRuntimeSyncCommandTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "FrameworkExtensionsTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "ValidationTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "platform.php"));
-        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php"));
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php");
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "login.php"));
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "app.log"));
-        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "fnlla-web-guard.json"));
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "fnlla-runtime-guard.json"));
         self::assertSame(
             [],
             glob($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "cache" . DIRECTORY_SEPARATOR . "*.cache") ?: []
@@ -137,7 +139,11 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "/project/launch",
+            "/about",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "src/Controllers/PageController.php",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
@@ -171,7 +177,7 @@ final class MakeProjectCommandTest extends TestCase
         );
 
         self::assertSame(0, $exitCode, $output);
-        self::assertStringContainsString("FNLLA PHP version manifest passed.", $output);
+        self::assertStringContainsString("FNLLA version manifest passed.", $output);
 
         [$listExitCode, $listOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
@@ -180,7 +186,7 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $listExitCode, $listOutput);
         self::assertStringContainsString("framework:update", $listOutput);
-        self::assertStringContainsString("fnlla-web:validate", $listOutput);
+        self::assertStringContainsString("fnlla-runtime:validate", $listOutput);
         self::assertFalse(str_contains($listOutput, "starter:update"));
         self::assertFalse(str_contains($listOutput, "make:project"));
         self::assertFalse(str_contains($listOutput, "make:controller"));
@@ -216,7 +222,8 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $routeListExitCode, $routeListOutput);
         self::assertStringContainsString("GET     /", $routeListOutput);
-        self::assertStringContainsString("GET     /project/launch", $routeListOutput);
+        self::assertStringContainsString("GET     /about", $routeListOutput);
+        self::assertStringContainsString("GET     /services", $routeListOutput);
         self::assertStringContainsString("GET     /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/health", $routeListOutput);
@@ -225,7 +232,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("GET     /api/health", $routeListOutput);
         self::assertFalse(str_contains($routeListOutput, "/starter/update"));
         self::assertFalse(str_contains($routeListOutput, "/platform"));
-        self::assertFalse(str_contains($routeListOutput, "/about"));
+        self::assertFalse(str_contains($routeListOutput, "/project/launch"));
         self::assertFalse(str_contains($routeListOutput, "/login"));
         self::assertFalse(str_contains($routeListOutput, "/dashboard"));
     }

@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONFIGURATION FILE
+FNLLA CONFIGURATION FILE
 File: config\app.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
-- Defines maintained application or framework configuration for the official FNLLA PHP stack.
+- Defines maintained application or framework configuration for the official FNLLA stack.
 */
 
 $environment = framework_detect_environment();
 $isDevelopment = $environment === "development";
 
 return [
-    "name" => "FNLLA PHP",
+    "name" => "FNLLA",
     "environment" => $environment,
     "debug" => (bool) env("APP_DEBUG", $isDevelopment),
     "base_url" => rtrim((string) env("APP_URL", ""), "/"),

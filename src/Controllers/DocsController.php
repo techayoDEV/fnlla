@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONTROLLER SOURCE
+FNLLA CONTROLLER SOURCE
 File: src\Controllers\DocsController.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -28,7 +28,7 @@ final class DocsController extends Controller
         [
             "file" => "index.html",
             "title" => "Overview",
-            "summary" => "Repository contract, supported stack and the shortest path to understanding what FNLLA PHP is.",
+            "summary" => "Repository contract, supported stack and the shortest path to understanding what FNLLA is.",
             "kind" => "Reference",
         ],
         [
@@ -38,9 +38,9 @@ final class DocsController extends Controller
             "kind" => "Reference",
         ],
         [
-            "file" => "fnlla-web.html",
-            "title" => "UI Runtime",
-            "summary" => "The one supported UI runtime boundary and the operational rules around the vendored runtime layer.",
+            "file" => "fnlla-runtime.html",
+            "title" => "Built-in Runtime",
+            "summary" => "How FNLLA's built-in runtime works, where it lives and how to use it while writing views.",
             "kind" => "Reference",
         ],
         [
@@ -74,8 +74,8 @@ final class DocsController extends Controller
             "kind" => "Guide",
         ],
         [
-            "file" => "building-with-fnlla-php.html",
-            "title" => "Building with FNLLA PHP",
+            "file" => "building-with-fnlla.html",
+            "title" => "Building with FNLLA",
             "summary" => "The implementation guide for routes, controllers, views, forms, auth and MySQL-backed application work.",
             "kind" => "Guide",
         ],
@@ -139,7 +139,7 @@ final class DocsController extends Controller
 
     public function brandIcon(): Response
     {
-        return $this->assetResponse("docs/assets/brand/fnlla-php.svg", "image/svg+xml");
+        return $this->assetResponse("docs/assets/brand/fnlla.svg", "image/svg+xml");
     }
 
     private function assetResponse(string $relativePath, string $contentType): Response
@@ -165,16 +165,16 @@ final class DocsController extends Controller
     {
         $rewritten = str_replace(
             [
-                "../public/vendor/fnlla-web/assets/css/fnlla-web.css",
-                "../public/vendor/fnlla-web/assets/js/fnlla-web.js",
+                "../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css",
+                "../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js",
                 "./assets/docs.css",
                 "./assets/docs.js",
-                "./assets/brand/fnlla-web.svg",
-                "./assets/brand/fnlla-php.svg",
+                "./assets/brand/fnlla-runtime.svg",
+                "./assets/brand/fnlla.svg",
             ],
             [
-                asset("vendor/fnlla-web/assets/css/fnlla-web.css"),
-                asset("vendor/fnlla-web/assets/js/fnlla-web.js"),
+                asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css"),
+                asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"),
                 route("docs.asset.stylesheet"),
                 route("docs.asset.script"),
                 route("docs.asset.brand"),

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP BOOTSTRAP FILE
+FNLLA BOOTSTRAP FILE
 File: bootstrap\app.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -31,7 +31,7 @@ if (!is_dir($sessionPath)) {
 }
 
 session_save_path($sessionPath);
-session_name((string) ($sessionConfig["name"] ?? "fnlla_php_session"));
+session_name((string) ($sessionConfig["name"] ?? "fnlla_session"));
 ini_set("session.use_strict_mode", !empty($sessionConfig["strict_mode"]) ? "1" : "0");
 ini_set("session.use_only_cookies", !empty($sessionConfig["use_only_cookies"]) ? "1" : "0");
 ini_set("session.cookie_httponly", !empty($sessionConfig["http_only"]) ? "1" : "0");

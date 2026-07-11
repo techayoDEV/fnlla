@@ -34,8 +34,8 @@ $readinessTotal = count($readiness);
         <div class="d-flex flex-wrap items-center gap-md">
           <span class="badge"><?= h(strtoupper($serviceStatus)) ?></span>
           <span class="badge"><?= h((string) ($service["environment"] ?? "unknown")) ?></span>
-          <span class="badge">FNLLA PHP <?= h((string) ($versions["fnlla_php"] ?? "unknown")) ?></span>
-          <span class="badge">FNLLA Web <?= h((string) ($versions["fnlla_web"] ?? "unknown")) ?></span>
+          <span class="badge">FNLLA <?= h((string) ($versions["fnlla"] ?? "unknown")) ?></span>
+          <span class="badge">FNLLA Runtime <?= h((string) ($versions["fnlla_runtime"] ?? "unknown")) ?></span>
           <span class="badge">Readiness <?= h((string) $readinessOkCount) ?>/<?= h((string) $readinessTotal) ?></span>
         </div>
         <div class="hero-actions">
@@ -106,8 +106,8 @@ $readinessTotal = count($readiness);
       <div class="grid grid-2 gap-md">
         <article class="feature-card">
           <h2 class="content-title">Versions and release state</h2>
-          <p class="content-text mb-1"><strong>FNLLA PHP:</strong> <?= h((string) ($versions["fnlla_php"] ?? "unknown")) ?></p>
-          <p class="content-text mb-1"><strong>FNLLA Web:</strong> <?= h((string) ($versions["fnlla_web"] ?? "unknown")) ?></p>
+          <p class="content-text mb-1"><strong>FNLLA:</strong> <?= h((string) ($versions["fnlla"] ?? "unknown")) ?></p>
+          <p class="content-text mb-1"><strong>FNLLA Runtime:</strong> <?= h((string) ($versions["fnlla_runtime"] ?? "unknown")) ?></p>
           <p class="content-text mb-1"><strong>Release channel status:</strong> <?= h($releaseStatus) ?></p>
           <p class="content-text mb-0"><strong>Latest cached tag:</strong> <?= h((string) ($releaseChannel["latest_cached_tag"] ?? "not cached")) ?></p>
         </article>

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONTROLLER SOURCE
+FNLLA CONTROLLER SOURCE
 File: src\Controllers\HomeController.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -25,156 +25,9 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
 use Fnlla\Php\Support\VersionManifest;
-use Fnlla\Php\Validation\ValidationException;
 
 final class HomeController extends Controller
 {
-    public function home(Request $request): Response
-    {
-        $showDocsWorkspace = has_local_docs_workspace();
-
-        return $this->view("pages/home", [
-            "pageTitle" => "Home",
-            "pageTitleHome" => true,
-            "foundationCards" => [
-                [
-                    "title" => "Starter-first delivery",
-                    "text" => "The public starter is the application base teams actually extend, instead of a separate framework demo that has to be replaced beside itself.",
-                ],
-                [
-                    "title" => "FNLLA Web contract",
-                    "text" => "The starter still ships on one supported UI runtime, so routes, views and delivery logic can change without splitting the visual foundation.",
-                ],
-                [
-                    "title" => "Linked operator capabilities",
-                    "text" => "Maintenance, health and framework updates remain available as attached operational surfaces instead of taking over the public information architecture.",
-                ],
-            ],
-            "deliverySteps" => [
-                [
-                    "number" => "1",
-                    "title" => "Shape the public IA",
-                    "text" => "Start from the shipped public shell, then replace the starter sections, routes and copy with the real product structure for the project.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Attach real delivery flows",
-                    "text" => "Keep one working server-rendered form path, then expand into auth, data capture, dashboards or service workflows only where the project actually needs them.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Keep framework work explicit",
-                    "text" => "Use maintenance, health and validation commands as linked framework capabilities while the project surface grows independently.",
-                ],
-            ],
-            "launchTracks" => [
-                [
-                    "number" => "1",
-                    "title" => "Public experience",
-                    "text" => "Turn the starter homepage into the real project story, calls to action and page map instead of treating it as disposable placeholder chrome.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Application wiring",
-                    "text" => "Routes, controllers, views, forms and persistence are the seam where the starter becomes the actual application.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Operational confidence",
-                    "text" => "Health, framework updates and version checks stay available without forcing operator concerns into the public navigation.",
-                ],
-                [
-                    "number" => "4",
-                    "title" => "Maintainer clarity",
-                    "text" => "The `techayoDEV/fnlla` repository remains the framework source of truth, but the shipped starter is now the same application base downstream teams really edit.",
-                ],
-            ],
-            "launchChecklist" => [
-                "Replace placeholder routes, copy and sections with the real product structure early.",
-                "Use /project/launch as the first delivery checklist for a new exported application.",
-                "Keep /maintenance for framework upkeep rather than mixing those links into customer-facing IA.",
-                "Run validation, tests and version checks before calling the starter reshaping work stable.",
-            ],
-            "showDocsWorkspace" => $showDocsWorkspace,
-        ]);
-    }
-
-    public function projectLaunch(Request $request): Response
-    {
-        return $this->view("pages/project-launch", [
-            "pageTitle" => "Project Launch",
-            "launchTracks" => [
-                [
-                    "number" => "1",
-                    "title" => "Keep the starter as the public base",
-                    "text" => "Build the real web project by modifying the starter routes, views, copy and assets instead of constructing a second front beside it.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Replace generic delivery content",
-                    "text" => "Swap the placeholder sections, messages and proof points with the real product story and service structure as soon as the project starts.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Attach real project workflows",
-                    "text" => "Use the working form, routes and controller seams as the first bridge into CRM, auth, data capture or project-specific application logic.",
-                ],
-                [
-                    "number" => "4",
-                    "title" => "Leave framework upkeep linked, not embedded",
-                    "text" => "Health and framework-update tooling should stay available through maintenance without turning the public starter into an operator dashboard.",
-                ],
-            ],
-            "launchFiles" => [
-                "routes/web.php",
-                "src/Controllers/HomeController.php",
-                "views/layouts/app.php",
-                "views/pages/home.php",
-                "views/pages/contact.php",
-                "views/pages/project-launch.php",
-                "public/assets/app.css",
-                "config/app.php",
-                "database/migrations/",
-            ],
-            "launchCommands" => [
-                "php fnlla route:list",
-                "php fnlla fnlla-web:validate",
-                "php scripts/test.php",
-                "php scripts/lint.php",
-                "php scripts/validate-version-manifest.php",
-            ],
-        ]);
-    }
-
-    public function contact(Request $request): Response
-    {
-        return $this->view("pages/contact", [
-            "pageTitle" => "Contact",
-            "contactTopics" => [
-                "New website",
-                "Portal or application",
-                "Operations or support",
-            ],
-            "deliverySteps" => [
-                [
-                    "number" => "1",
-                    "title" => "Scope the request",
-                    "text" => "Capture the page map, auth boundary, data needs and operational constraints before deeper implementation work starts.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Build on the working starter flow",
-                    "text" => "Keep the starter form logic, validation and redirect-after-post pattern, then adapt the copy, fields and destination to the real project.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Validate before release",
-                    "text" => "Use lint, tests, FNLLA Web validation and version checks before treating any starter customization as ready.",
-                ],
-            ],
-        ]);
-    }
-
     public function maintenanceHome(Request $request): Response
     {
         $health = $this->buildHealthPayload($request);
@@ -239,12 +92,12 @@ final class HomeController extends Controller
             [
                 "label" => "Version contract",
                 "status" => (string) ($health["readiness"]["version_contract"] ?? "unknown"),
-                "text" => "Confirms whether VERSION, MANIFEST.json and the vendored FNLLA Web version still match the maintained repository contract.",
+                "text" => "Confirms whether VERSION, MANIFEST.json and the built-in runtime version still match the maintained repository contract.",
             ],
             [
                 "label" => "Runtime assets",
                 "status" => (string) ($health["readiness"]["vendored_runtime"] ?? "unknown"),
-                "text" => "Shows whether the project still ships the local FNLLA Web runtime files expected by the application shell.",
+                "text" => "Shows whether the project still ships the local built-in runtime files expected by the application shell.",
             ],
             [
                 "label" => "Storage readiness",
@@ -271,63 +124,12 @@ final class HomeController extends Controller
         return Response::json($this->buildHealthPayload($request));
     }
 
-    public function sendContact(Request $request): Response
-    {
-        $payload = [
-            "name" => trim((string) $request->input("name", "")),
-            "company" => trim((string) $request->input("company", "")),
-            "email" => trim((string) $request->input("email", "")),
-            "topic" => trim((string) $request->input("topic", "")),
-            "message" => trim((string) $request->input("message", "")),
-        ];
-
-        try {
-            $this->validate($payload, [
-                "name" => ["required", "string", "min:2", "max:120"],
-                "company" => ["nullable", "string", "max:120"],
-                "email" => ["required", "email", "max:160"],
-                "topic" => ["required", "in:New website,Portal or application,Operations or support"],
-                "message" => ["required", "string", "min:12", "max:3000"],
-            ]);
-        } catch (ValidationException $exception) {
-            flash_set("old", $payload);
-            flash_set("errors", $exception->errors());
-            flash_set("status", [
-                "variant" => "warning",
-                "title" => "A few fields still need attention",
-                "text" => "Review the highlighted inputs and submit the form again.",
-                "toast" => false,
-            ]);
-            regenerate_csrf_token();
-
-            return $this->redirect(route("contact") . "#contact-form");
-        }
-
-        flash_set("status", [
-            "variant" => "success",
-            "title" => "Request captured",
-            "text" => "The starter processed the form successfully and flashed the confirmation into the next request.",
-            "toast" => true,
-        ]);
-        mailer()->to((string) env("CONTACT_NOTIFICATION_EMAIL", "team@example.com"))->send(
-            "New contact form submission",
-            "<p><strong>Name:</strong> " . h($payload["name"]) . "</p><p><strong>Email:</strong> " . h($payload["email"]) . "</p><p><strong>Topic:</strong> " . h($payload["topic"]) . "</p><p><strong>Message:</strong> " . nl2br(h($payload["message"])) . "</p>",
-            "Name: {$payload["name"]}\nEmail: {$payload["email"]}\nTopic: {$payload["topic"]}\nMessage: {$payload["message"]}"
-        );
-        event("contact.form.submitted", [
-            "payload" => $payload,
-        ]);
-        regenerate_csrf_token();
-
-        return $this->redirect(route("contact") . "#contact-form");
-    }
-
     private function buildHealthPayload(Request $request): array
     {
         $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), (string) config("framework_update.source_path", ""));
         $versionStatus = VersionManifest::status();
         $frameworkVersion = $this->readVersionLine(base_path("VERSION"));
-        $uiVersion = $this->readVersionLine(public_path("vendor/fnlla-web/VERSION"));
+        $uiVersion = $this->readVersionLine(public_path("vendor/fnlla-runtime/VERSION"));
         $frameworkLockPresent = is_file(base_path(".fnlla/framework-lock.json"));
         $cachedRelease = FrameworkReleaseChannel::readCachedReleaseSummary(base_path()) ?? [];
         $releaseChannelEnabled = (bool) config("framework_update.github_enabled", true);
@@ -336,8 +138,8 @@ final class HomeController extends Controller
         $storageReady = $this->isWritableDirectory($frameworkStoragePath) && $this->isWritableDirectory($updatesStoragePath);
         $releaseCacheReady = trim((string) ($cachedRelease["tag"] ?? "")) !== "";
         $vendoredRuntimeReady = $uiVersion !== null
-            && is_file(public_path("vendor/fnlla-web/assets/css/fnlla-web.css"))
-            && is_file(public_path("vendor/fnlla-web/assets/js/fnlla-web.js"));
+            && is_file(public_path("vendor/fnlla-runtime/assets/css/fnlla-runtime.css"))
+            && is_file(public_path("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"));
         $versionContractReady = (bool) ($versionStatus["version_contract_ok"] ?? false);
         $sourceAvailable = is_string($sourceDetection["resolved_path"] ?? null) && $sourceDetection["resolved_path"] !== "";
         $releaseReadiness = !$releaseChannelEnabled
@@ -360,11 +162,11 @@ final class HomeController extends Controller
                 "status" => "ok",
                 "environment" => app_environment(),
                 "timestamp" => gmdate(DATE_ATOM),
-                "description" => "FNLLA PHP starter health status.",
+                "description" => "FNLLA starter application health status.",
             ],
             "versions" => [
-                "fnlla_php" => $frameworkVersion,
-                "fnlla_web" => $uiVersion,
+                "fnlla" => $frameworkVersion,
+                "fnlla_runtime" => $uiVersion,
             ],
             "runtime" => [
                 "php_version" => PHP_VERSION,
@@ -381,7 +183,7 @@ final class HomeController extends Controller
             ],
             "checks" => [
                 "framework_lock" => $frameworkLockPresent ? "ok" : "missing",
-                "vendored_fnlla_web" => $vendoredRuntimeReady ? "ok" : "missing",
+                "vendored_fnlla_runtime" => $vendoredRuntimeReady ? "ok" : "missing",
                 "framework_update_ui" => config("framework_update.ui_enabled", false) ? "enabled" : "disabled",
                 "auto_detected_source" => $sourceAvailable ? "available" : "not_detected",
             ],
@@ -444,10 +246,11 @@ final class HomeController extends Controller
             "operator_notes" => $operatorNotes,
             "links" => [
                 "home" => route("home"),
+                "about" => route("about"),
+                "services" => route("services"),
                 "maintenance" => route("maintenance.home"),
                 "health" => route("health"),
                 "api_health" => route("api.health"),
-                "project_launch" => route("project.launch"),
                 "contact" => route("contact"),
                 "framework_updates" => route("maintenance.framework_update"),
             ],

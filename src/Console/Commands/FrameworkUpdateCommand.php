@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONSOLE SOURCE
+FNLLA CONSOLE SOURCE
 File: src\Console\Commands\FrameworkUpdateCommand.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -35,7 +35,7 @@ final class FrameworkUpdateCommand extends Command
 
     public function description(): string
     {
-        return "Check or apply FNLLA PHP framework-base updates from a maintained source repository or the public GitHub release channel.";
+        return "Check or apply FNLLA framework-base updates from a maintained source repository or the public GitHub release channel.";
     }
 
     public function handle(array $arguments): int
@@ -50,7 +50,7 @@ final class FrameworkUpdateCommand extends Command
 
         $projectRoot = rtrim((string) base_path(), "\\/");
         $currentLock = FrameworkLock::load($projectRoot);
-        $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA PHP Project"));
+        $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA Project"));
 
         $report = ($options["github"] ?? false) === true
             ? (
@@ -148,8 +148,8 @@ final class FrameworkUpdateCommand extends Command
         $this->line("   or: php fnlla framework:update --apply [--source <path-to-fnlla>]");
         $this->line("   or: php fnlla framework:update --check --github [--release-tag v1.0.x]");
         $this->line("   or: php fnlla framework:update --apply --github [--release-tag v1.0.x]");
-        $this->line("If --source is omitted, FNLLA PHP will try to auto-detect a sibling maintained repository.");
-        $this->line("Use --github to compare against the latest published FNLLA PHP release downloaded into the local update cache.");
+        $this->line("If --source is omitted, FNLLA will try to auto-detect a sibling maintained repository.");
+        $this->line("Use --github to compare against the latest published FNLLA release downloaded into the local update cache.");
     }
 
     private function renderReport(array $report): void
@@ -169,8 +169,8 @@ final class FrameworkUpdateCommand extends Command
             );
             $this->line("GitHub cache: " . (string) ($report["download_cache_path"] ?? "unknown"));
         }
-        $this->line("Current framework base: " . $report["current_framework_version"] . " / FNLLA Web " . $report["current_ui_version"]);
-        $this->line("Source framework base: " . $report["source_framework_version"] . " / FNLLA Web " . $report["source_ui_version"]);
+        $this->line("Current framework base: " . $report["current_framework_version"] . " / FNLLA Runtime " . $report["current_ui_version"]);
+        $this->line("Source framework base: " . $report["source_framework_version"] . " / FNLLA Runtime " . $report["source_ui_version"]);
         $this->line("Managed files tracked: " . $report["tracked_managed_files"] . " (source export: " . $report["source_managed_files"] . ")");
         $this->line("Safe framework changes available: " . count($report["updates"]));
         $this->line("Conflicts: " . count($report["conflicts"]));

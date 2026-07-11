@@ -1,17 +1,17 @@
-# FNLLA PHP Release Notes Template
+# FNLLA Release Notes Template
 
 Use plain ASCII in GitHub release notes so file paths and bullets stay stable across shells, terminals and browsers.
 
 Template:
 
 ```md
-FNLLA PHP <version> is the current stable release of the maintained FNLLA PHP framework.
+FNLLA <version> is the current stable release of the maintained FNLLA framework.
 
 Highlights
 - Stable HTTP application foundation with routing, middleware, request and response abstractions, dependency injection and controllers
 - MySQL-first database layer with PDO access, query builder, migrations, rollback, seeders and factories
 - Sessions, cookies, CSRF protection, authentication, authorization and structured exception and logging flow
-- FNLLA Web runtime contract enforcement with GitHub-only sync under public/vendor/fnlla-web/
+- FNLLA Runtime runtime contract enforcement with GitHub-only sync under public/vendor/fnlla-runtime/
 
 Operational notes
 - README.md, VERSION, LICENSE.md, SUPPORT.md and TRADEMARKS.md are aligned for the release line

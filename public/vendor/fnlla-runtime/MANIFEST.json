@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "product": {
+    "name": "FNLLA Runtime",
+    "slug": "fnlla-runtime",
+    "version": "1.1.0",
+    "owner": "TechAyo LTD (techayo.co.uk)",
+    "origin": "Finella Gardens in Dundee, UK",
+    "repository": "https://github.com/techayoDEV/fnlla.git",
+    "source_of_truth": "github"
+  },
+  "runtime": {
+    "css_entrypoint": "assets/css/fnlla-runtime.css",
+    "js_entrypoint": "assets/js/fnlla-runtime.js",
+    "icons_directory": "assets/icons",
+    "distribution_root": "dist/fnlla-runtime",
+    "release_files": [
+      "MANIFEST.json",
+      "LICENSE.md",
+      "SUPPORT.md",
+      "TRADEMARKS.md",
+      "VERSION"
+    ]
+  },
+  "release": {
+    "channel": "stable",
+    "state_files": [
+      "MANIFEST.json",
+      "README.md",
+      "VERSION",
+      "LICENSE.md",
+      "SUPPORT.md",
+      "TRADEMARKS.md"
+    ]
+  }
+}

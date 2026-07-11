@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP BOOTSTRAP FILE
+FNLLA BOOTSTRAP FILE
 File: bootstrap\common.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -20,7 +20,7 @@ Purpose:
 
 use Fnlla\Php\Container\Container;
 use Fnlla\Php\Support\Env;
-use Fnlla\Php\Support\FnllaWebGuard;
+use Fnlla\Php\Support\FnllaRuntimeGuard;
 use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Support\ServiceProvider;
 
@@ -86,17 +86,18 @@ if (is_file($composerAutoload)) {
 require APP_ROOT . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "helpers.php";
 
 Env::load(base_path(".env"));
-$GLOBALS["fnlla_php_config"] = load_config_directory(base_path("config"));
+$GLOBALS["fnlla_config"] = load_config_directory(base_path("config"));
+$GLOBALS["fnlla_php_config"] = $GLOBALS["fnlla_config"];
 
 /*
 Development guard note:
-- FNLLA PHP uses this shared bootstrap point to enforce the official FNLLA Web
+- FNLLA uses this shared bootstrap point to enforce the official FNLLA Runtime
   dependency boundary
 - the guard is skipped only for specific maintainer repair flows that need to
   fix a broken UI contract from the CLI itself
 */
-if (!defined("FNLLA_WEB_SKIP_AUTO_GUARD")) {
-    FnllaWebGuard::enforce();
+if (!defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
+    FnllaRuntimeGuard::enforce();
 }
 
 date_default_timezone_set((string) config("app.timezone", "UTC"));
@@ -137,6 +138,7 @@ register_shutdown_function(static function (): void {
 });
 
 $container = new Container();
+$GLOBALS["fnlla_container"] = $container;
 $GLOBALS["fnlla_php_container"] = $container;
 $providers = [];
 

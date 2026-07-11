@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONSOLE SOURCE
+FNLLA CONSOLE SOURCE
 File: src\Console\Commands\VersionStatusCommand.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -32,15 +32,15 @@ final class VersionStatusCommand extends Command
 
     public function description(): string
     {
-        return "Show the current FNLLA PHP and vendored FNLLA Web version contract.";
+        return "Show the current FNLLA and built-in runtime version contract.";
     }
 
     public function handle(array $arguments): int
     {
         $status = VersionManifest::status();
 
-        $this->line("FNLLA PHP version: " . ($status["framework_version"] ?? "unknown"));
-        $this->line("Vendored FNLLA Web version: " . ($status["vendored_ui_version"] ?? "unknown"));
+        $this->line("FNLLA version: " . ($status["framework_version"] ?? "unknown"));
+        $this->line("Built-in runtime version: " . ($status["vendored_ui_version"] ?? "unknown"));
         $this->line("Repository MANIFEST.json: " . ($status["repository_manifest_exists"] ? "present" : "missing"));
         $this->line("Version contract: " . ($status["version_contract_ok"] ? "ok" : "out of sync"));
 

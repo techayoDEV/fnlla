@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\VersionManifestTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -32,7 +32,7 @@ final class VersionManifestTest extends TestCase
         self::assertSame("FNLLA", $manifest["product"]["name"] ?? null);
         self::assertSame("fnlla", $manifest["product"]["slug"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["product"]["version"] ?? "")));
-        self::assertSame("FNLLA Web", $manifest["ui_runtime"]["name"] ?? null);
+        self::assertSame("FNLLA Runtime", $manifest["ui_runtime"]["name"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["vendored_version"] ?? "")));
         self::assertSame(
             $manifest["ui_runtime"]["vendored_version"] ?? null,

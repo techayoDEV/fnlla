@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP SUPPORT SOURCE
+FNLLA SUPPORT SOURCE
 File: src\Support\FrameworkLock.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
 - Tracks the exported framework base so downstream applications can compare
-  framework-managed files against a newer FNLLA PHP export safely.
+  framework-managed files against a newer FNLLA export safely.
 */
 
 namespace Fnlla\Php\Support;
@@ -124,9 +124,9 @@ final class FrameworkLock
                     "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
                 "ui_runtime" => [
-                    "name" => "FNLLA Web",
-                    "slug" => "fnlla-web",
-                    "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-web" . DIRECTORY_SEPARATOR . "VERSION"),
+                    "name" => "FNLLA Runtime",
+                    "slug" => "fnlla-runtime",
+                    "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"),
                     "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
                 "lock_file" => self::LOCK_FILE,
@@ -188,7 +188,7 @@ final class FrameworkLock
             "database/migrations/",
             "lang/",
             "public/assets/",
-            "public/vendor/fnlla-web/",
+            "public/vendor/fnlla-runtime/",
             "storage/",
             "views/",
         ] as $prefix) {
@@ -207,6 +207,7 @@ final class FrameworkLock
             "routes/console.php",
             "routes/web.php",
             "src/Controllers/HomeController.php",
+            "src/Controllers/PageController.php",
             "tests/BootstrapAutoloadTest.php",
         ], true);
     }

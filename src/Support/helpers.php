@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP SUPPORT SOURCE
+FNLLA SUPPORT SOURCE
 File: src\Support\helpers.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -207,7 +207,7 @@ function app_request_is_secure(): bool
 
 function config(?string $key = null, mixed $default = null): mixed
 {
-    $config = $GLOBALS["fnlla_php_config"] ?? [];
+    $config = $GLOBALS["fnlla_config"] ?? $GLOBALS["fnlla_php_config"] ?? [];
 
     if ($key === null || $key === "") {
         return $config;
@@ -229,7 +229,7 @@ function config(?string $key = null, mixed $default = null): mixed
 
 function config_set(string $key, mixed $value): void
 {
-    $config = $GLOBALS["fnlla_php_config"] ?? [];
+    $config = $GLOBALS["fnlla_config"] ?? $GLOBALS["fnlla_php_config"] ?? [];
     $segments = explode(".", $key);
     $cursor = &$config;
 
@@ -246,6 +246,7 @@ function config_set(string $key, mixed $value): void
     }
 
     $cursor = $value;
+    $GLOBALS["fnlla_config"] = $config;
     $GLOBALS["fnlla_php_config"] = $config;
 }
 
@@ -314,7 +315,7 @@ function has_local_docs_workspace(): bool
 
 function page_meta(array $overrides = []): array
 {
-    return \Fnlla\Php\Support\PageMeta::resolve($overrides, (string) config("app.name", "FNLLA PHP"));
+    return \Fnlla\Php\Support\PageMeta::resolve($overrides, (string) config("app.name", "FNLLA"));
 }
 
 function route(string $name, array $parameters = []): string
@@ -355,7 +356,7 @@ function request_id(): string
 
 function app(?string $abstract = null, array $parameters = []): mixed
 {
-    $container = $GLOBALS["fnlla_php_container"] ?? null;
+    $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
 
     if (!$container instanceof Container) {
         throw new RuntimeException("Application container has not been bootstrapped.");

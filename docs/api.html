@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
-  <title>API - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <title>API - FNLLA Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.15</span>
+        <span class="doc-status">Stable 1.0.16</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -39,7 +39,7 @@
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-runtime.html">Built-in Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-outline btn-sm" href="./api.html" aria-current="page">API</a>
@@ -77,7 +77,7 @@
             <li><code>public/index.php</code></li>
             <li><code>public/router.php</code></li>
             <li><code>views/layouts/app.php</code> as the shared HTML shell</li>
-            <li><code>public/vendor/fnlla-web/</code> as the mandatory UI runtime bundle</li>
+            <li><code>public/vendor/fnlla-runtime/</code> as the mandatory UI runtime bundle</li>
           </ul>
         </article>
         <article class="card">
@@ -131,8 +131,8 @@ throttle</code></pre>
           <h3 class="card-title">Framework and runtime commands</h3>
           <ul class="doc-checklist">
             <li><code>php fnlla make:project</code></li>
-            <li><code>php fnlla fnlla-web:sync</code></li>
-            <li><code>php fnlla fnlla-web:validate</code></li>
+            <li><code>php fnlla fnlla-runtime:sync</code></li>
+            <li><code>php fnlla fnlla-runtime:validate</code></li>
             <li><code>php fnlla framework:update --check --github</code></li>
             <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
@@ -165,7 +165,7 @@ throttle</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Validation scripts</h3>
-          <p class="card-text"><code>scripts/validate-fnlla-web.php</code>, <code>scripts/validate-version-manifest.php</code> and <code>scripts/build-docs.php --check</code> are the core content-contract checks.</p>
+          <p class="card-text"><code>scripts/validate-fnlla-runtime.php</code>, <code>scripts/validate-version-manifest.php</code> and <code>scripts/build-docs.php --check</code> are the core content-contract checks.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Source of truth</h3>
@@ -174,12 +174,12 @@ throttle</code></pre>
       </div>
     </section>
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@
         "test": "@php scripts/test.php",
         "lint": [
             "@php scripts/lint.php",
-            "@php scripts/validate-fnlla-web.php",
+            "@php scripts/validate-fnlla-runtime.php",
             "@php scripts/validate-version-manifest.php"
         ]
     },

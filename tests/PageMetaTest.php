@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\PageMetaTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -28,17 +28,17 @@ final class PageMetaTest extends TestCase
     public function testComposeDocumentTitleBuildsProfessionalOrdering(): void
     {
         self::assertSame(
-            "Contact | FNLLA PHP",
+            "Contact | FNLLA",
             PageMeta::composeDocumentTitle([
-                "site" => "FNLLA PHP",
+                "site" => "FNLLA",
                 "page" => "Contact",
             ])
         );
 
         self::assertSame(
-            "About | Framework | FNLLA PHP",
+            "About | Framework | FNLLA",
             PageMeta::composeDocumentTitle([
-                "site" => "FNLLA PHP",
+                "site" => "FNLLA",
                 "page" => "About",
                 "section" => "Framework",
             ])
@@ -48,9 +48,9 @@ final class PageMetaTest extends TestCase
     public function testComposeDocumentTitleCollapsesHomePagesToTheSiteName(): void
     {
         self::assertSame(
-            "FNLLA PHP",
+            "FNLLA",
             PageMeta::composeDocumentTitle([
-                "site" => "FNLLA PHP",
+                "site" => "FNLLA",
                 "page" => "Overview",
                 "home" => true,
             ])
@@ -60,13 +60,13 @@ final class PageMetaTest extends TestCase
     public function testResolveDeduplicatesRepeatedLabels(): void
     {
         $meta = PageMeta::resolve([
-            "site" => "FNLLA PHP",
-            "page" => "FNLLA PHP",
+            "site" => "FNLLA",
+            "page" => "FNLLA",
             "section" => "Framework",
             "suffix" => "Framework",
-        ], "FNLLA PHP");
+        ], "FNLLA");
 
-        self::assertSame("FNLLA PHP | Framework", $meta["title"]);
-        self::assertSame("FNLLA PHP", $meta["site"]);
+        self::assertSame("FNLLA | Framework", $meta["title"]);
+        self::assertSame("FNLLA", $meta["site"]);
     }
 }

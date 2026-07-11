@@ -5,22 +5,22 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP REPOSITORY LAUNCHER
+FNLLA REPOSITORY LAUNCHER
 File: fnlla
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This launcher is the authoritative CLI entrypoint for the
-maintained FNLLA PHP framework repository.
+maintained FNLLA framework repository.
 
 Purpose:
 - Bootstraps the maintained console application and exposes framework commands.
 */
 
 use Fnlla\Php\Console\Commands\CacheClearCommand;
-use Fnlla\Php\Console\Commands\FnllaWebSyncCommand;
-use Fnlla\Php\Console\Commands\FnllaWebValidateCommand;
+use Fnlla\Php\Console\Commands\FnllaRuntimeSyncCommand;
+use Fnlla\Php\Console\Commands\FnllaRuntimeValidateCommand;
 use Fnlla\Php\Console\Commands\FrameworkUpdateCommand;
 use Fnlla\Php\Console\Commands\MakeCommandCommand;
 use Fnlla\Php\Console\Commands\MakeControllerCommand;
@@ -42,20 +42,20 @@ use Fnlla\Php\Console\Commands\VersionSyncCommand;
 
 /*
 Guard bypass note:
-- the dedicated FNLLA Web repair commands must stay callable even when the guard
+- the dedicated FNLLA Runtime repair commands must stay callable even when the guard
   itself is blocking normal bootstrap because of a UI contract violation
 - this keeps the repository recoverable without editing bootstrap files by hand
 */
-if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-web:sync", "fnlla-web:validate", "framework:update", "starter:update", "version:status", "version:sync"], true) && !defined("FNLLA_WEB_SKIP_AUTO_GUARD")) {
-    define("FNLLA_WEB_SKIP_AUTO_GUARD", true);
+if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:validate", "framework:update", "starter:update", "version:status", "version:sync"], true) && !defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
+    define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true);
 }
 
 $container = require __DIR__ . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEPARATOR . "console.php";
 
 $console = $container->make(\Fnlla\Php\Console\Application::class);
 $console->register(CacheClearCommand::class);
-$console->register(FnllaWebSyncCommand::class);
-$console->register(FnllaWebValidateCommand::class);
+$console->register(FnllaRuntimeSyncCommand::class);
+$console->register(FnllaRuntimeValidateCommand::class);
 $console->register(FrameworkUpdateCommand::class);
 $console->register(SeedCommand::class);
 $console->register(MigrateRollbackCommand::class);

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP SUPPORT SOURCE
+FNLLA SUPPORT SOURCE
 File: src\Support\VersionManifest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -30,7 +30,7 @@ final class VersionManifest
     private const ROOT_LICENSE_FILE = "LICENSE.md";
     private const ROOT_SUPPORT_FILE = "SUPPORT.md";
     private const ROOT_TRADEMARKS_FILE = "TRADEMARKS.md";
-    private const UI_VERSION_FILE = "public/vendor/fnlla-web/VERSION";
+    private const UI_VERSION_FILE = "public/vendor/fnlla-runtime/VERSION";
     private const SEMVER_PATTERN = '/^\d+\.\d+\.\d+$/';
 
     public static function repositoryManifestPath(): string
@@ -82,8 +82,8 @@ final class VersionManifest
                 ],
             ],
             "ui_runtime" => [
-                "name" => "FNLLA Web",
-                "slug" => "fnlla-web",
+                "name" => "FNLLA Runtime",
+                "slug" => "fnlla-runtime",
                 "repository" => "https://github.com/techayoDEV/fnlla.git",
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
@@ -151,12 +151,12 @@ final class VersionManifest
         }
 
         if ($uiVersionLines === null) {
-            $errors[] = "public/vendor/fnlla-web/VERSION: missing file";
+            $errors[] = "public/vendor/fnlla-runtime/VERSION: missing file";
         } else {
             if ($uiVersion === "") {
-                $errors[] = "public/vendor/fnlla-web/VERSION: first line is empty";
+                $errors[] = "public/vendor/fnlla-runtime/VERSION: first line is empty";
             } elseif (!preg_match(self::SEMVER_PATTERN, $uiVersion)) {
-                $errors[] = "public/vendor/fnlla-web/VERSION: '{$uiVersion}' is not a semantic version";
+                $errors[] = "public/vendor/fnlla-runtime/VERSION: '{$uiVersion}' is not a semantic version";
             }
         }
 
@@ -172,7 +172,7 @@ final class VersionManifest
         );
         self::validateRequiredTextFile(
             self::ROOT_TRADEMARKS_FILE,
-            ["Trademark Notice", "MIT License", "TechAyo LTD", "does not grant trademark rights", "official FNLLA PHP project"],
+            ["Trademark Notice", "MIT License", "TechAyo LTD", "does not grant trademark rights", "official FNLLA project"],
             $errors
         );
 
@@ -202,7 +202,7 @@ final class VersionManifest
             $actualUiMajor = (int) explode(".", $uiVersion !== "" ? $uiVersion : "0.0.0")[0];
 
             if ($expectedUiMajor !== $actualUiMajor) {
-                $errors[] = "MANIFEST.json: ui_runtime.expected_major does not match the vendored FNLLA Web major version";
+                $errors[] = "MANIFEST.json: ui_runtime.expected_major does not match the built-in runtime major version";
             }
         }
 

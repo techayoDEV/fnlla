@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP SUPPORT SOURCE
+FNLLA SUPPORT SOURCE
 File: src\Support\FrameworkReleaseChannel.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -104,7 +104,7 @@ final class FrameworkReleaseChannel
                 "name" => "Latest published tag " . $tag,
                 "html_url" => $repository["html_url"] . "/releases/tag/" . $tag,
                 "published_at" => null,
-                "body" => "GitHub release metadata could not be loaded from the API. FNLLA PHP fell back to the latest published Git tag instead." . PHP_EOL . $exception->getMessage(),
+                "body" => "GitHub release metadata could not be loaded from the API. FNLLA fell back to the latest published Git tag instead." . PHP_EOL . $exception->getMessage(),
             ];
         }
     }
@@ -122,7 +122,7 @@ final class FrameworkReleaseChannel
                 "name" => "Requested tag " . $normalizedTag,
                 "html_url" => $repository["html_url"] . "/releases/tag/" . $normalizedTag,
                 "published_at" => null,
-                "body" => "GitHub release metadata for the requested tag could not be loaded from the API. FNLLA PHP will still try to clone that tag directly." . PHP_EOL . $exception->getMessage(),
+                "body" => "GitHub release metadata for the requested tag could not be loaded from the API. FNLLA will still try to clone that tag directly." . PHP_EOL . $exception->getMessage(),
             ];
         }
     }
@@ -198,7 +198,7 @@ final class FrameworkReleaseChannel
         $gitBinary = trim((string) env("GIT_BINARY", "git"));
 
         if ($tag === "") {
-            throw new RuntimeException("GitHub did not provide a usable FNLLA PHP release tag for framework updates.");
+            throw new RuntimeException("GitHub did not provide a usable FNLLA release tag for framework updates.");
         }
 
         $directory = dirname($sourceRoot);
@@ -225,7 +225,7 @@ final class FrameworkReleaseChannel
             self::removeDirectory($sourceRoot);
 
             throw new RuntimeException(
-                "Unable to download the requested FNLLA PHP release from GitHub into the local update cache."
+                "Unable to download the requested FNLLA release from GitHub into the local update cache."
                 . PHP_EOL
                 . implode(PHP_EOL, $lines)
             );
@@ -246,7 +246,7 @@ final class FrameworkReleaseChannel
 
         if ($exitCode !== 0) {
             throw new RuntimeException(
-                "Unable to resolve the latest FNLLA PHP release tag from GitHub." . PHP_EOL . implode(PHP_EOL, $lines)
+                "Unable to resolve the latest FNLLA release tag from GitHub." . PHP_EOL . implode(PHP_EOL, $lines)
             );
         }
 
@@ -261,7 +261,7 @@ final class FrameworkReleaseChannel
         }
 
         if ($tags === []) {
-            throw new RuntimeException("GitHub did not return any usable FNLLA PHP release tags.");
+            throw new RuntimeException("GitHub did not return any usable FNLLA release tags.");
         }
 
         usort($tags, static fn (string $left, string $right): int => self::compareVersions($right, $left));
@@ -298,7 +298,7 @@ final class FrameworkReleaseChannel
                 CURLOPT_TIMEOUT => max(5, (int) config("framework_update.github_timeout_seconds", 20)),
                 CURLOPT_HTTPHEADER => [
                     "Accept: application/vnd.github+json",
-                    "User-Agent: FNLLA-PHP-FrameworkUpdate",
+                    "User-Agent: fnlla-FrameworkUpdate",
                     "X-GitHub-Api-Version: 2022-11-28",
                 ],
             ]);
@@ -333,7 +333,7 @@ final class FrameworkReleaseChannel
                 "ignore_errors" => true,
                 "header" => implode("\r\n", [
                     "Accept: application/vnd.github+json",
-                    "User-Agent: FNLLA-PHP-FrameworkUpdate",
+                    "User-Agent: fnlla-FrameworkUpdate",
                     "X-GitHub-Api-Version: 2022-11-28",
                 ]),
             ],
@@ -389,7 +389,7 @@ final class FrameworkReleaseChannel
         $normalized = trim($repositoryUrl);
 
         if ($normalized === "") {
-            throw new RuntimeException("FNLLA PHP framework repository URL is missing from the framework lock.");
+            throw new RuntimeException("FNLLA framework repository URL is missing from the framework lock.");
         }
 
         if (preg_match('#github\.com[:/]+([^/]+)/([^/.]+)(?:\.git)?$#i', $normalized, $matches) !== 1) {

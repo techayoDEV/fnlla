@@ -1,4 +1,4 @@
-# Starting a New Project with FNLLA PHP
+# Starting a New Project with FNLLA
 
 ## Short answer
 
@@ -11,7 +11,7 @@ The recommended workflow is:
 3. Give that new directory its own project name and its own Git repository.
 4. Build the actual website or application there.
 
-## Why not just clone fnlla-php and build directly inside it
+## Why not just clone fnlla and build directly inside it
 
 If you clone `techayoDEV/fnlla` and start editing it directly for every new website, you mix together two different concerns:
 
@@ -43,13 +43,13 @@ Replace and extend the starter routes, views, assets and controllers directly, w
 
 The exported project already includes:
 
-- the FNLLA PHP runtime
-- the vendored UI runtime under `public/vendor/fnlla-web/`
+- the FNLLA runtime
+- the built-in runtime under `public/vendor/fnlla-runtime/`
 - routes, controllers and views
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
 - lint, test and runtime validation scripts
-- a dedicated `/project/launch` page for developer onboarding
+- a starter skeleton with public pages for `/`, `/about`, `/services` and `/contact`
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - a project README that explains the next steps
 
@@ -81,13 +81,13 @@ That means the normal flow is:
 If your maintained framework lives here:
 
 ```text
-/workspace/fnlla-php
+/workspace/fnlla
 ```
 
 Then a good new project export might be:
 
 ```bash
-cd /workspace/fnlla-php
+cd /workspace/fnlla
 php fnlla make:project ../acme-service-portal "Acme Service Portal"
 ```
 
@@ -107,19 +107,19 @@ Inside the new project directory:
 2. Set `APP_URL`.
 3. Set MySQL credentials.
 4. Review `config/app.php`.
-5. Open `/project/launch` and use it as the first delivery checklist.
+5. Open `/`, `/about`, `/services` and `/contact` and treat them as the real starter pages you will reshape.
 6. Replace the demo routes and pages with the real application flow.
 7. Run:
 
 ```bash
-php fnlla fnlla-web:validate
+php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-8. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA PHP release from GitHub or against a local maintainer checkout.
+8. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
 
 9. Start the local server:
 
@@ -141,12 +141,12 @@ For a new project, the first files are usually:
 
 - `config/app.php`
 - `routes/web.php`
-- `src/Controllers/`
+- `src/Controllers/PageController.php`
 - `views/pages/`
 - `public/assets/app.css`
 - `database/migrations/`
 
-## Should there still be a separate starter directory inside fnlla-php
+## Should there still be a separate starter directory inside fnlla
 
 No separate duplicated `starter/` copy is recommended as the primary workflow.
 
@@ -182,4 +182,4 @@ Treat each exported directory as:
 
 - one real website or one real web application project
 
-That separation is the cleanest and most scalable way to work with FNLLA PHP.
+That separation is the cleanest and most scalable way to work with FNLLA.

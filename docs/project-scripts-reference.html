@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
-  <title>Project Scripts Reference - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <title>Project Scripts Reference - FNLLA Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.15</span>
+        <span class="doc-status">Stable 1.0.16</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -35,11 +35,11 @@
           <span class="doc-brand-separator" aria-hidden="true">-</span>
           <p class="doc-display">Documentation</p>
         </div>
-        <p class="doc-lead">Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA PHP project export.</p>
+        <p class="doc-lead">Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA project export.</p>
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-runtime.html">Built-in Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -67,7 +67,7 @@
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Project Scripts Reference</h2>
-        <p class="section-text">Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA PHP project export.</p>
+        <p class="section-text">Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA project export.</p>
       </div>
 
       <div class="doc-guide-layout">
@@ -86,10 +86,10 @@
             <ul>
               <li><code>scripts/test.php</code></li>
               <li><code>scripts/lint.php</code></li>
-              <li><code>scripts/validate-fnlla-web.php</code></li>
+              <li><code>scripts/validate-fnlla-runtime.php</code></li>
               <li><code>scripts/validate-version-manifest.php</code></li>
               <li><code>scripts/sync-version-manifest.php</code></li>
-              <li><code>scripts/sync-fnlla-web.ps1</code></li>
+              <li><code>scripts/sync-fnlla-runtime.ps1</code></li>
             </ul>
             <p>The exported application also keeps one framework-update command on purpose:</p>
             <ul>
@@ -113,7 +113,7 @@
             <h3 id="scripts-test-php"><code>scripts/test.php</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>runs the repository-local FNLLA PHP test harness</li>
+              <li>runs the repository-local FNLLA test harness</li>
               <li>discovers <code>*Test.php</code> files under <code>tests/</code></li>
               <li>boots the local shim under <code>tests/PHPUnit/Framework/TestCase.php</code></li>
               <li>reports pass/fail output without requiring a Composer-installed PHPUnit package</li>
@@ -146,16 +146,16 @@
               <li>it only checks syntax</li>
               <li>it does not prove behavior, data flow or runtime correctness by itself</li>
             </ul>
-            <h3 id="scripts-validate-fnlla-web-php"><code>scripts/validate-fnlla-web.php</code></h3>
+            <h3 id="scripts-validate-fnlla-runtime-php"><code>scripts/validate-fnlla-runtime.php</code></h3>
             <p>Purpose:</p>
             <ul>
               <li>validates that the current project still respects the built-in UI runtime contract</li>
-              <li>confirms the vendored runtime exists where FNLLA PHP expects it</li>
+              <li>confirms the vendored runtime exists where FNLLA expects it</li>
               <li>catches unsupported UI drift in the official stack</li>
             </ul>
             <p>Use it when:</p>
             <ul>
-              <li>the vendored <code>public/vendor/fnlla-web/</code> runtime was updated</li>
+              <li>the vendored <code>public/vendor/fnlla-runtime/</code> runtime was updated</li>
               <li>the shared layout or page structure changed</li>
               <li>you want to confirm the project still stays inside the supported UI runtime boundary</li>
             </ul>
@@ -200,13 +200,13 @@
               <li>this is a metadata synchronization step</li>
               <li>it should follow a real version decision rather than replace one</li>
             </ul>
-            <h3 id="scripts-sync-fnlla-web-ps1"><code>scripts/sync-fnlla-web.ps1</code></h3>
+            <h3 id="scripts-sync-fnlla-runtime-ps1"><code>scripts/sync-fnlla-runtime.ps1</code></h3>
             <p>Purpose:</p>
             <ul>
-              <li>refreshes the vendored UI runtime under <code>public/vendor/fnlla-web/</code></li>
+              <li>refreshes the built-in runtime under <code>public/vendor/fnlla-runtime/</code></li>
               <li>can work from a provided local source path or by cloning the GitHub source of truth</li>
               <li>detects whether the provided source is a published runtime export or a source checkout</li>
-              <li>when needed, publishes the runtime first and then mirrors the exported <code>dist/fnlla-web/</code> output</li>
+              <li>when needed, publishes the runtime first and then mirrors the exported <code>dist/fnlla-runtime/</code> output</li>
               <li>finishes by running <code>scripts/sync-version-manifest.php</code></li>
             </ul>
             <p>Use it when:</p>
@@ -229,7 +229,7 @@
             </ul>
             <p>Use it when:</p>
             <ul>
-              <li>the upstream FNLLA PHP framework was improved and you want to see what can safely flow into an existing project</li>
+              <li>the upstream FNLLA framework was improved and you want to see what can safely flow into an existing project</li>
               <li>you need a framework-update report before doing manual merge work</li>
               <li>you want to apply only the non-conflicting framework-managed changes</li>
             </ul>
@@ -240,7 +240,7 @@ php fnlla framework:update --check --source ..\fnlla
 php fnlla framework:update --apply --source ..\fnlla</code></pre>
             <p>Important boundary:</p>
             <ul>
-              <li>by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under <code>storage/framework/updates/</code></li>
+              <li>by default, the GitHub-backed workflow checks the latest published FNLLA release and caches that release source locally under <code>storage/framework/updates/</code></li>
               <li>the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base</li>
               <li>when <code>--source</code> is used, the command expects a maintained <code>techayoDEV/fnlla</code> source repository path</li>
               <li>the GitHub-backed workflow depends on network access plus a working local <code>git</code> binary so the published release can be cached locally</li>
@@ -293,7 +293,7 @@ php fnlla framework:update --apply --source ..\fnlla</code></pre>
             </ul>
             <p>Why it is not exported:</p>
             <ul>
-              <li>downstream FNLLA PHP application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior</li>
+              <li>downstream FNLLA application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior</li>
             </ul>
             <h2 id="what-make-project-now-leaves-behind-on-purpose">What <code>make:project</code> now leaves behind on purpose</h2>
             <p>The exported project intentionally does not copy:</p>
@@ -310,7 +310,7 @@ php fnlla framework:update --apply --source ..\fnlla</code></pre>
             <p>That keeps the exported project closer to what a delivery repository should actually own.</p>
             <h2 id="recommended-downstream-command-sequence">Recommended downstream command sequence</h2>
             <p>After export, a healthy first pass is:</p>
-            <pre><code class="language-bash">php fnlla fnlla-web:validate
+            <pre><code class="language-bash">php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
@@ -336,7 +336,7 @@ php fnlla version:status</code></pre>
             <p class="doc-panel-label">Guide pages</p>
             <div class="doc-guide-nav" aria-label="Guide pages">
             <a class="btn btn-ghost btn-sm" href="./starting-a-new-project.html">Starting a New Project</a>
-            <a class="btn btn-ghost btn-sm" href="./building-with-fnlla-php.html">Building</a>
+            <a class="btn btn-ghost btn-sm" href="./building-with-fnlla.html">Building</a>
             <a class="btn btn-outline btn-sm" href="./project-scripts-reference.html" aria-current="page">Project Scripts Reference</a>
             </div>
           </div>
@@ -348,10 +348,10 @@ php fnlla version:status</code></pre>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-each-exported-script-does">What each exported script does</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-test-php">scripts/test.php</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-lint-php">scripts/lint.php</a>
-              <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-validate-fnlla-web-php">scripts/validate-fnlla-web.php</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-validate-fnlla-runtime-php">scripts/validate-fnlla-runtime.php</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-validate-version-manifest-php">scripts/validate-version-manifest.php</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-sync-version-manifest-php">scripts/sync-version-manifest.php</a>
-              <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-sync-fnlla-web-ps1">scripts/sync-fnlla-web.ps1</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#scripts-sync-fnlla-runtime-ps1">scripts/sync-fnlla-runtime.ps1</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#php-fnlla-framework-update">php fnlla framework:update</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-3" href="#maintenance-framework-update">/maintenance/framework-update</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-stays-maintainer-only">What stays maintainer-only</a>
@@ -366,12 +366,12 @@ php fnlla version:status</code></pre>
       </div>
     </section>
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>

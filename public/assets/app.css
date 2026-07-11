@@ -1,71 +1,79 @@
 /*
 ===============================================================================
-FNLLA PHP PUBLIC ASSET
+FNLLA PUBLIC ASSET
 File: public\assets\app.css
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
-(techayo.co.uk). This stylesheet belongs to the maintained FNLLA PHP delivery
-shell that sits on top of the vendored FNLLA Web runtime.
+FNLLA is produced, maintained and distributed by TechAyo LTD
+(techayo.co.uk). This stylesheet belongs to the maintained FNLLA delivery
+shell that sits on top of the vendored FNLLA runtime.
 
 Purpose:
-- Styles the delivery-facing shell that sits on top of the vendored FNLLA Web runtime.
+- Styles the delivery-facing shell that sits on top of the vendored FNLLA runtime.
 */
 
 :root,
 [data-fnlla-theme="default"] {
   color-scheme: light;
-  --fnlla-php-shell-radial: var(--fnlla-color-primary-soft);
-  --fnlla-php-shell-bg-start: #f8fbff;
-  --fnlla-php-shell-bg-mid: var(--fnlla-color-bg);
-  --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
-  --fnlla-php-header-bg: rgba(248, 251, 255, 0.88);
-  --fnlla-php-header-border: rgba(21, 48, 79, 0.1);
-  --fnlla-php-brand-bg: var(--fnlla-color-primary);
-  --fnlla-php-brand-text: var(--fnlla-color-on-dark);
-  --fnlla-php-card-muted-bg: rgba(255, 255, 255, 0.76);
-  --fnlla-php-surface-bg: rgba(255, 255, 255, 0.9);
-  --fnlla-php-surface-border: rgba(21, 48, 79, 0.1);
-  --fnlla-php-footer-note: #456158;
+  --fnlla-shell-radial: var(--fnlla-color-primary-soft);
+  --fnlla-shell-bg-start: #f8fbff;
+  --fnlla-shell-bg-mid: var(--fnlla-color-bg);
+  --fnlla-shell-bg-end: var(--fnlla-color-bg-alt);
+  --fnlla-header-bg: rgba(248, 251, 255, 0.88);
+  --fnlla-header-border: rgba(21, 48, 79, 0.1);
+  --fnlla-brand-bg: var(--fnlla-color-primary);
+  --fnlla-brand-text: var(--fnlla-color-on-dark);
+  --fnlla-card-muted-bg: rgba(255, 255, 255, 0.76);
+  --fnlla-surface-bg: rgba(255, 255, 255, 0.9);
+  --fnlla-surface-border: rgba(21, 48, 79, 0.1);
+  --fnlla-footer-note: #456158;
 }
 
 [data-fnlla-theme="dark"] {
   color-scheme: dark;
-  --fnlla-php-shell-radial: rgba(96, 165, 250, 0.14);
-  --fnlla-php-shell-bg-start: #0b1220;
-  --fnlla-php-shell-bg-mid: #0f1729;
-  --fnlla-php-shell-bg-end: var(--fnlla-color-bg-alt);
-  --fnlla-php-header-bg: rgba(16, 25, 45, 0.88);
-  --fnlla-php-header-border: rgba(226, 236, 255, 0.12);
-  --fnlla-php-brand-bg: #2563eb;
-  --fnlla-php-brand-text: #0f172a;
-  --fnlla-php-card-muted-bg: rgba(18, 27, 47, 0.78);
-  --fnlla-php-surface-bg: rgba(18, 27, 47, 0.92);
-  --fnlla-php-surface-border: rgba(226, 236, 255, 0.1);
-  --fnlla-php-footer-note: #a9bad2;
+  --fnlla-shell-radial: rgba(96, 165, 250, 0.14);
+  --fnlla-shell-bg-start: #0b1220;
+  --fnlla-shell-bg-mid: #0f1729;
+  --fnlla-shell-bg-end: var(--fnlla-color-bg-alt);
+  --fnlla-header-bg: rgba(16, 25, 45, 0.88);
+  --fnlla-header-border: rgba(226, 236, 255, 0.12);
+  --fnlla-brand-bg: #2563eb;
+  --fnlla-brand-text: #0f172a;
+  --fnlla-card-muted-bg: rgba(18, 27, 47, 0.78);
+  --fnlla-surface-bg: rgba(18, 27, 47, 0.92);
+  --fnlla-surface-border: rgba(226, 236, 255, 0.1);
+  --fnlla-footer-note: #a9bad2;
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, var(--fnlla-php-shell-radial), transparent 26rem),
-    linear-gradient(180deg, var(--fnlla-php-shell-bg-start) 0%, var(--fnlla-php-shell-bg-mid) 48%, var(--fnlla-php-shell-bg-end) 100%);
+    radial-gradient(circle at top right, var(--fnlla-shell-radial), transparent 26rem),
+    linear-gradient(180deg, var(--fnlla-shell-bg-start) 0%, var(--fnlla-shell-bg-mid) 48%, var(--fnlla-shell-bg-end) 100%);
 }
 
-.site-header-shell {
+.starter-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--fnlla-php-header-bg);
+  background: var(--fnlla-header-bg);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--fnlla-php-header-border);
+  border-bottom: 1px solid var(--fnlla-header-border);
 }
 
-.site-header-shell .navbar {
+.starter-header-section {
+  padding-block: 1rem;
+}
+
+.starter-header .navbar {
   background: transparent;
   border-bottom: 0;
   box-shadow: none;
+}
+
+.starter-brand {
+  align-items: center;
 }
 
 .site-brand-text {
@@ -74,13 +82,35 @@ body {
   gap: 0.75rem;
 }
 
+.starter-brand-copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.starter-brand-kicker {
+  color: var(--fnlla-color-text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.starter-brand-name {
+  color: var(--fnlla-color-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 .site-brand-logo {
   width: 1.9rem;
   height: 1.9rem;
   flex: 0 0 auto;
 }
 
-.site-main {
+.starter-navbar-actions {
+  align-items: center;
+}
+
+.starter-main {
   padding-bottom: 4rem;
 }
 
@@ -95,7 +125,7 @@ body {
 }
 
 .site-card-muted {
-  background: var(--fnlla-php-card-muted-bg);
+  background: var(--fnlla-card-muted-bg);
 }
 
 .site-status-anchor {
@@ -106,22 +136,51 @@ body {
   align-items: start;
 }
 
-.site-footer-shell {
+.starter-footer {
   margin-top: 3rem;
 }
 
-.site-footer-shell .footer {
-  background: var(--fnlla-php-surface-bg);
-  border: 1px solid var(--fnlla-php-surface-border);
+.starter-footer-panel {
+  background: var(--fnlla-surface-bg);
+  border: 1px solid var(--fnlla-surface-border);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
 }
 
-.site-footer-shell .footer-note {
-  color: var(--fnlla-php-footer-note);
+.starter-footer-panel .footer-note {
+  color: var(--fnlla-footer-note);
 }
 
-.site-footer-shell .footer-meta-bar {
-  border-top: 1px solid var(--fnlla-php-surface-border);
+.starter-footer-intro {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.starter-footer-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.starter-footer-column {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.starter-note-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--fnlla-footer-note);
+}
+
+.starter-note-list li + li {
+  margin-top: 0.5rem;
+}
+
+.starter-footer-meta {
+  display: grid;
+  gap: 1rem;
+  border-top: 1px solid var(--fnlla-surface-border);
   padding-top: 1rem;
 }
 
@@ -140,5 +199,14 @@ body {
 @media (min-width: 768px) {
   .site-page-stack {
     gap: 2rem;
+  }
+
+  .starter-footer-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .starter-footer-meta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
   }
 }

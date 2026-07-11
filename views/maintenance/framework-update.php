@@ -29,8 +29,8 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <span class="badge">Safe update checks</span>
           <span class="badge">Conflict-aware</span>
         </div>
-        <h1 class="hero-title">Keep the application aligned with FNLLA PHP without turning downstream work into a manual merge exercise.</h1>
-        <p class="hero-text">This maintenance surface can check the latest published FNLLA PHP release directly from GitHub, cache that release in a dedicated local update directory, compare it against the current application and then apply only the framework-managed changes that are safe to move.</p>
+        <h1 class="hero-title">Keep the application aligned with FNLLA without turning downstream work into a manual merge exercise.</h1>
+        <p class="hero-text">This maintenance surface can check the latest published FNLLA release directly from GitHub, cache that release in a dedicated local update directory, compare it against the current application and then apply only the framework-managed changes that are safe to move.</p>
       </div>
     </section>
   </div>
@@ -42,12 +42,12 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       <article class="feature-card">
         <p class="feature-kicker">Current base</p>
         <h2 class="content-title mb-xs"><?= h((string) ($frameworkMeta["version"] ?? "unknown")) ?></h2>
-        <p class="content-text mb-0">FNLLA PHP for <?= h((string) ($applicationMeta["name"] ?? config("app.name"))) ?>.</p>
+        <p class="content-text mb-0">FNLLA for <?= h((string) ($applicationMeta["name"] ?? config("app.name"))) ?>.</p>
       </article>
       <article class="feature-card">
         <p class="feature-kicker">Vendored UI runtime</p>
         <h2 class="content-title mb-xs"><?= h((string) ($uiMeta["version"] ?? "unknown")) ?></h2>
-        <p class="content-text mb-0">FNLLA Web currently locked into this application.</p>
+        <p class="content-text mb-0">FNLLA Runtime currently locked into this application.</p>
       </article>
       <article class="feature-card">
         <p class="feature-kicker">Managed files</p>
@@ -63,7 +63,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <?php elseif ($cachedReleaseTag !== ""): ?>
           Cached release <?= h($cachedReleaseVersion !== "" ? $cachedReleaseVersion : $cachedReleaseTag) ?> available for reuse.
           <?php else: ?>
-          Ready to fetch the latest published FNLLA PHP release on demand.
+          Ready to fetch the latest published FNLLA release on demand.
           <?php endif; ?>
         </p>
       </article>
@@ -86,7 +86,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <li>Current request is local: <strong><?= ($pageState["is_local_request"] ?? false) ? "Yes" : "No" ?></strong></li>
           <li>Detected source path: <strong><?= $detectedSourcePath !== "" ? "Yes" : "No" ?></strong></li>
         </ul>
-        <p class="contact-text mb-0">The update engine can fetch the latest public FNLLA PHP release from GitHub, cache it under <code>storage/framework/updates/</code>, export a fresh project baseline from that release and then separate safe changes from conflicts that still need human review.</p>
+        <p class="contact-text mb-0">The update engine can fetch the latest public FNLLA release from GitHub, cache it under <code>storage/framework/updates/</code>, export a fresh project baseline from that release and then separate safe changes from conflicts that still need human review.</p>
       </aside>
 
       <article class="cta-card contact-form-card">
@@ -95,7 +95,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <section class="offcanvas-section mb-3" aria-label="GitHub release channel controls">
             <p class="contact-kicker">Recommended workflow</p>
             <h2 class="contact-card-title">GitHub release channel</h2>
-            <p class="contact-text">Use this when you want the application itself to check the latest published FNLLA PHP release, download it into the local update cache and prepare a browser-readable drift report before apply.</p>
+            <p class="contact-text">Use this when you want the application itself to check the latest published FNLLA release, download it into the local update cache and prepare a browser-readable drift report before apply.</p>
 
             <div class="grid grid-2 gap-md mb-3">
               <article class="feature-card">
@@ -112,7 +112,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
             <div class="form-group">
               <label class="label" for="framework-update-release-tag">Optional release tag override</label>
               <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter a specific tag such as v1.0.x" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
-              <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA PHP version.</p>
+              <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA version.</p>
             </div>
 
             <div class="grid grid-2 gap-md framework-update-actions-grid">
@@ -178,7 +178,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         <article class="process-step">
           <span class="process-step-number">4</span>
           <h3 class="process-step-title">Verify the application after apply</h3>
-          <p class="process-step-text">After a safe apply, FNLLA PHP runs post-install checks for the FNLLA Web contract, project tests, lint and version metadata so the update does not end as a blind file copy.</p>
+          <p class="process-step-text">After a safe apply, FNLLA runs post-install checks for the built-in runtime contract, project tests, lint and version metadata so the update does not end as a blind file copy.</p>
         </article>
       </div>
     </section>
@@ -204,7 +204,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         <article class="feature-card">
           <p class="feature-kicker">Source baseline</p>
           <h3 class="content-title"><?= h((string) ($report["source_framework_version"] ?? "unknown")) ?></h3>
-          <p class="content-text mb-0">FNLLA Web <?= h((string) ($report["source_ui_version"] ?? "unknown")) ?></p>
+          <p class="content-text mb-0">FNLLA Runtime <?= h((string) ($report["source_ui_version"] ?? "unknown")) ?></p>
         </article>
         <article class="feature-card">
           <p class="feature-kicker">Summary</p>
@@ -313,7 +313,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
     <div class="d-flex justify-between items-center mb-3">
       <div>
         <h2 class="content-title mb-0" id="framework-update-progress-title">Framework update in progress</h2>
-        <p class="content-text mb-0" data-framework-update-progress-copy>Please keep this page open while FNLLA PHP prepares the update workflow.</p>
+        <p class="content-text mb-0" data-framework-update-progress-copy>Please keep this page open while FNLLA prepares the update workflow.</p>
       </div>
     </div>
     <div class="progress-field mb-3">
@@ -336,7 +336,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       </li>
       <li class="progress-step">
         <p class="progress-step-label">Building the framework update report.</p>
-        <p class="progress-step-meta">FNLLA PHP compares framework-managed files and prepares the structured result for the operator.</p>
+        <p class="progress-step-meta">FNLLA compares framework-managed files and prepares the structured result for the operator.</p>
       </li>
       <li class="progress-step">
         <p class="progress-step-label">Waiting for the final response.</p>
@@ -365,14 +365,14 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
 
     var progressDefinitions = {
       "github-check": {
-        copy: "FNLLA PHP is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
+        copy: "FNLLA is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
         steps: [
           {
             label: "Checking the latest published GitHub release metadata.",
             meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
           },
           {
-            label: "Downloading or reusing the cached FNLLA PHP release source.",
+            label: "Downloading or reusing the cached FNLLA release source.",
             meta: "Prepares a local release snapshot so repeat checks stay fast and deterministic."
           },
           {
@@ -386,14 +386,14 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         ]
       },
       "github-apply": {
-        copy: "FNLLA PHP is applying the cached GitHub-backed update and then running post-install validation checks.",
+        copy: "FNLLA is applying the cached GitHub-backed update and then running post-install validation checks.",
         steps: [
           {
             label: "Checking the latest published GitHub release metadata.",
             meta: "Confirms the release source and verifies that the cached baseline is still the correct target."
           },
           {
-            label: "Downloading or reusing the cached FNLLA PHP release source.",
+            label: "Downloading or reusing the cached FNLLA release source.",
             meta: "Prepares the same release snapshot used by the report so the apply run stays auditable."
           },
           {
@@ -407,7 +407,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         ]
       },
       "check": {
-        copy: "FNLLA PHP is comparing this application against the selected maintained source repository.",
+        copy: "FNLLA is comparing this application against the selected maintained source repository.",
         steps: [
           {
             label: "Resolving the maintained local source repository.",
@@ -428,7 +428,7 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
         ]
       },
       "apply": {
-        copy: "FNLLA PHP is applying safe changes from the selected maintained source repository and then running post-install checks.",
+        copy: "FNLLA is applying safe changes from the selected maintained source repository and then running post-install checks.",
         steps: [
           {
             label: "Resolving the maintained local source repository.",
@@ -508,8 +508,8 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
 
       applyProgressState(stepIndex);
 
-      if (window.FNLLAWEB && typeof window.FNLLAWEB.showModal === "function") {
-        window.FNLLAWEB.showModal("#framework-update-progress-modal");
+      if (window.FNLLARUNTIME && typeof window.FNLLARUNTIME.showModal === "function") {
+        window.FNLLARUNTIME.showModal("#framework-update-progress-modal");
       } else {
         progressModal.hidden = false;
         progressModal.classList.add("is-open");

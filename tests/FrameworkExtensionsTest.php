@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\FrameworkExtensionsTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -44,14 +44,29 @@ use PHPUnit\Framework\TestCase;
 final class FrameworkExtensionsTest extends TestCase
 {
     private string $cacheDirectory;
+    private string $queueDirectory;
 
     protected function setUp(): void
     {
         $_SESSION = [];
         $this->cacheDirectory = storage_path("framework/cache/tests");
+        $this->queueDirectory = storage_path("framework/queue/tests");
 
         if (is_dir($this->cacheDirectory)) {
             foreach (glob($this->cacheDirectory . DIRECTORY_SEPARATOR . "*.cache") ?: [] as $file) {
+                unlink($file);
+            }
+        }
+
+        foreach ([
+            $this->queueDirectory,
+            $this->queueDirectory . DIRECTORY_SEPARATOR . "failed",
+        ] as $directory) {
+            if (!is_dir($directory)) {
+                continue;
+            }
+
+            foreach (glob($directory . DIRECTORY_SEPARATOR . "*.job") ?: [] as $file) {
                 unlink($file);
             }
         }
@@ -84,6 +99,7 @@ final class FrameworkExtensionsTest extends TestCase
         $container->instance(AuthManager::class, $auth);
         $container->instance(Gate::class, $gate);
         $container->instance(UrlGenerator::class, new UrlGenerator($router));
+        $GLOBALS["fnlla_container"] = $container;
         $GLOBALS["fnlla_php_container"] = $container;
 
         $router->middleware("authorize", Authorize::class);
@@ -126,6 +142,25 @@ final class FrameworkExtensionsTest extends TestCase
         self::assertSame(200, $first->status());
         self::assertInstanceOf(Response::class, $second);
         self::assertSame(429, $second->status());
+    }
+
+    public function testQueueWorkerQuarantinesFailedJobsAndContinues(): void
+    {
+        config_set("queue.connections.file.path", "framework/queue/tests");
+
+        $container = new Container();
+        $queue = new \Fnlla\Php\Queue\QueueManager($container);
+
+        QueueTestSuccessfulJob::$handled = 0;
+
+        $queue->push(QueueTestFailingJob::class);
+        $queue->push(QueueTestSuccessfulJob::class);
+
+        $processed = $queue->work(10);
+
+        self::assertSame(1, $processed);
+        self::assertSame(1, QueueTestSuccessfulJob::$handled);
+        self::assertSame(1, count(glob($this->queueDirectory . DIRECTORY_SEPARATOR . "failed" . DIRECTORY_SEPARATOR . "*.failed.job") ?: []));
     }
 
     public function testRequestCaptureNormalizesUploadedFiles(): void
@@ -201,5 +236,23 @@ final class FrameworkExtensionsTest extends TestCase
         };
 
         return new AuthManager(new SessionStore(), $provider, new Hasher());
+    }
+}
+
+final class QueueTestFailingJob
+{
+    public function handle(): void
+    {
+        throw new \RuntimeException("Failing job for queue isolation test.");
+    }
+}
+
+final class QueueTestSuccessfulJob
+{
+    public static int $handled = 0;
+
+    public function handle(): void
+    {
+        self::$handled++;
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP SUPPORT SOURCE
+FNLLA SUPPORT SOURCE
 File: src\Support\FrameworkUpdater.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -140,7 +140,7 @@ final class FrameworkUpdater
         $currentLock = FrameworkLock::load($projectRoot);
         $resolvedAppName = $appName !== null && trim($appName) !== ""
             ? trim($appName)
-            : (string) ($currentLock["framework_base"]["application"]["name"] ?? "FNLLA PHP Project");
+            : (string) ($currentLock["framework_base"]["application"]["name"] ?? "FNLLA Project");
         [$sourceRoot, $sourceOrigin] = self::resolveSourceRoot($source, $projectRoot);
         $workspace = self::createTempWorkspace();
 
@@ -333,10 +333,10 @@ final class FrameworkUpdater
         $checks = [];
 
         foreach ([
-            "fnlla_web_contract" => [
-                "label" => "FNLLA Web contract",
+            "fnlla_runtime_contract" => [
+                "label" => "Built-in runtime contract",
                 "type" => "script",
-                "path" => "scripts/validate-fnlla-web.php",
+                "path" => "scripts/validate-fnlla-runtime.php",
             ],
             "tests" => [
                 "label" => "Project tests",
@@ -474,7 +474,7 @@ final class FrameworkUpdater
             "source_framework_version" => self::readVersionLine($sourceRoot . DIRECTORY_SEPARATOR . "VERSION")
                 ?? (string) ($githubRelease["version"] ?? (string) ($frameworkMeta["version"] ?? "unknown")),
             "current_ui_version" => (string) ($uiMeta["version"] ?? "unknown"),
-            "source_ui_version" => self::readVersionLine($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-web" . DIRECTORY_SEPARATOR . "VERSION")
+            "source_ui_version" => self::readVersionLine($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION")
                 ?? (string) ($uiMeta["version"] ?? "unknown"),
             "tracked_managed_files" => count($managedFiles),
             "source_managed_files" => count($managedFiles),
@@ -500,14 +500,14 @@ final class FrameworkUpdater
         $comparison = (string) ($githubRelease["comparison"] ?? "unknown");
 
         if ($comparison === "same") {
-            return "GitHub release {$tag} matches the current framework version ({$currentVersion}). FNLLA PHP skipped the diff so the GitHub update flow does not suggest a no-op or downgrade over an already current base.";
+            return "GitHub release {$tag} matches the current framework version ({$currentVersion}). FNLLA skipped the diff so the GitHub update flow does not suggest a no-op or downgrade over an already current base.";
         }
 
         if ($comparison === "older") {
-            return "GitHub release {$tag} is older than the current framework base ({$currentVersion}). FNLLA PHP skipped the diff so the GitHub update flow does not suggest a downgrade.";
+            return "GitHub release {$tag} is older than the current framework base ({$currentVersion}). FNLLA skipped the diff so the GitHub update flow does not suggest a downgrade.";
         }
 
-        return "FNLLA PHP could not prove that the selected GitHub release is newer than the current framework base, so the GitHub update flow stopped before diff generation.";
+        return "FNLLA could not prove that the selected GitHub release is newer than the current framework base, so the GitHub update flow stopped before diff generation.";
     }
 
     private static function isMaintainedSourceRoot(string $path): bool

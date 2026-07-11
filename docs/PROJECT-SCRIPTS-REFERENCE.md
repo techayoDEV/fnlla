@@ -19,10 +19,10 @@ For a normal exported project, the important script set is:
 
 - `scripts/test.php`
 - `scripts/lint.php`
-- `scripts/validate-fnlla-web.php`
+- `scripts/validate-fnlla-runtime.php`
 - `scripts/validate-version-manifest.php`
 - `scripts/sync-version-manifest.php`
-- `scripts/sync-fnlla-web.ps1`
+- `scripts/sync-fnlla-runtime.ps1`
 
 The exported application also keeps one framework-update command on purpose:
 
@@ -50,7 +50,7 @@ The private or maintainer-specific helper also stays out of the export:
 
 Purpose:
 
-- runs the repository-local FNLLA PHP test harness
+- runs the repository-local FNLLA test harness
 - discovers `*Test.php` files under `tests/`
 - boots the local shim under `tests/PHPUnit/Framework/TestCase.php`
 - reports pass/fail output without requiring a Composer-installed PHPUnit package
@@ -84,17 +84,17 @@ Important boundary:
 - it only checks syntax
 - it does not prove behavior, data flow or runtime correctness by itself
 
-### `scripts/validate-fnlla-web.php`
+### `scripts/validate-fnlla-runtime.php`
 
 Purpose:
 
 - validates that the current project still respects the built-in UI runtime contract
-- confirms the vendored runtime exists where FNLLA PHP expects it
+- confirms the vendored runtime exists where FNLLA expects it
 - catches unsupported UI drift in the official stack
 
 Use it when:
 
-- the vendored `public/vendor/fnlla-web/` runtime was updated
+- the vendored `public/vendor/fnlla-runtime/` runtime was updated
 - the shared layout or page structure changed
 - you want to confirm the project still stays inside the supported UI runtime boundary
 
@@ -141,14 +141,14 @@ Important boundary:
 - this is a metadata synchronization step
 - it should follow a real version decision rather than replace one
 
-### `scripts/sync-fnlla-web.ps1`
+### `scripts/sync-fnlla-runtime.ps1`
 
 Purpose:
 
-- refreshes the vendored UI runtime under `public/vendor/fnlla-web/`
+- refreshes the built-in runtime under `public/vendor/fnlla-runtime/`
 - can work from a provided local source path or by cloning the GitHub source of truth
 - detects whether the provided source is a published runtime export or a source checkout
-- when needed, publishes the runtime first and then mirrors the exported `dist/fnlla-web/` output
+- when needed, publishes the runtime first and then mirrors the exported `dist/fnlla-runtime/` output
 - finishes by running `scripts/sync-version-manifest.php`
 
 Use it when:
@@ -172,7 +172,7 @@ Purpose:
 
 Use it when:
 
-- the upstream FNLLA PHP framework was improved and you want to see what can safely flow into an existing project
+- the upstream FNLLA framework was improved and you want to see what can safely flow into an existing project
 - you need a framework-update report before doing manual merge work
 - you want to apply only the non-conflicting framework-managed changes
 
@@ -187,7 +187,7 @@ php fnlla framework:update --apply --source ..\fnlla
 
 Important boundary:
 
-- by default, the GitHub-backed workflow checks the latest published FNLLA PHP release and caches that release source locally under `storage/framework/updates/`
+- by default, the GitHub-backed workflow checks the latest published FNLLA release and caches that release source locally under `storage/framework/updates/`
 - the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base
 - when `--source` is used, the command expects a maintained `techayoDEV/fnlla` source repository path
 - the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
@@ -244,7 +244,7 @@ Purpose:
 
 Why it is not exported:
 
-- downstream FNLLA PHP application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior
+- downstream FNLLA application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior
 
 ## What `make:project` now leaves behind on purpose
 
@@ -266,7 +266,7 @@ That keeps the exported project closer to what a delivery repository should actu
 After export, a healthy first pass is:
 
 ```bash
-php fnlla fnlla-web:validate
+php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php

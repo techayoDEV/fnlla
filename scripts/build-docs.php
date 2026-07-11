@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP MAINTAINER SCRIPT
+FNLLA MAINTAINER SCRIPT
 File: scripts\build-docs.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -30,43 +30,43 @@ $rootPages = [
         "label" => "Overview",
         "href" => "index.html",
         "title" => "Overview",
-        "document_title" => "Overview - FNLLA PHP Documentation",
+        "document_title" => "Overview - FNLLA Documentation",
     ],
     [
         "label" => "Distribution",
         "href" => "distribution.html",
         "title" => "Distribution",
-        "document_title" => "Distribution - FNLLA PHP Documentation",
+        "document_title" => "Distribution - FNLLA Documentation",
     ],
     [
-        "label" => "UI Runtime",
-        "href" => "fnlla-web.html",
-        "title" => "UI Runtime",
-        "document_title" => "UI Runtime - FNLLA PHP Documentation",
+        "label" => "Built-in Runtime",
+        "href" => "fnlla-runtime.html",
+        "title" => "Built-in Runtime",
+        "document_title" => "Built-in Runtime - FNLLA Documentation",
     ],
     [
         "label" => "Getting Started",
         "href" => "getting-started.html",
         "title" => "Getting Started",
-        "document_title" => "Getting Started - FNLLA PHP Documentation",
+        "document_title" => "Getting Started - FNLLA Documentation",
     ],
     [
         "label" => "Building",
         "href" => "building.html",
         "title" => "Building",
-        "document_title" => "Building - FNLLA PHP Documentation",
+        "document_title" => "Building - FNLLA Documentation",
     ],
     [
         "label" => "API",
         "href" => "api.html",
         "title" => "API",
-        "document_title" => "API - FNLLA PHP Documentation",
+        "document_title" => "API - FNLLA Documentation",
     ],
     [
         "label" => "Guides",
         "href" => "guides.html",
         "title" => "Guides",
-        "document_title" => "Guides - FNLLA PHP Documentation",
+        "document_title" => "Guides - FNLLA Documentation",
     ],
 ];
 
@@ -77,16 +77,16 @@ $guidePages = [
         "source" => "docs/STARTING-A-NEW-PROJECT.md",
         "source_name" => "STARTING-A-NEW-PROJECT.md",
         "title" => "Starting a New Project",
-        "document_title" => "Starting a New Project - FNLLA PHP Documentation",
-        "lead" => "Recommended starter-export workflow for real downstream projects built on FNLLA PHP.",
+        "document_title" => "Starting a New Project - FNLLA Documentation",
+        "lead" => "Recommended starter-export workflow for real downstream projects built on FNLLA.",
     ],
     [
-        "label" => "Building with FNLLA PHP",
-        "href" => "building-with-fnlla-php.html",
-        "source" => "docs/BUILDING-WITH-FNLLA-PHP.md",
-        "source_name" => "BUILDING-WITH-FNLLA-PHP.md",
-        "title" => "Building with FNLLA PHP",
-        "document_title" => "Building with FNLLA PHP - FNLLA PHP Documentation",
+        "label" => "Building with FNLLA",
+        "href" => "building-with-fnlla.html",
+        "source" => "docs/BUILDING-WITH-FNLLA.md",
+        "source_name" => "BUILDING-WITH-FNLLA.md",
+        "title" => "Building with FNLLA",
+        "document_title" => "Building with FNLLA - FNLLA Documentation",
         "lead" => "Long-form implementation guidance for routes, controllers, views, forms, MySQL and auth.",
     ],
     [
@@ -95,14 +95,14 @@ $guidePages = [
         "source" => "docs/PROJECT-SCRIPTS-REFERENCE.md",
         "source_name" => "PROJECT-SCRIPTS-REFERENCE.md",
         "title" => "Project Scripts Reference",
-        "document_title" => "Project Scripts Reference - FNLLA PHP Documentation",
-        "lead" => "Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA PHP project export.",
+        "document_title" => "Project Scripts Reference - FNLLA Documentation",
+        "lead" => "Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA project export.",
     ],
 ];
 
 $guideLinkMap = [
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
-    "./BUILDING-WITH-FNLLA-PHP.md" => "./building-with-fnlla-php.html",
+    "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
     "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
 ];
 
@@ -113,9 +113,9 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "Overview",
-            "document_title" => "Overview - FNLLA PHP Documentation",
+            "document_title" => "Overview - FNLLA Documentation",
             "page_title" => "Overview",
-            "page_lead" => "Server-rendered PHP framework documentation for teams building websites and application surfaces on top of the FNLLA PHP stack.",
+            "page_lead" => "Server-rendered PHP framework documentation for teams building websites and application surfaces on top of the FNLLA stack.",
             "version" => $version,
             "content_html" => render_overview_content($version),
         ]),
@@ -126,9 +126,9 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "Distribution",
-            "document_title" => "Distribution - FNLLA PHP Documentation",
+            "document_title" => "Distribution - FNLLA Documentation",
             "page_title" => "Distribution",
-            "page_lead" => "Repository packaging, vendored UI runtime boundaries and the line between downstream runtime files and maintainer-owned internals.",
+            "page_lead" => "Repository packaging, built-in runtime boundaries and the line between downstream runtime files and maintainer-owned internals.",
             "version" => $version,
             "content_html" => render_distribution_content(),
         ]),
@@ -139,7 +139,7 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "Getting Started",
-            "document_title" => "Getting Started - FNLLA PHP Documentation",
+            "document_title" => "Getting Started - FNLLA Documentation",
             "page_title" => "Getting Started",
             "page_lead" => "Local setup, starter export, first delivery steps and the maintainer commands worth running before any real implementation work.",
             "version" => $version,
@@ -147,16 +147,16 @@ $pagesToWrite = [
         ]),
     ],
     [
-        "target" => $docsRoot . DIRECTORY_SEPARATOR . "fnlla-web.html",
+        "target" => $docsRoot . DIRECTORY_SEPARATOR . "fnlla-runtime.html",
         "content" => render_docs_page([
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
-            "current_root_label" => "UI Runtime",
-            "document_title" => "UI Runtime - FNLLA PHP Documentation",
-            "page_title" => "UI Runtime",
-            "page_lead" => "How FNLLA PHP ships, validates and updates its vendored UI runtime inside one official stack.",
+            "current_root_label" => "Built-in Runtime",
+            "document_title" => "Built-in Runtime - FNLLA Documentation",
+            "page_title" => "Built-in Runtime",
+            "page_lead" => "How FNLLA ships one built-in runtime and how to use it when writing views.",
             "version" => $version,
-            "content_html" => render_fnlla_web_content(),
+            "content_html" => render_fnlla_runtime_content(),
         ]),
     ],
     [
@@ -165,9 +165,9 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "Building",
-            "document_title" => "Building - FNLLA PHP Documentation",
+            "document_title" => "Building - FNLLA Documentation",
             "page_title" => "Building",
-            "page_lead" => "The practical delivery model for routes, controllers, views, validation, persistence, auth and vendored UI runtime page composition.",
+            "page_lead" => "The practical delivery model for routes, controllers, views, validation, persistence, auth and built-in runtime page composition.",
             "version" => $version,
             "content_html" => render_building_content(),
         ]),
@@ -178,7 +178,7 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "API",
-            "document_title" => "API - FNLLA PHP Documentation",
+            "document_title" => "API - FNLLA Documentation",
             "page_title" => "API",
             "page_lead" => "Stable framework touchpoints: public entrypoints, helpers, middleware aliases, CLI commands and repository-level support contracts.",
             "version" => $version,
@@ -191,7 +191,7 @@ $pagesToWrite = [
             "root_pages" => $rootPages,
             "guide_pages" => $guidePages,
             "current_root_label" => "Guides",
-            "document_title" => "Guides - FNLLA PHP Documentation",
+            "document_title" => "Guides - FNLLA Documentation",
             "page_title" => "Guides",
             "page_lead" => "Long-form maintainers' and delivery guides generated from the Markdown sources kept in the repository.",
             "version" => $version,
@@ -247,7 +247,7 @@ foreach ($pagesToWrite as $page) {
 
 if ($checkOnly) {
     if ($outdatedFiles !== []) {
-        fwrite(STDOUT, "FNLLA PHP docs are out of date." . PHP_EOL);
+        fwrite(STDOUT, "FNLLA docs are out of date." . PHP_EOL);
 
         foreach ($outdatedFiles as $outdatedFile) {
             fwrite(STDOUT, "- " . $outdatedFile . PHP_EOL);
@@ -256,16 +256,16 @@ if ($checkOnly) {
         exit(1);
     }
 
-    fwrite(STDOUT, "FNLLA PHP docs are in sync." . PHP_EOL);
+    fwrite(STDOUT, "FNLLA docs are in sync." . PHP_EOL);
     exit(0);
 }
 
 if ($writtenFiles === []) {
-    fwrite(STDOUT, "FNLLA PHP docs are already up to date." . PHP_EOL);
+    fwrite(STDOUT, "FNLLA docs are already up to date." . PHP_EOL);
     exit(0);
 }
 
-fwrite(STDOUT, "FNLLA PHP docs updated:" . PHP_EOL);
+fwrite(STDOUT, "FNLLA docs updated:" . PHP_EOL);
 
 foreach ($writtenFiles as $writtenFile) {
     fwrite(STDOUT, "- " . $writtenFile . PHP_EOL);
@@ -288,22 +288,22 @@ function render_docs_page(array $page): string
 
     return <<<HTML
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
   <title>{$documentTitle}</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
         <span class="doc-status">Stable {$version}</span>
@@ -328,7 +328,7 @@ function render_docs_page(array $page): string
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -349,12 +349,12 @@ function render_docs_page(array $page): string
 
 {$contentHtml}
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>
@@ -392,7 +392,7 @@ function render_guide_sidebar_navigation(array $guidePages, array $currentGuide)
     $markup = [];
 
     foreach ($guidePages as $page) {
-        $label = $page["label"] === "Building with FNLLA PHP" ? "Building" : $page["label"];
+        $label = $page["label"] === "Building with FNLLA" ? "Building" : $page["label"];
         $className = $page["href"] === $currentGuide["href"] ? "btn btn-outline btn-sm" : "btn btn-ghost btn-sm";
         $ariaCurrent = $page["href"] === $currentGuide["href"] ? ' aria-current="page"' : "";
         $markup[] = '            <a class="' . $className . '" href="./' . escape_html($page["href"]) . '"' . $ariaCurrent . '>' . escape_html($label) . "</a>";
@@ -409,7 +409,7 @@ function render_overview_content(string $version): string
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Start here</h2>
-        <p class="section-text">FNLLA PHP is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the starter-export workflow and the practical delivery rules for downstream websites and applications.</p>
+        <p class="section-text">FNLLA is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the starter-export workflow and the practical delivery rules for downstream websites and applications.</p>
       </div>
 
       <div class="grid">
@@ -417,11 +417,11 @@ function render_overview_content(string $version): string
           <h2 class="card-title">Stable repository contract</h2>
           <pre><code>public/index.php
 public/router.php
-public/vendor/fnlla-web/
+public/vendor/fnlla-runtime/
 src/
 routes/
 views/</code></pre>
-          <p class="card-text">Version {$version} keeps the framework intentionally explicit: request flow, UI runtime boundary and maintainer scripts are visible in the repository rather than hidden behind packaging layers.</p>
+          <p class="card-text">Version {$version} keeps the framework intentionally explicit: request flow, built-in runtime boundary and maintainer scripts are visible in the repository rather than hidden behind packaging layers.</p>
         </article>
 
         <article class="card">
@@ -429,7 +429,7 @@ views/</code></pre>
           <ul class="doc-checklist">
             <li><strong>Framework mode:</strong> maintain <code>techayoDEV/fnlla</code>, its scripts, docs and shared delivery foundations here.</li>
             <li><strong>Project mode:</strong> export a downstream starter with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
-            <li><strong>UI rule:</strong> keep the vendored runtime under <code>public/vendor/fnlla-web/</code> as the only supported UI layer.</li>
+            <li><strong>UI rule:</strong> keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code> as the only supported UI layer.</li>
           </ul>
         </article>
 
@@ -455,12 +455,12 @@ views/</code></pre>
         <a class="doc-link-card" href="./distribution.html">
           <span class="doc-link-label">Packaging</span>
           <p class="doc-link-title">Distribution</p>
-          <p class="doc-link-text">What belongs to the downstream runtime surface, what stays maintainer-only and how the vendored UI runtime should be treated.</p>
+          <p class="doc-link-text">What belongs to the downstream runtime surface, what stays maintainer-only and how the built-in runtime should be treated.</p>
         </a>
-        <a class="doc-link-card" href="./fnlla-web.html">
+        <a class="doc-link-card" href="./fnlla-runtime.html">
           <span class="doc-link-label">Runtime</span>
-          <p class="doc-link-title">UI Runtime</p>
-          <p class="doc-link-text">Where the vendored runtime lives, how to keep it healthy and why FNLLA PHP ships with one official UI layer.</p>
+          <p class="doc-link-title">Built-in Runtime</p>
+          <p class="doc-link-text">Where the built-in runtime lives, how to keep it healthy and how to use it while composing FNLLA views.</p>
         </a>
         <a class="doc-link-card" href="./getting-started.html">
           <span class="doc-link-label">Bootstrap</span>
@@ -488,7 +488,7 @@ views/</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Keep these rules in your head</h2>
-        <p class="section-text">These are the habits that keep FNLLA PHP strong instead of slowly turning it into a one-project-only code dump.</p>
+        <p class="section-text">These are the habits that keep FNLLA strong instead of slowly turning it into a one-project-only code dump.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
@@ -498,7 +498,7 @@ views/</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Integrated UI runtime stays mandatory</h3>
-          <p class="card-text">Do not replace the UI runtime with Tailwind, Bootstrap or another CSS framework. The shared layout and guard rails assume the vendored runtime is present.</p>
+          <p class="card-text">Do not replace the built-in runtime with Tailwind, Bootstrap or another CSS framework. The shared layout and guard rails assume the vendored runtime is present.</p>
         </article>
         <article class="card">
           <h3 class="card-title">MySQL is the official database target</h3>
@@ -513,19 +513,19 @@ views/</code></pre>
 HTML;
 }
 
-function render_fnlla_web_content(): string
+function render_fnlla_runtime_content(): string
 {
     return <<<HTML
     <section class="section pt-1">
       <div class="section-header">
-        <h2 class="section-title">The vendored UI runtime is part of FNLLA PHP</h2>
-        <p class="section-text">FNLLA PHP is not designed to be UI-agnostic in the official stack. The maintained application shell, shared layout and validation flow all assume that the vendored runtime is present as the only supported UI layer.</p>
+        <h2 class="section-title">The runtime is built into FNLLA</h2>
+        <p class="section-text">FNLLA is not designed to be UI-agnostic in the official stack. The maintained application shell, shared layout and validation flow all assume that the built-in runtime is present as the only supported UI layer.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
           <h2 class="card-title">Where it lives</h2>
-          <p class="card-text">The vendored runtime lives under <code>public/vendor/fnlla-web/</code>. That directory is the local downstream copy used by the framework and by starter exports created from this repository.</p>
+          <p class="card-text">The built-in runtime lives under <code>public/vendor/fnlla-runtime/</code>. That directory is the local downstream copy used by the framework and by starter exports created from this repository.</p>
         </article>
         <article class="card">
           <h2 class="card-title">Why it matters</h2>
@@ -536,15 +536,46 @@ function render_fnlla_web_content(): string
 
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Supported runtime contract</h2>
-        <p class="section-text">Downstream work should treat the vendored runtime as part of FNLLA PHP, not as a replaceable design preference.</p>
+        <h2 class="section-title">How to use it in views</h2>
+        <p class="section-text">Downstream work should treat the runtime as part of FNLLA itself. When you build views, start from the shipped runtime primitives instead of introducing a second design system.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">View-writing rules</h3>
+          <ul class="doc-checklist">
+            <li>Keep shared shell markup and asset loading in <code>views/layouts/app.php</code>.</li>
+            <li>Keep page body markup in <code>views/pages/</code>.</li>
+            <li>Build with the shipped <code>section</code>, <code>container</code>, <code>stack</code>, <code>grid</code>, <code>card</code>, <code>btn</code> and form primitives first.</li>
+            <li>Use <code>public/assets/app.css</code> only for project-specific refinements that the built-in runtime does not already cover.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Healthy starter shape</h3>
+          <pre><code>&lt;section class="section"&gt;
+  &lt;div class="container"&gt;
+    &lt;div class="stack gap-lg"&gt;
+      &lt;header class="stack gap-sm"&gt;...&lt;/header&gt;
+      &lt;div class="grid grid-2 gap-md"&gt;...&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+          <p class="card-text">That is the default mental model: page content in <code>views/pages/</code>, global shell in the layout, runtime classes for structure, then narrow project styling where needed.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Supported runtime boundary</h2>
+        <p class="section-text">The runtime is part of FNLLA, not a replaceable add-on.</p>
       </div>
 
       <div class="doc-mini-grid">
         <article class="card">
           <h3 class="card-title">Supported</h3>
           <ul class="doc-checklist">
-            <li>Keep the vendored runtime under <code>public/vendor/fnlla-web/</code>.</li>
+            <li>Keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code>.</li>
             <li>Sync updates through the official TechAyo-maintained runtime workflow.</li>
             <li>Build pages with the shipped runtime layout, card, button, alert and form primitives.</li>
           </ul>
@@ -552,10 +583,105 @@ function render_fnlla_web_content(): string
         <article class="card">
           <h3 class="card-title">Unsupported</h3>
           <ul class="doc-checklist">
-            <li>Replacing the vendored runtime with Tailwind, Bootstrap or another framework in the official stack.</li>
-            <li>Loading third-party UI assets from random CDNs instead of the vendored runtime.</li>
-            <li>Changing shared shell markup so the framework can no longer validate the UI contract.</li>
+            <li>Replacing the built-in runtime with Tailwind, Bootstrap or another framework in the official stack.</li>
+            <li>Loading third-party UI assets from random CDNs instead of the built-in runtime.</li>
+            <li>Changing shared shell markup so the framework can no longer validate the runtime contract.</li>
           </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Practical consequence</h3>
+          <p class="card-text">FNLLA docs, starter pages and application shell all assume the same runtime classes and behavior, so view work stays aligned when you build with those primitives from the start.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Full starter shell syntax</h2>
+        <p class="section-text">The built-in runtime is meant to be used through the full FNLLA starter shell, not only through isolated page fragments. The real baseline is the shared layout in <code>views/layouts/app.php</code> plus page content rendered inside its <code>main</code> area.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">Shared starter layout</h3>
+          <pre><code class="language-php">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;meta name="theme-color" content="#1A4137"&gt;
+  &lt;title&gt;&lt;?= h(\$pageMeta["title"]) ?&gt;&lt;/title&gt;
+  &lt;link rel="stylesheet" href="&lt;?= h(asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css")) ?&gt;"&gt;
+  &lt;link rel="stylesheet" href="&lt;?= h(asset("assets/app.css")) ?&gt;"&gt;
+&lt;/head&gt;
+&lt;body data-fnlla-theme="default"&gt;
+  &lt;header&gt;
+    &lt;section class="section"&gt;
+      &lt;div class="container"&gt;
+        Header / Navigation
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;?= \$content ?&gt;
+  &lt;/main&gt;
+
+  &lt;footer&gt;
+    &lt;section class="section"&gt;
+      &lt;div class="container"&gt;
+        Footer
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/footer&gt;
+
+  &lt;script src="&lt;?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?&gt;"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+          <p class="card-text">This is the real starter baseline: runtime assets in <code>head</code>, shared navigation in <code>header</code>, page injection through <code>&lt;?= \$content ?&gt;</code> inside <code>main</code>, then a simple footer and runtime JavaScript at the end of <code>body</code>.</p>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Starter route, controller and page body</h3>
+          <pre><code class="language-php">\$router->get("/", [PageController::class, "home"])->name("home");
+\$router->get("/about", [PageController::class, "about"])->name("about");
+\$router->get("/services", [PageController::class, "services"])->name("services");
+\$router->get("/contact", [PageController::class, "contact"])->name("contact");
+
+public function home(Request \$request): Response
+{
+    return \$this->view("pages/home", [
+        "pageTitle" => "Home",
+        "pageTitleHome" => true,
+        "starterPages" => [
+            [
+                "title" => "Home",
+                "text" => "The opening story starts here.",
+            ],
+        ],
+    ]);
+}
+
+&lt;section class="section pt-1"&gt;
+  &lt;div class="container"&gt;
+    &lt;section class="hero hero-compact"&gt;
+      &lt;div class="grid gap-md hero-copy"&gt;
+        &lt;h1 class="hero-title"&gt;...&lt;/h1&gt;
+        &lt;p class="hero-text"&gt;...&lt;/p&gt;
+        &lt;div class="hero-actions"&gt;
+          &lt;a class="btn btn-primary btn-xl" href="&lt;?= h(route("services")) ?&gt;"&gt;View services&lt;/a&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;?php foreach (\$starterPages as \$starterPage): ?&gt;
+  &lt;article class="feature-card"&gt;
+    &lt;h3 class="content-title"&gt;&lt;?= h(\$starterPage["title"]) ?&gt;&lt;/h3&gt;
+    &lt;p class="content-text"&gt;&lt;?= h(\$starterPage["text"]) ?&gt;&lt;/p&gt;
+  &lt;/article&gt;
+&lt;?php endforeach; ?&gt;</code></pre>
+          <p class="card-text">This is the second half of the starter: routes point at <code>PageController</code>, the controller passes plain PHP data into the view and the page body stays focused on sections rendered inside the shared <code>main</code> shell.</p>
         </article>
       </div>
     </section>
@@ -563,20 +689,20 @@ function render_fnlla_web_content(): string
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Sync and validation workflow</h2>
-        <p class="section-text">When the maintained runtime source changes, update the vendored runtime deliberately and validate it before treating the repository as release-ready.</p>
+        <p class="section-text">When the maintained runtime source changes, update the built-in runtime deliberately and validate it before treating the repository as release-ready.</p>
       </div>
 
       <div class="grid grid-2 gap-md">
         <article class="card">
           <h3 class="card-title">Recommended commands</h3>
-          <pre><code class="language-bash">php fnlla fnlla-web:sync
-php fnlla fnlla-web:validate
+          <pre><code class="language-bash">php fnlla fnlla-runtime:sync
+php fnlla fnlla-runtime:validate
 php scripts/build-docs.php --check</code></pre>
-          <p class="card-text">Use the explicit sync command when you want to pull in maintained runtime changes. The timed development guard keeps local state fresh and can auto-repair a missing vendored runtime, while these commands remain the deliberate maintainer workflow.</p>
+          <p class="card-text">Use the explicit sync command when you want to pull in maintained runtime changes. The timed development guard keeps local state fresh and can auto-repair a missing built-in runtime, while these commands remain the deliberate maintainer workflow.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Operational rule</h3>
-          <p class="card-text">If the maintained runtime changes upstream, sync the vendored copy before shipping FNLLA PHP changes that rely on the new runtime behavior or styles.</p>
+          <p class="card-text">If the maintained runtime changes upstream, sync the vendored copy before shipping FNLLA changes that rely on the new runtime behavior or styles.</p>
         </article>
       </div>
     </section>
@@ -584,24 +710,24 @@ php scripts/build-docs.php --check</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Starter-export consequence</h2>
-        <p class="section-text">A new project created from FNLLA PHP inherits the vendored runtime immediately, so downstream teams can build pages without adding a separate UI package step.</p>
+        <p class="section-text">A new project created from FNLLA inherits the built-in runtime immediately, so downstream teams can build pages without adding a separate UI package step.</p>
       </div>
 
       <div class="doc-flow-grid">
         <article class="card">
           <p class="doc-link-label">1. Export</p>
           <h3 class="card-title">Project scaffold</h3>
-          <p class="card-text">The starter export includes the application code and the vendored runtime together.</p>
+          <p class="card-text">The starter export includes the application code and the built-in runtime together.</p>
         </article>
         <article class="card">
           <p class="doc-link-label">2. Build</p>
           <h3 class="card-title">Shared layout</h3>
-          <p class="card-text">Views render against the same local UI contract already used by the framework docs and app shell.</p>
+          <p class="card-text">Views render against the same local runtime already used by the framework docs and app shell.</p>
         </article>
         <article class="card">
           <p class="doc-link-label">3. Maintain</p>
           <h3 class="card-title">Future updates</h3>
-          <p class="card-text">Later UI improvements are pulled in by syncing the vendored runtime instead of introducing a second styling system.</p>
+          <p class="card-text">Later UI improvements are pulled in by syncing the built-in runtime instead of introducing a second styling system.</p>
         </article>
       </div>
     </section>
@@ -614,7 +740,7 @@ function render_distribution_content(): string
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Repository and runtime boundary</h2>
-        <p class="section-text">FNLLA PHP is maintained as a full repository, but downstream consumers should only treat a smaller subset as the supported application runtime surface.</p>
+        <p class="section-text">FNLLA is maintained as a full repository, but downstream consumers should only treat a smaller subset as the supported application runtime surface.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
@@ -623,7 +749,7 @@ function render_distribution_content(): string
           <ul class="doc-checklist">
             <li><code>public/index.php</code> and <code>public/router.php</code> as HTTP entrypoints.</li>
             <li><code>public/assets/</code> for project-owned public assets.</li>
-            <li><code>public/vendor/fnlla-web/</code> for the vendored authoritative UI runtime.</li>
+            <li><code>public/vendor/fnlla-runtime/</code> for the built-in authoritative UI runtime.</li>
             <li><code>views/layouts/</code> and <code>views/pages/</code> as the server-rendered delivery layer.</li>
           </ul>
         </article>
@@ -658,7 +784,7 @@ src/
 storage/
 tests/
 views/</code></pre>
-          <p class="card-text">The export already includes runtime code, templates, validation scripts and the vendored UI runtime so the new project can boot immediately.</p>
+          <p class="card-text">The export already includes runtime code, templates, validation scripts and the built-in UI runtime so the new project can boot immediately.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Intentionally excluded from starter export</h3>
@@ -674,14 +800,14 @@ SECURITY.md</code></pre>
 
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Integrated UI runtime boundary</h2>
-        <p class="section-text">FNLLA PHP is not UI-agnostic in the official stack. The UI runtime is a first-class dependency, not an optional styling preference.</p>
+        <h2 class="section-title">Integrated runtime boundary</h2>
+        <p class="section-text">FNLLA is not UI-agnostic in the official stack. The built-in runtime is a first-class part of the framework, not an optional styling preference.</p>
       </div>
 
       <div class="doc-mini-grid">
         <article class="card">
           <h3 class="card-title">Supported rule</h3>
-          <p class="card-text">Keep the vendored runtime under <code>public/vendor/fnlla-web/</code> and sync it only from the official TechAyo-maintained source of truth.</p>
+          <p class="card-text">Keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code> and sync it only from the official TechAyo-maintained source of truth.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Unsupported rule</h3>
@@ -702,7 +828,7 @@ function render_getting_started_content(): string
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Quickstart</h2>
-        <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a project for the real delivery, configure MySQL and validate the UI/runtime contract before building features.</p>
+        <p class="section-text">The fastest safe path is: keep this repo as the framework source, export a project for the real delivery, configure MySQL and validate the built-in runtime before building features.</p>
       </div>
 
       <div class="grid">
@@ -736,14 +862,14 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Recommended first steps for a new downstream project</h2>
-        <p class="section-text">The exported project already runs, but the first pass should focus on wiring, contract validation and replacing the demonstration surface with the actual product flow.</p>
+        <p class="section-text">The exported project already runs, but the first pass should focus on wiring, runtime validation and replacing the demonstration surface with the actual product flow.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
           <h3 class="card-title">Initial commands</h3>
-          <pre><code>php fnlla fnlla-web:sync
-php fnlla fnlla-web:validate
+          <pre><code>php fnlla fnlla-runtime:sync
+php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
@@ -793,7 +919,7 @@ function render_building_content(): string
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Build with the grain of the framework</h2>
-        <p class="section-text">FNLLA PHP stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
+        <p class="section-text">FNLLA stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
       </div>
 
       <div class="doc-flow-grid">
@@ -829,7 +955,7 @@ function render_building_content(): string
       <div class="grid grid-2 gap-md">
         <article class="card">
           <h3 class="card-title">Route and controller</h3>
-          <pre><code>\$router->get("/services", [HomeController::class, "services"])->name("services");
+          <pre><code>\$router->get("/services", [PageController::class, "services"])->name("services");
 
 public function services(Request \$request): Response
 {
@@ -845,7 +971,34 @@ public function services(Request \$request): Response
     &lt;div class="grid grid-2 gap-md"&gt;...&lt;/div&gt;
   &lt;/div&gt;
 &lt;/section&gt;</code></pre>
-          <p class="card-text">Keep page templates under <code>views/pages/</code> and let the shared layout own the document shell and shared vendored runtime assets.</p>
+          <p class="card-text">Keep page templates under <code>views/pages/</code>, let the shared layout own the document shell and shared runtime assets, and compose the page with built-in runtime classes first.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Built-in runtime first</h2>
+        <p class="section-text">When you write a new view, think in terms of the runtime FNLLA already ships rather than a second front-end layer you add later.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">Reach for these first</h3>
+          <ul class="doc-checklist">
+            <li><code>section</code> and <code>container</code> for page framing</li>
+            <li><code>stack</code> and <code>grid</code> for spacing and layout</li>
+            <li><code>card</code>, <code>badge</code> and <code>btn</code> for common UI blocks</li>
+            <li><code>input</code>, <code>select</code> and <code>textarea</code> for forms</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Avoid early drift</h3>
+          <ul class="doc-checklist">
+            <li>Do not load a second CSS framework.</li>
+            <li>Do not rebuild the global shell inside a page template.</li>
+            <li>Do not bypass runtime tokens when the existing spacing, color or typography scale already fits the need.</li>
+          </ul>
         </article>
       </div>
     </section>
@@ -897,7 +1050,7 @@ public function services(Request \$request): Response
         </article>
         <article class="card">
           <h3 class="card-title">Reference guide</h3>
-          <p class="card-text">Use <a href="./building-with-fnlla-php.html"><code>building-with-fnlla-php.html</code></a> for the longer delivery playbook and examples.</p>
+          <p class="card-text">Use <a href="./building-with-fnlla.html"><code>building-with-fnlla.html</code></a> for the longer delivery playbook and examples.</p>
         </article>
       </div>
     </section>
@@ -920,7 +1073,7 @@ function render_api_content(): string
             <li><code>public/index.php</code></li>
             <li><code>public/router.php</code></li>
             <li><code>views/layouts/app.php</code> as the shared HTML shell</li>
-            <li><code>public/vendor/fnlla-web/</code> as the mandatory UI runtime bundle</li>
+            <li><code>public/vendor/fnlla-runtime/</code> as the mandatory UI runtime bundle</li>
           </ul>
         </article>
         <article class="card">
@@ -974,8 +1127,8 @@ throttle</code></pre>
           <h3 class="card-title">Framework and runtime commands</h3>
           <ul class="doc-checklist">
             <li><code>php fnlla make:project</code></li>
-            <li><code>php fnlla fnlla-web:sync</code></li>
-            <li><code>php fnlla fnlla-web:validate</code></li>
+            <li><code>php fnlla fnlla-runtime:sync</code></li>
+            <li><code>php fnlla fnlla-runtime:validate</code></li>
             <li><code>php fnlla framework:update --check --github</code></li>
             <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
@@ -1008,7 +1161,7 @@ throttle</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Validation scripts</h3>
-          <p class="card-text"><code>scripts/validate-fnlla-web.php</code>, <code>scripts/validate-version-manifest.php</code> and <code>scripts/build-docs.php --check</code> are the core content-contract checks.</p>
+          <p class="card-text"><code>scripts/validate-fnlla-runtime.php</code>, <code>scripts/validate-version-manifest.php</code> and <code>scripts/build-docs.php --check</code> are the core content-contract checks.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Source of truth</h3>

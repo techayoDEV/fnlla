@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
-  <title>Starting a New Project - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <title>Starting a New Project - FNLLA Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.15</span>
+        <span class="doc-status">Stable 1.0.16</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -35,11 +35,11 @@
           <span class="doc-brand-separator" aria-hidden="true">-</span>
           <p class="doc-display">Documentation</p>
         </div>
-        <p class="doc-lead">Recommended starter-export workflow for real downstream projects built on FNLLA PHP.</p>
+        <p class="doc-lead">Recommended starter-export workflow for real downstream projects built on FNLLA.</p>
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-runtime.html">Built-in Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-ghost btn-sm" href="./building.html">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -67,7 +67,7 @@
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Starting a New Project</h2>
-        <p class="section-text">Recommended starter-export workflow for real downstream projects built on FNLLA PHP.</p>
+        <p class="section-text">Recommended starter-export workflow for real downstream projects built on FNLLA.</p>
       </div>
 
       <div class="doc-guide-layout">
@@ -81,7 +81,7 @@
               <li>Give that new directory its own project name and its own Git repository.</li>
               <li>Build the actual website or application there.</li>
             </ol>
-            <h2 id="why-not-just-clone-fnlla-php-and-build-directly-inside-it">Why not just clone fnlla-php and build directly inside it</h2>
+            <h2 id="why-not-just-clone-fnlla-and-build-directly-inside-it">Why not just clone fnlla and build directly inside it</h2>
             <p>If you clone <code>techayoDEV/fnlla</code> and start editing it directly for every new website, you mix together two different concerns:</p>
             <ul>
               <li>framework maintenance</li>
@@ -102,13 +102,13 @@
             <h2 id="what-the-export-gives-you">What the export gives you</h2>
             <p>The exported project already includes:</p>
             <ul>
-              <li>the FNLLA PHP runtime</li>
-              <li>the vendored UI runtime under <code>public/vendor/fnlla-web/</code></li>
+              <li>the FNLLA runtime</li>
+              <li>the built-in runtime under <code>public/vendor/fnlla-runtime/</code></li>
               <li>routes, controllers and views</li>
               <li>MySQL config and migration support</li>
               <li>auth, sessions, cookies and CSRF foundations</li>
               <li>lint, test and runtime validation scripts</li>
-              <li>a dedicated <code>/project/launch</code> page for developer onboarding</li>
+              <li>a starter skeleton with public pages for <code>/</code>, <code>/about</code>, <code>/services</code> and <code>/contact</code></li>
               <li>a local-first <code>/maintenance/framework-update</code> page with a GitHub-backed update flow</li>
               <li>a project README that explains the next steps</li>
             </ul>
@@ -134,9 +134,9 @@
             </ol>
             <h2 id="example">Example</h2>
             <p>If your maintained framework lives here:</p>
-            <pre><code class="language-text">/workspace/fnlla-php</code></pre>
+            <pre><code class="language-text">/workspace/fnlla</code></pre>
             <p>Then a good new project export might be:</p>
-            <pre><code class="language-bash">cd /workspace/fnlla-php
+            <pre><code class="language-bash">cd /workspace/fnlla
 php fnlla make:project ../acme-service-portal &quot;Acme Service Portal&quot;</code></pre>
             <p>That creates:</p>
             <pre><code class="language-text">/workspace/acme-service-portal</code></pre>
@@ -148,17 +148,17 @@ php fnlla make:project ../acme-service-portal &quot;Acme Service Portal&quot;</c
               <li>Set <code>APP_URL</code>.</li>
               <li>Set MySQL credentials.</li>
               <li>Review <code>config/app.php</code>.</li>
-              <li>Open <code>/project/launch</code> and use it as the first delivery checklist.</li>
+              <li>Open <code>/</code>, <code>/about</code>, <code>/services</code> and <code>/contact</code> and treat them as the real starter pages you will reshape.</li>
               <li>Replace the demo routes and pages with the real application flow.</li>
               <li>Run:</li>
             </ol>
-            <pre><code class="language-bash">php fnlla fnlla-web:validate
+            <pre><code class="language-bash">php fnlla fnlla-runtime:validate
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php</code></pre>
             <ol>
-              <li>Use <code>/maintenance/framework-update</code> when you want to compare the project against the latest published FNLLA PHP release from GitHub or against a local maintainer checkout.</li>
+              <li>Use <code>/maintenance/framework-update</code> when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.</li>
             </ol>
             <ol>
               <li>Start the local server:</li>
@@ -174,12 +174,12 @@ php scripts/validate-version-manifest.php</code></pre>
             <ul>
               <li><code>config/app.php</code></li>
               <li><code>routes/web.php</code></li>
-              <li><code>src/Controllers/</code></li>
+              <li><code>src/Controllers/PageController.php</code></li>
               <li><code>views/pages/</code></li>
               <li><code>public/assets/app.css</code></li>
               <li><code>database/migrations/</code></li>
             </ul>
-            <h2 id="should-there-still-be-a-separate-starter-directory-inside-fnlla-php">Should there still be a separate starter directory inside fnlla-php</h2>
+            <h2 id="should-there-still-be-a-separate-starter-directory-inside-fnlla">Should there still be a separate starter directory inside fnlla</h2>
             <p>No separate duplicated <code>starter/</code> copy is recommended as the primary workflow.</p>
             <p>The reason is simple:</p>
             <ul>
@@ -208,14 +208,14 @@ php scripts/validate-version-manifest.php</code></pre>
             <ul>
               <li>one real website or one real web application project</li>
             </ul>
-            <p>That separation is the cleanest and most scalable way to work with FNLLA PHP.</p>
+            <p>That separation is the cleanest and most scalable way to work with FNLLA.</p>
         </article>
         <aside class="doc-guide-sidebar scrollbar scrollbar-thin">
           <div class="card doc-guide-card">
             <p class="doc-panel-label">Guide pages</p>
             <div class="doc-guide-nav" aria-label="Guide pages">
             <a class="btn btn-outline btn-sm" href="./starting-a-new-project.html" aria-current="page">Starting a New Project</a>
-            <a class="btn btn-ghost btn-sm" href="./building-with-fnlla-php.html">Building</a>
+            <a class="btn btn-ghost btn-sm" href="./building-with-fnlla.html">Building</a>
             <a class="btn btn-ghost btn-sm" href="./project-scripts-reference.html">Project Scripts Reference</a>
             </div>
           </div>
@@ -223,14 +223,14 @@ php scripts/validate-version-manifest.php</code></pre>
             <p class="doc-panel-label">On this page</p>
             <div class="doc-guide-toc doc-guide-toc-numbered">
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#short-answer">Short answer</a>
-              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#why-not-just-clone-fnlla-php-and-build-directly-inside-it">Why not just clone fnlla-php and build directly inside it</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#why-not-just-clone-fnlla-and-build-directly-inside-it">Why not just clone fnlla and build directly inside it</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#official-recommended-workflow">Official recommended workflow</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-the-export-gives-you">What the export gives you</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-the-new-project-should-be">What the new project should be</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#example">Example</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#what-to-do-right-after-export">What to do right after export</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#which-files-you-normally-edit-first">Which files you normally edit first</a>
-              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#should-there-still-be-a-separate-starter-directory-inside-fnlla-php">Should there still be a separate starter directory inside fnlla-php</a>
+              <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#should-there-still-be-a-separate-starter-directory-inside-fnlla">Should there still be a separate starter directory inside fnlla</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#when-cloning-the-repository-directly-is-still-acceptable">When cloning the repository directly is still acceptable</a>
               <a class="doc-guide-toc-link doc-guide-toc-level-2" href="#final-rule">Final rule</a>
             </div>
@@ -239,12 +239,12 @@ php scripts/validate-version-manifest.php</code></pre>
       </div>
     </section>
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>

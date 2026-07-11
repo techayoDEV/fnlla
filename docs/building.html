@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<!-- FNLLA PHP documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
+<!-- FNLLA documentation page. Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18352f">
-  <title>Building - FNLLA PHP Documentation</title>
-  <link rel="icon" href="./assets/brand/fnlla-php.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../public/vendor/fnlla-web/assets/css/fnlla-web.css">
+  <title>Building - FNLLA Documentation</title>
+  <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
   <link rel="stylesheet" href="./assets/docs.css">
 </head>
 <body data-fnlla-theme="default">
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <main class="doc-wrapper" id="main-content">
-    <header class="doc-header" aria-label="FNLLA PHP documentation shell">
+    <header class="doc-header" aria-label="FNLLA documentation shell">
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
-        <span class="doc-status">Stable 1.0.15</span>
+        <span class="doc-status">Stable 1.0.16</span>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -35,11 +35,11 @@
           <span class="doc-brand-separator" aria-hidden="true">-</span>
           <p class="doc-display">Documentation</p>
         </div>
-        <p class="doc-lead">The practical delivery model for routes, controllers, views, validation, persistence, auth and vendored UI runtime page composition.</p>
+        <p class="doc-lead">The practical delivery model for routes, controllers, views, validation, persistence, auth and built-in runtime page composition.</p>
       </div>
     </header>
 
-    <nav class="doc-nav" aria-label="FNLLA PHP documentation">
+    <nav class="doc-nav" aria-label="FNLLA documentation">
       <div class="doc-nav-top">
         <p class="doc-nav-label">Docs Navigation</p>
         <button class="btn btn-ghost btn-sm doc-nav-toggle" type="button" data-doc-nav-toggle aria-expanded="false" aria-controls="doc-nav-panel">
@@ -49,7 +49,7 @@
       <div class="doc-nav-panel" id="doc-nav-panel" data-doc-nav-panel>
         <a class="btn btn-ghost btn-sm" href="./index.html">Overview</a>
         <a class="btn btn-ghost btn-sm" href="./distribution.html">Distribution</a>
-        <a class="btn btn-ghost btn-sm" href="./fnlla-web.html">UI Runtime</a>
+        <a class="btn btn-ghost btn-sm" href="./fnlla-runtime.html">Built-in Runtime</a>
         <a class="btn btn-ghost btn-sm" href="./getting-started.html">Getting Started</a>
         <a class="btn btn-outline btn-sm" href="./building.html" aria-current="page">Building</a>
         <a class="btn btn-ghost btn-sm" href="./api.html">API</a>
@@ -67,7 +67,7 @@
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Build with the grain of the framework</h2>
-        <p class="section-text">FNLLA PHP stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
+        <p class="section-text">FNLLA stays fast and legible when delivery work follows the small request lifecycle that already exists in the repository instead of layering new abstractions too early.</p>
       </div>
 
       <div class="doc-flow-grid">
@@ -103,7 +103,7 @@
       <div class="grid grid-2 gap-md">
         <article class="card">
           <h3 class="card-title">Route and controller</h3>
-          <pre><code>$router->get("/services", [HomeController::class, "services"])->name("services");
+          <pre><code>$router->get("/services", [PageController::class, "services"])->name("services");
 
 public function services(Request $request): Response
 {
@@ -119,7 +119,34 @@ public function services(Request $request): Response
     &lt;div class="grid grid-2 gap-md"&gt;...&lt;/div&gt;
   &lt;/div&gt;
 &lt;/section&gt;</code></pre>
-          <p class="card-text">Keep page templates under <code>views/pages/</code> and let the shared layout own the document shell and shared vendored runtime assets.</p>
+          <p class="card-text">Keep page templates under <code>views/pages/</code>, let the shared layout own the document shell and shared runtime assets, and compose the page with built-in runtime classes first.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Built-in runtime first</h2>
+        <p class="section-text">When you write a new view, think in terms of the runtime FNLLA already ships rather than a second front-end layer you add later.</p>
+      </div>
+
+      <div class="doc-card-grid doc-card-grid-2">
+        <article class="card">
+          <h3 class="card-title">Reach for these first</h3>
+          <ul class="doc-checklist">
+            <li><code>section</code> and <code>container</code> for page framing</li>
+            <li><code>stack</code> and <code>grid</code> for spacing and layout</li>
+            <li><code>card</code>, <code>badge</code> and <code>btn</code> for common UI blocks</li>
+            <li><code>input</code>, <code>select</code> and <code>textarea</code> for forms</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 class="card-title">Avoid early drift</h3>
+          <ul class="doc-checklist">
+            <li>Do not load a second CSS framework.</li>
+            <li>Do not rebuild the global shell inside a page template.</li>
+            <li>Do not bypass runtime tokens when the existing spacing, color or typography scale already fits the need.</li>
+          </ul>
         </article>
       </div>
     </section>
@@ -171,17 +198,17 @@ $this->validate($payload, [
         </article>
         <article class="card">
           <h3 class="card-title">Reference guide</h3>
-          <p class="card-text">Use <a href="./building-with-fnlla-php.html"><code>building-with-fnlla-php.html</code></a> for the longer delivery playbook and examples.</p>
+          <p class="card-text">Use <a href="./building-with-fnlla.html"><code>building-with-fnlla.html</code></a> for the longer delivery playbook and examples.</p>
         </article>
       </div>
     </section>
 
-    <footer class="doc-footer" aria-label="FNLLA PHP ownership notice">
-      <p class="content-text">FNLLA PHP &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+    <footer class="doc-footer" aria-label="FNLLA ownership notice">
+      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
-  <script src="../public/vendor/fnlla-web/assets/js/fnlla-web.js"></script>
+  <script src="../public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js"></script>
   <script src="./assets/docs.js"></script>
 </body>
 </html>

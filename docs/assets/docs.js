@@ -1,13 +1,13 @@
 /*
   ============================================================================
-  Documentation-only behavior for FNLLA PHP docs.
+  Documentation-only behavior for FNLLA docs.
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */
 
 (function () {
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var storageKey = "fnlla-php-docs-theme";
+  var storageKey = "fnlla-docs-theme";
   var themeColors = {
     default: "#18352f",
     dark: "#0d1723"
@@ -38,8 +38,8 @@
     var themeToggle = document.querySelector("[data-doc-theme-toggle]");
     var themeMeta = document.querySelector('meta[name="theme-color"]');
 
-    if (window.FNLLAWEB && typeof window.FNLLAWEB.setTheme === "function") {
-      window.FNLLAWEB.setTheme(normalizedTheme);
+    if (window.FNLLARUNTIME && typeof window.FNLLARUNTIME.setTheme === "function") {
+      window.FNLLARUNTIME.setTheme(normalizedTheme);
     } else if (document.body) {
       document.body.setAttribute("data-fnlla-theme", normalizedTheme);
     }

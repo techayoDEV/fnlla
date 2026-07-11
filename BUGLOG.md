@@ -1,4 +1,4 @@
-# FNLLA PHP Bug Log
+# FNLLA Bug Log
 
 This file is the lightweight maintenance log for framework-level defects,
 regressions, export mismatches and release-quality follow-up work discovered
@@ -15,7 +15,7 @@ Entry template:
 ```md
 ## YYYY-MM-DD - Short title
 - Status: open | fixed | deferred
-- Found in: fnlla-php | downstream project name
+- Found in: fnlla | downstream project name
 - Area: export | routing | auth | docs | tests | runtime | release
 - Symptom: concise observable problem
 - Root cause: confirmed cause or `unknown`

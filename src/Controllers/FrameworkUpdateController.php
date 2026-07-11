@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP CONTROLLER SOURCE
+FNLLA CONTROLLER SOURCE
 File: src\Controllers\FrameworkUpdateController.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -90,7 +90,7 @@ final class FrameworkUpdateController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Maintained source repository still needed",
-                "text" => "FNLLA PHP could not auto-detect a maintained source repository for this project. Set FRAMEWORK_UPDATE_SOURCE_PATH in .env or enter the path manually below.",
+                "text" => "FNLLA could not auto-detect a maintained source repository for this project. Set FRAMEWORK_UPDATE_SOURCE_PATH in .env or enter the path manually below.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -126,7 +126,7 @@ final class FrameworkUpdateController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "GitHub release channel is disabled",
-                "text" => "Enable FRAMEWORK_UPDATE_GITHUB_ENABLED in the local environment to let this page fetch FNLLA PHP releases directly from GitHub.",
+                "text" => "Enable FRAMEWORK_UPDATE_GITHUB_ENABLED in the local environment to let this page fetch FNLLA releases directly from GitHub.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -231,7 +231,7 @@ final class FrameworkUpdateController extends Controller
         }
 
         if ($mode === "github-check") {
-            return "The application checked the latest published FNLLA PHP release from GitHub, cached the source baseline locally and prepared a structured drift report.";
+            return "The application checked the latest published FNLLA release from GitHub, cached the source baseline locally and prepared a structured drift report.";
         }
 
         return "The application compared its framework base against the maintained source export and prepared a structured drift report.";

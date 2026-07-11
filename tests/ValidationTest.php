@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 /*
 ===============================================================================
-FNLLA PHP TEST CASE
+FNLLA TEST CASE
 File: tests\ValidationTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
-FNLLA PHP is produced, maintained and distributed by TechAyo LTD
+FNLLA is produced, maintained and distributed by TechAyo LTD
 (techayo.co.uk). This repository is the authoritative maintainer workspace for
-the FNLLA PHP framework released under the MIT License and its related delivery scripts, tests,
+the FNLLA framework released under the MIT License and its related delivery scripts, tests,
 templates and release metadata.
 
 Purpose:
@@ -56,5 +56,27 @@ final class ValidationTest extends TestCase
             self::assertArrayHasKey("password", $exception->errors());
             throw $exception;
         }
+    }
+
+    public function testValidatorTreatsNumericMinAndMaxAsNumericBounds(): void
+    {
+        $validated = Validator::make([
+            "age" => 18,
+        ], [
+            "age" => ["required", "integer", "min:18", "max:18"],
+        ])->validate();
+
+        self::assertSame(18, $validated["age"]);
+    }
+
+    public function testValidatorRejectsNumericValuesAboveMax(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        Validator::make([
+            "age" => 100,
+        ], [
+            "age" => ["required", "integer", "max:18"],
+        ])->validate();
     }
 }

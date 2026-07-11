@@ -1,8 +1,8 @@
-# FNLLA PHP Trademark Notice
+# FNLLA Trademark Notice
 
 ## Brand ownership
 
-`FNLLA`, `FNLLA PHP`, `FNLLA Web` and related product branding are names associated with TechAyo LTD (techayo.co.uk).
+`FNLLA`, `FNLLA`, `FNLLA Runtime` and related product branding are names associated with TechAyo LTD (techayo.co.uk).
 
 Logos, product names, brand marks and presentation that identify an official FNLLA product or an official TechAyo-maintained release are not granted for unrestricted use by the MIT License.
 
@@ -16,7 +16,7 @@ It does not grant trademark rights, branding rights or endorsement rights.
 
 You may use the names descriptively when it is truthful and not misleading, for example:
 
-- to say that a project is built with FNLLA PHP
+- to say that a project is built with FNLLA
 - to reference the upstream repository
 - to discuss compatibility, integration or migration work
 
@@ -24,10 +24,10 @@ You may use the names descriptively when it is truthful and not misleading, for 
 
 Without prior written permission from TechAyo LTD, do not:
 
-- present a fork or derivative as the official FNLLA PHP project
+- present a fork or derivative as the official FNLLA project
 - use TechAyo branding in a way that implies endorsement, sponsorship or support
 - reuse official logos or brand assets as if they identify your own product
-- publish a modified framework under the FNLLA PHP product identity as though it were the official maintained release
+- publish a modified framework under the FNLLA product identity as though it were the official maintained release
 
 ## Contact
 

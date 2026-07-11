@@ -1,4 +1,4 @@
-# FNLLA PHP Support
+# FNLLA Support
 
 ## Where to start
 
@@ -23,6 +23,6 @@ Before opening an issue, check:
 
 ## Scope reminder
 
-FNLLA PHP is public and MIT-licensed, but TechAyo LTD does not promise support, maintenance or a regular release cadence for third-party self-managed projects.
+FNLLA is public and MIT-licensed, but TechAyo LTD does not promise support, maintenance or a regular release cadence for third-party self-managed projects.
 
 Use [`SUPPORT.md`](../SUPPORT.md) as the source of truth for the support boundary.
