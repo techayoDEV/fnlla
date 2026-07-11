@@ -64,7 +64,7 @@ When a change is accepted for implementation:
 - keep `README.md`, `VERSION`, `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` aligned when release-facing behavior changes
 - preserve the documented MySQL-only database boundary unless an explicit product decision changes it
 - preserve the FNLLA Runtime runtime boundary under `public/vendor/fnlla-runtime/`
-- keep GitHub as the source of truth for both `techayoDEV/fnlla` and `techayoDEV/fnlla-runtime`
+- keep GitHub as the source of truth for `techayoDEV/fnlla`, its published release line and the integrated FNLLA Runtime workflow
 
 ## Maintainer workflow
 
@@ -74,6 +74,10 @@ Recommended local sequence:
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-runtime.php
+php scripts/validate-version-manifest.php
+php scripts/validate-release-metadata.php
+php scripts/build-docs.php --check
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 ```
 

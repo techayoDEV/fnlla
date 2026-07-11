@@ -148,7 +148,7 @@ Purpose:
 - refreshes the built-in runtime under `public/vendor/fnlla-runtime/`
 - can work from a provided local source path or by cloning the GitHub source of truth
 - detects whether the provided source is a published runtime export or a source checkout
-- accepts the integrated `techayoDEV/fnlla` repository as a source and mirrors `public/vendor/fnlla-runtime/`
+- when the source is a maintained checkout, publishes `dist/fnlla-runtime/` first and then mirrors that export
 - can also work from a dedicated runtime export rooted elsewhere when that is the maintained source you have locally
 - finishes by running `scripts/sync-version-manifest.php`
 
@@ -162,6 +162,25 @@ Important boundary:
 
 - this script is about the downstream vendored runtime
 - it does not maintain the upstream runtime source itself
+
+### `scripts/publish-fnlla-runtime.ps1`
+
+Purpose:
+
+- publishes the integrated runtime maintained under `public/vendor/fnlla-runtime/`
+- writes a clean runtime export to `dist/fnlla-runtime/`
+- gives maintainers one explicit source -> publish -> sync path for runtime distribution work
+
+Use it when:
+
+- you want a reproducible runtime export from the current `techayoDEV/fnlla` state
+- you are preparing runtime sync or release work
+- you want to verify the published export shape before downstream use
+
+Important boundary:
+
+- it publishes from the integrated maintainer repository
+- it does not change starter pages, routes or application-owned project files
 
 ### `php fnlla framework:update`
 

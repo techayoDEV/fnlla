@@ -184,10 +184,6 @@ function Resolve-RuntimeExportPath {
         return $distPath
     }
 
-    if ((Test-Path -LiteralPath $integratedVendoredPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $integratedVendoredPath "VERSION") -PathType Leaf)) {
-        return $integratedVendoredPath
-    }
-
     $looksLikeSourceRepo = $false
     foreach ($marker in $sourceRepoMarkers) {
         if (Test-Path -LiteralPath (Join-Path $base $marker)) {
@@ -197,9 +193,21 @@ function Resolve-RuntimeExportPath {
     }
 
     if ($looksLikeSourceRepo) {
+        $integratedPublishScript = Join-Path $base "scripts\publish-fnlla-runtime.ps1"
+        if (Test-Path -LiteralPath $integratedPublishScript -PathType Leaf) {
+            $powershellPath = Assert-CommandExists -Name "powershell"
+            Invoke-CheckedCommand -FilePath $powershellPath -Arguments @("-ExecutionPolicy", "Bypass", "-File", $integratedPublishScript) -Label "powershell"
+
+            if ((Test-Path -LiteralPath $distPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $distPath "VERSION") -PathType Leaf)) {
+                return $distPath
+            }
+
+            throw "Integrated FNLLA Runtime publish completed, but dist\\fnlla-runtime was not created under: $base"
+        }
+
         $publishScriptPath = Resolve-PublishScriptPath -BasePath $base
         if ($null -eq $publishScriptPath) {
-            throw "The provided path looks like a source repository checkout, but no runtime export was found. Use public\\vendor\\fnlla-runtime from a fnlla checkout, or publish the dedicated runtime source and sync from dist\\fnlla-runtime."
+            throw "The provided path looks like a source repository checkout, but no runtime export was found. Publish the maintained runtime first and sync from dist\\fnlla-runtime."
         }
 
         $nodePath = Assert-CommandExists -Name "node"

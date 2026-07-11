@@ -320,11 +320,13 @@ Generated runtime state, local queue files, session files and logs should not be
 
 Authoritative maintainer scripts and checkpoints:
 
-- `scripts/sync-fnlla-runtime.ps1` syncs the built-in runtime from the integrated maintainer source inside this repository
+- `scripts/publish-fnlla-runtime.ps1` publishes the integrated built-in runtime from `public/vendor/fnlla-runtime/` into `dist/fnlla-runtime/`
+- `scripts/sync-fnlla-runtime.ps1` syncs the built-in runtime from that published export workflow
 - `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-runtime.php` validates the enforced UI runtime contract
 - `scripts/validate-version-manifest.php` validates framework and built-in runtime version metadata
+- `scripts/validate-release-metadata.php` audits release-facing links, ownership markers and repository references before publication work
 - `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock, while older compatibility artifacts stay internal to update flows
 - exported projects keep `php fnlla framework:update` as the public downstream update command, while older compatibility aliases stay hidden
@@ -346,7 +348,9 @@ php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-runtime.php
 php scripts/validate-version-manifest.php
+php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 php fnlla version:status
 ```

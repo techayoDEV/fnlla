@@ -1,19 +1,16 @@
-name: FNLLA Hardening
+name: FNLLA Release Gate
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  hardening:
+  release-gate:
     runs-on: windows-latest
     env:
       FNLLA_RUNTIME_AUTO_SYNC: false
@@ -34,23 +31,15 @@ jobs:
         shell: pwsh
         run: php -v
 
-      - name: Run repository tests
-        shell: pwsh
-        run: php .\scripts\test.php
-
-      - name: Run syntax lint
-        shell: pwsh
-        run: php .\scripts\lint.php
-
-      - name: Check documentation sync
+      - name: Validate docs sync
         shell: pwsh
         run: php .\scripts\build-docs.php --check
 
-      - name: Validate FNLLA Runtime contract
+      - name: Validate runtime contract
         shell: pwsh
         run: php .\scripts\validate-fnlla-runtime.php
 
-      - name: Validate version contract
+      - name: Validate version manifest
         shell: pwsh
         run: php .\scripts\validate-version-manifest.php
 
@@ -58,17 +47,25 @@ jobs:
         shell: pwsh
         run: php .\scripts\validate-release-metadata.php
 
+      - name: Run full test suite
+        shell: pwsh
+        run: php .\scripts\test.php
+
+      - name: Run syntax lint
+        shell: pwsh
+        run: php .\scripts\lint.php
+
       - name: Publish runtime export
         shell: pwsh
         run: .\scripts\publish-fnlla-runtime.ps1
 
-      - name: Verify published runtime export exists
-        shell: pwsh
-        run: |
-          if (-not (Test-Path .\dist\fnlla-runtime\VERSION -PathType Leaf)) {
-            throw "Published runtime export is missing dist\\fnlla-runtime\\VERSION"
-          }
-
-      - name: Audit cross-repository ecosystem contract
+      - name: Audit ecosystem contract
         shell: pwsh
         run: .\scripts\audit-fnlla-ecosystem.ps1 -SkipLocalChecks
+
+      - name: Upload published runtime export
+        uses: actions/upload-artifact@v4
+        with:
+          name: fnlla-runtime-export
+          path: dist/fnlla-runtime
+          if-no-files-found: error

@@ -437,7 +437,7 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
 - `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
 - `php fnlla version:sync` regenerates `MANIFEST.json` after an intentional version change
-- `php fnlla fnlla-runtime:sync` or `update-fnlla-runtime.cmd` refresh the built-in FNLLA runtime from GitHub
+- `php fnlla fnlla-runtime:sync` or `update-fnlla-runtime.cmd` refresh the built-in FNLLA runtime through the official publish -> sync workflow
 
 The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
 

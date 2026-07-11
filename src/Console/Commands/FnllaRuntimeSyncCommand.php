@@ -140,7 +140,7 @@ final class FnllaRuntimeSyncCommand extends Command
     {
         $this->line("Usage: php fnlla fnlla-runtime:sync [--source <path-to-fnlla-or-runtime-export>]");
         $this->line("   or: php fnlla fnlla-runtime:sync [--repo-url <git-url>] [--repository techayoDEV/fnlla] [--working-clone-path <path>] [--ref <git-ref>]");
-        $this->line("If --source is provided, FNLLA syncs its built-in runtime from a local runtime export, from public\\vendor\\fnlla-runtime in a fnlla checkout, or from dist\\fnlla-runtime in a dedicated runtime source checkout.");
-        $this->line("If --source is omitted, FNLLA clones the maintained repository and syncs from its integrated vendored runtime.");
+        $this->line("If --source is provided, FNLLA syncs its built-in runtime from a local runtime export or publishes dist\\fnlla-runtime from a maintained source checkout first.");
+        $this->line("If --source is omitted, FNLLA clones the maintained repository, publishes the runtime export and syncs from that published output.");
     }
 }
