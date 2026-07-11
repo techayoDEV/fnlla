@@ -16,8 +16,8 @@ jobs:
   hardening:
     runs-on: windows-latest
     env:
-      FNLLA_WEB_AUTO_SYNC: false
-      FNLLA_WEB_ENFORCE: true
+      FNLLA_RUNTIME_AUTO_SYNC: false
+      FNLLA_RUNTIME_ENFORCE: true
 
     steps:
       - name: Check out repository

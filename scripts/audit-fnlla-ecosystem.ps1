@@ -133,21 +133,38 @@ function Test-OrganizationBranding {
         [System.Collections.Generic.List[string]]$Errors
     )
 
-    $targets = @(
+    $requiredTargets = @(
+        "profile\README.md"
+    )
+    $optionalTargets = @(
         "README.md",
         "CONTRIBUTING.md",
         "CODE_OF_CONDUCT.md",
-        "profile\README.md",
+        ".github\ISSUE_TEMPLATE\config.yml",
         ".github\ISSUE_TEMPLATE\bug-report.yml",
         ".github\ISSUE_TEMPLATE\feature-request.yml"
     )
     $legacyPattern = "FNLLA Runtime|techayoDEV/fnlla-runtime|fnlla-ui"
 
-    foreach ($relativePath in $targets) {
+    foreach ($relativePath in $requiredTargets) {
         $absolutePath = Join-Path $RepositoryPath $relativePath
 
         if (-not (Test-Path -LiteralPath $absolutePath -PathType Leaf)) {
             Add-Error -Errors $Errors -Message "Organization defaults are missing expected file: $relativePath"
+            continue
+        }
+
+        $matches = Select-String -Path $absolutePath -Pattern $legacyPattern
+
+        foreach ($match in $matches) {
+            Add-Error -Errors $Errors -Message ("Organization defaults still use legacy FNLLA Runtime naming in {0}:{1}" -f $relativePath, $match.LineNumber)
+        }
+    }
+
+    foreach ($relativePath in $optionalTargets) {
+        $absolutePath = Join-Path $RepositoryPath $relativePath
+
+        if (-not (Test-Path -LiteralPath $absolutePath -PathType Leaf)) {
             continue
         }
 
