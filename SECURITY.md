@@ -2,7 +2,7 @@
 
 FNLLA is maintained as a public MIT-licensed framework by TechAyo LTD (techayo.co.uk).
 
-If you believe you have found a security issue in FNLLA or in the FNLLA to FNLLA Runtime integration boundary, please report it privately.
+If you believe you have found a security issue in FNLLA or in its integrated UI surface boundary, please report it privately.
 
 ## Reporting routes
 
@@ -26,7 +26,7 @@ TechAyo LTD will aim to:
 
 - acknowledge a credible report in a reasonable timeframe
 - investigate impact and reproduction
-- decide whether the issue belongs to FNLLA, FNLLA Runtime or integration code between them
+- decide whether the issue belongs to core FNLLA, the integrated UI surface or the boundary between them
 - coordinate remediation before public disclosure where disclosure is appropriate
 
 Downstream hosting, application code, third-party scripts, analytics wiring, cookie-classification decisions, server hardening, secret management and operational monitoring remain the responsibility of the team operating that separate deployment.

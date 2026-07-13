@@ -32,13 +32,13 @@ final class FnllaRuntimeValidateCommand extends Command
 
     public function description(): string
     {
-        return "Validate that views and assets stay within FNLLA's built-in runtime contract.";
+        return "Validate that views and assets stay within FNLLA's integrated UI surface contract.";
     }
 
     public function handle(array $arguments): int
     {
         FnllaRuntimeGuard::validateOnly();
-        $this->line("FNLLA built-in runtime contract passed.");
+        $this->line("FNLLA integrated UI surface contract passed.");
 
         return 0;
     }

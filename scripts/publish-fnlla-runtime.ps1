@@ -10,7 +10,7 @@ FNLLA is produced, maintained and distributed by TechAyo LTD
 the public MIT-licensed FNLLA framework.
 
 Purpose:
-- publishes the integrated FNLLA Runtime from public/vendor/fnlla-runtime/
+- publishes the integrated FNLLA UI surface from public/vendor/fnlla-runtime/
   into a clean dist/fnlla-runtime export for downstream sync and release work
 #>
 
@@ -71,11 +71,11 @@ $distRoot = if ($OutputPath) {
 $distParent = Split-Path -Path $distRoot -Parent
 
 if (-not (Test-Path -LiteralPath $sourceRuntimePath -PathType Container)) {
-    throw "Integrated FNLLA Runtime source is missing: $sourceRuntimePath"
+    throw "Integrated FNLLA UI surface source is missing: $sourceRuntimePath"
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $sourceRuntimePath "VERSION") -PathType Leaf)) {
-    throw "Integrated FNLLA Runtime version file is missing under: $sourceRuntimePath"
+    throw "Integrated FNLLA UI surface version file is missing under: $sourceRuntimePath"
 }
 
 if (-not $distRoot.StartsWith($projectRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -94,8 +94,8 @@ Sync-Directory -SourcePath $sourceRuntimePath -DestinationPath $distRoot
 
 $version = (Get-Content -LiteralPath (Join-Path $distRoot "VERSION") -TotalCount 1).Trim()
 
-Write-Host "FNLLA Runtime publish complete."
-Write-Host "Source runtime: $sourceRuntimePath"
+Write-Host "FNLLA integrated UI surface publish complete."
+Write-Host "Source UI surface: $sourceRuntimePath"
 Write-Host "Published export: $distRoot"
 Write-Host "Version: $version"
 

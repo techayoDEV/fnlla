@@ -336,7 +336,7 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
 - `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
 - `scripts/validate-fnlla-runtime.php` validates the enforced UI runtime contract
-- `scripts/validate-version-manifest.php` validates framework and built-in runtime version metadata
+- `scripts/validate-version-manifest.php` validates unified FNLLA version metadata across the repository and integrated UI surface
 - `scripts/validate-release-metadata.php` audits release-facing links, ownership markers and repository references before publication work
 - `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock, while older compatibility artifacts stay internal to update flows
@@ -345,7 +345,7 @@ Authoritative maintainer scripts and checkpoints:
 - the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release starter builds
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
-- `bootstrap/common.php` enforces the shared UI runtime guard during bootstrap
+- `bootstrap/common.php` enforces the shared integrated UI surface guard during bootstrap
 
 Important boundary:
 

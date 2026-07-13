@@ -41,8 +41,8 @@ final class PageController extends Controller
                     "text" => "Most page work should happen through repeated section and container blocks, which keeps views clear and predictable.",
                 ],
                 [
-                    "title" => "One built-in runtime",
-                    "text" => "FNLLA already ships the runtime used by the starter, so layout and page work can stay inside one supported UI contract.",
+                    "title" => "One integrated UI surface",
+                    "text" => "FNLLA already ships the UI surface used by the starter, so layout and page work can stay inside one supported contract.",
                 ],
             ],
             "growthSteps" => [

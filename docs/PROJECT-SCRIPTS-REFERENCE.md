@@ -108,7 +108,7 @@ Important boundary:
 Purpose:
 
 - validates the machine-readable version contract for the current project
-- checks that `VERSION` and `MANIFEST.json` agree with the vendored runtime version state
+- checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata agree on one shared FNLLA version
 
 Use it when:
 
@@ -125,7 +125,7 @@ Important boundary:
 
 Purpose:
 
-- regenerates `MANIFEST.json` from the current `VERSION` file plus the vendored runtime state
+- regenerates `MANIFEST.json` and re-syncs the integrated UI surface metadata from the current shared FNLLA version
 
 Use it when:
 
@@ -134,7 +134,7 @@ Use it when:
 
 Typical outcome:
 
-- `MANIFEST.json` is rewritten to match the current framework and vendored runtime versions
+- `MANIFEST.json` and the integrated UI surface metadata are rewritten to match the current shared FNLLA version
 
 Important boundary:
 

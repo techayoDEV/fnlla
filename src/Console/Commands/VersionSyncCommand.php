@@ -32,16 +32,16 @@ final class VersionSyncCommand extends Command
 
     public function description(): string
     {
-        return "Regenerate the FNLLA repository MANIFEST.json from current version state.";
+        return "Synchronize unified FNLLA version metadata across the repository and integrated UI surface.";
     }
 
     public function handle(array $arguments): int
     {
         $manifest = VersionManifest::syncRepositoryManifest();
 
-        $this->line("FNLLA MANIFEST.json synchronized.");
-        $this->line("Framework version: " . $manifest["product"]["version"]);
-        $this->line("Vendored FNLLA Runtime version: " . $manifest["ui_runtime"]["vendored_version"]);
+        $this->line("FNLLA version metadata synchronized.");
+        $this->line("FNLLA version: " . $manifest["product"]["version"]);
+        $this->line("Integrated built-in UI surface version: " . $manifest["ui_runtime"]["version"]);
 
         return 0;
     }

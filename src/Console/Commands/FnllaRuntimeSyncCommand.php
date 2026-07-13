@@ -33,7 +33,7 @@ final class FnllaRuntimeSyncCommand extends Command
 
     public function description(): string
     {
-        return "Sync FNLLA's built-in vendored runtime from GitHub, a maintainer checkout or a local runtime export.";
+        return "Sync FNLLA's integrated UI surface from GitHub, a maintainer checkout or a local UI export.";
     }
 
     public function handle(array $arguments): int
@@ -47,7 +47,7 @@ final class FnllaRuntimeSyncCommand extends Command
         }
 
         FnllaRuntimeGuard::syncNowWithOptions($options);
-        $this->line("FNLLA built-in runtime sync completed.");
+        $this->line("FNLLA integrated UI surface sync completed.");
 
         return 0;
     }
@@ -138,9 +138,9 @@ final class FnllaRuntimeSyncCommand extends Command
 
     private function printUsage(): void
     {
-        $this->line("Usage: php fnlla fnlla-runtime:sync [--source <path-to-fnlla-or-runtime-export>]");
+        $this->line("Usage: php fnlla fnlla-runtime:sync [--source <path-to-fnlla-or-ui-export>]");
         $this->line("   or: php fnlla fnlla-runtime:sync [--repo-url <git-url>] [--repository techayoDEV/fnlla] [--working-clone-path <path>] [--ref <git-ref>]");
-        $this->line("If --source is provided, FNLLA syncs its built-in runtime from a local runtime export or publishes dist\\fnlla-runtime from a maintained source checkout first.");
-        $this->line("If --source is omitted, FNLLA clones the maintained repository, publishes the runtime export and syncs from that published output.");
+        $this->line("If --source is provided, FNLLA syncs its integrated UI surface from a local UI export or publishes dist\\fnlla-runtime from a maintained source checkout first.");
+        $this->line("If --source is omitted, FNLLA clones the maintained repository, publishes the integrated UI surface export and syncs from that published output.");
     }
 }

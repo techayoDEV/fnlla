@@ -30,6 +30,9 @@ final class VersionManifest
     private const ROOT_LICENSE_FILE = "LICENSE.md";
     private const ROOT_SUPPORT_FILE = "SUPPORT.md";
     private const ROOT_TRADEMARKS_FILE = "TRADEMARKS.md";
+    private const UI_MANIFEST_FILE = "public/vendor/fnlla-runtime/MANIFEST.json";
+    private const UI_README_FILE = "public/vendor/fnlla-runtime/README.md";
+    private const UI_JS_FILE = "public/vendor/fnlla-runtime/assets/js/fnlla-runtime.js";
     private const UI_VERSION_FILE = "public/vendor/fnlla-runtime/VERSION";
     private const SEMVER_PATTERN = '/^\d+\.\d+\.\d+$/';
 
@@ -50,6 +53,8 @@ final class VersionManifest
 
     public static function syncRepositoryManifest(): array
     {
+        $version = self::readVersionValue(self::repositoryVersionPath());
+        self::syncIntegratedRuntimeMetadata($version);
         $manifest = self::buildRepositoryManifest();
         file_put_contents(self::repositoryManifestPath(), self::encodeManifest($manifest));
 
@@ -59,8 +64,6 @@ final class VersionManifest
     public static function buildRepositoryManifest(): array
     {
         $frameworkVersion = self::readVersionValue(self::repositoryVersionPath());
-        $uiVersion = self::readVersionValue(self::vendoredUiVersionPath());
-        $uiMajor = (int) explode(".", $uiVersion)[0];
 
         return [
             "schema_version" => 1,
@@ -82,14 +85,14 @@ final class VersionManifest
                 ],
             ],
             "ui_runtime" => [
-                "name" => "FNLLA Runtime",
-                "slug" => "fnlla-runtime",
+                "name" => "Integrated FNLLA UI surface",
+                "slug" => "integrated-ui-surface",
                 "repository" => "https://github.com/techayoDEV/fnlla.git",
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
-                "vendored_version" => $uiVersion,
-                "validated_version" => $uiVersion,
-                "expected_major" => $uiMajor,
+                "distribution_path" => "public/vendor/fnlla-runtime",
+                "version" => $frameworkVersion,
+                "version_model" => "shared_with_product",
             ],
             "release" => [
                 "channel" => "stable",
@@ -112,14 +115,18 @@ final class VersionManifest
 
     public static function status(): array
     {
-        $frameworkVersion = self::safeReadVersion(self::repositoryVersionPath());
+        $fnllaVersion = self::safeReadVersion(self::repositoryVersionPath());
         $uiVersion = self::safeReadVersion(self::vendoredUiVersionPath());
         $repositoryManifestExists = is_file(self::repositoryManifestPath());
         $errors = self::validateRepositoryManifest();
+        $integratedRuntimeSynced = $fnllaVersion !== null
+            && $uiVersion !== null
+            && $fnllaVersion === $uiVersion;
 
         return [
-            "framework_version" => $frameworkVersion,
-            "vendored_ui_version" => $uiVersion,
+            "fnlla_version" => $fnllaVersion,
+            "integrated_runtime_version" => $uiVersion,
+            "integrated_runtime_synced" => $integratedRuntimeSynced,
             "repository_manifest_exists" => $repositoryManifestExists,
             "version_contract_ok" => $errors === [],
             "errors" => $errors,
@@ -157,6 +164,8 @@ final class VersionManifest
                 $errors[] = "public/vendor/fnlla-runtime/VERSION: first line is empty";
             } elseif (!preg_match(self::SEMVER_PATTERN, $uiVersion)) {
                 $errors[] = "public/vendor/fnlla-runtime/VERSION: '{$uiVersion}' is not a semantic version";
+            } elseif ($frameworkVersion !== "" && $frameworkVersion !== $uiVersion) {
+                $errors[] = "public/vendor/fnlla-runtime/VERSION: must match VERSION ({$uiVersion} vs {$frameworkVersion})";
             }
         }
 
@@ -197,12 +206,25 @@ final class VersionManifest
             }
         }
 
-        if ($expectedManifest !== null && is_array($expectedManifest)) {
-            $expectedUiMajor = (int) (($expectedManifest["ui_runtime"]["expected_major"] ?? 0));
-            $actualUiMajor = (int) explode(".", $uiVersion !== "" ? $uiVersion : "0.0.0")[0];
+        try {
+            $expectedRuntimeManifest = self::buildIntegratedRuntimeManifest($frameworkVersion);
+            $expectedRuntimeManifestContent = self::encodeManifest($expectedRuntimeManifest);
+        } catch (RuntimeException $exception) {
+            $errors[] = $exception->getMessage();
+            $expectedRuntimeManifestContent = null;
+        }
 
-            if ($expectedUiMajor !== $actualUiMajor) {
-                $errors[] = "MANIFEST.json: ui_runtime.expected_major does not match the built-in runtime major version";
+        $runtimeManifestPath = base_path(self::UI_MANIFEST_FILE);
+
+        if (!is_file($runtimeManifestPath)) {
+            $errors[] = self::UI_MANIFEST_FILE . ": missing file";
+        } elseif ($expectedRuntimeManifestContent !== null) {
+            $actualRuntimeManifestContent = file_get_contents($runtimeManifestPath);
+
+            if ($actualRuntimeManifestContent === false) {
+                $errors[] = self::UI_MANIFEST_FILE . ": unable to read file";
+            } elseif (self::normalizeNewlines($actualRuntimeManifestContent) !== self::normalizeNewlines($expectedRuntimeManifestContent)) {
+                $errors[] = self::UI_MANIFEST_FILE . ": integrated runtime manifest is out of sync. Run php scripts/sync-version-manifest.php";
             }
         }
 
@@ -237,6 +259,139 @@ final class VersionManifest
         }
 
         return $version;
+    }
+
+    private static function syncIntegratedRuntimeMetadata(string $version): void
+    {
+        self::syncVersionFile(self::vendoredUiVersionPath(), $version);
+        self::syncRuntimeReadme(base_path(self::UI_README_FILE), $version);
+        self::syncRuntimeJavascriptVersion(base_path(self::UI_JS_FILE), $version);
+        file_put_contents(
+            base_path(self::UI_MANIFEST_FILE),
+            self::encodeManifest(self::buildIntegratedRuntimeManifest($version))
+        );
+    }
+
+    private static function syncVersionFile(string $path, string $version): void
+    {
+        $lines = self::safeReadFileLines($path);
+
+        if ($lines === null) {
+            throw new RuntimeException(str_replace("\\", "/", self::relativePath($path)) . ": missing file");
+        }
+
+        $lines[0] = $version;
+        file_put_contents($path, implode(PHP_EOL, $lines) . PHP_EOL);
+    }
+
+    private static function syncRuntimeReadme(string $path, string $version): void
+    {
+        if (!is_file($path)) {
+            throw new RuntimeException(str_replace("\\", "/", self::relativePath($path)) . ": missing file");
+        }
+
+        $content = (string) file_get_contents($path);
+        $content = str_replace(
+            "This directory is the built-in FNLLA UI/runtime surface handoff for downstream projects.",
+            "This directory is the integrated FNLLA UI surface handoff for downstream projects.",
+            $content
+        );
+
+        if (!str_contains($content, "## Version")) {
+            $versionBlock = "## Version" . PHP_EOL . PHP_EOL . $version . PHP_EOL . PHP_EOL;
+
+            if (str_contains($content, "## Maintainer notes")) {
+                $content = str_replace("## Maintainer notes", $versionBlock . "## Maintainer notes", $content);
+            } else {
+                $content = rtrim($content) . PHP_EOL . PHP_EOL . $versionBlock;
+            }
+        }
+
+        $count = 0;
+        $updated = preg_replace_callback(
+            '/(## Version\s*\R\R)([^\r\n]+)/',
+            static fn (array $matches): string => $matches[1] . $version,
+            $content,
+            1,
+            $count
+        );
+
+        if (!is_string($updated) || $count !== 1) {
+            throw new RuntimeException(str_replace("\\", "/", self::relativePath($path)) . ": unable to sync the embedded version section");
+        }
+
+        file_put_contents($path, $updated);
+    }
+
+    private static function buildIntegratedRuntimeManifest(string $version): array
+    {
+        return [
+            "schema_version" => 1,
+            "product" => [
+                "name" => "FNLLA",
+                "slug" => "fnlla",
+                "version" => $version,
+                "owner" => "TechAyo LTD (techayo.co.uk)",
+                "origin" => "Finella Gardens in Dundee, UK",
+                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "source_of_truth" => "github",
+            ],
+            "distribution" => [
+                "name" => "Integrated FNLLA UI surface",
+                "slug" => "integrated-ui-surface",
+                "distribution_root" => ".",
+                "version_path" => "VERSION",
+                "css_entrypoint" => "assets/css/fnlla-runtime.css",
+                "js_entrypoint" => "assets/js/fnlla-runtime.js",
+                "icons_directory" => "assets/icons",
+                "release_files" => [
+                    "MANIFEST.json",
+                    "LICENSE.md",
+                    "SUPPORT.md",
+                    "TRADEMARKS.md",
+                    "VERSION",
+                ],
+            ],
+            "release" => [
+                "channel" => "stable",
+                "state_files" => [
+                    "MANIFEST.json",
+                    "README.md",
+                    "VERSION",
+                    "LICENSE.md",
+                    "SUPPORT.md",
+                    "TRADEMARKS.md",
+                ],
+            ],
+        ];
+    }
+
+    private static function syncRuntimeJavascriptVersion(string $path, string $version): void
+    {
+        if (!is_file($path)) {
+            throw new RuntimeException(str_replace("\\", "/", self::relativePath($path)) . ": missing file");
+        }
+
+        $content = (string) file_get_contents($path);
+
+        if (!str_contains($content, 'var fnllaRuntimeVersion = "')) {
+            $content = 'var fnllaRuntimeVersion = "' . $version . '";' . PHP_EOL . $content;
+        }
+
+        $count = 0;
+        $updated = preg_replace_callback(
+            '/(var fnllaRuntimeVersion = ")([^"]+)(";\s*)/',
+            static fn (array $matches): string => $matches[1] . $version . $matches[3],
+            $content,
+            1,
+            $count
+        );
+
+        if (!is_string($updated) || $count !== 1) {
+            throw new RuntimeException(str_replace("\\", "/", self::relativePath($path)) . ": unable to sync the runtime JavaScript version marker");
+        }
+
+        file_put_contents($path, $updated);
     }
 
     private static function readJsonFile(string $path): array

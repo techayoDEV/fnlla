@@ -385,8 +385,11 @@ final class FrameworkUpdateController extends Controller
             $segments[] = "FNLLA {$currentFrameworkVersion} -> {$sourceFrameworkVersion}";
         }
 
-        if ($this->versionsDiffer($currentUiVersion, $sourceUiVersion)) {
-            $segments[] = "Runtime {$currentUiVersion} -> {$sourceUiVersion}";
+        if (
+            $this->versionsDiffer($currentUiVersion, $sourceUiVersion)
+            && ($currentUiVersion !== $currentFrameworkVersion || $sourceUiVersion !== $sourceFrameworkVersion)
+        ) {
+            $segments[] = "Integrated UI surface {$currentUiVersion} -> {$sourceUiVersion}";
         }
 
         return implode(", ", $segments);

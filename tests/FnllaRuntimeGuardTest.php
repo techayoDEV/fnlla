@@ -80,7 +80,7 @@ final class FnllaRuntimeGuardTest extends TestCase
             ],
             "required_text_markers" => [
                 public_path("vendor/fnlla-runtime/README.md") => [
-                    "built-in FNLLA runtime handoff for downstream projects",
+                    "integrated FNLLA UI surface handoff for downstream projects",
                 ],
             ],
             "forbidden_text_markers" => [

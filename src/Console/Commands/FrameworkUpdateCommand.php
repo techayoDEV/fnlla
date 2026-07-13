@@ -169,8 +169,8 @@ final class FrameworkUpdateCommand extends Command
             );
             $this->line("GitHub cache: " . (string) ($report["download_cache_path"] ?? "unknown"));
         }
-        $this->line("Current framework base: " . $report["current_framework_version"] . " / FNLLA Runtime " . $report["current_ui_version"]);
-        $this->line("Source framework base: " . $report["source_framework_version"] . " / FNLLA Runtime " . $report["source_ui_version"]);
+        $this->line("Current FNLLA base: " . $this->baseVersionSummary($report, "current"));
+        $this->line("Source FNLLA base: " . $this->baseVersionSummary($report, "source"));
         $this->line("Managed files tracked: " . $report["tracked_managed_files"] . " (source export: " . $report["source_managed_files"] . ")");
         $this->line("Safe framework changes available: " . count($report["updates"]));
         $this->line("Conflicts: " . count($report["conflicts"]));
@@ -241,5 +241,17 @@ final class FrameworkUpdateCommand extends Command
             "sync" => "Formatting-only sync ready",
             default => "Automatic update ready",
         };
+    }
+
+    private function baseVersionSummary(array $report, string $prefix): string
+    {
+        $frameworkVersion = trim((string) ($report[$prefix . "_framework_version"] ?? "unknown"));
+        $uiVersion = trim((string) ($report[$prefix . "_ui_version"] ?? "unknown"));
+
+        if ($frameworkVersion !== "" && $frameworkVersion === $uiVersion) {
+            return $frameworkVersion;
+        }
+
+        return $frameworkVersion . " / integrated UI surface " . $uiVersion;
     }
 }

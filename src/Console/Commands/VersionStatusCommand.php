@@ -32,15 +32,20 @@ final class VersionStatusCommand extends Command
 
     public function description(): string
     {
-        return "Show the current FNLLA and built-in runtime version contract.";
+        return "Show the unified FNLLA version contract.";
     }
 
     public function handle(array $arguments): int
     {
         $status = VersionManifest::status();
 
-        $this->line("FNLLA version: " . ($status["framework_version"] ?? "unknown"));
-        $this->line("Built-in runtime version: " . ($status["vendored_ui_version"] ?? "unknown"));
+        $this->line("FNLLA version: " . ($status["fnlla_version"] ?? "unknown"));
+        $this->line(
+            "Integrated built-in UI surface: "
+            . (($status["integrated_runtime_synced"] ?? false)
+                ? "synced"
+                : ("out of sync (" . ($status["integrated_runtime_version"] ?? "unknown") . ")"))
+        );
         $this->line("Repository MANIFEST.json: " . ($status["repository_manifest_exists"] ? "present" : "missing"));
         $this->line("Version contract: " . ($status["version_contract_ok"] ? "ok" : "out of sync"));
 

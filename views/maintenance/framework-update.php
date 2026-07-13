@@ -8,6 +8,8 @@ $report = is_array($frameworkUpdateReport ?? null) ? $frameworkUpdateReport : nu
 $applicationMeta = (array) ($lock["framework_base"]["application"] ?? []);
 $frameworkMeta = (array) ($lock["framework_base"]["framework"] ?? []);
 $uiMeta = (array) ($lock["framework_base"]["ui_runtime"] ?? []);
+$lockUsesUnifiedVersion = trim((string) ($frameworkMeta["version"] ?? "")) !== ""
+    && trim((string) ($frameworkMeta["version"] ?? "")) === trim((string) ($uiMeta["version"] ?? ""));
 $managedFiles = (array) ($lock["framework_base"]["managed_files"] ?? []);
 $sourcePathValue = (string) ($frameworkUpdateSourcePath ?? "");
 $sourceDetection = is_array($frameworkUpdateSourceDetection ?? null) ? $frameworkUpdateSourceDetection : [];
@@ -58,9 +60,9 @@ $updateActionLabel = static function (array $update): string {
         <p class="content-text mb-0">FNLLA for <?= h((string) ($applicationMeta["name"] ?? config("app.name"))) ?>.</p>
       </article>
       <article class="feature-card">
-        <p class="feature-kicker">Vendored UI runtime</p>
-        <h2 class="content-title mb-xs"><?= h((string) ($uiMeta["version"] ?? "unknown")) ?></h2>
-        <p class="content-text mb-0">FNLLA Runtime currently locked into this application.</p>
+        <p class="feature-kicker">Integrated UI surface</p>
+        <h2 class="content-title mb-xs"><?= $lockUsesUnifiedVersion ? "Synced" : h((string) ($uiMeta["version"] ?? "unknown")) ?></h2>
+        <p class="content-text mb-0"><?= $lockUsesUnifiedVersion ? "The built-in UI surface currently shares the same FNLLA version contract." : "Legacy lock metadata still records a separate built-in UI surface version." ?></p>
       </article>
       <article class="feature-card">
         <p class="feature-kicker">Managed files</p>
@@ -231,7 +233,13 @@ $updateActionLabel = static function (array $update): string {
         <article class="feature-card">
           <p class="feature-kicker">Source baseline</p>
           <h3 class="content-title"><?= h((string) ($report["source_framework_version"] ?? "unknown")) ?></h3>
-          <p class="content-text mb-0">FNLLA Runtime <?= h((string) ($report["source_ui_version"] ?? "unknown")) ?></p>
+          <p class="content-text mb-0">
+            <?php if (trim((string) ($report["source_framework_version"] ?? "")) === trim((string) ($report["source_ui_version"] ?? ""))): ?>
+            Unified FNLLA version across the integrated UI surface.
+            <?php else: ?>
+            Integrated UI surface <?= h((string) ($report["source_ui_version"] ?? "unknown")) ?>
+            <?php endif; ?>
+          </p>
         </article>
         <article class="feature-card">
           <p class="feature-kicker">Summary</p>

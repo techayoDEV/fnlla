@@ -1,8 +1,8 @@
-# FNLLA runtime export
+# FNLLA integrated UI surface export
 
-This directory is the built-in FNLLA runtime handoff for downstream projects.
+This directory is the integrated FNLLA UI surface handoff for downstream projects.
 
-In the integrated `techayoDEV/fnlla` maintainer repository, this directory is also the authoritative vendored runtime consumed by the framework itself.
+In the integrated `techayoDEV/fnlla` maintainer repository, this directory is the authoritative vendored UI surface consumed by FNLLA itself.
 
 ## Included files
 
@@ -24,14 +24,14 @@ In the integrated `techayoDEV/fnlla` maintainer repository, this directory is al
 
 ## Version
 
-1.1.1
+1.0.20
 
 ## Maintainer notes
 
-- In this repository, `public/vendor/fnlla-runtime/` is the runtime surface that `fnlla-runtime:sync`, validation and downstream exports consume directly.
+- In this repository, `public/vendor/fnlla-runtime/` is the integrated UI surface that `fnlla-runtime:sync`, validation and downstream exports consume directly.
 - `scripts/sync-fnlla-runtime.ps1` can sync from this integrated vendored runtime in a local `techayoDEV/fnlla` checkout or from a dedicated runtime export rooted elsewhere.
 - If you maintain a separate runtime source checkout outside this repository, sync from its published export rather than from partial source fragments.
 - Current framework metadata remains governed by README.md, VERSION, LICENSE.md, SUPPORT.md and TRADEMARKS.md in the repository root.
-- Support and trademark boundaries remain governed by SUPPORT.md and TRADEMARKS.md in the repository root.
-- Machine-readable runtime metadata remains governed by MANIFEST.json in the repository root.
+- Support and trademark boundaries remain governed by SUPPORT.md and TRADEMARKS.md in the repository root plus the integrated UI surface metadata shipped here.
+- Machine-readable UI surface metadata remains governed by MANIFEST.json in this directory and the repository root.
 - The repository root of `techayoDEV/fnlla` remains the authoritative maintainer workspace and documentation source of truth.

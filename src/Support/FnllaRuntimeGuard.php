@@ -26,7 +26,7 @@ final class FnllaRuntimeGuard
 {
     /*
     The guard is intentionally centralized here so FNLLA can enforce the
-    official FNLLA Runtime dependency boundary from one place during both HTTP and
+    official integrated UI surface boundary from one place during both HTTP and
     CLI bootstrap.
     */
     public static function enforce(): void
@@ -69,7 +69,7 @@ final class FnllaRuntimeGuard
         $config = config("fnlla_runtime", []);
 
         if (!is_array($config)) {
-            throw new RuntimeException("FNLLA Runtime configuration is invalid.");
+            throw new RuntimeException("FNLLA integrated UI surface configuration is invalid.");
         }
 
         return $config;
@@ -100,7 +100,7 @@ final class FnllaRuntimeGuard
         /*
         Sync cadence is stateful on purpose:
         - the framework still checks often enough during development
-        - bootstrap avoids recloning FNLLA Runtime on every single request
+        - bootstrap avoids recloning the integrated UI surface on every single request
         */
         $statePath = (string) ($config["state_path"] ?? storage_path("framework/fnlla-runtime-guard.json"));
         $state = self::loadState($statePath);
@@ -142,7 +142,7 @@ final class FnllaRuntimeGuard
         $scriptPath = base_path((string) ($config["sync_script"] ?? "scripts/sync-fnlla-runtime.ps1"));
 
         if (!is_file($scriptPath)) {
-            throw new RuntimeException("FNLLA Runtime sync script is missing: " . $scriptPath);
+            throw new RuntimeException("FNLLA integrated UI surface sync script is missing: " . $scriptPath);
         }
 
         $commandArguments = self::buildSyncScriptArguments($scriptPath, $options);
@@ -169,7 +169,7 @@ final class FnllaRuntimeGuard
             $errors[] = trim(implode(PHP_EOL, $output)) ?: ("Command failed with exit code " . $exitCode);
         }
 
-        throw new RuntimeException("FNLLA Runtime sync failed. " . implode(" | ", $errors));
+        throw new RuntimeException("FNLLA integrated UI surface sync failed. " . implode(" | ", $errors));
     }
 
     private static function buildSyncScriptArguments(string $scriptPath, array $options): array
@@ -211,7 +211,7 @@ final class FnllaRuntimeGuard
             }
 
             if (!is_file($path) && !is_dir($path)) {
-                throw new RuntimeException("FNLLA runtime is incomplete. Missing: " . $path);
+                throw new RuntimeException("FNLLA integrated UI surface is incomplete. Missing: " . $path);
             }
         }
     }
@@ -219,7 +219,7 @@ final class FnllaRuntimeGuard
     private static function assertLayoutContract(string $layoutPath, array $markers): void
     {
         if (!is_file($layoutPath)) {
-            throw new RuntimeException("FNLLA Runtime layout file is missing: " . $layoutPath);
+            throw new RuntimeException("FNLLA integrated UI surface layout file is missing: " . $layoutPath);
         }
 
         $contents = (string) file_get_contents($layoutPath);
@@ -230,7 +230,7 @@ final class FnllaRuntimeGuard
             }
 
             if (!str_contains($contents, $marker)) {
-                throw new RuntimeException("FNLLA built-in runtime contract violation in layout. Missing marker: " . $marker);
+                throw new RuntimeException("FNLLA integrated UI surface contract violation in layout. Missing marker: " . $marker);
             }
         }
     }
@@ -256,7 +256,7 @@ final class FnllaRuntimeGuard
                 }
 
                 if (!str_contains($contents, $marker)) {
-                    throw new RuntimeException("FNLLA built-in runtime contract violation in view {$file}. Missing marker: " . $marker);
+                    throw new RuntimeException("FNLLA integrated UI surface contract violation in view {$file}. Missing marker: " . $marker);
                 }
             }
         }

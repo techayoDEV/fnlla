@@ -192,8 +192,9 @@ try {
         Add-Error -Errors $errors -Message "fnlla MANIFEST.json product.version does not match VERSION ($($projectManifest.product.version) vs $frameworkVersion)."
     }
 
-    if ($projectManifest.ui_runtime.vendored_version -ne $vendoredWebVersion) {
-        Add-Error -Errors $errors -Message "fnlla MANIFEST.json ui_runtime.vendored_version does not match public/vendor/fnlla-runtime/VERSION ($($projectManifest.ui_runtime.vendored_version) vs $vendoredWebVersion)."
+    $manifestUiVersion = if ($null -ne $projectManifest.ui_runtime.version) { $projectManifest.ui_runtime.version } else { $projectManifest.ui_runtime.vendored_version }
+    if ($manifestUiVersion -ne $vendoredWebVersion) {
+        Add-Error -Errors $errors -Message "fnlla MANIFEST.json integrated UI surface version does not match public/vendor/fnlla-runtime/VERSION ($manifestUiVersion vs $vendoredWebVersion)."
     }
 
     if (-not $SkipLocalChecks) {
@@ -202,7 +203,7 @@ try {
             $localWebManifest = Read-JsonFile -Path (Join-Path $resolvedFnllaRuntimePath "MANIFEST.json")
 
             if ($localWebVersion -ne $vendoredWebVersion) {
-                Add-Error -Errors $errors -Message "Local fnlla-runtime VERSION ($localWebVersion) does not match fnlla vendored FNLLA Runtime version ($vendoredWebVersion)."
+                Add-Error -Errors $errors -Message "Local integrated FNLLA UI surface VERSION ($localWebVersion) does not match the repository integrated UI surface version ($vendoredWebVersion)."
             }
 
             if ($localWebManifest.product.version -ne $localWebVersion) {
@@ -229,7 +230,7 @@ try {
 
     if (-not $SkipRemoteChecks) {
         if ($projectManifest.ui_runtime.repository -ne "https://github.com/techayoDEV/fnlla.git") {
-            Add-Error -Errors $errors -Message "fnlla MANIFEST.json ui_runtime.repository does not point at techayoDEV/fnlla."
+            Add-Error -Errors $errors -Message "fnlla MANIFEST.json integrated UI surface repository does not point at techayoDEV/fnlla."
         }
 
         $orgRepoPath = $resolvedFnllaOrgGithubPath
@@ -249,7 +250,7 @@ try {
     }
 
     Write-Host "FNLLA version: $frameworkVersion"
-    Write-Host "Vendored FNLLA Runtime version: $vendoredWebVersion"
+    Write-Host "Integrated FNLLA UI surface version: $vendoredWebVersion"
 
     if ($errors.Count -gt 0) {
         Write-Host ""

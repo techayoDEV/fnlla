@@ -32,11 +32,11 @@ final class VersionManifestTest extends TestCase
         self::assertSame("FNLLA", $manifest["product"]["name"] ?? null);
         self::assertSame("fnlla", $manifest["product"]["slug"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["product"]["version"] ?? "")));
-        self::assertSame("FNLLA Runtime", $manifest["ui_runtime"]["name"] ?? null);
-        self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["vendored_version"] ?? "")));
+        self::assertSame("Integrated FNLLA UI surface", $manifest["ui_runtime"]["name"] ?? null);
+        self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["version"] ?? "")));
         self::assertSame(
-            $manifest["ui_runtime"]["vendored_version"] ?? null,
-            $manifest["ui_runtime"]["validated_version"] ?? null
+            $manifest["product"]["version"] ?? null,
+            $manifest["ui_runtime"]["version"] ?? null
         );
     }
 

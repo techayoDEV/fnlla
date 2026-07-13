@@ -91,8 +91,8 @@ $GLOBALS["fnlla_php_config"] = $GLOBALS["fnlla_config"];
 
 /*
 Development guard note:
-- FNLLA uses this shared bootstrap point to enforce the official FNLLA Runtime
-  dependency boundary
+- FNLLA uses this shared bootstrap point to enforce the official integrated UI
+  surface boundary
 - the guard is skipped only for specific maintainer repair flows that need to
   fix a broken UI contract from the CLI itself
 */

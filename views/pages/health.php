@@ -16,6 +16,9 @@ $operatorNotes = (array) ($health["operator_notes"] ?? []);
 $links = (array) ($health["links"] ?? []);
 $serviceStatus = (string) ($service["status"] ?? "unknown");
 $releaseStatus = (string) ($releaseChannel["status"] ?? "unknown");
+$fnllaVersion = trim((string) ($versions["fnlla"] ?? "unknown"));
+$integratedRuntimeVersion = trim((string) ($versions["fnlla_runtime"] ?? "unknown"));
+$unifiedVersionModel = $fnllaVersion !== "" && $fnllaVersion === $integratedRuntimeVersion;
 ?>
 <section class="section pt-1">
   <div class="container">
@@ -55,7 +58,7 @@ $releaseStatus = (string) ($releaseChannel["status"] ?? "unknown");
         <article class="feature-card">
           <h2 class="content-title">Versions and release state</h2>
           <p class="content-text mb-1"><strong>FNLLA:</strong> <?= h((string) ($versions["fnlla"] ?? "unknown")) ?></p>
-          <p class="content-text mb-1"><strong>FNLLA Runtime:</strong> <?= h((string) ($versions["fnlla_runtime"] ?? "unknown")) ?></p>
+          <p class="content-text mb-1"><strong>Integrated UI surface:</strong> <?= $unifiedVersionModel ? "synced to FNLLA" : h($integratedRuntimeVersion) ?></p>
           <p class="content-text mb-1"><strong>Release channel status:</strong> <?= h($releaseStatus) ?></p>
           <p class="content-text mb-0"><strong>Latest cached tag:</strong> <?= h((string) ($releaseChannel["latest_cached_tag"] ?? "not cached")) ?></p>
         </article>

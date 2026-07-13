@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Defines the shared delivery shell for server-rendered pages built on FNLLA Runtime.
+- Defines the shared delivery shell for server-rendered pages built on FNLLA's integrated UI surface.
 */
 
 $pageStatus = flash("status");

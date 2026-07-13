@@ -23,6 +23,7 @@ namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Console\Commands\MakeProjectCommand;
 use Fnlla\Php\Container\Container;
+use Fnlla\Php\Support\FrameworkLock;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -116,14 +117,15 @@ final class FrameworkUpdateCommandTest extends TestCase
         $lock["framework_base"]["ui_runtime"]["version"] = "1.1.0";
         unset($lock["framework_base"]["managed_files"]["views/pages/home.php"]);
         unset($lock["framework_base"]["managed_files"]["views/pages/contact.php"]);
+        $legacyHashes = FrameworkLock::legacyUntrackedManagedHashes("1.0.18");
 
         file_put_contents(
             $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php",
-            $this->legacyRepositoryFileContents("views/pages/home.php")
+            $this->legacyRepositoryFileContents("views/pages/home.php", $legacyHashes["views/pages/home.php"] ?? null)
         );
         file_put_contents(
             $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php",
-            $this->legacyRepositoryFileContents("views/pages/contact.php")
+            $this->legacyRepositoryFileContents("views/pages/contact.php", $legacyHashes["views/pages/contact.php"] ?? null)
         );
         file_put_contents($lockPath, json_encode($lock, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
 
@@ -369,16 +371,41 @@ final class FrameworkUpdateCommandTest extends TestCase
         return [$exitCode, implode(PHP_EOL, $lines)];
     }
 
-    private function legacyRepositoryFileContents(string $relativePath): string
+    private function legacyRepositoryFileContents(string $relativePath, ?string $expectedHash = null): string
     {
-        $command = 'git -C "' . base_path() . '" show HEAD:' . str_replace("\\", "/", $relativePath) . ' 2>&1';
-        $lines = [];
-        $exitCode = 1;
+        $normalizedPath = str_replace("\\", "/", $relativePath);
+        $logCommand = 'git -C "' . base_path() . '" log --format=%H -- "' . $normalizedPath . '" 2>&1';
+        $logLines = [];
+        $logExitCode = 1;
 
-        exec($command, $lines, $exitCode);
+        exec($logCommand, $logLines, $logExitCode);
 
-        self::assertSame(0, $exitCode, "Unable to read legacy repository file from git history: " . $relativePath);
+        self::assertSame(0, $logExitCode, "Unable to inspect git history for legacy file: " . $relativePath);
 
-        return implode("\n", $lines) . "\n";
+        foreach (array_reverse($logLines) as $commitLine) {
+            $commit = trim((string) $commitLine);
+
+            if ($commit === "") {
+                continue;
+            }
+
+            $command = 'git -C "' . base_path() . '" show ' . $commit . ':' . $normalizedPath . ' 2>&1';
+            $lines = [];
+            $exitCode = 1;
+
+            exec($command, $lines, $exitCode);
+
+            if ($exitCode === 0) {
+                $contents = implode("\n", $lines) . "\n";
+
+                if ($expectedHash !== null && hash("sha256", $contents) !== $expectedHash) {
+                    continue;
+                }
+
+                return $contents;
+            }
+        }
+
+        self::fail("Unable to read legacy repository file from git history: " . $relativePath);
     }
 }

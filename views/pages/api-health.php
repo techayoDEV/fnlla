@@ -11,6 +11,9 @@ $frameworkUpdate = (array) ($health["framework_update"] ?? []);
 $links = (array) ($health["links"] ?? []);
 $rawJson = json_encode($health, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 $rawJson = is_string($rawJson) ? $rawJson : "{}";
+$fnllaVersion = trim((string) ($versions["fnlla"] ?? "unknown"));
+$integratedRuntimeVersion = trim((string) ($versions["fnlla_runtime"] ?? "unknown"));
+$unifiedVersionModel = $fnllaVersion !== "" && $fnllaVersion === $integratedRuntimeVersion;
 ?>
 <section class="section pt-1">
   <div class="container">
@@ -29,7 +32,7 @@ $rawJson = is_string($rawJson) ? $rawJson : "{}";
         <article class="feature-card">
           <p class="feature-kicker">Versions</p>
           <h2 class="content-title mb-xs"><?= h((string) ($versions["fnlla"] ?? "unknown")) ?></h2>
-          <p class="content-text mb-0">FNLLA Runtime <?= h((string) ($versions["fnlla_runtime"] ?? "unknown")) ?></p>
+          <p class="content-text mb-0"><?= $unifiedVersionModel ? "Integrated UI surface synced to FNLLA" : ("Integrated UI surface " . h($integratedRuntimeVersion)) ?></p>
         </article>
         <article class="feature-card">
           <p class="feature-kicker">Release cache</p>

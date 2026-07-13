@@ -15,8 +15,8 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates that the FNLLA Runtime sync command forwards supported CLI options into
-  the maintained runtime sync workflow.
+- Validates that the FNLLA integrated UI surface sync command forwards supported
+  CLI options into the maintained sync workflow.
 */
 
 namespace Fnlla\Php\Tests;
@@ -41,7 +41,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
 
     public function testFnllaRuntimeSyncAcceptsLocalSourceOverride(): void
     {
-        $projectRoot = $this->exportProject("FNLLA Runtime Sync Test");
+        $projectRoot = $this->exportProject("FNLLA UI Surface Sync Test");
         $runtimeExport = $this->createRuntimeExport("9.9.9");
 
         [$exitCode, $output] = $this->runPhpScript(
@@ -50,16 +50,16 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         );
 
         self::assertSame(0, $exitCode, $output);
-        self::assertStringContainsString("FNLLA built-in runtime sync completed.", $output);
+        self::assertStringContainsString("FNLLA integrated UI surface sync completed.", $output);
         self::assertSame(
-            "9.9.9",
+            trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "VERSION"), "\r\n")),
             trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n"))
         );
     }
 
     public function testFnllaRuntimeSyncRejectsUnknownOptions(): void
     {
-        $projectRoot = $this->exportProject("FNLLA Runtime Sync Option Error Test");
+        $projectRoot = $this->exportProject("FNLLA UI Surface Sync Option Error Test");
 
         [$exitCode, $output] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
@@ -72,7 +72,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
 
     public function testFnllaRuntimeSyncAcceptsMaintainerRepositorySourcePath(): void
     {
-        $projectRoot = $this->exportProject("FNLLA Runtime Maintainer Sync Test");
+        $projectRoot = $this->exportProject("FNLLA UI Surface Maintainer Sync Test");
 
         [$exitCode, $output] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
@@ -80,7 +80,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         );
 
         self::assertSame(0, $exitCode, $output);
-        self::assertStringContainsString("FNLLA built-in runtime sync completed.", $output);
+        self::assertStringContainsString("FNLLA integrated UI surface sync completed.", $output);
         self::assertSame(
             trim((string) strtok((string) file_get_contents(base_path() . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n")),
             trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n"))
@@ -115,7 +115,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "VERSION", $version . PHP_EOL . "Runtime test build" . PHP_EOL);
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "MANIFEST.json", json_encode([
             "product" => [
-                "name" => "FNLLA Runtime",
+                "name" => "Integrated FNLLA UI surface",
                 "version" => $version,
             ],
             "runtime" => [
@@ -124,10 +124,17 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
         file_put_contents(
             $runtimeRoot . DIRECTORY_SEPARATOR . "README.md",
-            "# FNLLA Runtime Test Export" . PHP_EOL
+            "# FNLLA integrated UI surface test export" . PHP_EOL
             . PHP_EOL
-            . "This is a built-in FNLLA runtime handoff for downstream projects." . PHP_EOL
+            . "This is an integrated FNLLA UI surface handoff for downstream projects." . PHP_EOL
             . "It lives under public/vendor/fnlla-runtime/ in exported projects." . PHP_EOL
+            . PHP_EOL
+            . "## Version" . PHP_EOL
+            . PHP_EOL
+            . $version . PHP_EOL
+            . PHP_EOL
+            . "## Maintainer notes" . PHP_EOL
+            . PHP_EOL
             . "Use scripts/sync-fnlla-runtime.ps1 to keep it aligned." . PHP_EOL
         );
         file_put_contents($runtimeRoot . DIRECTORY_SEPARATOR . "LICENSE.md", "MIT License" . PHP_EOL);

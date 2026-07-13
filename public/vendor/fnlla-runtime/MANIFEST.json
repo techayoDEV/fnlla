@@ -1,36 +1,39 @@
 {
-  "schema_version": 1,
-  "product": {
-    "name": "FNLLA Runtime",
-    "slug": "fnlla-runtime",
-    "version": "1.1.1",
-    "owner": "TechAyo LTD (techayo.co.uk)",
-    "origin": "Finella Gardens in Dundee, UK",
-    "repository": "https://github.com/techayoDEV/fnlla.git",
-    "source_of_truth": "github"
-  },
-    "runtime": {
+    "schema_version": 1,
+    "product": {
+        "name": "FNLLA",
+        "slug": "fnlla",
+        "version": "1.0.20",
+        "owner": "TechAyo LTD (techayo.co.uk)",
+        "origin": "Finella Gardens in Dundee, UK",
+        "repository": "https://github.com/techayoDEV/fnlla.git",
+        "source_of_truth": "github"
+    },
+    "distribution": {
+        "name": "Integrated FNLLA UI surface",
+        "slug": "integrated-ui-surface",
+        "distribution_root": ".",
+        "version_path": "VERSION",
         "css_entrypoint": "assets/css/fnlla-runtime.css",
         "js_entrypoint": "assets/js/fnlla-runtime.js",
         "icons_directory": "assets/icons",
-        "distribution_root": ".",
-    "release_files": [
-      "MANIFEST.json",
-      "LICENSE.md",
-      "SUPPORT.md",
-      "TRADEMARKS.md",
-      "VERSION"
-    ]
-  },
-  "release": {
-    "channel": "stable",
-    "state_files": [
-      "MANIFEST.json",
-      "README.md",
-      "VERSION",
-      "LICENSE.md",
-      "SUPPORT.md",
-      "TRADEMARKS.md"
-    ]
-  }
+        "release_files": [
+            "MANIFEST.json",
+            "LICENSE.md",
+            "SUPPORT.md",
+            "TRADEMARKS.md",
+            "VERSION"
+        ]
+    },
+    "release": {
+        "channel": "stable",
+        "state_files": [
+            "MANIFEST.json",
+            "README.md",
+            "VERSION",
+            "LICENSE.md",
+            "SUPPORT.md",
+            "TRADEMARKS.md"
+        ]
+    }
 }

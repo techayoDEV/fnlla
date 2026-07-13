@@ -179,8 +179,8 @@ final class ApplicationSurfaceTest extends TestCase
             "local_only_changes" => [],
             "source_root" => "C:\\workspace\\fnlla",
             "headline_title" => "Update is ready to apply",
-            "headline_text" => "FNLLA detected an upstream framework shift (FNLLA 1.0.0 -> 1.1.0, Runtime 1.0.0 -> 1.1.0) and prepared the safe portion of the update. You can apply the audited update directly from this page.",
-            "version_transition_summary" => "FNLLA 1.0.0 -> 1.1.0, Runtime 1.0.0 -> 1.1.0",
+            "headline_text" => "FNLLA detected an upstream framework shift (FNLLA 1.0.0 -> 1.1.0) and prepared the safe portion of the update. You can apply the audited update directly from this page.",
+            "version_transition_summary" => "FNLLA 1.0.0 -> 1.1.0",
             "update_ready" => true,
             "requires_manual_review" => false,
             "apply_action_available" => true,
@@ -199,7 +199,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Update is ready to apply", $response->body());
         self::assertStringContainsString("Apply this audited local update", $response->body());
         self::assertStringContainsString("Detected version shift:", $response->body());
-        self::assertStringContainsString("FNLLA 1.0.0 -&gt; 1.1.0, Runtime 1.0.0 -&gt; 1.1.0", $response->body());
+        self::assertStringContainsString("FNLLA 1.0.0 -&gt; 1.1.0", $response->body());
     }
 
     public function testFrameworkUpdatePageExplainsConflictNextStepInHumanLanguage(): void

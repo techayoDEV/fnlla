@@ -6,7 +6,7 @@ Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 
 This script applies a consistent TechAyo LTD ownership banner to first-party
 source files in the FNLLA repository so the framework stays aligned with
-the same repository identity style used in FNLLA Runtime.
+the same repository identity style used across the integrated FNLLA UI surface.
 #>
 
 [CmdletBinding()]
@@ -74,7 +74,7 @@ function Get-TitleAndPurpose {
         '^src\\Application\.php$' { return @("FNLLA APPLICATION KERNEL", "Coordinates the maintained request lifecycle for the FNLLA runtime.") }
         '^tests\\PHPUnit\\' { return @("FNLLA TEST HARNESS SOURCE", "Implements the repository-local test harness used by FNLLA without Packagist dependencies.") }
         '^tests\\' { return @("FNLLA TEST CASE", "Validates maintained framework behavior inside the repository-local test harness.") }
-        '^views\\layouts\\' { return @("FNLLA VIEW LAYOUT", "Defines the shared delivery shell for server-rendered pages built on FNLLA Runtime.") }
+        '^views\\layouts\\' { return @("FNLLA VIEW LAYOUT", "Defines the shared delivery shell for server-rendered pages built on FNLLA's integrated UI surface.") }
         '^views\\pages\\' { return @("FNLLA VIEW TEMPLATE", "Defines a maintained page template for the official FNLLA demonstration surface.") }
         '^fnlla$' { return @("FNLLA REPOSITORY LAUNCHER", "Provides the maintained CLI entrypoint for the FNLLA framework repository.") }
         '^.*\.cmd$' { return @("FNLLA REPOSITORY LAUNCHER", "Provides a Windows launcher for a maintained framework or maintainer workflow command.") }

@@ -2,7 +2,7 @@
 
 ## Brand ownership
 
-`FNLLA`, `FNLLA`, `FNLLA Runtime` and related product branding are names associated with TechAyo LTD (techayo.co.uk).
+`FNLLA` and related product branding are names associated with TechAyo LTD (techayo.co.uk).
 
 Logos, product names, brand marks and presentation that identify an official FNLLA product or an official TechAyo-maintained release are not granted for unrestricted use by the MIT License.
 

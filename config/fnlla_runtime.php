@@ -49,7 +49,7 @@ return [
     ],
     "required_text_markers" => [
         public_path("vendor/fnlla-runtime/README.md") => [
-            "built-in FNLLA runtime handoff for downstream projects",
+            "integrated FNLLA UI surface handoff for downstream projects",
             "public/vendor/fnlla-runtime/",
             "scripts/sync-fnlla-runtime.ps1",
         ],

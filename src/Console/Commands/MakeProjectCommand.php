@@ -329,7 +329,7 @@ final class MakeProjectCommand extends Command
         }
 
         $decoded["name"] = "project/" . $packageSlug;
-        $decoded["description"] = $appName . " built on FNLLA and its built-in runtime.";
+        $decoded["description"] = $appName . " built on FNLLA and its integrated UI surface.";
 
         file_put_contents(
             $path,
@@ -347,14 +347,14 @@ This repository is a working application export generated from `techayoDEV/fnlla
 It is intended to be the beginning of a new server-rendered website or web application built on:
 
 - FNLLA
-- the built-in FNLLA runtime
+- the integrated FNLLA UI surface
 - PHP 8.3
 - MySQL
 
 ## What is already included
 
 - the FNLLA application core
-- the built-in FNLLA runtime under `public/vendor/fnlla-runtime/`
+- the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - a legacy compatibility lock in `.fnlla/starter-lock.json` for older update flows
@@ -363,7 +363,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
-- local lint, test, version metadata and built-in runtime validation scripts
+- local lint, test, version metadata and integrated UI surface validation scripts
 - a local-first framework maintenance page at `/maintenance/framework-update`
 
 ## How to start working
@@ -409,7 +409,7 @@ It intentionally leaves behind:
 - framework-only browser docs under `docs/`
 - the maintainer docs builder `scripts/build-docs.php`
 - repository governance and contribution files such as `.git/`, `.github/`, `CODE_OF_CONDUCT.md` and `SECURITY.md`
-- local runtime residue such as logs, cache entries, queue files, session files and built-in runtime guard state
+- local runtime residue such as logs, cache entries, queue files, session files and integrated UI surface guard state
 
 That keeps the downstream project focused on application delivery rather than framework maintenance.
 
@@ -436,13 +436,13 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 
 - `php scripts/test.php` runs the project-local smoke test harness kept under `tests/`
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
-- `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's built-in runtime contract
-- `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the built-in runtime version stay aligned
+- `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
+- `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
 - `php fnlla framework:update --check --github` checks the latest published FNLLA release from GitHub and caches the release source locally before comparing drift
 - `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
 - `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
-- `php fnlla version:sync` regenerates `MANIFEST.json` after an intentional version change
-- `php fnlla fnlla-runtime:sync` or `update-fnlla-runtime.cmd` refresh the built-in FNLLA runtime through the official publish -> sync workflow
+- `php fnlla version:sync` regenerates `MANIFEST.json` and re-syncs integrated UI surface metadata after an intentional FNLLA version change
+- `php fnlla fnlla-runtime:sync` or `update-fnlla-runtime.cmd` refresh the integrated FNLLA UI surface through the official publish -> sync workflow
 
 The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
 
@@ -696,7 +696,7 @@ CMD;
 REM ============================================================================
 REM FNLLA PROJECT LAUNCHER
 REM File: lint-project.cmd
-REM Purpose: Runs syntax lint and built-in runtime validation for this project.
+REM Purpose: Runs syntax lint and integrated UI surface validation for this project.
 REM ============================================================================
 setlocal
 php "%~dp0scripts\lint.php" || exit /b %ERRORLEVEL%

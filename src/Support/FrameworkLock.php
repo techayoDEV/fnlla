@@ -169,7 +169,7 @@ final class FrameworkLock
                     "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
                 "ui_runtime" => [
-                    "name" => "FNLLA Runtime",
+                    "name" => "Integrated FNLLA UI surface",
                     "slug" => "fnlla-runtime",
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"),
                     "repository" => "https://github.com/techayoDEV/fnlla.git",

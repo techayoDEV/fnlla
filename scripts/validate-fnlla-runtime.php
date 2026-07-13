@@ -24,4 +24,4 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEPARAT
 
 \Fnlla\Php\Support\FnllaRuntimeGuard::validateOnly();
 
-fwrite(STDOUT, "FNLLA Runtime contract passed." . PHP_EOL);
+fwrite(STDOUT, "FNLLA integrated UI surface contract passed." . PHP_EOL);

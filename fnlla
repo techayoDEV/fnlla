@@ -42,8 +42,8 @@ use Fnlla\Php\Console\Commands\VersionSyncCommand;
 
 /*
 Guard bypass note:
-- the dedicated FNLLA Runtime repair commands must stay callable even when the guard
-  itself is blocking normal bootstrap because of a UI contract violation
+- the dedicated integrated UI surface repair commands must stay callable even when
+  the guard itself is blocking normal bootstrap because of a UI contract violation
 - this keeps the repository recoverable without editing bootstrap files by hand
 */
 if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:validate", "framework:update", "starter:update", "version:status", "version:sync"], true) && !defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {

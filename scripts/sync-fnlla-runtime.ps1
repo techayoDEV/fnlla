@@ -180,10 +180,6 @@ function Resolve-RuntimeExportPath {
         "package.json"
     )
 
-    if ((Test-Path -LiteralPath $distPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $distPath "VERSION") -PathType Leaf)) {
-        return $distPath
-    }
-
     $looksLikeSourceRepo = $false
     foreach ($marker in $sourceRepoMarkers) {
         if (Test-Path -LiteralPath (Join-Path $base $marker)) {
@@ -193,6 +189,10 @@ function Resolve-RuntimeExportPath {
     }
 
     if ($looksLikeSourceRepo) {
+        if ((Test-Path -LiteralPath $integratedVendoredPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $integratedVendoredPath "VERSION") -PathType Leaf)) {
+            return $integratedVendoredPath
+        }
+
         $integratedPublishScript = Join-Path $base "scripts\publish-fnlla-runtime.ps1"
         if (Test-Path -LiteralPath $integratedPublishScript -PathType Leaf) {
             $powershellPath = Assert-CommandExists -Name "powershell"
@@ -202,12 +202,12 @@ function Resolve-RuntimeExportPath {
                 return $distPath
             }
 
-            throw "Integrated FNLLA Runtime publish completed, but dist\\fnlla-runtime was not created under: $base"
+            throw "Integrated FNLLA UI surface publish completed, but dist\\fnlla-runtime was not created under: $base"
         }
 
         $publishScriptPath = Resolve-PublishScriptPath -BasePath $base
         if ($null -eq $publishScriptPath) {
-            throw "The provided path looks like a source repository checkout, but no runtime export was found. Publish the maintained runtime first and sync from dist\\fnlla-runtime."
+            throw "The provided path looks like a source repository checkout, but no integrated UI surface export was found. Publish the maintained UI surface first and sync from dist\\fnlla-runtime."
         }
 
         $nodePath = Assert-CommandExists -Name "node"
@@ -217,14 +217,18 @@ function Resolve-RuntimeExportPath {
             return $distPath
         }
 
-        throw "FNLLA Runtime publish completed, but dist\\fnlla-runtime was not created under: $base"
+        throw "FNLLA integrated UI surface publish completed, but dist\\fnlla-runtime was not created under: $base"
+    }
+
+    if ((Test-Path -LiteralPath $distPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $distPath "VERSION") -PathType Leaf)) {
+        return $distPath
     }
 
     if ((Test-Path -LiteralPath $assetsPath -PathType Container) -and (Test-Path -LiteralPath $versionPath -PathType Leaf)) {
         return $base
     }
 
-    throw "Could not locate the FNLLA runtime export under: $BasePath"
+    throw "Could not locate the FNLLA integrated UI surface export under: $BasePath"
 }
 
 function Assert-SafeCloneReset {
@@ -310,7 +314,7 @@ $ephemeralClonePath = $null
 try {
     if ($SourcePath) {
         $resolvedSourcePath = Resolve-AbsolutePath -Path $SourcePath
-        Assert-DirectoryExists -Path $resolvedSourcePath -Description "FNLLA Runtime source path"
+        Assert-DirectoryExists -Path $resolvedSourcePath -Description "FNLLA integrated UI surface source path"
         $sourceRuntimePath = Resolve-RuntimeExportPath -BasePath $resolvedSourcePath
     }
     else {
@@ -346,9 +350,9 @@ try {
     $targetVersion = (Get-Content -LiteralPath $targetVersionPath -TotalCount 1).Trim()
 
     Write-Host ""
-    Write-Host "FNLLA Runtime sync complete."
-    Write-Host "Source runtime: $sourceRuntimePath"
-    Write-Host "Target runtime: $targetRuntimePath"
+    Write-Host "FNLLA integrated UI surface sync complete."
+    Write-Host "Source UI surface: $sourceRuntimePath"
+    Write-Host "Target UI surface: $targetRuntimePath"
     Write-Host "Version: $sourceVersion"
 
     if ($sourceVersion -ne $targetVersion) {
