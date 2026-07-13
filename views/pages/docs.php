@@ -19,40 +19,40 @@ Purpose:
 */
 ?>
 <section class="section pt-1">
-  <div class="container site-page-stack">
-    <section class="hero hero-compact" aria-label="Documentation landing page">
-      <div class="grid gap-md hero-copy">
-        <div class="d-flex flex-wrap items-center gap-md">
+  <div class="container">
+    <section class="feature-section" aria-label="Documentation landing page">
+      <div class="section-header mb-0">
+        <div class="d-flex flex-wrap items-center gap-md mb-3">
           <span class="tag">Documentation hub</span>
           <span class="badge">Maintainer workspace</span>
           <span class="badge">Local docs</span>
         </div>
-        <h1 class="hero-title">Use this page to bridge the running demo and the deeper framework docs without pretending they are the same thing.</h1>
-        <p class="hero-text">The application surface shows how the starter behaves in a browser. The docs explain the repository contract, export workflow and how the built-in runtime should be used behind that surface.</p>
-        <ul class="hero-proof-list">
-          <li><code>/docs</code> is the app-native entry point for the local documentation workspace.</li>
-          <li>The HTML docs remain the source for long-form reference and guide reading.</li>
-          <li>Exported downstream projects do not inherit this maintainer docs workspace.</li>
-        </ul>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "index.html"])) ?>">Open docs overview</a>
-          <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Read the starter workflow</a>
-          <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to starter</a>
-        </div>
+        <h1 class="section-title">Use this page to bridge the running demo and the deeper framework docs without pretending they are the same thing.</h1>
+        <p class="section-text">The application surface shows how the starter behaves in a browser. The docs explain the repository contract, export workflow and how the built-in runtime should be used behind that surface.</p>
       </div>
-      <div class="hero-inline-facts" aria-label="Documentation hub support facts">
-        <div class="hero-inline-fact">
+      <ul class="starter-note-list mb-3">
+        <li><code>/docs</code> is the app-native entry point for the local documentation workspace.</li>
+        <li>The HTML docs remain the source for long-form reference and guide reading.</li>
+        <li>Exported downstream projects do not inherit this maintainer docs workspace.</li>
+      </ul>
+      <div class="d-flex flex-wrap gap-md mb-3">
+        <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "index.html"])) ?>">Open docs overview</a>
+        <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Read the starter workflow</a>
+        <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to starter</a>
+      </div>
+      <div class="grid grid-3 gap-md" aria-label="Documentation hub support facts">
+        <article class="feature-card">
           <span class="badge">Framework repo</span>
-          <p class="content-text mb-0">Keep framework behavior, docs and export rules here, where they can evolve together.</p>
-        </div>
-        <div class="hero-inline-fact">
+          <p class="content-text mt-3 mb-0">Keep framework behavior, docs and export rules here, where they can evolve together.</p>
+        </article>
+        <article class="feature-card">
           <span class="badge">Downstream app</span>
-          <p class="content-text mb-0">Use <code>make:project</code> to create the real project repository with only the application-facing surface.</p>
-        </div>
-        <div class="hero-inline-fact">
+          <p class="content-text mt-3 mb-0">Use <code>make:project</code> to create the real project repository with only the application-facing surface.</p>
+        </article>
+        <article class="feature-card">
           <span class="badge">Current shape</span>
-          <p class="content-text mb-0">The guides stay authored in maintainable source files and the runtime simply exposes them locally.</p>
-        </div>
+          <p class="content-text mt-3 mb-0">The guides stay authored in maintainable source files and the runtime simply exposes them locally.</p>
+        </article>
       </div>
     </section>
   </div>

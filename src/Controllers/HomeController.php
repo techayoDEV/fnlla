@@ -22,106 +22,355 @@ namespace Fnlla\Php\Controllers;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Maintenance\DeveloperAccessManager;
+use Fnlla\Php\Maintenance\MaintenanceAccessManager;
+use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
 use Fnlla\Php\Support\VersionManifest;
+use Fnlla\Php\Validation\ValidationException;
 
 final class HomeController extends Controller
 {
-    public function maintenanceHome(Request $request): Response
+    public function maintenanceHome(
+        Request $request,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess
+    ): Response
     {
-        $health = $this->buildHealthPayload($request);
-        $releaseChannel = (array) ($health["release_channel"] ?? []);
-        $readiness = (array) ($health["readiness"] ?? []);
+        $accessState = $maintenanceAccess->viewState();
+        $setupState = $this->maintenanceSetupState($request, app(EnvironmentFileManager::class), $maintenanceAccess, $developerAccess);
+        $developerSetupState = $this->developerAccessSetupState($request, app(EnvironmentFileManager::class), $developerAccess);
+        $developerAccessState = $developerAccess->viewState();
+
+        if ($accessState["enabled"] && !$accessState["unlocked"]) {
+            return $this->view("maintenance/index", [
+                "pageTitle" => "Maintenance Access",
+                "pageTitleSection" => "Operations",
+                "maintenanceAccess" => $accessState,
+                "developerAccess" => $developerAccessState,
+                "maintenanceSetup" => $setupState,
+                "developerSetup" => $developerSetupState,
+                "maintenanceLocked" => true,
+                "maintenanceRedirectTarget" => $this->sanitizeMaintenanceRedirectTarget((string) $request->query("redirect", "")),
+                "maintenanceHighlights" => [],
+            ]);
+        }
+
+        if (!$developerAccess->canAccessOperations()) {
+            return $this->notFoundResponse();
+        }
 
         return $this->view("maintenance/index", [
             "pageTitle" => "Maintenance",
             "pageTitleSection" => "Operations",
-            "maintenanceCards" => [
-                [
-                    "title" => "Framework updates",
-                    "text" => "Review framework drift and apply only framework-managed changes through the linked maintenance workflow.",
-                    "href" => route("maintenance.framework_update"),
-                    "action" => "Open framework updates",
-                ],
-                [
-                    "title" => "Health view",
-                    "text" => "Inspect the human-readable operator status page that summarizes the same payload exposed by the machine-facing API endpoint.",
-                    "href" => route("health"),
-                    "action" => "Open health view",
-                ],
-                [
-                    "title" => "Raw API status",
-                    "text" => "Use the JSON health contract for automation, probes, deployment checks or other machine-facing diagnostics.",
-                    "href" => route("api.health"),
-                    "action" => "Open /api/health",
-                ],
-            ],
-            "maintenanceHighlights" => [
-                [
-                    "label" => "Published release cache",
-                    "value" => trim((string) ($releaseChannel["latest_cached_tag"] ?? "")) !== ""
-                        ? (string) ($releaseChannel["latest_cached_tag"] ?? "")
-                        : "Not cached yet",
-                ],
-                [
-                    "label" => "Release channel",
-                    "value" => (string) ($readiness["release_channel"] ?? "unknown"),
-                ],
-                [
-                    "label" => "Storage readiness",
-                    "value" => (string) ($readiness["storage"] ?? "unknown"),
-                ],
-                [
-                    "label" => "Version contract",
-                    "value" => (string) ($readiness["version_contract"] ?? "unknown"),
-                ],
-            ],
+            "maintenanceAccess" => $accessState,
+            "developerAccess" => $developerAccessState,
+            "maintenanceSetup" => $setupState,
+            "developerSetup" => $developerSetupState,
+            "maintenanceLocked" => false,
         ]);
     }
 
-    public function redirectHealthToMaintenance(Request $request): Response
+    public function setupMaintenanceAccess(
+        Request $request,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess,
+        EnvironmentFileManager $environmentFileManager
+    ): Response
     {
+        $redirectTarget = $this->sanitizeMaintenanceRedirectTarget((string) $request->input("maintenance_redirect", $request->query("redirect", "")));
+        $setupState = $this->maintenanceSetupState($request, $environmentFileManager, $maintenanceAccess, $developerAccess);
+
+        if ($setupState["can_setup"] !== true) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Maintenance setup is unavailable here",
+                "text" => (string) $setupState["message"],
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, "#maintenance-setup"));
+        }
+
+        $payload = [
+            "maintenance_setup_password" => trim((string) $request->input("maintenance_setup_password", "")),
+            "maintenance_setup_password_confirmation" => trim((string) $request->input("maintenance_setup_password_confirmation", "")),
+            "developer_setup_password" => trim((string) $request->input("developer_setup_password", "")),
+            "developer_setup_password_confirmation" => trim((string) $request->input("developer_setup_password_confirmation", "")),
+        ];
+
+        try {
+            $this->validate($payload, [
+                "maintenance_setup_password" => ["required", "string", "min:8", "max:255", "confirmed"],
+                "developer_setup_password" => ["nullable", "string", "min:8", "max:255", "confirmed"],
+            ]);
+        } catch (ValidationException $exception) {
+            flash_set("errors", $exception->errors());
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Maintenance setup still needs attention",
+                "text" => "Review the highlighted fields and save the maintenance credentials again.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, "#maintenance-setup"));
+        }
+
+        $environmentValues = [
+            "MAINTENANCE_MODE_ENABLED" => "true",
+            "MAINTENANCE_ACCESS_USERNAME" => "",
+            "MAINTENANCE_ACCESS_PASSWORD" => $payload["maintenance_setup_password"],
+        ];
+        $generatedDeveloperPath = "";
+
+        if (!$developerAccess->configured()) {
+            $generatedDeveloperPath = $developerAccess->generatePanelPath();
+            $developerPassword = $payload["developer_setup_password"] !== ""
+                ? $payload["developer_setup_password"]
+                : $payload["maintenance_setup_password"];
+            $environmentValues["DEVELOPER_ACCESS_ENABLED"] = "true";
+            $environmentValues["DEVELOPER_ACCESS_PATH"] = $generatedDeveloperPath;
+            $environmentValues["DEVELOPER_ACCESS_PASSWORD"] = $developerPassword;
+            $environmentValues["DEVELOPER_OPERATIONS_NAV_MODE"] = "hidden";
+        }
+
+        try {
+            $environmentFileManager->write($environmentValues);
+            $environmentFileManager->apply($environmentValues);
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Maintenance credentials could not be saved",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, "#maintenance-setup"));
+        }
+
+        $currentConfig = (array) config("maintenance", []);
+        config_set("maintenance", array_merge($currentConfig, [
+            "enabled" => true,
+            "username" => $environmentValues["MAINTENANCE_ACCESS_USERNAME"],
+            "password" => $environmentValues["MAINTENANCE_ACCESS_PASSWORD"],
+        ]));
+
+        if ($generatedDeveloperPath !== "") {
+            config_set("developer_access", array_merge((array) config("developer_access", []), [
+                "enabled" => true,
+                "path" => $generatedDeveloperPath,
+                "password" => $environmentValues["DEVELOPER_ACCESS_PASSWORD"],
+                "operations_nav_mode" => "hidden",
+            ]));
+        }
+
+        $maintenanceAccess->unlock(
+            $request,
+            $payload["maintenance_setup_password"]
+        );
+
+        if ($generatedDeveloperPath !== "") {
+            $developerAccess->grantAccess();
+            $maintenanceAccess->lock();
+            flash_set("developer_access_notice", [
+                "path" => $generatedDeveloperPath,
+                "title" => "Private developer panel created",
+            "text" => "Save this hidden address. It is the private developer entry point that keeps the public starter header clean for the client.",
+        ]);
+        }
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Maintenance access configured",
+            "text" => $generatedDeveloperPath !== ""
+                ? "The starter saved the maintenance credentials, generated a private developer panel path and kept this browser session unlocked for follow-up work."
+                : "The starter saved the maintenance credentials to .env, enabled preview protection and kept this browser session unlocked for setup work.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        if ($generatedDeveloperPath !== "") {
+            return $this->redirect($generatedDeveloperPath . "/panel");
+        }
+
+        return $this->redirect($redirectTarget !== "" ? $redirectTarget : route("maintenance.home"));
+    }
+
+    public function setupDeveloperAccess(
+        Request $request,
+        DeveloperAccessManager $developerAccess,
+        MaintenanceAccessManager $maintenanceAccess,
+        EnvironmentFileManager $environmentFileManager
+    ): Response {
+        $setupState = $this->developerAccessSetupState($request, $environmentFileManager, $developerAccess);
+
+        if ($setupState["can_setup"] !== true || $developerAccess->configured()) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Developer panel setup is unavailable here",
+                "text" => $developerAccess->configured()
+                    ? "The hidden developer panel is already configured for this project."
+                    : (string) $setupState["message"],
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("maintenance.home") . "#developer-panel-setup");
+        }
+
+        $payload = [
+            "developer_setup_password" => trim((string) $request->input("developer_setup_password", "")),
+            "developer_setup_password_confirmation" => trim((string) $request->input("developer_setup_password_confirmation", "")),
+        ];
+
+        try {
+            $this->validate($payload, [
+                "developer_setup_password" => ["required", "string", "min:8", "max:255", "confirmed"],
+            ]);
+        } catch (ValidationException $exception) {
+            flash_set("errors", $exception->errors());
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Developer panel setup still needs attention",
+                "text" => "Review the hidden panel password fields before activating the developer panel.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("maintenance.home") . "#developer-panel-setup");
+        }
+
+        $generatedDeveloperPath = $developerAccess->generatePanelPath();
+        $environmentValues = [
+            "DEVELOPER_ACCESS_ENABLED" => "true",
+            "DEVELOPER_ACCESS_PATH" => $generatedDeveloperPath,
+            "DEVELOPER_ACCESS_PASSWORD" => $payload["developer_setup_password"],
+            "DEVELOPER_OPERATIONS_NAV_MODE" => "hidden",
+        ];
+
+        try {
+            $environmentFileManager->write($environmentValues);
+            $environmentFileManager->apply($environmentValues);
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Developer panel could not be activated",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("maintenance.home") . "#developer-panel-setup");
+        }
+
+        config_set("developer_access", array_merge((array) config("developer_access", []), [
+            "enabled" => true,
+            "path" => $generatedDeveloperPath,
+            "password" => $payload["developer_setup_password"],
+            "operations_nav_mode" => "hidden",
+        ]));
+        $developerAccess->grantAccess();
+        $maintenanceAccess->lock();
+        flash_set("developer_access_notice", [
+            "path" => $generatedDeveloperPath,
+            "title" => "Private developer panel created",
+            "text" => "Save this hidden address. It is now the private service entry point for this existing project.",
+        ]);
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Developer panel activated",
+            "text" => "The hidden developer panel was added to this project and the current browser session can use it immediately.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect($generatedDeveloperPath . "/panel");
+    }
+
+    public function unlockMaintenance(Request $request, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        $redirectTarget = $this->sanitizeMaintenanceRedirectTarget((string) $request->input("maintenance_redirect", $request->query("redirect", "")));
+        $username = trim((string) $request->input("maintenance_username", ""));
+        $password = (string) $request->input("maintenance_password", "");
+        $result = $maintenanceAccess->unlock($request, $password, $username);
+
+        if (!$result["success"]) {
+            flash_set("old", [
+                "maintenance_username" => $username,
+            ]);
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Maintenance access denied",
+                "text" => (string) $result["error"],
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, "#maintenance-access"));
+        }
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Maintenance unlocked",
+            "text" => "The application is unlocked for this session for the next " . (string) max(1, (int) config("maintenance.unlock_ttl_minutes", 10)) . " minutes.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect($redirectTarget !== "" ? $redirectTarget : route("maintenance.home"));
+    }
+
+    public function lockMaintenance(Request $request, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        $maintenanceAccess->lock();
+        flash_set("status", [
+            "variant" => "info",
+            "title" => "Maintenance lock restored",
+            "text" => "Public routes are protected again until the maintenance password is entered.",
+            "toast" => false,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("maintenance.home") . "#maintenance-access");
+    }
+
+    public function redirectHealthToMaintenance(Request $request, DeveloperAccessManager $developerAccess): Response
+    {
+        if (!$developerAccess->canAccessOperations()) {
+            return $this->notFoundResponse();
+        }
+
         return $this->redirect(route("health"));
     }
 
     public function healthPage(Request $request): Response
     {
         $health = $this->buildHealthPayload($request);
-        $checkItems = [
-            [
-                "label" => "Version contract",
-                "status" => (string) ($health["readiness"]["version_contract"] ?? "unknown"),
-                "text" => "Confirms whether VERSION, MANIFEST.json and the built-in runtime version still match the maintained repository contract.",
-            ],
-            [
-                "label" => "Runtime assets",
-                "status" => (string) ($health["readiness"]["vendored_runtime"] ?? "unknown"),
-                "text" => "Shows whether the project still ships the local built-in runtime files expected by the application shell.",
-            ],
-            [
-                "label" => "Storage readiness",
-                "status" => (string) ($health["readiness"]["storage"] ?? "unknown"),
-                "text" => "Confirms whether the framework storage directories used by cache, sessions and update snapshots are writable now.",
-            ],
-            [
-                "label" => "Release channel",
-                "status" => (string) ($health["readiness"]["release_channel"] ?? "unknown"),
-                "text" => "Reports whether the published release channel is enabled and whether the local cache already has a prepared baseline snapshot.",
-            ],
-        ];
 
         return $this->view("pages/health", [
             "pageTitle" => "Health",
             "pageTitleSection" => "Operations",
             "health" => $health,
-            "checkItems" => $checkItems,
         ]);
     }
 
     public function healthApi(Request $request): Response
     {
-        return Response::json($this->buildHealthPayload($request));
+        $health = $this->buildHealthPayload($request);
+
+        if ($this->healthApiWantsJson($request)) {
+            return Response::json($health);
+        }
+
+        return $this->view("pages/api-health", [
+            "pageTitle" => "API Health",
+            "pageTitleSection" => "Operations",
+            "health" => $health,
+        ]);
     }
 
     private function buildHealthPayload(Request $request): array
@@ -146,7 +395,7 @@ final class HomeController extends Controller
             ? "disabled"
             : ($releaseCacheReady ? "ready" : "standby");
         $operatorNotes = [
-            "This page is the operator-facing companion to /api/health. Automations should continue to consume the JSON endpoint directly.",
+            "This browser view sits on top of the same /api/health payload. Automations should still use an Accept: application/json header or append ?format=json.",
             "The current PHP runtime reports a readiness snapshot for this request. It does not claim long-running process uptime.",
             $releaseChannelEnabled
                 ? ($releaseCacheReady
@@ -186,12 +435,16 @@ final class HomeController extends Controller
                 "vendored_fnlla_runtime" => $vendoredRuntimeReady ? "ok" : "missing",
                 "framework_update_ui" => config("framework_update.ui_enabled", false) ? "enabled" : "disabled",
                 "auto_detected_source" => $sourceAvailable ? "available" : "not_detected",
+                "maintenance_mode" => maintenance_access()->enabled()
+                    ? (maintenance_access()->isUnlocked() ? "unlocked" : "locked")
+                    : "disabled",
             ],
             "readiness" => [
                 "version_contract" => $versionContractReady ? "ready" : "attention",
                 "vendored_runtime" => $vendoredRuntimeReady ? "ready" : "attention",
                 "storage" => $storageReady ? "ready" : "attention",
                 "release_channel" => $releaseReadiness,
+                "maintenance_mode" => maintenance_access()->enabled() ? "restricted" : "open",
             ],
             "dependencies" => [
                 [
@@ -251,10 +504,17 @@ final class HomeController extends Controller
                 "maintenance" => route("maintenance.home"),
                 "health" => route("health"),
                 "api_health" => route("api.health"),
-                "contact" => route("contact"),
+                "api_health_json" => route("api.health") . "?format=json",
                 "framework_updates" => route("maintenance.framework_update"),
             ],
         ];
+    }
+
+    private function healthApiWantsJson(Request $request): bool
+    {
+        $format = strtolower(trim((string) $request->query("format", "")));
+
+        return $request->expectsJson() || $format === "json";
     }
 
     private function isWritableDirectory(string $path): bool
@@ -285,5 +545,116 @@ final class HomeController extends Controller
         $slug = is_string($slug) ? trim($slug, '-') : '';
 
         return $slug !== '' ? $slug : 'application';
+    }
+
+    private function maintenanceSetupState(
+        Request $request,
+        EnvironmentFileManager $environmentFileManager,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess
+    ): array {
+        $setupEnabled = (bool) config("maintenance.setup_ui_enabled", app_environment() !== "production");
+        $localOnly = (bool) config("maintenance.setup_ui_local_only", true);
+        $isLocalRequest = in_array($request->ip(), ["127.0.0.1", "::1"], true);
+        $isLocalContext = !$localOnly || $isLocalRequest;
+        $envWritable = $environmentFileManager->isWritable();
+        $canSetup = $setupEnabled && $isLocalContext && $envWritable;
+        $needsSetup = !$maintenanceAccess->configured() || !$maintenanceAccess->enabled();
+
+        $message = match (true) {
+            $setupEnabled !== true => "Browser-based maintenance setup is disabled in this environment.",
+            $isLocalContext !== true => "Browser-based maintenance setup is local-only. Open this page from the same machine as the project runtime.",
+            $envWritable !== true => "The project .env file is not writable. Make .env or the project directory writable before configuring maintenance here.",
+            default => "This starter can save maintenance credentials directly into the project environment file.",
+        };
+
+        return [
+            "enabled" => $setupEnabled,
+            "local_only" => $localOnly,
+            "is_local_request" => $isLocalRequest,
+            "can_setup" => $canSetup,
+            "needs_setup" => $needsSetup,
+            "show_setup" => $needsSetup && $canSetup,
+            "env_exists" => $environmentFileManager->envExists(),
+            "env_writable" => $envWritable,
+            "developer_access_configured" => $developerAccess->configured(),
+            "message" => $message,
+        ];
+    }
+
+    private function developerAccessSetupState(
+        Request $request,
+        EnvironmentFileManager $environmentFileManager,
+        DeveloperAccessManager $developerAccess
+    ): array {
+        $setupEnabled = (bool) config("developer_access.setup_ui_enabled", app_environment() !== "production");
+        $localOnly = (bool) config("developer_access.setup_ui_local_only", true);
+        $isLocalRequest = in_array($request->ip(), ["127.0.0.1", "::1"], true);
+        $isLocalContext = !$localOnly || $isLocalRequest;
+        $envWritable = $environmentFileManager->isWritable();
+        $canSetup = $setupEnabled && $isLocalContext && $envWritable;
+        $needsSetup = !$developerAccess->configured();
+
+        $message = match (true) {
+            $setupEnabled !== true => "Browser-based developer panel setup is disabled in this environment.",
+            $isLocalContext !== true => "Browser-based developer panel setup is local-only. Open this page from the same machine as the project runtime.",
+            $envWritable !== true => "The project .env file is not writable. Make .env or the project directory writable before activating the developer panel here.",
+            default => "This project can generate its hidden developer panel directly from the maintenance surface.",
+        };
+
+        return [
+            "enabled" => $setupEnabled,
+            "local_only" => $localOnly,
+            "is_local_request" => $isLocalRequest,
+            "can_setup" => $canSetup,
+            "needs_setup" => $needsSetup,
+            "show_setup" => $needsSetup && $canSetup,
+            "env_exists" => $environmentFileManager->envExists(),
+            "env_writable" => $envWritable,
+            "message" => $message,
+        ];
+    }
+
+    private function sanitizeMaintenanceRedirectTarget(string $target): string
+    {
+        $target = trim($target);
+
+        if ($target === "" || !str_starts_with($target, "/") || str_starts_with($target, "//") || str_contains($target, "\\")) {
+            return "";
+        }
+
+        $parts = parse_url($target);
+
+        if ($parts === false) {
+            return "";
+        }
+
+        $path = (string) ($parts["path"] ?? "");
+
+        if ($path === "" || !str_starts_with($path, "/")) {
+            return "";
+        }
+
+        $query = isset($parts["query"]) && $parts["query"] !== "" ? "?" . $parts["query"] : "";
+
+        return $path . $query;
+    }
+
+    private function maintenanceRedirectUrl(string $redirectTarget, string $fragment = ""): string
+    {
+        $base = route("maintenance.home");
+
+        if ($redirectTarget !== "") {
+            $base .= "?redirect=" . rawurlencode($redirectTarget);
+        }
+
+        return $base . $fragment;
+    }
+
+    private function notFoundResponse(): Response
+    {
+        return $this->view("pages/not-found", [
+            "pageTitle" => "Not Found",
+        ], 404);
     }
 }

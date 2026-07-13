@@ -89,7 +89,7 @@ final class MakeProjectCommand extends Command
         $this->line("");
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
-        $this->line("2. Copy .env.example to .env and set APP_URL plus MySQL credentials.");
+        $this->line("2. Copy .env.example to .env, or open /maintenance locally and let the starter create .env while configuring the first maintenance password.");
         $this->line("3. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the starter surface into your real project pages.");
         $this->line("4. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
         $this->line("5. Initialize a separate Git repository for the new website or application.");
@@ -359,7 +359,8 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - a legacy compatibility lock in `.fnlla/starter-lock.json` for older update flows
 - root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
-- a starter application skeleton with public pages for home, about, services and contact
+- a starter application skeleton with public pages for home, about and services
+- an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
 - local lint, test, version metadata and built-in runtime validation scripts
@@ -384,10 +385,14 @@ php scripts/validate-version-manifest.php
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-5. Open `http://127.0.0.1:8080` in your browser and review the starter pages at `/`, `/about`, `/services` and `/contact`.
+5. Open `http://127.0.0.1:8080` in your browser and review the starter pages at `/`, `/about` and `/services`.
 6. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
+7. When client preview should stay private, either:
 
-The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED` and `FRAMEWORK_UPDATE_SOURCE_PATH` in `.env`.
+   - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh starter, or
+   - set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`
+
+The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `FRAMEWORK_UPDATE_SOURCE_PATH`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
 
 For Apache environments, use `public/` as the document root.
 The exported project already includes `public/.htaccess`.
@@ -484,7 +489,6 @@ MD;
             "views/pages/home.php",
             "views/pages/about.php",
             "views/pages/services.php",
-            "views/pages/contact.php",
             "public/assets/app.css",
         ]);
 

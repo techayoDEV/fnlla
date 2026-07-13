@@ -54,7 +54,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(0, $checkExitCode, $checkOutput);
         self::assertStringContainsString("Safe framework changes available: 1", $checkOutput);
-        self::assertStringContainsString("[UPDATE] src/Support/PageMeta.php", $checkOutput);
+        self::assertStringContainsString("[Automatic update ready] src/Support/PageMeta.php", $checkOutput);
 
         [$applyExitCode, $applyOutput] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
@@ -67,6 +67,85 @@ final class FrameworkUpdateCommandTest extends TestCase
             "// framework update source marker",
             (string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "PageMeta.php")
         );
+    }
+
+    public function testFrameworkUpdateTracksStarterSurfaceFilesInFreshExports(): void
+    {
+        $projectRoot = $this->exportProject("Framework Starter Surface Test");
+        $sourceClone = $this->cloneRepository();
+        $starterView = $sourceClone . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php";
+
+        file_put_contents(
+            $starterView,
+            str_replace(
+                "How teams work on it",
+                "How teams work on it updated by framework:update",
+                (string) file_get_contents($starterView)
+            )
+        );
+
+        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--check", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $checkExitCode, $checkOutput);
+        self::assertStringContainsString("[Automatic update ready] views/pages/home.php", $checkOutput);
+
+        [$applyExitCode, $applyOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--apply", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $applyExitCode, $applyOutput);
+        self::assertStringContainsString("How teams work on it updated by framework:update", (string) file_get_contents(
+            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php"
+        ));
+    }
+
+    public function testFrameworkUpdateCanMigrateLegacyUntrackedStarterSurfaceFiles(): void
+    {
+        $projectRoot = $this->exportProject("Framework Legacy Starter Test");
+        $sourceClone = $this->cloneRepository();
+        $lockPath = $projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json";
+        $lock = json_decode((string) file_get_contents($lockPath), true);
+
+        self::assertTrue(is_array($lock));
+
+        $lock["framework_base"]["framework"]["version"] = "1.0.18";
+        $lock["framework_base"]["ui_runtime"]["version"] = "1.1.0";
+        unset($lock["framework_base"]["managed_files"]["views/pages/home.php"]);
+        unset($lock["framework_base"]["managed_files"]["views/pages/contact.php"]);
+
+        file_put_contents(
+            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php",
+            $this->legacyRepositoryFileContents("views/pages/home.php")
+        );
+        file_put_contents(
+            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php",
+            $this->legacyRepositoryFileContents("views/pages/contact.php")
+        );
+        file_put_contents($lockPath, json_encode($lock, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+
+        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--check", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $checkExitCode, $checkOutput);
+        self::assertStringContainsString("[Automatic update ready] views/pages/home.php", $checkOutput);
+        self::assertStringContainsString("[Automatic removal ready] views/pages/contact.php", $checkOutput);
+
+        [$applyExitCode, $applyOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--apply", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $applyExitCode, $applyOutput);
+        self::assertStringContainsString("How teams work on it", (string) file_get_contents(
+            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php"
+        ));
+        self::assertFalse(is_file($projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php"));
     }
 
     public function testFrameworkUpdateReportsConflictsWhenManagedFilesChangedLocallyAndUpstream(): void
@@ -87,6 +166,51 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(1, $checkExitCode, $checkOutput);
         self::assertStringContainsString("[CONFLICT] src/Support/PageMeta.php", $checkOutput);
+    }
+
+    public function testFrameworkUpdateTreatsFormattingOnlyDriftAsSafeSyncInsteadOfConflict(): void
+    {
+        $projectRoot = $this->exportProject("Framework Formatting Sync Test");
+        $sourceClone = $this->cloneRepository();
+        $relativeManagedPath = "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php";
+        $projectManagedFile = $projectRoot . DIRECTORY_SEPARATOR . $relativeManagedPath;
+        $sourceManagedFile = $sourceClone . DIRECTORY_SEPARATOR . $relativeManagedPath;
+        $projectContents = (string) file_get_contents($projectManagedFile);
+        $sourceContents = (string) file_get_contents($sourceManagedFile);
+        $marker = "<?php if ((\$maintenanceAccess[\"configured\"] ?? false)): ?>";
+
+        file_put_contents(
+            $sourceManagedFile,
+            str_replace(PHP_EOL . $marker, $marker, $sourceContents)
+        );
+        file_put_contents(
+            $projectManagedFile,
+            str_replace(PHP_EOL . $marker, PHP_EOL . PHP_EOL . $marker, $projectContents)
+        );
+
+        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--check", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $checkExitCode, $checkOutput);
+        self::assertTrue(
+            str_contains($checkOutput, "[Formatting-only sync ready] views/maintenance/index.php")
+            || str_contains($checkOutput, "Framework base is already aligned with the provided source export."),
+            $checkOutput
+        );
+        self::assertStringNotContainsString("[CONFLICT] views/maintenance/index.php", $checkOutput);
+
+        [$applyExitCode, $applyOutput] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["framework:update", "--apply", "--source", $sourceClone]
+        );
+
+        self::assertSame(0, $applyExitCode, $applyOutput);
+        self::assertSame(
+            (string) file_get_contents($sourceManagedFile),
+            (string) file_get_contents($projectManagedFile)
+        );
     }
 
     public function testLegacyStarterUpdateAliasStillRunsButStaysHiddenFromList(): void
@@ -243,5 +367,18 @@ final class FrameworkUpdateCommandTest extends TestCase
         exec($command, $lines, $exitCode);
 
         return [$exitCode, implode(PHP_EOL, $lines)];
+    }
+
+    private function legacyRepositoryFileContents(string $relativePath): string
+    {
+        $command = 'git -C "' . base_path() . '" show HEAD:' . str_replace("\\", "/", $relativePath) . ' 2>&1';
+        $lines = [];
+        $exitCode = 1;
+
+        exec($command, $lines, $exitCode);
+
+        self::assertSame(0, $exitCode, "Unable to read legacy repository file from git history: " . $relativePath);
+
+        return implode("\n", $lines) . "\n";
     }
 }

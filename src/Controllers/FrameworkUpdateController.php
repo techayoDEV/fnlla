@@ -142,21 +142,42 @@ final class FrameworkUpdateController extends Controller
                 default => FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name")),
             };
 
-            flash_set("framework_update_report", array_merge($report, [
+            $report = array_merge($report, [
                 "mode" => $mode,
                 "executed_at_utc" => gmdate(DATE_ATOM),
                 "source_path" => (string) ($report["source_root"] ?? $sourcePath),
                 "release_tag" => $releaseTag,
-            ]));
-            flash_set("status", [
-                "variant" => $this->statusVariantForReport($mode, $report),
-                "title" => in_array($mode, ["apply", "github-apply"], true) ? "Safe framework update finished" : "Framework update check finished",
-                "text" => in_array($mode, ["apply", "github-apply"], true)
-                    ? $this->applyStatusText($report)
-                    : $this->checkStatusText($mode, $report),
-                "toast" => false,
             ]);
+            $report = array_merge($report, $this->reportPresentation($mode, $report, $pageState));
+            $status = $this->statusPayloadForReport($mode, $report);
+
+            flash_set("framework_update_report", $report);
+            flash_set("status", $status);
         } catch (RuntimeException $exception) {
+            if (in_array($mode, ["apply", "github-apply"], true) && $exception->getMessage() === FrameworkUpdater::APPLY_CONFLICT_MESSAGE) {
+                $report = $mode === "github-apply"
+                    ? FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null)
+                    : FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name"));
+
+                $report = array_merge($report, [
+                    "mode" => $mode === "github-apply" ? "github-check" : "check",
+                    "executed_at_utc" => gmdate(DATE_ATOM),
+                    "source_path" => (string) ($report["source_root"] ?? $sourcePath),
+                    "release_tag" => $releaseTag,
+                ]);
+                $report = array_merge($report, $this->reportPresentation((string) $report["mode"], $report, $pageState));
+                flash_set("framework_update_report", $report);
+                flash_set("status", [
+                    "variant" => "warning",
+                    "title" => "Update stopped for manual review",
+                    "text" => "FNLLA did not apply the update because one or more framework-managed files need a manual merge first. Review the conflict report below, resolve those files, then rerun the update.",
+                    "toast" => false,
+                ]);
+                regenerate_csrf_token();
+
+                return $this->redirect(route("maintenance.framework_update"));
+            }
+
             flash_set("status", [
                 "variant" => "danger",
                 "title" => "Framework update could not run",
@@ -206,22 +227,42 @@ final class FrameworkUpdateController extends Controller
         }
     }
 
-    private function statusVariantForReport(string $mode, array $report): string
+    private function statusPayloadForReport(string $mode, array $report): array
     {
         if (in_array($mode, ["apply", "github-apply"], true)) {
-            return ($report["post_install_ok"] ?? true) === true ? "success" : "warning";
+            return [
+                "variant" => ($report["post_install_ok"] ?? true) === true ? "success" : "warning",
+                "title" => (string) ($report["headline_title"] ?? "Framework update finished"),
+                "text" => (string) ($report["headline_text"] ?? $this->applyStatusText($report)),
+                "toast" => false,
+            ];
         }
 
-        return ($report["conflicts"] ?? []) === [] ? "success" : "info";
+        if (($report["requires_manual_review"] ?? false) === true) {
+            $variant = "warning";
+        } elseif (($report["update_ready"] ?? false) === true) {
+            $variant = "success";
+        } elseif (($report["update_detected"] ?? false) === true) {
+            $variant = "info";
+        } else {
+            $variant = "info";
+        }
+
+        return [
+            "variant" => $variant,
+            "title" => (string) ($report["headline_title"] ?? "Framework update check finished"),
+            "text" => (string) ($report["headline_text"] ?? $this->checkStatusText($mode, $report)),
+            "toast" => false,
+        ];
     }
 
     private function applyStatusText(array $report): string
     {
         if (($report["post_install_ok"] ?? true) === true) {
-            return "The framework update was applied and the built-in post-install checks passed. Review the report below before treating the application as ready.";
+            return "The framework update finished and the built-in post-install checks passed. Review the report, then refresh this page to confirm the maintenance surface is now using the updated framework base.";
         }
 
-        return "The framework update was applied, but one or more post-install checks reported follow-up work. Review the report below before treating the application as ready.";
+        return "The framework update finished, but one or more post-install checks reported follow-up work. Review the report carefully before refreshing the page and treating the application as ready.";
     }
 
     private function checkStatusText(string $mode, array $report): string
@@ -230,10 +271,124 @@ final class FrameworkUpdateController extends Controller
             return (string) $report["release_skip_reason"];
         }
 
-        if ($mode === "github-check") {
-            return "The application checked the latest published FNLLA release from GitHub, cached the source baseline locally and prepared a structured drift report.";
+        if (($report["requires_manual_review"] ?? false) === true) {
+            return (string) ($report["headline_text"] ?? "FNLLA detected upstream framework changes, but one or more framework-managed files changed both locally and upstream. Review the conflicts before any apply run can continue.");
         }
 
-        return "The application compared its framework base against the maintained source export and prepared a structured drift report.";
+        if (($report["update_ready"] ?? false) === true) {
+            return (string) ($report["headline_text"] ?? "FNLLA detected framework changes and prepared a safe update that can be applied from this page.");
+        }
+
+        if ($mode === "github-check") {
+            return "The application checked the selected FNLLA release channel, prepared a structured report and confirmed whether a newer GitHub-backed update is ready.";
+        }
+
+        return "The application compared its framework base against the maintained source export and prepared a structured report that makes the update decision explicit.";
+    }
+
+    private function reportPresentation(string $mode, array $report, array $pageState): array
+    {
+        $isApplyMode = in_array($mode, ["apply", "github-apply"], true);
+        $updates = count((array) ($report["updates"] ?? []));
+        $conflicts = count((array) ($report["conflicts"] ?? []));
+        $localOnly = count((array) ($report["local_only_changes"] ?? []));
+        $usesGitHub = in_array($mode, ["github-check", "github-apply"], true);
+        $versionsDiffer = $this->versionsDiffer(
+            (string) ($report["current_framework_version"] ?? ""),
+            (string) ($report["source_framework_version"] ?? "")
+        );
+        $runtimeDiffers = $this->versionsDiffer(
+            (string) ($report["current_ui_version"] ?? ""),
+            (string) ($report["source_ui_version"] ?? "")
+        );
+        $versionTransition = $this->versionTransitionSummary($report);
+        $githubRelease = is_array($report["github_release"] ?? null) ? (array) $report["github_release"] : [];
+        $githubNewer = ($githubRelease["has_newer_release"] ?? null) === true;
+        $updateDetected = $updates > 0 || $conflicts > 0 || $githubNewer || $versionsDiffer || $runtimeDiffers;
+        $requiresManualReview = !$isApplyMode && $conflicts > 0;
+        $updateReady = !$isApplyMode && $updates > 0 && $conflicts === 0;
+        $recommendedApplyMode = match ($mode) {
+            "check" => "apply",
+            "github-check" => "github-apply",
+            default => "",
+        };
+        $applyActionAvailable = $updateReady && (($pageState["can_apply"] ?? false) === true) && $recommendedApplyMode !== "";
+
+        if ($isApplyMode) {
+            $headlineTitle = ($report["post_install_ok"] ?? true) === true
+                ? "Framework update completed"
+                : "Framework update completed with follow-up work";
+            $headlineText = $this->applyStatusText($report);
+        } elseif (is_string($report["release_skip_reason"] ?? null) && $report["release_skip_reason"] !== "" && !$updateDetected) {
+            $headlineTitle = "Framework base already up to date";
+            $headlineText = (string) $report["release_skip_reason"];
+        } elseif ($requiresManualReview) {
+            $headlineTitle = $versionTransition !== ""
+                ? "Newer framework base detected, but manual review is required"
+                : "Framework changes detected, but manual review is required";
+            $headlineText = $versionTransition !== ""
+                ? "FNLLA keeps the update path automatic for safe changes, but this run found a real file collision ({$versionTransition}) in {$conflicts} framework-managed file(s). Review those conflicts before applying the update."
+                : "FNLLA keeps the update path automatic for safe changes, but this run found {$conflicts} framework-managed file(s) changed both locally and upstream. Review those conflicts before applying the update.";
+        } elseif ($updateReady) {
+            $headlineTitle = $versionTransition !== ""
+                ? "Update is ready to apply"
+                : "Framework changes are ready to apply";
+            $headlineText = $versionTransition !== ""
+                ? "FNLLA detected an upstream framework shift ({$versionTransition}) and prepared the automatic safe portion of the update. No manual merge is needed for these files, so you can apply the update directly from this page."
+                : "FNLLA detected framework-managed source changes and prepared the automatic safe portion of the update. No manual merge is needed for these files, so you can apply the update directly from this page.";
+        } elseif ($localOnly > 0) {
+            $headlineTitle = "Framework base is already aligned";
+            $headlineText = "No upstream framework drift was detected. {$localOnly} framework-managed file(s) still differ locally, but the maintained source kept the same baseline, so no apply run is needed.";
+        } else {
+            $headlineTitle = $usesGitHub
+                ? "No newer GitHub update is waiting"
+                : "Framework base is already aligned";
+            $headlineText = $usesGitHub
+                ? "FNLLA checked the selected GitHub release channel and did not find a newer published framework base that should be applied here."
+                : "The current project already matches the selected maintained framework source.";
+        }
+
+        return [
+            "headline_title" => $headlineTitle,
+            "headline_text" => $headlineText,
+            "update_detected" => $updateDetected,
+            "update_ready" => $updateReady,
+            "requires_manual_review" => $requiresManualReview,
+            "recommended_apply_mode" => $recommendedApplyMode,
+            "apply_action_available" => $applyActionAvailable,
+            "can_apply_from_ui" => ($pageState["can_apply"] ?? false) === true,
+            "version_transition_summary" => $versionTransition,
+        ];
+    }
+
+    private function versionsDiffer(string $currentVersion, string $sourceVersion): bool
+    {
+        $currentVersion = trim($currentVersion);
+        $sourceVersion = trim($sourceVersion);
+
+        return $currentVersion !== ""
+            && $sourceVersion !== ""
+            && $currentVersion !== "unknown"
+            && $sourceVersion !== "unknown"
+            && $currentVersion !== $sourceVersion;
+    }
+
+    private function versionTransitionSummary(array $report): string
+    {
+        $segments = [];
+        $currentFrameworkVersion = trim((string) ($report["current_framework_version"] ?? ""));
+        $sourceFrameworkVersion = trim((string) ($report["source_framework_version"] ?? ""));
+        $currentUiVersion = trim((string) ($report["current_ui_version"] ?? ""));
+        $sourceUiVersion = trim((string) ($report["source_ui_version"] ?? ""));
+
+        if ($this->versionsDiffer($currentFrameworkVersion, $sourceFrameworkVersion)) {
+            $segments[] = "FNLLA {$currentFrameworkVersion} -> {$sourceFrameworkVersion}";
+        }
+
+        if ($this->versionsDiffer($currentUiVersion, $sourceUiVersion)) {
+            $segments[] = "Runtime {$currentUiVersion} -> {$sourceUiVersion}";
+        }
+
+        return implode(", ", $segments);
     }
 }

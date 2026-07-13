@@ -267,19 +267,19 @@ For forms:
 - flash errors and previous input back into the next request
 - redirect after success
 
-The existing contact flow is the reference pattern:
+The existing maintenance flows are the reference patterns:
 
-- GET page route for the form
-- POST submit route with `csrf` and `throttle`
+- GET page route for the screen
+- POST submit route with `csrf`
 - controller validation
 - flash status message
 - redirect back to the page anchor
 
-That pattern is already visible in:
+Those patterns are already visible in:
 
-- `routes/web.php`
-- `src/Controllers/PageController.php`
-- `views/pages/contact.php`
+- `routes/maintenance.php`
+- `src/Controllers/HomeController.php`
+- `views/maintenance/index.php`
 
 ## Validation pattern
 

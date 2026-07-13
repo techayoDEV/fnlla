@@ -20,6 +20,8 @@ Purpose:
 
 $environment = framework_detect_environment();
 $isDevelopment = $environment === "development";
+$appLogPath = trim((string) env("APP_LOG_PATH", "logs/app.log"));
+$sessionPath = trim((string) env("SESSION_PATH", "framework/sessions"));
 
 return [
     "name" => "FNLLA",
@@ -29,8 +31,8 @@ return [
     "timezone" => (string) env("APP_TIMEZONE", "UTC"),
     "locale" => (string) env("APP_LOCALE", "en"),
     "fallback_locale" => (string) env("APP_FALLBACK_LOCALE", "en"),
-    "log_path" => storage_path((string) env("APP_LOG_PATH", "logs/app.log")),
-    "session_path" => storage_path((string) env("SESSION_PATH", "framework/sessions")),
+    "log_path" => storage_path($appLogPath !== "" ? $appLogPath : "logs/app.log"),
+    "session_path" => storage_path($sessionPath !== "" ? $sessionPath : "framework/sessions"),
     "providers" => [
         \Fnlla\Php\Providers\FrameworkServiceProvider::class,
         \Fnlla\Php\Providers\AuthServiceProvider::class,

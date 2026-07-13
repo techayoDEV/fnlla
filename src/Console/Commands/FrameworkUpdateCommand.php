@@ -190,11 +190,15 @@ final class FrameworkUpdateCommand extends Command
         }
 
         foreach ($report["updates"] as $path => $update) {
-            $this->line("[" . strtoupper((string) $update["action"]) . "] " . $path);
+            $this->line("[" . $this->updateActionLabel((array) $update) . "] " . $path);
         }
 
         foreach ($report["conflicts"] as $path => $conflict) {
             $this->error("[CONFLICT] " . $path . " - " . $conflict["reason"]);
+
+            if (is_string($conflict["next_step"] ?? null) && $conflict["next_step"] !== "") {
+                $this->line("           Next step: " . $conflict["next_step"]);
+            }
         }
     }
 
@@ -221,5 +225,21 @@ final class FrameworkUpdateCommand extends Command
                 "- {$label}: {$status}" . ($exitCode !== null ? " (exit {$exitCode})" : "")
             );
         }
+    }
+
+    private function updateActionLabel(array $update): string
+    {
+        $label = trim((string) ($update["label"] ?? ""));
+
+        if ($label !== "") {
+            return $label;
+        }
+
+        return match ((string) ($update["action"] ?? "update")) {
+            "add" => "Automatic add ready",
+            "remove" => "Automatic removal ready",
+            "sync" => "Formatting-only sync ready",
+            default => "Automatic update ready",
+        };
     }
 }

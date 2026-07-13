@@ -63,10 +63,10 @@ body {
 }
 
 .starter-header-section {
-  padding-block: 1rem;
+  padding-block: 0.3rem;
 }
 
-.starter-header .navbar {
+.navbar {
   background: transparent;
   border-bottom: 0;
   box-shadow: none;
@@ -98,6 +98,8 @@ body {
   color: var(--fnlla-color-text);
   font-size: 1rem;
   font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .site-brand-logo {
@@ -108,6 +110,45 @@ body {
 
 .starter-navbar-actions {
   align-items: center;
+}
+
+.starter-nav-link,
+.starter-dropdown-toggle,
+.starter-dropdown-menu .dropdown-item,
+.starter-footer-brand,
+.starter-footer-links a,
+.starter-footer-locked-link {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.starter-operations-dropdown .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+.starter-dropdown-heading {
+  margin: 0 0 0.5rem;
+  padding: 0 0.875rem;
+  color: var(--fnlla-color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.starter-ops-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(26, 65, 55, 0.12);
+  color: var(--fnlla-color-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .starter-main {
@@ -136,8 +177,106 @@ body {
   align-items: start;
 }
 
+#page-status {
+  margin-top: 1.35rem;
+}
+
+main > .section.pt-1:first-child {
+  padding-top: 2rem;
+}
+
+.maintenance-lock-stage {
+  padding-block: 2rem 3rem;
+}
+
+.maintenance-lock-shell {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(21, 48, 79, 0.12);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.maintenance-lock-shell-body {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.maintenance-lock-panel {
+  border: 1px solid rgba(21, 48, 79, 0.14);
+  box-shadow: none;
+}
+
+.maintenance-lock-panel-body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.maintenance-lock-form {
+  margin-top: 0.25rem;
+}
+
+.maintenance-modal-launch {
+  margin-bottom: 0.25rem;
+}
+
+.maintenance-fallback-card {
+  display: none;
+  border-style: dashed;
+}
+
+.maintenance-fallback-card.is-active {
+  display: block;
+}
+
+.maintenance-unlock-modal-content {
+  max-width: min(32rem, 100%);
+}
+
+.developer-panel-stack,
+.developer-secret-path {
+  word-break: break-word;
+}
+
+.developer-overview-grid,
+.developer-quick-links-grid {
+  align-items: start;
+}
+
+.developer-secret-path {
+  margin: 0;
+}
+
+.maintenance-lock-form .content-text,
+.feature-section .content-text code {
+  word-break: break-word;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-right: 5.5rem;
+}
+
+.password-field .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+}
+
 .starter-footer {
   margin-top: 3rem;
+}
+
+.starter-footer-brand {
+  display: inline-block;
+}
+
+.starter-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .starter-footer-panel {
@@ -188,17 +327,85 @@ body {
   width: 100%;
 }
 
+.framework-update-channel-grid,
 .framework-update-meta-grid {
   align-items: start;
+}
+
+.framework-update-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.framework-update-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(26, 65, 55, 0.12);
+  color: var(--fnlla-color-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.framework-update-badge-muted {
+  background: rgba(21, 48, 79, 0.08);
+  color: var(--fnlla-color-text-muted);
+}
+
+.framework-update-summary-list {
+  margin-bottom: 1rem;
+}
+
+.framework-update-surface-note {
+  margin-top: 1rem;
+}
+
+.framework-update-sequence {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.framework-update-sequence li + li {
+  margin-top: 0.55rem;
 }
 
 .framework-update-release-notes .form-message-text {
   line-height: 1.65;
 }
 
+.api-health-summary-grid,
+.api-health-mode-grid {
+  align-items: start;
+}
+
+.api-health-code-block {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.92);
+  color: #e2ecff;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
 @media (min-width: 768px) {
   .site-page-stack {
     gap: 2rem;
+  }
+
+  .maintenance-lock-stage {
+    padding-block: 3rem 4rem;
+  }
+
+  .maintenance-lock-shell .card-body {
+    padding: 1.75rem;
   }
 
   .starter-footer-grid {

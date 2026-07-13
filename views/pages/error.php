@@ -29,7 +29,7 @@ Purpose:
     </div>
     <div class="d-flex flex-wrap gap-md mt-3">
       <a class="btn btn-primary" href="<?= h(url()) ?>">Back home</a>
-      <a class="btn btn-outline" href="<?= h(url("contact")) ?>">Open contact flow</a>
+      <a class="btn btn-outline" href="<?= h(route("services")) ?>">Open services</a>
     </div>
   </div>
 </section>

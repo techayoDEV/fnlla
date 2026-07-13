@@ -22,6 +22,12 @@ $pageStatus = flash("status");
 $currentPath = current_path();
 $hasDocumentationWorkspace = has_local_docs_workspace();
 $isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
+$maintenanceAccess = maintenance_access();
+$developerAccess = developer_access();
+$isMaintenanceLocked = $maintenanceAccess->enabled() && !$maintenanceAccess->isUnlocked();
+$hasDeveloperPanelRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("developer.panel") !== null;
+$developerSessionActive = $developerAccess->isUnlocked() && $hasDeveloperPanelRoute;
+$publicNavigationAvailable = !$isMaintenanceLocked || $developerSessionActive;
 $pageMeta = page_meta([
     "site" => (string) config("app.name"),
     "page" => (string) ($pageTitle ?? ""),
@@ -48,25 +54,33 @@ $pageMeta = page_meta([
   <link rel="stylesheet" href="<?= h(asset("assets/app.css")) ?>">
 </head>
 <body data-fnlla-theme="default">
-  <header>
-    <section class="section">
+  <header class="starter-header">
+    <section class="section starter-header-section">
       <div class="container">
         <nav class="navbar" aria-label="Primary navigation">
-          <a class="navbar-brand" href="<?= h(route("home")) ?>">
-            <?= h(config("app.name")) ?>
+          <a class="navbar-brand starter-brand" href="<?= h(route("home")) ?>">
+            <span class="starter-brand-name"><?= h((string) config("app.name")) ?></span>
           </a>
           <button class="btn btn-outline btn-sm navbar-toggle" type="button" data-fnlla-nav-toggle aria-controls="primary-navigation-panel" aria-expanded="false" aria-label="Toggle navigation menu">Menu</button>
           <div class="navbar-panel" id="primary-navigation-panel">
             <ul class="navbar-menu">
-              <li><a href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
-              <li><a href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
-              <li><a href="<?= h(route("services")) ?>" <?= $currentPath === "/services" ? 'aria-current="page"' : "" ?>>Services</a></li>
-              <li><a href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
+              <?php if ($publicNavigationAvailable): ?>
+              <li><a class="starter-nav-link" href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
+              <li><a class="starter-nav-link" href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
+              <li><a class="starter-nav-link" href="<?= h(route("services")) ?>" <?= $currentPath === "/services" ? 'aria-current="page"' : "" ?>>Services</a></li>
+              <?php else: ?>
+              <li><span class="starter-nav-link" aria-current="page">Maintenance access required</span></li>
+              <?php endif; ?>
             </ul>
-            <div class="navbar-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h(route("maintenance.home")) ?>">Maintenance</a>
-              <?php if ($hasDocumentationWorkspace): ?>
-              <a class="btn btn-ghost btn-sm" href="<?= h(route("docs.home")) ?>" <?= $isDocsPath ? 'aria-current="page"' : "" ?>>Docs</a>
+            <div class="navbar-actions starter-navbar-actions">
+              <?php if ($developerSessionActive): ?>
+              <a class="btn btn-outline btn-sm starter-dropdown-toggle" href="<?= h(route("developer.panel")) ?>" <?= $currentPath === $developerAccess->path() . "/panel" ? 'aria-current="page"' : "" ?>>
+                DEV OPERATIONS
+                <span class="starter-ops-badge">Active</span>
+              </a>
+              <?php endif; ?>
+              <?php if ($hasDocumentationWorkspace && $publicNavigationAvailable): ?>
+              <a class="btn btn-ghost btn-sm starter-nav-link" href="<?= h(route("docs.home")) ?>" <?= $isDocsPath ? 'aria-current="page"' : "" ?>>Docs</a>
               <?php endif; ?>
             </div>
           </div>
@@ -90,17 +104,20 @@ $pageMeta = page_meta([
     <?= $content ?>
   </main>
 
-  <footer>
+  <footer class="starter-footer">
     <section class="section">
       <div class="container">
-        <p><strong><?= h(config("app.name")) ?></strong></p>
-        <p>This starter is the beginning of the real application, not a disposable demo.</p>
-        <p>
+        <p><strong class="starter-footer-brand"><?= h((string) config("app.name")) ?></strong></p>
+        <p>This starter is the beginning of the real application.</p>
+        <?php if ($publicNavigationAvailable): ?>
+        <p class="starter-footer-links">
           <a href="<?= h(route("home")) ?>">Home</a>
           <a href="<?= h(route("about")) ?>">About</a>
           <a href="<?= h(route("services")) ?>">Services</a>
-          <a href="<?= h(route("contact")) ?>">Contact</a>
         </p>
+        <?php else: ?>
+        <p><a class="starter-footer-locked-link" href="<?= h(route("maintenance.home")) ?>">Return to maintenance access</a></p>
+        <?php endif; ?>
       </div>
     </section>
   </footer>

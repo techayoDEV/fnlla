@@ -105,9 +105,9 @@ error_reporting(E_ALL);
 ini_set("display_errors", app_debug() ? "1" : "0");
 ini_set("display_startup_errors", app_debug() ? "1" : "0");
 ini_set("log_errors", "1");
-ini_set("error_log", (string) config("app.log_path"));
+ini_set("error_log", \Fnlla\Php\Support\Logger::configuredPath());
 
-$logPath = dirname((string) config("app.log_path"));
+$logPath = dirname(\Fnlla\Php\Support\Logger::configuredPath());
 if (!is_dir($logPath)) {
     mkdir($logPath, 0777, true);
 }

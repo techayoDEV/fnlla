@@ -27,8 +27,11 @@ use RuntimeException;
 
 final class FrameworkUpdater
 {
+    public const APPLY_CONFLICT_MESSAGE = "Framework updates were not applied because conflicts need manual review first.";
+
     public static function checkLatestRelease(string $projectRoot, ?string $appName = null, ?string $releaseTag = null): array
     {
+        self::extendExecutionTime();
         $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
 
         if (self::githubReleaseIsNotNewer($releaseSource)) {
@@ -45,6 +48,7 @@ final class FrameworkUpdater
 
     public static function applyLatestRelease(string $projectRoot, ?string $appName = null, ?string $releaseTag = null): array
     {
+        self::extendExecutionTime();
         $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
 
         if (self::githubReleaseIsNotNewer($releaseSource)) {
@@ -104,6 +108,7 @@ final class FrameworkUpdater
 
     public static function check(string $projectRoot, string $source, ?string $appName = null): array
     {
+        self::extendExecutionTime();
         [$report, $workspace] = self::prepare($projectRoot, $source, $appName);
 
         try {
@@ -115,11 +120,12 @@ final class FrameworkUpdater
 
     public static function apply(string $projectRoot, string $source, ?string $appName = null): array
     {
+        self::extendExecutionTime();
         [$report, $workspace, $exportRoot] = self::prepare($projectRoot, $source, $appName);
 
         try {
             if ($report["conflicts"] !== []) {
-                throw new RuntimeException("Framework updates were not applied because conflicts need manual review first.");
+                throw new RuntimeException(self::APPLY_CONFLICT_MESSAGE);
             }
 
             $appliedChanges = self::applyReport($report, $projectRoot, $exportRoot);
@@ -148,7 +154,7 @@ final class FrameworkUpdater
             $exportRoot = $workspace . DIRECTORY_SEPARATOR . "source-export";
             self::exportSourceProject($sourceRoot, $exportRoot, $resolvedAppName);
             $sourceLock = FrameworkLock::load($exportRoot);
-            $report = self::buildReport($currentLock, $sourceLock, $projectRoot);
+            $report = self::buildReport($currentLock, $sourceLock, $projectRoot, $exportRoot);
             $report["source_root"] = $sourceRoot;
             $report["source_origin"] = $sourceOrigin;
 
@@ -205,6 +211,8 @@ final class FrameworkUpdater
 
     private static function exportSourceProject(string $sourceRoot, string $targetRoot, string $appName): void
     {
+        self::extendExecutionTime();
+
         if (!function_exists("exec")) {
             throw new RuntimeException("framework:update requires the PHP exec() function to export a fresh project baseline.");
         }
@@ -230,11 +238,18 @@ final class FrameworkUpdater
         }
     }
 
-    private static function buildReport(array $currentLock, array $sourceLock, string $projectRoot): array
+    private static function buildReport(array $currentLock, array $sourceLock, string $projectRoot, string $sourceExportRoot): array
     {
         $baseManagedFiles = (array) ($currentLock["framework_base"]["managed_files"] ?? []);
         $sourceManagedFiles = (array) ($sourceLock["framework_base"]["managed_files"] ?? []);
-        $paths = array_values(array_unique(array_merge(array_keys($baseManagedFiles), array_keys($sourceManagedFiles))));
+        $legacyManagedFiles = FrameworkLock::legacyUntrackedManagedHashes(
+            (string) ($currentLock["framework_base"]["framework"]["version"] ?? "")
+        );
+        $paths = array_values(array_unique(array_merge(
+            array_keys($baseManagedFiles),
+            array_keys($sourceManagedFiles),
+            array_keys($legacyManagedFiles)
+        )));
         sort($paths);
 
         $updates = [];
@@ -242,18 +257,37 @@ final class FrameworkUpdater
         $localOnlyChanges = [];
 
         foreach ($paths as $path) {
-            $baseHash = $baseManagedFiles[$path] ?? null;
+            $baseHash = $baseManagedFiles[$path] ?? ($legacyManagedFiles[$path] ?? null);
             $sourceHash = $sourceManagedFiles[$path] ?? null;
-            $currentHash = self::hashIfFileExists($projectRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path));
+            $projectFilePath = $projectRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
+            $sourceFilePath = $sourceExportRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
+            $currentHash = self::hashIfFileExists($projectFilePath);
+            $currentComparableHash = self::comparableHashIfFileExists($projectFilePath);
+            $sourceComparableHash = self::comparableHashIfFileExists($sourceFilePath);
 
             if ($sourceHash === $baseHash) {
                 if ($currentHash !== $baseHash) {
+                    if ($currentComparableHash !== null && $currentComparableHash === $sourceComparableHash) {
+                        $localOnlyChanges[$path] = [
+                            "base_hash" => $baseHash,
+                            "current_hash" => $currentHash,
+                            "reason" => "formatting-only local drift while upstream stayed the same",
+                            "summary" => "The local file differs from the locked framework base only by formatting, while the maintained source kept the same framework content.",
+                            "next_step" => "No framework merge is required for this file. Keep the local formatting tweak or restore the locked formatting if you want a fully clean diff.",
+                        ];
+                        continue;
+                    }
+
                     $localOnlyChanges[$path] = [
                         "base_hash" => $baseHash,
                         "current_hash" => $currentHash,
                         "reason" => $currentHash === null
                             ? "removed locally while upstream stayed the same"
                             : "modified locally while upstream stayed the same",
+                        "summary" => $currentHash === null
+                            ? "The project removed a framework-managed file, but the maintained FNLLA source did not change it."
+                            : "The project changed a framework-managed file, but the maintained FNLLA source kept the previous version.",
+                        "next_step" => "Keep this project-owned change if it is intentional. FNLLA will leave it untouched because upstream did not change the same file.",
                     ];
                 }
 
@@ -263,9 +297,17 @@ final class FrameworkUpdater
             if ($currentHash === $baseHash) {
                 $updates[$path] = [
                     "action" => $baseHash === null ? "add" : ($sourceHash === null ? "remove" : "update"),
+                    "label" => $baseHash === null
+                        ? "Automatic add ready"
+                        : ($sourceHash === null ? "Automatic removal ready" : "Automatic update ready"),
                     "base_hash" => $baseHash,
                     "source_hash" => $sourceHash,
                     "current_hash" => $currentHash,
+                    "reason" => $baseHash === null
+                        ? "The maintained FNLLA source added this framework-managed file after the current project baseline was exported."
+                        : ($sourceHash === null
+                            ? "The maintained FNLLA source removed this framework-managed file after the current project baseline was exported."
+                            : "The maintained FNLLA source updated this framework-managed file and the current project kept the locked baseline."),
                 ];
                 continue;
             }
@@ -274,11 +316,25 @@ final class FrameworkUpdater
                 continue;
             }
 
+            if ($currentComparableHash !== null && $currentComparableHash === $sourceComparableHash) {
+                $updates[$path] = [
+                    "action" => "sync",
+                    "label" => "Formatting-only sync ready",
+                    "base_hash" => $baseHash,
+                    "source_hash" => $sourceHash,
+                    "current_hash" => $currentHash,
+                    "reason" => "The local file already matches the maintained source functionally, but formatting drift keeps the raw file hashes apart.",
+                ];
+                continue;
+            }
+
             $conflicts[$path] = [
                 "base_hash" => $baseHash,
                 "source_hash" => $sourceHash,
                 "current_hash" => $currentHash,
                 "reason" => "framework-managed file changed both locally and upstream",
+                "summary" => "This project edited the same framework-managed file that FNLLA also changed in the maintained source.",
+                "next_step" => "Compare the local project file with the maintained source version, keep the intended project-specific edits, save the resolved file into the project, then rerun the framework update check.",
             ];
         }
 
@@ -330,6 +386,7 @@ final class FrameworkUpdater
 
     private static function runPostInstallChecks(string $projectRoot): array
     {
+        self::extendExecutionTime();
         $checks = [];
 
         foreach ([
@@ -362,6 +419,7 @@ final class FrameworkUpdater
 
     private static function runProjectCheck(string $projectRoot, string $relativePath, string $label): array
     {
+        self::extendExecutionTime();
         $scriptPath = $projectRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
 
         if (!is_file($scriptPath)) {
@@ -426,6 +484,39 @@ final class FrameworkUpdater
         }
 
         return $hash;
+    }
+
+    private static function comparableHashIfFileExists(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $contents = file_get_contents($path);
+
+        if (!is_string($contents) || $contents === "") {
+            return $contents === "" ? hash("sha256", "") : null;
+        }
+
+        if (str_contains($contents, "\0")) {
+            return self::hashIfFileExists($path);
+        }
+
+        $normalized = str_replace(["\r\n", "\r"], "\n", $contents);
+        $normalized = (string) preg_replace('/[ \t]+$/m', '', $normalized);
+        $normalized = (string) preg_replace("/\n(?:[ \t]*\n)+/", "\n", $normalized);
+        $normalized = rtrim($normalized, "\n");
+
+        return hash("sha256", $normalized);
+    }
+
+    private static function extendExecutionTime(): void
+    {
+        if (function_exists("set_time_limit")) {
+            @set_time_limit(0);
+        }
+
+        @ini_set("max_execution_time", "0");
     }
 
     private static function buildSourceCandidate(string $source, string $projectRoot, string $origin): array

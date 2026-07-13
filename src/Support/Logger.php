@@ -24,9 +24,25 @@ use Throwable;
 
 final class Logger
 {
+    public static function configuredPath(): string
+    {
+        $configured = trim((string) config("app.log_path", ""));
+        $fallback = storage_path("logs/app.log");
+
+        if ($configured === "") {
+            return $fallback;
+        }
+
+        if (is_dir($configured) || preg_match('/[\\\\\\/]$/', $configured) === 1) {
+            return rtrim($configured, "\\/") . DIRECTORY_SEPARATOR . "app.log";
+        }
+
+        return $configured;
+    }
+
     public static function write(string $level, string $message, array $context = []): void
     {
-        $logPath = (string) config("app.log_path", storage_path("logs/app.log"));
+        $logPath = self::configuredPath();
         $directory = dirname($logPath);
 
         if (!is_dir($directory)) {
@@ -51,7 +67,9 @@ final class Logger
             );
         }
 
-        file_put_contents($logPath, $encoded . PHP_EOL, FILE_APPEND | LOCK_EX);
+        if (@file_put_contents($logPath, $encoded . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+            error_log($encoded);
+        }
     }
 
     public static function exception(Throwable $exception, array $context = []): void

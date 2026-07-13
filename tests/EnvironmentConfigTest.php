@@ -20,12 +20,14 @@ Purpose:
 
 namespace Fnlla\Php\Tests;
 
+use Fnlla\Php\Support\Logger;
 use PHPUnit\Framework\TestCase;
 
 final class EnvironmentConfigTest extends TestCase
 {
     private array $serverBackup = [];
     private mixed $appUrlBackup;
+    private mixed $appLogPathBackup;
     private mixed $sessionSecureBackup;
     private mixed $trustedProxiesBackup;
 
@@ -33,6 +35,7 @@ final class EnvironmentConfigTest extends TestCase
     {
         $this->serverBackup = $_SERVER;
         $this->appUrlBackup = $_ENV["APP_URL"] ?? null;
+        $this->appLogPathBackup = $_ENV["APP_LOG_PATH"] ?? null;
         $this->sessionSecureBackup = $_ENV["SESSION_SECURE"] ?? null;
         $this->trustedProxiesBackup = $_ENV["TRUSTED_PROXIES"] ?? null;
     }
@@ -48,6 +51,15 @@ final class EnvironmentConfigTest extends TestCase
             $_ENV["APP_URL"] = $this->appUrlBackup;
             $_SERVER["APP_URL"] = (string) $this->appUrlBackup;
             putenv("APP_URL=" . (string) $this->appUrlBackup);
+        }
+
+        if ($this->appLogPathBackup === null) {
+            unset($_ENV["APP_LOG_PATH"], $_SERVER["APP_LOG_PATH"]);
+            putenv("APP_LOG_PATH");
+        } else {
+            $_ENV["APP_LOG_PATH"] = $this->appLogPathBackup;
+            $_SERVER["APP_LOG_PATH"] = (string) $this->appLogPathBackup;
+            putenv("APP_LOG_PATH=" . (string) $this->appLogPathBackup);
         }
 
         if ($this->sessionSecureBackup === null) {
@@ -127,5 +139,18 @@ final class EnvironmentConfigTest extends TestCase
         $config = require base_path("config/session.php");
 
         self::assertTrue($config["secure"]);
+    }
+
+    public function testBlankAppLogPathFallsBackToDefaultLogFile(): void
+    {
+        $_ENV["APP_LOG_PATH"] = "";
+        $_SERVER["APP_LOG_PATH"] = "";
+        putenv("APP_LOG_PATH=");
+        config_set("app", require base_path("config/app.php"));
+
+        $config = require base_path("config/app.php");
+
+        self::assertSame(storage_path("logs/app.log"), $config["log_path"]);
+        self::assertSame(storage_path("logs/app.log"), Logger::configuredPath());
     }
 }

@@ -164,7 +164,10 @@ final class DocumentationRouteTest extends TestCase
             return require base_path("bootstrap/router.php");
         })($container);
 
-        return new Application($router, $container, $container->make(ExceptionHandler::class));
+        $application = new Application($router, $container, $container->make(ExceptionHandler::class));
+        $application->middleware(["cors", "maintenance"]);
+
+        return $application;
     }
 
     private function skipWhenDocsWorkspaceMissing(): bool

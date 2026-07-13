@@ -139,6 +139,15 @@ abstract class TestCase
         }
     }
 
+    public static function assertStringNotContainsString(string $needle, string $haystack, string $message = ""): void
+    {
+        self::incrementAssertions();
+
+        if (str_contains($haystack, $needle)) {
+            self::fail($message !== "" ? $message : "Failed asserting that string does not contain " . self::export($needle) . ".");
+        }
+    }
+
     public static function assertFileExists(string $path, string $message = ""): void
     {
         self::incrementAssertions();

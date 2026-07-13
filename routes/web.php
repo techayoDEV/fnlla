@@ -35,8 +35,6 @@ if (has_local_docs_workspace()) {
 $router->get("/", [PageController::class, "home"])->name("home");
 $router->get("/about", [PageController::class, "about"])->name("about");
 $router->get("/services", [PageController::class, "services"])->name("services");
-$router->get("/contact", [PageController::class, "contact"])->name("contact");
-$router->post("/contact", [PageController::class, "sendContact"])->middleware("csrf")->throttle(5, 1)->name("contact.submit");
 $router->get("/health", [HomeController::class, "redirectHealthToMaintenance"]);
 
 $router->group([

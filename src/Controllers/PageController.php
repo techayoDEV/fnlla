@@ -23,7 +23,6 @@ namespace Fnlla\Php\Controllers;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
-use Fnlla\Php\Validation\ValidationException;
 
 final class PageController extends Controller
 {
@@ -32,24 +31,6 @@ final class PageController extends Controller
         return $this->view("pages/home", [
             "pageTitle" => "Home",
             "pageTitleHome" => true,
-            "starterPages" => [
-                [
-                    "title" => "Home",
-                    "text" => "The opening story, calls to action and overall product framing usually start here and get reshaped first.",
-                ],
-                [
-                    "title" => "About",
-                    "text" => "Use this page to explain the team, offer model, proof and point of view behind the product or service.",
-                ],
-                [
-                    "title" => "Services",
-                    "text" => "Turn this into the real service map, product modules or capability overview for the downstream project.",
-                ],
-                [
-                    "title" => "Contact",
-                    "text" => "Keep one working request flow alive from day one, then adapt it to the real intake path or integration.",
-                ],
-            ],
             "starterPrinciples" => [
                 [
                     "title" => "Starter-first development",
@@ -149,7 +130,7 @@ final class PageController extends Controller
                 [
                     "number" => "2",
                     "title" => "Connect the right CTA",
-                    "text" => "Decide whether this page should drive visitors into contact, sign-up, booking or an authenticated workflow.",
+                    "text" => "Decide whether this page should drive visitors into sign-up, booking or an authenticated workflow.",
                 ],
                 [
                     "number" => "3",
@@ -158,73 +139,5 @@ final class PageController extends Controller
                 ],
             ],
         ]);
-    }
-
-    public function contact(Request $request): Response
-    {
-        return $this->view("pages/contact", [
-            "pageTitle" => "Contact",
-            "contactTopics" => [
-                "New website",
-                "Portal or application",
-                "Operations or support",
-            ],
-            "contactReasons" => [
-                "A working request flow already exists in the starter.",
-                "Validation, CSRF protection and flash feedback are already wired in.",
-                "The page is meant to be adapted, not discarded when the real project begins.",
-            ],
-        ]);
-    }
-
-    public function sendContact(Request $request): Response
-    {
-        $payload = [
-            "name" => trim((string) $request->input("name", "")),
-            "company" => trim((string) $request->input("company", "")),
-            "email" => trim((string) $request->input("email", "")),
-            "topic" => trim((string) $request->input("topic", "")),
-            "message" => trim((string) $request->input("message", "")),
-        ];
-
-        try {
-            $this->validate($payload, [
-                "name" => ["required", "string", "min:2", "max:120"],
-                "company" => ["nullable", "string", "max:120"],
-                "email" => ["required", "email", "max:160"],
-                "topic" => ["required", "in:New website,Portal or application,Operations or support"],
-                "message" => ["required", "string", "min:12", "max:3000"],
-            ]);
-        } catch (ValidationException $exception) {
-            flash_set("old", $payload);
-            flash_set("errors", $exception->errors());
-            flash_set("status", [
-                "variant" => "warning",
-                "title" => "A few fields still need attention",
-                "text" => "Review the highlighted inputs and submit the form again.",
-                "toast" => false,
-            ]);
-            regenerate_csrf_token();
-
-            return $this->redirect(route("contact") . "#contact-form");
-        }
-
-        flash_set("status", [
-            "variant" => "success",
-            "title" => "Request captured",
-            "text" => "The starter processed the form successfully and flashed the confirmation into the next request.",
-            "toast" => true,
-        ]);
-        mailer()->to((string) env("CONTACT_NOTIFICATION_EMAIL", "team@example.com"))->send(
-            "New contact form submission",
-            "<p><strong>Name:</strong> " . h($payload["name"]) . "</p><p><strong>Email:</strong> " . h($payload["email"]) . "</p><p><strong>Topic:</strong> " . h($payload["topic"]) . "</p><p><strong>Message:</strong> " . nl2br(h($payload["message"])) . "</p>",
-            "Name: {$payload["name"]}\nEmail: {$payload["email"]}\nTopic: {$payload["topic"]}\nMessage: {$payload["message"]}"
-        );
-        event("contact.form.submitted", [
-            "payload" => $payload,
-        ]);
-        regenerate_csrf_token();
-
-        return $this->redirect(route("contact") . "#contact-form");
     }
 }

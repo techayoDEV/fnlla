@@ -73,6 +73,7 @@ FNLLA currently ships with:
 - localization helpers
 - a built-in cookie consent banner and settings modal powered by the built-in runtime
 - a server-side page-title contract that feeds professional browser-tab titles into the shared layout
+- an optional password-protected maintenance access flow for client preview and staged review sessions
 - built-in runtime enforcement and TechAyo-maintained runtime synchronization
 
 ## Support and release expectations
@@ -175,6 +176,15 @@ The template ships with local-development defaults that are safe for plain HTTP 
 Before production deployment, switch the environment values back to production-safe settings and serve the app over HTTPS.
 If the application sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarded client IP and HTTPS headers are only honored from explicitly trusted proxy addresses.
 
+When you want to share in-progress work with a client without exposing the whole public route set, enable:
+
+- `MAINTENANCE_MODE_ENABLED=true`
+- `MAINTENANCE_ACCESS_PASSWORD=<your-password>`
+
+Optionally also set `MAINTENANCE_ACCESS_USERNAME` when the preview should require both a username and a password.
+
+On a fresh starter, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
+
 No Packagist download step is required for the framework itself.
 
 ## How to start a real new project
@@ -199,6 +209,7 @@ The intended model is:
 
 - the starter is the base public application shell
 - downstream teams replace and extend that shell directly
+- client preview can stay behind the built-in maintenance access screen until the public release is ready, including browser-based first-password setup on a fresh starter
 - maintenance, health and CLI remain linked framework capabilities around the app
 - the framework repo stays the public source of truth for the shared built-in runtime, docs and update rules
 

@@ -475,6 +475,16 @@ function gate(): \Fnlla\Php\Auth\Authorization\Gate
     return app(\Fnlla\Php\Auth\Authorization\Gate::class);
 }
 
+function maintenance_access(): \Fnlla\Php\Maintenance\MaintenanceAccessManager
+{
+    return app(\Fnlla\Php\Maintenance\MaintenanceAccessManager::class);
+}
+
+function developer_access(): \Fnlla\Php\Maintenance\DeveloperAccessManager
+{
+    return app(\Fnlla\Php\Maintenance\DeveloperAccessManager::class);
+}
+
 function cache(): \Fnlla\Php\Cache\CacheStoreInterface
 {
     return app(\Fnlla\Php\Cache\CacheStoreInterface::class);

@@ -24,7 +24,7 @@ In the integrated `techayoDEV/fnlla` maintainer repository, this directory is al
 
 ## Version
 
-1.1.0
+1.1.1
 
 ## Maintainer notes
 

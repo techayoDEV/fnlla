@@ -36,12 +36,15 @@ use Fnlla\Php\Exceptions\ExceptionHandler;
 use Fnlla\Php\Filesystem\StorageManager;
 use Fnlla\Php\Hashing\Hasher;
 use Fnlla\Php\Localization\Translator;
+use Fnlla\Php\Maintenance\DeveloperAccessManager;
+use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Mail\Mailer;
 use Fnlla\Php\Queue\QueueManager;
 use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Routing\UrlGenerator;
 use Fnlla\Php\Session\SessionStore;
 use Fnlla\Php\Support\ServiceProvider;
+use Fnlla\Php\Support\EnvironmentFileManager;
 
 final class FrameworkServiceProvider extends ServiceProvider
 {
@@ -62,6 +65,9 @@ final class FrameworkServiceProvider extends ServiceProvider
         $this->container->singleton(Hasher::class);
         $this->container->singleton(Dispatcher::class);
         $this->container->singleton(Translator::class);
+        $this->container->singleton(MaintenanceAccessManager::class);
+        $this->container->singleton(DeveloperAccessManager::class);
+        $this->container->singleton(EnvironmentFileManager::class);
         $this->container->singleton(Mailer::class);
         $this->container->singleton(QueueManager::class);
         $this->container->singleton(UserProviderInterface::class, static fn (Container $container): DatabaseUserProvider => new DatabaseUserProvider(

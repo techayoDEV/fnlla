@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaRuntimeVersion = "1.1.0";
+  var fnllaRuntimeVersion = "1.1.1";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -755,6 +755,17 @@
     layer.focus();
   }
 
+  /* Mark selected modals as non-dismissible from keyboard or backdrop interactions. */
+  function isModalDismissLocked(modal) {
+    if (!modal) {
+      return false;
+    }
+
+    var dismissLock = modal.getAttribute("data-fnlla-modal-locked");
+
+    return dismissLock !== null && dismissLock !== "false";
+  }
+
   /* Close one modal, restore isolation and return focus only when it is safe. */
   function closeModal(modal) {
     if (!modal) {
@@ -1195,6 +1206,10 @@
     }
 
     if (topLayer.matches(selectors.modal)) {
+      if (isModalDismissLocked(topLayer)) {
+        return;
+      }
+
       closeModal(topLayer);
       return;
     }
@@ -2244,7 +2259,7 @@
           var clickedClose = event.target.closest(selectors.modalClose);
           var clickedBackdrop = event.target === modal;
 
-          if (clickedClose || clickedBackdrop) {
+          if ((clickedClose || clickedBackdrop) && !isModalDismissLocked(modal)) {
             closeModal(modal);
           }
         });
@@ -2262,6 +2277,10 @@
         var modal = event.currentTarget.closest(selectors.modal);
 
         if (!modal) {
+          return;
+        }
+
+        if (isModalDismissLocked(modal)) {
           return;
         }
 

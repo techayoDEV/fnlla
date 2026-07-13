@@ -74,6 +74,6 @@ $application = new Application(
     $container,
     $container->make(ExceptionHandler::class)
 );
-$application->middleware("cors");
+$application->middleware(["cors", "maintenance"]);
 
 return $application;

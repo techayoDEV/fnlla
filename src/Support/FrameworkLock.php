@@ -30,6 +30,51 @@ final class FrameworkLock
 {
     public const LOCK_FILE = ".fnlla/framework-lock.json";
     public const LEGACY_LOCK_FILE = ".fnlla/starter-lock.json";
+    private const STARTER_SURFACE_MANAGED_PATHS = [
+        "public/assets/app.css",
+        "routes/web.php",
+        "src/Controllers/PageController.php",
+        "views/layouts/app.php",
+        "views/pages/about.php",
+        "views/pages/api-health.php",
+        "views/pages/contact.php",
+        "views/pages/docs.php",
+        "views/pages/error.php",
+        "views/pages/health.php",
+        "views/pages/home.php",
+        "views/pages/not-found.php",
+        "views/pages/services.php",
+    ];
+    private const LEGACY_UNTRACKED_MANAGED_HASHES = [
+        "1.0.18" => [
+            "public/assets/app.css" => "033d403648c515625a8ac2617c27ec6fc4a86e419d48750dd6edb9bf504ae9ba",
+            "routes/web.php" => "3146de20fb78986a9ed0c61ed856f552e88bc3bed42686a952c941bbe4d34a0c",
+            "src/Controllers/PageController.php" => "10ac57288b1c07335501d6f61056fbb7493ee26bad3adfea5ae60c2a30b0821a",
+            "views/layouts/app.php" => "51f7110b622fd9c35e6d94cac72a8135488bba4ebec9504702095d111529bd91",
+            "views/pages/about.php" => "dcd2d376e3f56d3ecc6ad3423524cb2071645b04f91d39364ce6a60ae74ad5ab",
+            "views/pages/contact.php" => "2634d65eb571c82578f2304e68c8241abd1fef030fc56d036832ac8cc2648d9c",
+            "views/pages/docs.php" => "032372397f0595abe9afb3bb8a39ffa3f7c830e4c81a7dceb3b5ed39ccd4211f",
+            "views/pages/error.php" => "20ba77b2b013401b97e5667e3144cb9c5bd523ea82e1dd6b6e66445510562fa3",
+            "views/pages/health.php" => "a775d0f35236f95a9f30545bfefc47bcef39b53bcc740c1809599ed8be0c2de6",
+            "views/pages/home.php" => "62ade0d125bc276a9a49e09bdb4655b69c05ca9f3113eb8c3185d80b667028d2",
+            "views/pages/not-found.php" => "edf833a1bfab1dc1a8a35c65a094a9f6125ede7ee4daa0e6b2b585902a06023c",
+            "views/pages/services.php" => "d9fd32df570cc0bff9c79b3616205e14c128945f6ed2fdcf80d831277fe42c3e",
+        ],
+        "1.0.19" => [
+            "public/assets/app.css" => "9ad7853c2664d4cf03bcb223d0aee1f015bfe28616eed2e9905de3cdb18f17f2",
+            "routes/web.php" => "3b18dba0915a10df7f6603838f4f977df1d166533ca95258e809d14d5d2ce91a",
+            "src/Controllers/PageController.php" => "640cba89999fda6a1073135048e7f0ce3a52f2d41237b22931257043650169b3",
+            "views/layouts/app.php" => "67dbfbbed54ed47dc19eb826da8ad6f10baef56f3057f9ecf5b3b184d0e6ecfa",
+            "views/pages/about.php" => "a2c9db10aa648b4d13e181b94133f0cf7a1d7a90f8e7d3c3f643c3d2d1d61db3",
+            "views/pages/api-health.php" => "ada636ad0debb3c99abf841271fdb57a68c44fced7501658920b966a22d1917d",
+            "views/pages/docs.php" => "f72acf96fc36ee77ef3faf3c8958f219127d81f0be934da5349a533ee9ab2e4b",
+            "views/pages/error.php" => "8f5ed24ca8f9e7470bb8cad6e7f9bd1639c403e1f212297452f1497592d7a632",
+            "views/pages/health.php" => "7502ad8592de4605136717742d4636297af30edd044964fa5bc1f217e5328317",
+            "views/pages/home.php" => "4630d329f45b84825db422a8b704265bf594045939747627787acd34c4d7f75f",
+            "views/pages/not-found.php" => "6eb9285780f4f1e7dfef284a7894a3672385b0c4491dbb64a9d27d071bbb2343",
+            "views/pages/services.php" => "9191aa115b3f388f85cda5a442e5b8a100c144e1e3d3a41df29326ed8da37a34",
+        ],
+    ];
 
     public static function path(string $projectRoot): string
     {
@@ -170,6 +215,11 @@ final class FrameworkLock
         return $hashes;
     }
 
+    public static function legacyUntrackedManagedHashes(string $frameworkVersion): array
+    {
+        return self::LEGACY_UNTRACKED_MANAGED_HASHES[$frameworkVersion] ?? [];
+    }
+
     public static function isFrameworkManagedPath(string $relativePath): bool
     {
         $relativePath = self::normalizeSeparators($relativePath);
@@ -178,7 +228,15 @@ final class FrameworkLock
             return false;
         }
 
+        if (in_array($relativePath, self::STARTER_SURFACE_MANAGED_PATHS, true)) {
+            return true;
+        }
+
         if (str_starts_with($relativePath, "views/maintenance/")) {
+            return true;
+        }
+
+        if (str_starts_with($relativePath, "views/developer/")) {
             return true;
         }
 
@@ -206,7 +264,6 @@ final class FrameworkLock
             "database/seeders/DatabaseSeeder.php",
             "routes/console.php",
             "routes/web.php",
-            "src/Controllers/HomeController.php",
             "src/Controllers/PageController.php",
             "tests/BootstrapAutoloadTest.php",
         ], true);

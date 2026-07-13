@@ -18,24 +18,37 @@ $releaseTagValue = trim((string) old("release_tag", ""));
 $cachedReleaseTag = trim((string) ($cachedRelease["tag"] ?? ""));
 $cachedReleaseVersion = trim((string) ($cachedRelease["version"] ?? ""));
 $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
-?>
-<section class="section pt-1">
-  <div class="container site-page-stack">
-    <section class="hero hero-compact" aria-label="Framework maintenance introduction">
-      <div class="grid gap-md hero-copy">
-        <div class="d-flex flex-wrap items-center gap-md">
-          <span class="tag">Framework maintenance</span>
-          <span class="badge">GitHub-aware</span>
-          <span class="badge">Safe update checks</span>
-          <span class="badge">Conflict-aware</span>
-        </div>
-        <h1 class="hero-title">Keep the application aligned with FNLLA without turning downstream work into a manual merge exercise.</h1>
-        <p class="hero-text">This maintenance surface can check the latest published FNLLA release directly from GitHub, cache that release in a dedicated local update directory, compare it against the current application and then apply only the framework-managed changes that are safe to move.</p>
-      </div>
-    </section>
-  </div>
-</section>
+$reportMode = trim((string) ($report["mode"] ?? ""));
+$reportUsesGitHub = in_array($reportMode, ["github-check", "github-apply"], true);
+$reportIsApply = in_array($reportMode, ["apply", "github-apply"], true);
+$reportUpdates = (array) ($report["updates"] ?? []);
+$reportConflicts = (array) ($report["conflicts"] ?? []);
+$reportLocalOnlyChanges = (array) ($report["local_only_changes"] ?? []);
+$reportHeadlineTitle = trim((string) ($report["headline_title"] ?? ""));
+$reportHeadlineText = trim((string) ($report["headline_text"] ?? ""));
+$reportVersionTransition = trim((string) ($report["version_transition_summary"] ?? ""));
+$reportRecommendedApplyMode = trim((string) ($report["recommended_apply_mode"] ?? ""));
+$reportApplyActionAvailable = ($report["apply_action_available"] ?? false) === true;
+$reportCanApplyFromUi = ($report["can_apply_from_ui"] ?? false) === true;
+$reportUpdateReady = ($report["update_ready"] ?? false) === true;
+$reportRequiresManualReview = ($report["requires_manual_review"] ?? false) === true;
+$reportSourcePath = trim((string) ($report["source_root"] ?? $report["source_path"] ?? $sourcePathValue));
+$reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report["release_tag"] ?? ""))));
+$updateActionLabel = static function (array $update): string {
+    $label = trim((string) ($update["label"] ?? ""));
 
+    if ($label !== "") {
+        return $label;
+    }
+
+    return match ((string) ($update["action"] ?? "update")) {
+        "add" => "Automatic add ready",
+        "remove" => "Automatic removal ready",
+        "sync" => "Formatting-only sync ready",
+        default => "Automatic update ready",
+    };
+};
+?>
 <section class="section">
   <div class="container">
     <div class="grid grid-4 gap-md">
@@ -73,12 +86,12 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
 
 <section class="section">
   <div class="container">
-    <div class="contact-grid">
+    <div class="grid gap-md framework-update-control-stack">
       <aside class="contact-card contact-summary-card" aria-label="Framework update controls summary">
-        <p class="contact-kicker">Execution guard</p>
-        <h2 class="contact-card-title">Professional by default means GitHub-aware, cache-backed and conflict-aware before apply.</h2>
+        <p class="contact-kicker">Update posture</p>
+        <h2 class="contact-card-title">Run checks first, keep the source explicit and apply only after the report stays boring.</h2>
         <p class="contact-text"><?= h((string) ($pageState["message"] ?? "")) ?></p>
-        <ul class="contact-list">
+        <ul class="contact-list framework-update-summary-list">
           <li>Browser UI enabled: <strong><?= ($pageState["enabled"] ?? false) ? "Yes" : "No" ?></strong></li>
           <li>Local-only mode: <strong><?= ($pageState["local_only"] ?? false) ? "Yes" : "No" ?></strong></li>
           <li>Apply allowed from UI: <strong><?= ($pageState["can_apply"] ?? false) ? "Yes" : "No" ?></strong></li>
@@ -86,64 +99,83 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <li>Current request is local: <strong><?= ($pageState["is_local_request"] ?? false) ? "Yes" : "No" ?></strong></li>
           <li>Detected source path: <strong><?= $detectedSourcePath !== "" ? "Yes" : "No" ?></strong></li>
         </ul>
-        <p class="contact-text mb-0">The update engine can fetch the latest public FNLLA release from GitHub, cache it under <code>storage/framework/updates/</code>, export a fresh project baseline from that release and then separate safe changes from conflicts that still need human review.</p>
+        <div class="form-message framework-update-surface-note" role="status">
+          <h3 class="form-message-title">What this page protects</h3>
+          <p class="form-message-text mb-0">FNLLA can fetch the latest public release, cache it under <code>storage/framework/updates/</code>, export a clean baseline and separate safe framework changes from files that still need a human merge.</p>
+        </div>
       </aside>
 
       <article class="cta-card contact-form-card">
         <form class="form contact-form" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-framework-update-form>
           <?= csrf_field() ?>
-          <section class="offcanvas-section mb-3" aria-label="GitHub release channel controls">
-            <p class="contact-kicker">Recommended workflow</p>
-            <h2 class="contact-card-title">GitHub release channel</h2>
-            <p class="contact-text">Use this when you want the application itself to check the latest published FNLLA release, download it into the local update cache and prepare a browser-readable drift report before apply.</p>
+          <div class="grid grid-2 gap-md framework-update-channel-grid">
+            <section class="feature-card framework-update-channel-card" aria-label="GitHub release channel controls">
+              <div class="framework-update-card-header">
+                <div>
+                  <p class="contact-kicker">Recommended workflow</p>
+                  <h2 class="contact-card-title">GitHub release channel</h2>
+                </div>
+                <span class="framework-update-badge">Preferred for starters</span>
+              </div>
+              <p class="contact-text">Use this when the application should fetch the latest published FNLLA release, cache it locally and prepare a browser-readable drift report before any apply step.</p>
 
-            <div class="grid grid-2 gap-md mb-3">
-              <article class="feature-card">
-                <p class="feature-kicker">Latest cached release</p>
-                <h3 class="content-title mb-xs"><?= $cachedReleaseTag !== "" ? h($cachedReleaseTag) : "Not fetched yet" ?></h3>
-                <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla")) : "Run a GitHub check to cache the latest release baseline locally." ?></p>
-              </article>
-              <article class="feature-card">
-                <p class="feature-kicker">Release notes preview</p>
-                <p class="content-text mb-0"><?= $cachedReleaseNotes !== "" ? nl2br(h($cachedReleaseNotes)) : "Release notes and update highlights appear here after the first GitHub-backed check." ?></p>
-              </article>
-            </div>
+              <div class="grid gap-md mb-3">
+                <article class="feature-card">
+                  <p class="feature-kicker">Latest cached release</p>
+                  <h3 class="content-title mb-xs"><?= $cachedReleaseTag !== "" ? h($cachedReleaseTag) : "Not fetched yet" ?></h3>
+                  <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla")) : "Run a GitHub check to cache the latest release baseline locally." ?></p>
+                </article>
+                <article class="feature-card">
+                  <p class="feature-kicker">Release notes preview</p>
+                  <p class="content-text mb-0"><?= $cachedReleaseNotes !== "" ? nl2br(h($cachedReleaseNotes)) : "Release notes and update highlights appear here after the first GitHub-backed check." ?></p>
+                </article>
+              </div>
 
-            <div class="form-group">
-              <label class="label" for="framework-update-release-tag">Optional release tag override</label>
-              <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter a specific tag such as v1.0.x" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
-              <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA version.</p>
-            </div>
+              <div class="form-group">
+                <label class="label" for="framework-update-release-tag">Optional release tag override</label>
+                <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter a specific tag such as v1.0.x" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+                <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA version.</p>
+              </div>
 
-            <div class="grid grid-2 gap-md framework-update-actions-grid">
-              <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Check GitHub release</button>
-              <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Apply cached GitHub update</button>
-            </div>
-          </section>
+              <div class="grid grid-2 gap-md framework-update-actions-grid">
+                <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Check GitHub update</button>
+                <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Apply GitHub update</button>
+              </div>
+            </section>
 
-          <section class="offcanvas-section" aria-label="Local maintained repository controls">
-            <p class="contact-kicker">Advanced override</p>
-            <h2 class="contact-card-title">Local maintained repository</h2>
-            <p class="contact-text">Use this path-based workflow when you need to compare against a local maintainer checkout instead of the latest public GitHub release.</p>
+            <section class="feature-card framework-update-channel-card" aria-label="Local maintained repository controls">
+              <div class="framework-update-card-header">
+                <div>
+                  <p class="contact-kicker">Advanced override</p>
+                  <h2 class="contact-card-title">Local maintained repository</h2>
+                </div>
+                <span class="framework-update-badge framework-update-badge-muted">Maintainer checkout</span>
+              </div>
+              <p class="contact-text">Use this path-based workflow when you need to compare against a local maintainer checkout and confirm whether a newer maintained update is already waiting in that repository.</p>
 
-          <div class="form-group">
-            <label class="label" for="framework-update-source">Maintained FNLLA source repository</label>
-            <input class="input" id="framework-update-source" name="source_path" type="text" placeholder="Leave blank to use an auto-detected sibling fnlla repo, or enter C:\path\to\fnlla" value="<?= h($sourcePathValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
-            <p class="help-text">Leave this blank when the maintained repository sits next to the application. Use a manual path only when the source repository lives elsewhere.</p>
-            <?php if ($detectedSourcePath !== ""): ?>
-            <p class="help-text mb-0"><strong>Detected now:</strong> <?= h($detectedSourcePath) ?> (<?= h($detectedSourceOrigin) ?>)</p>
-            <?php endif; ?>
+              <div class="form-group">
+                <label class="label" for="framework-update-source">Maintained FNLLA source repository</label>
+                <input class="input" id="framework-update-source" name="source_path" type="text" placeholder="Leave blank to use an auto-detected sibling fnlla repo, or enter C:\path\to\fnlla" value="<?= h($sourcePathValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+                <p class="help-text">Leave this blank when the maintained repository sits next to the application. Use a manual path only when the source repository lives elsewhere.</p>
+                <?php if ($detectedSourcePath !== ""): ?>
+                <p class="help-text mb-0"><strong>Detected now:</strong> <?= h($detectedSourcePath) ?> (<?= h($detectedSourceOrigin) ?>)</p>
+                <?php endif; ?>
+              </div>
+
+              <div class="grid grid-2 contact-field-grid framework-update-actions-grid">
+                <button class="btn btn-outline" type="submit" name="mode" value="check" data-framework-update-progress-mode="check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check local maintained update</button>
+                <button class="btn btn-primary" type="submit" name="mode" value="apply" data-framework-update-progress-mode="apply" <?= ($pageState["can_apply"] ?? false) ? "" : "disabled" ?>>Apply local maintained update</button>
+              </div>
+            </section>
           </div>
-
-          <div class="grid grid-2 contact-field-grid framework-update-actions-grid">
-            <button class="btn btn-outline" type="submit" name="mode" value="check" data-framework-update-progress-mode="check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Run local drift audit</button>
-            <button class="btn btn-primary" type="submit" name="mode" value="apply" data-framework-update-progress-mode="apply" <?= ($pageState["can_apply"] ?? false) ? "" : "disabled" ?>>Apply local source update</button>
-          </div>
-          </section>
 
           <div class="form-message" role="status">
             <h3 class="form-message-title">Recommended sequence</h3>
-            <p class="form-message-text mb-0">1. Check the latest GitHub release and let FNLLA cache it locally. 2. Review safe changes, conflicts and release notes. 3. Apply only when the report and post-install checks stay healthy.</p>
+            <ol class="framework-update-sequence mb-0">
+              <li>Check the latest GitHub release and let FNLLA cache it locally.</li>
+              <li>Review safe changes, conflicts and release notes before touching apply.</li>
+              <li>Apply only when the report and post-install checks stay healthy.</li>
+            </ol>
           </div>
         </form>
       </article>
@@ -162,21 +194,16 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       <div class="process-grid">
         <article class="process-step">
           <span class="process-step-number">1</span>
-          <h3 class="process-step-title">Resolve the release source</h3>
-          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository when a maintainer checkout is preferred.</p>
+          <h3 class="process-step-title">Resolve the source and export a fresh baseline</h3>
+          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository before exporting a clean starter baseline for comparison.</p>
         </article>
         <article class="process-step">
           <span class="process-step-number">2</span>
-          <h3 class="process-step-title">Export a fresh baseline</h3>
-          <p class="process-step-text">The updater generates a new clean project export from the cached GitHub release or the maintained local repository so the comparison stays grounded in the real starter contract.</p>
-        </article>
-        <article class="process-step">
-          <span class="process-step-number">3</span>
           <h3 class="process-step-title">Separate safe changes from conflicts</h3>
           <p class="process-step-text">Framework-managed files that stayed untouched locally can move automatically. Divergent files are reported as explicit conflicts instead of being overwritten.</p>
         </article>
         <article class="process-step">
-          <span class="process-step-number">4</span>
+          <span class="process-step-number">3</span>
           <h3 class="process-step-title">Verify the application after apply</h3>
           <p class="process-step-text">After a safe apply, FNLLA runs post-install checks for the built-in runtime contract, project tests, lint and version metadata so the update does not end as a blind file copy.</p>
         </article>
@@ -191,8 +218,8 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
     <section class="feature-section" aria-label="Framework update report">
       <div class="section-header mb-0">
         <p class="feature-kicker">Structured report</p>
-        <h2 class="section-title">The last framework update run kept the output readable instead of dumping raw shell text.</h2>
-        <p class="section-text">Review the source baseline, safe changes, conflicts and local-only managed edits before moving on.</p>
+        <h2 class="section-title">The last framework update run explains clearly whether the project is already current, blocked by conflicts or ready to update.</h2>
+        <p class="section-text">Review the update decision, safe changes, conflicts and post-install outcome before moving on.</p>
       </div>
 
       <div class="grid grid-3 gap-md mb-lg">
@@ -212,6 +239,44 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
           <p class="content-text mb-0">Local-only managed changes preserved: <?= h((string) count((array) ($report["local_only_changes"] ?? []))) ?></p>
         </article>
       </div>
+
+      <?php if ($reportHeadlineTitle !== "" || $reportHeadlineText !== ""): ?>
+      <article class="feature-card mb-lg">
+        <p class="feature-kicker"><?= $reportIsApply ? "Update result" : "Update decision" ?></p>
+        <h3 class="content-title"><?= h($reportHeadlineTitle !== "" ? $reportHeadlineTitle : "Framework update report ready") ?></h3>
+        <?php if ($reportHeadlineText !== ""): ?>
+        <p class="content-text"><?= h($reportHeadlineText) ?></p>
+        <?php endif; ?>
+        <?php if ($reportVersionTransition !== ""): ?>
+        <p class="content-text"><strong>Detected version shift:</strong> <?= h($reportVersionTransition) ?></p>
+        <?php endif; ?>
+
+        <?php if ($reportApplyActionAvailable && $reportRecommendedApplyMode !== ""): ?>
+        <form class="form stack gap-md mt-3" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate>
+          <?= csrf_field() ?>
+          <input type="hidden" name="mode" value="<?= h($reportRecommendedApplyMode) ?>">
+          <?php if ($reportUsesGitHub && $reportReleaseTag !== ""): ?>
+          <input type="hidden" name="release_tag" value="<?= h($reportReleaseTag) ?>">
+          <?php elseif (!$reportUsesGitHub && $reportSourcePath !== ""): ?>
+          <input type="hidden" name="source_path" value="<?= h($reportSourcePath) ?>">
+          <?php endif; ?>
+          <div class="d-flex flex-wrap gap-md">
+            <button class="btn btn-primary" type="submit" data-framework-update-progress-mode="<?= h($reportRecommendedApplyMode) ?>"><?= $reportUsesGitHub ? "Apply this audited GitHub update" : "Apply this audited local update" ?></button>
+          </div>
+          <p class="help-text mb-0">FNLLA keeps the update flow automatic for safe framework-managed changes like the ones reviewed above. It pauses only when a real file conflict needs a human merge, then runs the built-in post-install checks after apply.</p>
+        </form>
+        <?php elseif ($reportUpdateReady && !$reportCanApplyFromUi): ?>
+        <p class="content-text mb-0">The update is ready, but browser apply is disabled in this environment. Enable <code>FRAMEWORK_UPDATE_UI_APPLY_ENABLED</code> when you want this page to execute the safe apply flow.</p>
+        <?php elseif ($reportRequiresManualReview): ?>
+        <p class="content-text mb-0">Apply is intentionally blocked until the conflicts listed below are reviewed and resolved. Once those framework-managed files are aligned again, rerun the check and the apply action will become available here.</p>
+        <?php elseif ($reportIsApply): ?>
+        <div class="d-flex flex-wrap gap-md">
+          <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Refresh page</a>
+        </div>
+        <p class="help-text mb-0">Use the refresh after reviewing the report if you want the top version cards to confirm that the newly applied framework base is now active in the maintenance UI.</p>
+        <?php endif; ?>
+      </article>
+      <?php endif; ?>
 
       <article class="feature-card mb-lg">
         <h3 class="content-title">Resolved source repository</h3>
@@ -253,33 +318,46 @@ $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
       </article>
       <?php endif; ?>
 
-      <?php if (!empty($report["updates"])): ?>
+      <?php if (!empty($reportUpdates)): ?>
       <article class="feature-card mb-lg">
-        <h3 class="content-title">Safe changes available</h3>
+        <h3 class="content-title">Automatic framework changes ready</h3>
         <ul class="contact-list">
-          <?php foreach ((array) $report["updates"] as $path => $update): ?>
-          <li><strong><?= h(strtoupper((string) ($update["action"] ?? "update"))) ?></strong> <?= h((string) $path) ?></li>
+          <?php foreach ($reportUpdates as $path => $update): ?>
+          <li>
+            <strong><?= h($updateActionLabel((array) $update)) ?></strong> <?= h((string) $path) ?>
+            <?php if (trim((string) ($update["reason"] ?? "")) !== ""): ?>
+            <br><?= h((string) $update["reason"]) ?>
+            <?php endif; ?>
+          </li>
           <?php endforeach; ?>
         </ul>
       </article>
       <?php endif; ?>
 
-      <?php if (!empty($report["conflicts"])): ?>
+      <?php if (!empty($reportConflicts)): ?>
       <article class="feature-card mb-lg">
         <h3 class="content-title">Conflicts that need manual review</h3>
         <ul class="contact-list">
-          <?php foreach ((array) $report["conflicts"] as $path => $conflict): ?>
-          <li><strong><?= h((string) $path) ?></strong> - <?= h((string) ($conflict["reason"] ?? "conflict")) ?></li>
+          <?php foreach ($reportConflicts as $path => $conflict): ?>
+          <li>
+            <strong><?= h((string) $path) ?></strong> - <?= h((string) ($conflict["reason"] ?? "conflict")) ?>
+            <?php if (trim((string) ($conflict["summary"] ?? "")) !== ""): ?>
+            <br><?= h((string) $conflict["summary"]) ?>
+            <?php endif; ?>
+            <?php if (trim((string) ($conflict["next_step"] ?? "")) !== ""): ?>
+            <br><strong>Next step:</strong> <?= h((string) $conflict["next_step"]) ?>
+            <?php endif; ?>
+          </li>
           <?php endforeach; ?>
         </ul>
       </article>
       <?php endif; ?>
 
-      <?php if (!empty($report["local_only_changes"])): ?>
+      <?php if (!empty($reportLocalOnlyChanges)): ?>
       <article class="feature-card">
         <h3 class="content-title">Local-only managed changes preserved</h3>
         <ul class="contact-list">
-          <?php foreach ((array) $report["local_only_changes"] as $path => $change): ?>
+          <?php foreach ($reportLocalOnlyChanges as $path => $change): ?>
           <li><strong><?= h((string) $path) ?></strong> - <?= h((string) ($change["reason"] ?? "local change")) ?></li>
           <?php endforeach; ?>
         </ul>

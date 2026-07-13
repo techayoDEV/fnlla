@@ -26,7 +26,7 @@ Purpose:
       <p class="content-text">The router did not find a matching route for this path.</p>
       <div class="d-flex flex-wrap gap-md">
         <a class="btn btn-primary" href="<?= h(url()) ?>">Back home</a>
-        <a class="btn btn-outline" href="<?= h(url("contact")) ?>">Open the form demo</a>
+        <a class="btn btn-outline" href="<?= h(route("services")) ?>">Open services</a>
       </div>
     </section>
   </div>

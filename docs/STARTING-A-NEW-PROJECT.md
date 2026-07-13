@@ -49,8 +49,10 @@ The exported project already includes:
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
 - lint, test and runtime validation scripts
-- a starter skeleton with public pages for `/`, `/about`, `/services` and `/contact`
+- a starter skeleton with public pages for `/`, `/about` and `/services`
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
+- an optional password-protected maintenance access screen for client preview or staged review
+- a browser-based first-time maintenance setup flow available from `/maintenance` on a fresh local starter
 - a project README that explains the next steps
 
 It also avoids copying framework-maintainer-only surfaces such as:
@@ -107,7 +109,7 @@ Inside the new project directory:
 2. Set `APP_URL`.
 3. Set MySQL credentials.
 4. Review `config/app.php`.
-5. Open `/`, `/about`, `/services` and `/contact` and treat them as the real starter pages you will reshape.
+5. Open `/`, `/about` and `/services` and treat them as the real starter pages you will reshape.
 6. Replace the demo routes and pages with the real application flow.
 7. Run:
 
@@ -121,13 +123,15 @@ php scripts/validate-version-manifest.php
 
 8. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
 
-9. Start the local server:
+9. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
+
+10. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-10. Open `http://127.0.0.1:8080` in your browser.
+11. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.

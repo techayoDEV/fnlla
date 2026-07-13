@@ -76,6 +76,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "starter-lock.json");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "framework_update.php");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "maintenance.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "framework-update.php");
         self::assertFalse(is_dir($this->targetPath . DIRECTORY_SEPARATOR . "docs"));
@@ -93,6 +94,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "platform.php"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php");
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "login.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "app.log"));
@@ -139,6 +141,35 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
+            "MAINTENANCE_MODE_ENABLED",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "DEVELOPER_ACCESS_PATH=",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "DEVELOPER_OPERATIONS_NAV_MODE=hidden",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "Save and enable maintenance",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "maintenance_setup_username",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringContainsString(
+            "Developer panel password",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "developer_operations_nav_mode",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "api-health.php");
+        self::assertStringContainsString(
             "/about",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
@@ -169,6 +200,34 @@ final class MakeProjectCommandTest extends TestCase
         self::assertTrue(is_array($frameworkLock));
         self::assertArrayNotHasKey(
             "tests/BootstrapAutoloadTest.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "routes/web.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "src/Controllers/HomeController.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "src/Controllers/PageController.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/developer/panel.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/pages/home.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/pages/api-health.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "public/assets/app.css",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
 
@@ -224,10 +283,12 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("GET     /", $routeListOutput);
         self::assertStringContainsString("GET     /about", $routeListOutput);
         self::assertStringContainsString("GET     /services", $routeListOutput);
-        self::assertStringContainsString("GET     /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/health", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/framework-update", $routeListOutput);
+        self::assertStringContainsString("POST    /maintenance/setup-access", $routeListOutput);
+        self::assertStringContainsString("POST    /maintenance/unlock", $routeListOutput);
+        self::assertStringContainsString("POST    /maintenance/lock", $routeListOutput);
         self::assertStringContainsString("GET     /health", $routeListOutput);
         self::assertStringContainsString("GET     /api/health", $routeListOutput);
         self::assertFalse(str_contains($routeListOutput, "/starter/update"));
@@ -235,6 +296,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(str_contains($routeListOutput, "/project/launch"));
         self::assertFalse(str_contains($routeListOutput, "/login"));
         self::assertFalse(str_contains($routeListOutput, "/dashboard"));
+        self::assertFalse(str_contains($routeListOutput, "/contact"));
     }
 
     private function runPhpScript(string $scriptPath, array $arguments = []): array
