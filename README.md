@@ -183,6 +183,27 @@ When you want to share in-progress work with a client without exposing the whole
 
 Optionally also set `MAINTENANCE_ACCESS_USERNAME` when the preview should require both a username and a password.
 
+If a project needs a more branded private client preview surface instead of the default maintenance access page, FNLLA also supports an optional client preview mode on top of the same maintenance gate.
+
+Typical example:
+
+```text
+MAINTENANCE_MODE_ENABLED=true
+MAINTENANCE_ACCESS_PASSWORD=<your-password>
+CLIENT_PREVIEW_ENABLED=true
+CLIENT_PREVIEW_TITLE=Your completed website is being restored
+CLIENT_PREVIEW_STATUS_TITLE=Infrastructure operational, restoration in progress
+CLIENT_PREVIEW_SUPPORT_EMAIL=team@example.com
+CLIENT_PREVIEW_RESTORE_AT=2026-07-14T18:00:00+01:00
+CLIENT_PREVIEW_STARTED_AT=2026-07-13T13:00:00+01:00
+```
+
+Useful options:
+
+- `CLIENT_PREVIEW_LOGIN_DISABLED=true` keeps the branded preview surface visible while temporarily disabling unlocks
+- `CLIENT_PREVIEW_LAST_UPDATED_VALUE=13 July 2026 at 15:20` shows a client-friendly update timestamp
+- `CLIENT_PREVIEW_PROGRESS_ENABLED=true` shows a progress bar when both `CLIENT_PREVIEW_STARTED_AT` and `CLIENT_PREVIEW_RESTORE_AT` are configured
+
 On a fresh starter, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
 
 No Packagist download step is required for the framework itself.

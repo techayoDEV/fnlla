@@ -19,6 +19,8 @@ Purpose:
 */
 
 $pageStatus = flash("status");
+$layoutChromeMode = (string) ($layoutChromeMode ?? "default");
+$isClientPreviewChrome = $layoutChromeMode === "client-preview";
 $currentPath = current_path();
 $hasDocumentationWorkspace = has_local_docs_workspace();
 $isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
@@ -53,7 +55,8 @@ $pageMeta = page_meta([
   <link rel="stylesheet" href="<?= h(asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css")) ?>">
   <link rel="stylesheet" href="<?= h(asset("assets/app.css")) ?>">
 </head>
-<body data-fnlla-theme="default">
+<body data-fnlla-theme="default"<?= $isClientPreviewChrome ? ' class="client-preview-layout"' : "" ?>>
+  <?php if (!$isClientPreviewChrome): ?>
   <header class="starter-header">
     <section class="section starter-header-section">
       <div class="container">
@@ -88,8 +91,9 @@ $pageMeta = page_meta([
       </div>
     </section>
   </header>
+  <?php endif; ?>
 
-  <?php if (is_array($pageStatus) && isset($pageStatus["title"], $pageStatus["text"])): ?>
+  <?php if (!$isClientPreviewChrome && is_array($pageStatus) && isset($pageStatus["title"], $pageStatus["text"])): ?>
   <section class="section pt-1 pb-0" id="page-status">
     <div class="container">
       <div class="alert alert-<?= h((string) ($pageStatus["variant"] ?? "info")) ?>" role="<?= (($pageStatus["variant"] ?? "") === "danger" || ($pageStatus["variant"] ?? "") === "warning") ? "alert" : "status" ?>">
@@ -104,6 +108,7 @@ $pageMeta = page_meta([
     <?= $content ?>
   </main>
 
+  <?php if (!$isClientPreviewChrome): ?>
   <footer class="starter-footer">
     <section class="section">
       <div class="container">
@@ -121,6 +126,7 @@ $pageMeta = page_meta([
       </div>
     </section>
   </footer>
+  <?php endif; ?>
 
   <script src="<?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?>"></script>
 </body>

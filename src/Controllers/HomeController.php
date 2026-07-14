@@ -20,6 +20,8 @@ Purpose:
 
 namespace Fnlla\Php\Controllers;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
@@ -42,11 +44,14 @@ final class HomeController extends Controller
         $setupState = $this->maintenanceSetupState($request, app(EnvironmentFileManager::class), $maintenanceAccess, $developerAccess);
         $developerSetupState = $this->developerAccessSetupState($request, app(EnvironmentFileManager::class), $developerAccess);
         $developerAccessState = $developerAccess->viewState();
+        $clientPreviewState = $this->clientPreviewState();
 
         if ($accessState["enabled"] && !$accessState["unlocked"]) {
-            return $this->view("maintenance/index", [
+            $useClientPreview = $clientPreviewState["active"] && $accessState["configured"];
+
+            return $this->view($useClientPreview ? "maintenance/client-preview" : "maintenance/index", [
                 "pageTitle" => "Maintenance Access",
-                "pageTitleSection" => "Operations",
+                "pageTitleSection" => $useClientPreview ? "" : "Operations",
                 "maintenanceAccess" => $accessState,
                 "developerAccess" => $developerAccessState,
                 "maintenanceSetup" => $setupState,
@@ -54,6 +59,8 @@ final class HomeController extends Controller
                 "maintenanceLocked" => true,
                 "maintenanceRedirectTarget" => $this->sanitizeMaintenanceRedirectTarget((string) $request->query("redirect", "")),
                 "maintenanceHighlights" => [],
+                "clientPreview" => $clientPreviewState,
+                "layoutChromeMode" => $useClientPreview ? "client-preview" : "default",
             ]);
         }
 
@@ -310,7 +317,7 @@ final class HomeController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, "#maintenance-access"));
+            return $this->redirect($this->maintenanceRedirectUrl($redirectTarget, $this->maintenanceLockedAccessFragment($maintenanceAccess)));
         }
 
         flash_set("status", [
@@ -335,7 +342,7 @@ final class HomeController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("maintenance.home") . "#maintenance-access");
+        return $this->redirect(route("maintenance.home") . $this->maintenanceLockedAccessFragment($maintenanceAccess));
     }
 
     public function redirectHealthToMaintenance(Request $request, DeveloperAccessManager $developerAccess): Response
@@ -649,6 +656,96 @@ final class HomeController extends Controller
         }
 
         return $base . $fragment;
+    }
+
+    private function maintenanceLockedAccessFragment(MaintenanceAccessManager $maintenanceAccess): string
+    {
+        $clientPreviewState = $this->clientPreviewState();
+
+        return $clientPreviewState["active"] && $maintenanceAccess->configured()
+            ? "#client-preview-access"
+            : "#maintenance-access";
+    }
+
+    private function clientPreviewState(): array
+    {
+        $enabled = (bool) config("client_preview.enabled", false);
+        $timezone = new DateTimeZone((string) config("app.timezone", "UTC"));
+        $restoreAt = $this->parseClientPreviewDateTime((string) config("client_preview.restore_at", ""), $timezone);
+        $startedAt = $this->parseClientPreviewDateTime((string) config("client_preview.started_at", ""), $timezone);
+        $lastUpdatedValue = trim((string) config("client_preview.last_updated_value", ""));
+
+        if ($lastUpdatedValue === "" && $startedAt instanceof DateTimeImmutable) {
+            $lastUpdatedValue = $startedAt->format("j F Y \\a\\t H:i");
+        }
+
+        $countdownEnabled = $restoreAt instanceof DateTimeImmutable;
+        $progressEnabled = (bool) config("client_preview.progress_enabled", true)
+            && $restoreAt instanceof DateTimeImmutable
+            && $startedAt instanceof DateTimeImmutable
+            && $startedAt->getTimestamp() < $restoreAt->getTimestamp();
+
+        $secondsRemaining = $countdownEnabled ? max(0, $restoreAt->getTimestamp() - time()) : 0;
+        $totalSeconds = $progressEnabled ? max(1, $restoreAt->getTimestamp() - $startedAt->getTimestamp()) : 0;
+        $elapsedSeconds = $progressEnabled ? max(0, min($totalSeconds, time() - $startedAt->getTimestamp())) : 0;
+        $progressPercent = $progressEnabled ? (int) round(($elapsedSeconds / $totalSeconds) * 100) : 0;
+
+        return [
+            "active" => $enabled,
+            "login_disabled" => (bool) config("client_preview.login_disabled", false),
+            "kicker" => (string) config("client_preview.kicker", "Private Client Preview"),
+            "title" => (string) config("client_preview.title", "Your project is being restored"),
+            "show_last_updated" => (bool) config("client_preview.show_last_updated", true),
+            "last_updated_label" => (string) config("client_preview.last_updated_label", "Last updated"),
+            "last_updated_value" => $lastUpdatedValue,
+            "status_title" => (string) config("client_preview.status_title", ""),
+            "status_body" => (string) config("client_preview.status_body", ""),
+            "countdown_label" => (string) config("client_preview.countdown_label", "Full Access Restoration in"),
+            "countdown_enabled" => $countdownEnabled,
+            "countdown" => $this->formatClientPreviewCountdown($secondsRemaining),
+            "restore_at_timestamp" => $restoreAt?->getTimestamp() ?? 0,
+            "started_at_timestamp" => $startedAt?->getTimestamp() ?? 0,
+            "progress_enabled" => $progressEnabled,
+            "progress_label" => (string) config("client_preview.progress_label", "Restoration progress"),
+            "progress_percent" => $progressPercent,
+            "message" => (string) config("client_preview.message", ""),
+            "support_heading" => (string) config("client_preview.support_heading", "Need assistance?"),
+            "support_email" => (string) config("client_preview.support_email", ""),
+            "unlock_button_label" => (string) config("client_preview.unlock_button_label", "Unlock preview"),
+            "locked_notice" => (string) config("client_preview.locked_notice", ""),
+        ];
+    }
+
+    private function parseClientPreviewDateTime(string $value, DateTimeZone $timezone): ?DateTimeImmutable
+    {
+        $trimmed = trim($value);
+
+        if ($trimmed === "") {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable($trimmed, $timezone);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array{hours:string,minutes:string,seconds:string}
+     */
+    private function formatClientPreviewCountdown(int $seconds): array
+    {
+        $safeSeconds = max(0, $seconds);
+        $hours = intdiv($safeSeconds, 3600);
+        $minutes = intdiv($safeSeconds % 3600, 60);
+        $remainingSeconds = $safeSeconds % 60;
+
+        return [
+            "hours" => sprintf("%02d", $hours),
+            "minutes" => sprintf("%02d", $minutes),
+            "seconds" => sprintf("%02d", $remainingSeconds),
+        ];
     }
 
     private function notFoundResponse(): Response

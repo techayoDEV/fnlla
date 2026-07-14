@@ -34,6 +34,7 @@ final class ApplicationSurfaceTest extends TestCase
     private array $sessionBackup = [];
     private mixed $maintenanceConfigBackup;
     private mixed $developerAccessConfigBackup;
+    private mixed $clientPreviewConfigBackup;
     private mixed $frameworkUpdateConfigBackup;
     private ?string $temporaryEnvironmentDirectory = null;
 
@@ -43,6 +44,7 @@ final class ApplicationSurfaceTest extends TestCase
         $this->sessionBackup = $_SESSION ?? [];
         $this->maintenanceConfigBackup = config("maintenance");
         $this->developerAccessConfigBackup = config("developer_access");
+        $this->clientPreviewConfigBackup = config("client_preview");
         $this->frameworkUpdateConfigBackup = config("framework_update");
         $_SESSION = [];
         config_set("maintenance", array_merge((array) config("maintenance", []), [
@@ -56,6 +58,10 @@ final class ApplicationSurfaceTest extends TestCase
             "password" => "",
             "operations_nav_mode" => "visible",
         ]));
+        config_set("client_preview", array_merge((array) config("client_preview", []), [
+            "enabled" => false,
+            "login_disabled" => false,
+        ]));
     }
 
     protected function tearDown(): void
@@ -65,6 +71,7 @@ final class ApplicationSurfaceTest extends TestCase
         $_SESSION = $this->sessionBackup;
         config_set("maintenance", $this->maintenanceConfigBackup);
         config_set("developer_access", $this->developerAccessConfigBackup);
+        config_set("client_preview", $this->clientPreviewConfigBackup);
         config_set("framework_update", $this->frameworkUpdateConfigBackup);
 
         if ($this->temporaryEnvironmentDirectory !== null && is_dir($this->temporaryEnvironmentDirectory)) {
@@ -384,6 +391,100 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $homeResponse->status());
         self::assertStringContainsString("Starter-first development", $homeResponse->body());
+    }
+
+    public function testMaintenanceScreenRendersBrandedClientPreviewWhenEnabled(): void
+    {
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => true,
+            "password" => "client-preview",
+        ]));
+        config_set("client_preview", array_merge((array) config("client_preview", []), [
+            "enabled" => true,
+            "title" => "Preview Title",
+            "unlock_button_label" => "Unlock preview",
+        ]));
+
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("Preview Title", $response->body());
+        self::assertStringContainsString("client-preview-access", $response->body());
+        self::assertStringContainsString("Unlock preview", $response->body());
+        self::assertStringNotContainsString("maintenance-unlock-modal", $response->body());
+    }
+
+    public function testClientPreviewDisabledUnlockRedirectsBackToClientPreviewAnchor(): void
+    {
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => true,
+            "password" => "client-preview",
+        ]));
+        config_set("client_preview", array_merge((array) config("client_preview", []), [
+            "enabled" => true,
+            "login_disabled" => true,
+            "locked_notice" => "Unlocks are paused.",
+        ]));
+
+        $application = $this->makeApplication();
+        $token = csrf_token();
+
+        $unlockResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance/unlock",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => $token,
+            "maintenance_password" => "client-preview",
+        ]));
+
+        self::assertSame(302, $unlockResponse->status());
+        self::assertSame("/maintenance#client-preview-access", $unlockResponse->headers()["Location"] ?? null);
+        self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
+    }
+
+    public function testClientPreviewLockRedirectsBackToClientPreviewAnchor(): void
+    {
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => true,
+            "password" => "client-preview",
+        ]));
+        config_set("client_preview", array_merge((array) config("client_preview", []), [
+            "enabled" => true,
+        ]));
+
+        $application = $this->makeApplication();
+        $token = csrf_token();
+
+        $unlockResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance/unlock",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => $token,
+            "maintenance_password" => "client-preview",
+        ]));
+
+        self::assertSame(302, $unlockResponse->status());
+        self::assertSame(true, $_SESSION["maintenance.access_unlocked"] ?? false);
+
+        $lockResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance/lock",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+        ]));
+
+        self::assertSame(302, $lockResponse->status());
+        self::assertSame("/maintenance#client-preview-access", $lockResponse->headers()["Location"] ?? null);
+        self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
     }
 
     public function testFreshStarterCanConfigureMaintenancePasswordFromMaintenancePage(): void

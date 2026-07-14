@@ -54,6 +54,14 @@ final class MaintenanceAccessManager
             return true;
         }
 
+        if ($this->clientPreviewUnlockDisabled()) {
+            if ($this->session->get($this->sessionKey()) === true || (int) $this->session->get($this->expiresAtKey(), 0) > 0) {
+                $this->lock();
+            }
+
+            return false;
+        }
+
         if ($this->session->get($this->sessionKey()) !== true) {
             return false;
         }
@@ -89,6 +97,14 @@ final class MaintenanceAccessManager
             return [
                 "success" => false,
                 "error" => "Maintenance mode is currently disabled.",
+                "retry_after" => 0,
+            ];
+        }
+
+        if ($this->clientPreviewUnlockDisabled()) {
+            return [
+                "success" => false,
+                "error" => "Preview unlock is temporarily unavailable while the current client preview notice is active.",
                 "retry_after" => 0,
             ];
         }
@@ -239,6 +255,13 @@ final class MaintenanceAccessManager
     private function unlockTtlSeconds(): int
     {
         return max(1, (int) config("maintenance.unlock_ttl_minutes", 10)) * 60;
+    }
+
+    private function clientPreviewUnlockDisabled(): bool
+    {
+        return $this->enabled()
+            && (bool) config("client_preview.enabled", false)
+            && (bool) config("client_preview.login_disabled", false);
     }
 
     private function formatRetryAfter(int $retryAfter): string

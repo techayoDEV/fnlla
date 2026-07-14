@@ -304,7 +304,14 @@ function url(string $path = ""): string
 
 function asset(string $path = ""): string
 {
-    return url($path);
+    $publicPath = public_path(ltrim($path, "/"));
+    $assetUrl = url($path);
+
+    if (!is_file($publicPath)) {
+        return $assetUrl;
+    }
+
+    return $assetUrl . '?v=' . (string) filemtime($publicPath);
 }
 
 function has_local_docs_workspace(): bool
