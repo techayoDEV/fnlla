@@ -36,9 +36,23 @@ $developerSetup ??= [
     "message" => "",
 ];
 
+$developerAccess ??= [
+    "configured" => false,
+    "path" => "",
+    "unlocked" => false,
+    "expires_at" => 0,
+    "seconds_remaining" => 0,
+    "unlock_ttl_minutes" => 120,
+    "operations_nav_mode" => "hidden",
+    "operations_nav_visible" => false,
+];
+
 $maintenanceLocked ??= false;
 $maintenanceRedirectTarget ??= "";
 $countdownLabel = "";
+$freshDeveloperOnboarding = !($maintenanceAccess["enabled"] ?? false)
+    && !($maintenanceAccess["configured"] ?? false)
+    && !($developerAccess["configured"] ?? false);
 
 if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
     $minutes = (int) floor(((int) $maintenanceAccess["seconds_remaining"]) / 60);
@@ -225,7 +239,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
 </script>
 <?php endif; ?>
 <?php else: ?>
-<?php if (($maintenanceSetup["show_setup"] ?? false)): ?>
+<?php if (($maintenanceSetup["show_setup"] ?? false) && !$freshDeveloperOnboarding): ?>
 <section class="section pt-1">
   <div class="container">
     <section class="feature-section" id="maintenance-setup" aria-label="Maintenance setup">
@@ -318,22 +332,33 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
 <?php if (($developerSetup["show_setup"] ?? false) && !($developerAccess["configured"] ?? false)): ?>
 <section class="section">
   <div class="container">
-    <section class="feature-section" id="developer-panel-setup" aria-label="Developer panel activation">
+    <section class="feature-section" id="developer-panel-setup" aria-label="<?= $freshDeveloperOnboarding ? "Developer access onboarding" : "Developer panel activation" ?>">
       <div class="grid grid-2 gap-lg site-login-grid">
         <article class="feature-card">
-          <p class="feature-kicker">Framework update fallback</p>
-          <h2 class="section-title mb-0">Activate the hidden developer panel for an existing project that predates this feature.</h2>
-          <p class="content-text">Use this once after updating an older FNLLA project. The framework will generate a private path, save a developer password and keep the public starter shell clean for the client.</p>
+          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Developer onboarding" : "Framework update fallback" ?></p>
+          <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
+              ? "Create the hidden developer access path before you decide whether maintenance should be active."
+              : "Activate the hidden developer panel for an existing project that predates this feature." ?></h2>
+          <p class="content-text"><?= $freshDeveloperOnboarding
+              ? "This first local setup step creates the private developer path, saves the developer password and opens the panel in the current browser session. Once inside the panel, you can decide whether maintenance should stay off or be enabled for client preview."
+              : "Use this once after updating an older FNLLA project. The framework will generate a private path, save a developer password and keep the public starter shell clean for the client." ?></p>
           <ul class="starter-note-list">
+            <?php if ($freshDeveloperOnboarding): ?>
+            <li>The generated path becomes the private entry point for the developer team.</li>
+            <li>The public site stays open until you explicitly enable maintenance later from the developer panel.</li>
+            <li>The first unlocked developer session opens immediately after setup so onboarding can continue without another login step.</li>
+            <li>You can rotate both the password and the hidden path later if the link ever leaks.</li>
+            <?php else: ?>
             <li>The generated path becomes the long-term service entry after client handoff.</li>
             <li>The public header stays plain. Developer tools appear only after a developer unlocks the hidden path.</li>
             <li>An active developer session can still surface a private tools dropdown for easier navigation.</li>
             <li>The new panel will let you rotate both its password and the hidden path later.</li>
+            <?php endif; ?>
           </ul>
         </article>
         <article class="feature-card">
-          <p class="feature-kicker">Activate developer panel</p>
-          <h2 class="content-title">Generate the hidden service surface</h2>
+          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Create developer access" : "Activate developer panel" ?></p>
+          <h2 class="content-title"><?= $freshDeveloperOnboarding ? "Generate the first private developer path and password" : "Generate the hidden service surface" ?></h2>
           <form class="form stack gap-md" action="<?= h(route("maintenance.setup_developer_access")) ?>" method="post" novalidate>
             <?= csrf_field() ?>
             <div class="form-group">
@@ -351,7 +376,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               </div>
             </div>
             <div class="d-flex flex-wrap gap-md">
-              <button class="btn btn-primary" type="submit">Activate developer panel</button>
+              <button class="btn btn-primary" type="submit"><?= $freshDeveloperOnboarding ? "Create developer access" : "Activate developer panel" ?></button>
             </div>
           </form>
         </article>

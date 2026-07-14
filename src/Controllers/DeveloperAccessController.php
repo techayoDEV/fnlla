@@ -159,6 +159,7 @@ final class DeveloperAccessController extends Controller
             "maintenance_access_password" => trim((string) $request->input("maintenance_access_password", "")),
             "maintenance_access_password_confirmation" => trim((string) $request->input("maintenance_access_password_confirmation", "")),
         ];
+        $maintenanceEnabled = (string) $request->input("maintenance_access_enabled", "0") === "1";
 
         try {
             $this->validate($payload, [
@@ -178,6 +179,7 @@ final class DeveloperAccessController extends Controller
         }
 
         $environmentValues = [
+            "MAINTENANCE_MODE_ENABLED" => $maintenanceEnabled ? "true" : "false",
             "MAINTENANCE_ACCESS_USERNAME" => "",
             "MAINTENANCE_ACCESS_PASSWORD" => $payload["maintenance_access_password"],
         ];
@@ -198,6 +200,7 @@ final class DeveloperAccessController extends Controller
         }
 
         config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => $maintenanceEnabled,
             "username" => $environmentValues["MAINTENANCE_ACCESS_USERNAME"],
             "password" => $environmentValues["MAINTENANCE_ACCESS_PASSWORD"],
         ]));
@@ -206,8 +209,10 @@ final class DeveloperAccessController extends Controller
 
         flash_set("status", [
             "variant" => "success",
-            "title" => "Maintenance credentials updated",
-            "text" => "The preview password was saved to the project environment file. The developer session stays active while maintenance remains closed for this browser session.",
+            "title" => $maintenanceEnabled ? "Maintenance enabled" : "Maintenance credentials saved",
+            "text" => $maintenanceEnabled
+                ? "The maintenance password was saved and public routes are now protected by maintenance mode. The developer session stays active."
+                : "The maintenance password was saved, but maintenance mode stays off until you decide to enable it.",
             "toast" => true,
         ]);
         regenerate_csrf_token();

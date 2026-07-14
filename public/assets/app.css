@@ -177,6 +177,10 @@ body {
   align-items: start;
 }
 
+.feature-section > .grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 #page-status {
   margin-top: 1.35rem;
 }

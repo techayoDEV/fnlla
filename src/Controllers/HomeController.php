@@ -285,12 +285,12 @@ final class HomeController extends Controller
         flash_set("developer_access_notice", [
             "path" => $generatedDeveloperPath,
             "title" => "Private developer panel created",
-            "text" => "Save this hidden address. It is now the private service entry point for this existing project.",
+            "text" => "Save this hidden address. It is now the developer-only entry point for this project, and maintenance can be enabled later from inside the panel.",
         ]);
         flash_set("status", [
             "variant" => "success",
             "title" => "Developer panel activated",
-            "text" => "The hidden developer panel was added to this project and the current browser session can use it immediately.",
+            "text" => "The hidden developer panel was added to this project and the current browser session can use it immediately. Maintenance stays optional until you enable it from the panel.",
             "toast" => true,
         ]);
         regenerate_csrf_token();

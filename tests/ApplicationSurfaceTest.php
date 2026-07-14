@@ -110,6 +110,38 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString(">Operations<", $response->body());
     }
 
+    public function testLocalFreshStarterRedirectsHomeToDeveloperOnboarding(): void
+    {
+        $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
+            . DIRECTORY_SEPARATOR
+            . "fnlla-home-bootstrap-"
+            . bin2hex(random_bytes(4));
+        mkdir($this->temporaryEnvironmentDirectory, 0777, true);
+        $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
+        $envExamplePath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env.example";
+        file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
+
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => false,
+            "password" => "",
+            "username" => "",
+            "setup_ui_enabled" => true,
+            "setup_ui_local_only" => true,
+            "env_path" => $envPath,
+            "env_example_path" => $envExamplePath,
+        ]));
+
+        $application = $this->makeApplication();
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame("/maintenance?redirect=%2F#developer-panel-setup", $response->headers()["Location"] ?? null);
+    }
+
     public function testStarterPagesAreAvailableThroughPublicRoutes(): void
     {
         $application = $this->makeApplication();
@@ -487,11 +519,11 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
     }
 
-    public function testFreshStarterCanConfigureMaintenancePasswordFromMaintenancePage(): void
+    public function testFreshStarterCanConfigureDeveloperAccessBeforeMaintenance(): void
     {
         $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
             . DIRECTORY_SEPARATOR
-            . "fnlla-maintenance-setup-"
+            . "fnlla-developer-onboarding-"
             . bin2hex(random_bytes(4));
         mkdir($this->temporaryEnvironmentDirectory, 0777, true);
         $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
@@ -522,19 +554,19 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $pageResponse->status());
-        self::assertStringContainsString("Configure maintenance access", $pageResponse->body());
-        self::assertStringNotContainsString("maintenance_setup_username", $pageResponse->body());
+        self::assertStringContainsString("Create developer access", $pageResponse->body());
+        self::assertStringContainsString("Generate the first private developer path and password", $pageResponse->body());
+        self::assertStringNotContainsString("Configure maintenance access", $pageResponse->body());
 
         $token = csrf_token();
         $setupResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/maintenance/setup-access",
+            "REQUEST_URI" => "/maintenance/setup-developer-access",
             "REQUEST_METHOD" => "POST",
             "REMOTE_ADDR" => "127.0.0.1",
         ], [], [
             "_token" => $token,
-            "maintenance_setup_username" => "",
-            "maintenance_setup_password" => "client-preview",
-            "maintenance_setup_password_confirmation" => "client-preview",
+            "developer_setup_password" => "developer-secret",
+            "developer_setup_password_confirmation" => "developer-secret",
         ]));
 
         self::assertSame(302, $setupResponse->status());
@@ -545,14 +577,14 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertFileExists($envPath);
-        self::assertStringContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
-        self::assertStringContainsString("MAINTENANCE_ACCESS_PASSWORD=client-preview", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_PATH=" . $developerPath, (string) file_get_contents($envPath));
-        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=client-preview", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=developer-secret", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("MAINTENANCE_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "path" => $developerPath,
-            "password" => "client-preview",
+            "password" => "developer-secret",
             "operations_nav_mode" => "visible",
         ]));
         $developerApplication = $this->makeApplication();
@@ -566,6 +598,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Developer Panel", $developerResponse->body());
         self::assertStringContainsString($developerPath, $developerResponse->body());
         self::assertStringContainsString("Regenerate private developer path", $developerResponse->body());
+        self::assertStringContainsString("Save maintenance settings", $developerResponse->body());
+        self::assertStringContainsString("Maintenance mode is currently off.", $developerResponse->body());
 
         $homeResponse = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/",
@@ -844,8 +878,8 @@ final class ApplicationSurfaceTest extends TestCase
         file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
 
         config_set("maintenance", array_merge((array) config("maintenance", []), [
-            "enabled" => true,
-            "password" => "preview-lock",
+            "enabled" => false,
+            "password" => "",
             "username" => "",
             "env_path" => $envPath,
             "env_example_path" => $envExamplePath,
@@ -870,10 +904,12 @@ final class ApplicationSurfaceTest extends TestCase
             "maintenance_access_username" => "",
             "maintenance_access_password" => "new-preview-pass",
             "maintenance_access_password_confirmation" => "new-preview-pass",
+            "maintenance_access_enabled" => "1",
         ]));
 
         self::assertSame(302, $response->status());
         self::assertSame("/_dev-service/panel#developer-maintenance-settings", $response->headers()["Location"] ?? null);
+        self::assertStringContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("MAINTENANCE_ACCESS_PASSWORD=new-preview-pass", (string) file_get_contents($envPath));
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
     }

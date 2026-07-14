@@ -33,6 +33,10 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
 
     public function handle(Request $request, callable $next): mixed
     {
+        if ($this->shouldRedirectFreshSetup($request)) {
+            return Response::redirect($this->freshSetupRedirectPath($request));
+        }
+
         if (!$this->access->enabled() || $this->access->isUnlocked() || developer_access()->isUnlocked() || $this->isAllowedWhileLocked($request)) {
             return $next($request);
         }
@@ -68,6 +72,44 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
 
         return $developerPath !== ""
             && ($request->path() === $developerPath || str_starts_with($request->path(), $developerPath . "/"));
+    }
+
+    private function shouldRedirectFreshSetup(Request $request): bool
+    {
+        if ($this->access->enabled() || $this->access->configured() || developer_access()->configured() || $this->isAllowedWhileLocked($request)) {
+            return false;
+        }
+
+        if ($request->expectsJson() || str_starts_with($request->path(), "/api/")) {
+            return false;
+        }
+
+        if ($request->path() === "/maintenance" || str_starts_with($request->path(), "/maintenance/")) {
+            return false;
+        }
+
+        if (!(bool) config("maintenance.setup_ui_enabled", app_environment() !== "production")) {
+            return false;
+        }
+
+        $localOnly = (bool) config("maintenance.setup_ui_local_only", true);
+        $isLocalRequest = in_array($request->ip(), ["127.0.0.1", "::1"], true);
+
+        if ($localOnly && !$isLocalRequest) {
+            return false;
+        }
+
+        return (new \Fnlla\Php\Support\EnvironmentFileManager())->isWritable();
+    }
+
+    private function freshSetupRedirectPath(Request $request): string
+    {
+        $requestUri = (string) $request->server("REQUEST_URI", $request->path());
+        $relativeTarget = str_starts_with($requestUri, "/") ? $requestUri : $request->path();
+
+        return route("maintenance.home")
+            . "?redirect=" . rawurlencode($relativeTarget)
+            . "#developer-panel-setup";
     }
 
     private function lockedRedirectPath(Request $request): string
