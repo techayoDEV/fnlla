@@ -29,8 +29,8 @@ use RuntimeException;
 final class FrameworkLock
 {
     public const LOCK_FILE = ".fnlla/framework-lock.json";
-    public const LEGACY_LOCK_FILE = ".fnlla/starter-lock.json";
-    private const STARTER_SURFACE_MANAGED_PATHS = [
+    public const MIGRATION_LOCK_FILE = ".fnlla/legacy-framework-lock.json";
+    private const PROJECT_SURFACE_MANAGED_PATHS = [
         "public/assets/app.css",
         "routes/web.php",
         "src/Controllers/PageController.php",
@@ -78,18 +78,31 @@ final class FrameworkLock
 
     public static function path(string $projectRoot): string
     {
-        return rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, self::LOCK_FILE);
+        return rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, self::lockFile());
     }
 
-    public static function legacyPath(string $projectRoot): string
+    public static function migrationPath(string $projectRoot): string
     {
-        return rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, self::LEGACY_LOCK_FILE);
+        return rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, self::migrationLockFile());
+    }
+
+    public static function lockFile(): string
+    {
+        return self::configuredRelativeLockPath("lock_file", self::LOCK_FILE);
+    }
+
+    public static function migrationLockFile(): string
+    {
+        $configured = function_exists("config")
+            ? config("framework_update.migration_lock_file", self::MIGRATION_LOCK_FILE)
+            : self::MIGRATION_LOCK_FILE;
+
+        return self::normalizeConfiguredRelativeLockPath((string) $configured, self::MIGRATION_LOCK_FILE);
     }
 
     public static function write(string $projectRoot, string $sourceRoot, string $appName, string $packageSlug): array
     {
         $lock = self::build($projectRoot, $sourceRoot, $appName, $packageSlug);
-        $legacyLock = self::buildLegacy($lock);
         $directory = dirname(self::path($projectRoot));
 
         if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
@@ -97,7 +110,6 @@ final class FrameworkLock
         }
 
         file_put_contents(self::path($projectRoot), self::encode($lock, "framework lock"));
-        file_put_contents(self::legacyPath($projectRoot), self::encode($legacyLock, "legacy framework lock"));
 
         return $lock;
     }
@@ -108,49 +120,31 @@ final class FrameworkLock
 
         if ($path === null) {
             throw new RuntimeException(
-                "Framework lock is missing. This project needs " . self::LOCK_FILE . " before framework updates can be checked."
+                "Framework lock is missing. This project needs " . self::lockFile() . " before framework updates can be checked."
             );
         }
 
-        $contents = file_get_contents($path);
-
-        if ($contents === false) {
-            throw new RuntimeException("Unable to read framework lock: " . $path);
-        }
-
-        try {
-            $decoded = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
-            throw new RuntimeException("Framework lock is not valid JSON: " . $exception->getMessage(), 0, $exception);
-        }
-
-        if (!is_array($decoded)) {
-            throw new RuntimeException("Framework lock must decode to a JSON object.");
-        }
-
-        return self::normalize($decoded);
+        return self::readLockFile($path);
     }
 
     public static function syncFromExport(string $exportRoot, string $projectRoot): void
     {
-        foreach ([
-            self::path($exportRoot) => self::path($projectRoot),
-            self::legacyPath($exportRoot) => self::legacyPath($projectRoot),
-        ] as $sourcePath => $targetPath) {
-            if (!is_file($sourcePath)) {
-                continue;
-            }
+        $sourcePath = self::existingPath($exportRoot);
 
-            $directory = dirname($targetPath);
-
-            if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
-                throw new RuntimeException("Unable to create framework lock directory: " . $directory);
-            }
-
-            if (!copy($sourcePath, $targetPath)) {
-                throw new RuntimeException("Unable to copy framework lock file: " . $targetPath);
-            }
+        if ($sourcePath === null) {
+            return;
         }
+
+        $targetPath = self::path($projectRoot);
+        $directory = dirname($targetPath);
+
+        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new RuntimeException("Unable to create framework lock directory: " . $directory);
+        }
+
+        $lock = self::readLockFile($sourcePath);
+
+        file_put_contents($targetPath, self::encode($lock, "framework lock"));
     }
 
     public static function build(string $projectRoot, string $sourceRoot, string $appName, string $packageSlug): array
@@ -174,7 +168,7 @@ final class FrameworkLock
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"),
                     "repository" => "https://github.com/techayoDEV/fnlla.git",
                 ],
-                "lock_file" => self::LOCK_FILE,
+                "lock_file" => self::lockFile(),
                 "managed_files" => self::managedFileHashes($projectRoot),
                 "generated_at_utc" => gmdate(DATE_ATOM),
             ],
@@ -224,11 +218,27 @@ final class FrameworkLock
     {
         $relativePath = self::normalizeSeparators($relativePath);
 
-        if (in_array($relativePath, [self::LOCK_FILE, self::LEGACY_LOCK_FILE], true)) {
+        foreach ([
+            ".git/",
+            ".fnlla/",
+            "docs/",
+            "node_modules/",
+            "output/",
+            "playwright-report/",
+            "test-results/",
+            "tmp/",
+            "vendor/",
+        ] as $ignoredPrefix) {
+            if (str_starts_with($relativePath, $ignoredPrefix)) {
+                return false;
+            }
+        }
+
+        if (in_array($relativePath, [self::LOCK_FILE, self::MIGRATION_LOCK_FILE], true)) {
             return false;
         }
 
-        if (in_array($relativePath, self::STARTER_SURFACE_MANAGED_PATHS, true)) {
+        if (in_array($relativePath, self::PROJECT_SURFACE_MANAGED_PATHS, true)) {
             return true;
         }
 
@@ -241,7 +251,6 @@ final class FrameworkLock
         }
 
         foreach ([
-            ".fnlla/",
             "database/factories/",
             "database/migrations/",
             "lang/",
@@ -256,7 +265,9 @@ final class FrameworkLock
         }
 
         return !in_array($relativePath, [
+            ".env",
             ".env.example",
+            ".env.local",
             "README.md",
             "MANIFEST.json",
             "VERSION",
@@ -277,9 +288,34 @@ final class FrameworkLock
             return $path;
         }
 
-        $legacyPath = self::legacyPath($projectRoot);
+        $migrationPath = self::migrationPath($projectRoot);
 
-        return is_file($legacyPath) ? $legacyPath : null;
+        if (is_file($migrationPath)) {
+            return $migrationPath;
+        }
+
+        return null;
+    }
+
+    private static function readLockFile(string $path): array
+    {
+        $contents = file_get_contents($path);
+
+        if ($contents === false) {
+            throw new RuntimeException("Unable to read framework lock: " . $path);
+        }
+
+        try {
+            $decoded = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new RuntimeException("Framework lock is not valid JSON: " . $exception->getMessage(), 0, $exception);
+        }
+
+        if (!is_array($decoded)) {
+            throw new RuntimeException("Framework lock must decode to a JSON object.");
+        }
+
+        return self::normalize($decoded);
     }
 
     private static function normalize(array $decoded): array
@@ -288,36 +324,7 @@ final class FrameworkLock
             return $decoded;
         }
 
-        $legacy = is_array($decoded["starter"] ?? null) ? $decoded["starter"] : [];
-
-        return [
-            "schema_version" => 2,
-            "framework_base" => [
-                "application" => (array) ($legacy["app"] ?? []),
-                "framework" => (array) ($legacy["framework"] ?? []),
-                "ui_runtime" => (array) ($legacy["ui_runtime"] ?? []),
-                "lock_file" => self::LOCK_FILE,
-                "managed_files" => (array) ($legacy["managed_files"] ?? []),
-                "generated_at_utc" => (string) ($legacy["generated_at_utc"] ?? ""),
-            ],
-        ];
-    }
-
-    private static function buildLegacy(array $lock): array
-    {
-        $base = (array) ($lock["framework_base"] ?? []);
-
-        return [
-            "schema_version" => 1,
-            "starter" => [
-                "app" => (array) ($base["application"] ?? []),
-                "framework" => (array) ($base["framework"] ?? []),
-                "ui_runtime" => (array) ($base["ui_runtime"] ?? []),
-                "lock_file" => self::LEGACY_LOCK_FILE,
-                "managed_files" => (array) ($base["managed_files"] ?? []),
-                "generated_at_utc" => (string) ($base["generated_at_utc"] ?? ""),
-            ],
-        ];
+        throw new RuntimeException("Framework lock must contain a framework_base object.");
     }
 
     private static function readVersion(string $path): string
@@ -344,6 +351,34 @@ final class FrameworkLock
         } catch (JsonException $exception) {
             throw new RuntimeException("Unable to encode {$label} JSON: " . $exception->getMessage(), 0, $exception);
         }
+    }
+
+    private static function configuredRelativeLockPath(string $configKey, string $default): string
+    {
+        $value = function_exists("config")
+            ? trim((string) config("framework_update." . $configKey, $default))
+            : $default;
+
+        return self::normalizeConfiguredRelativeLockPath($value, $default);
+    }
+
+    private static function normalizeConfiguredRelativeLockPath(string $value, string $default): string
+    {
+        if ($value === "") {
+            return $default;
+        }
+
+        $value = self::normalizeSeparators($value);
+
+        if (str_starts_with($value, "/") || preg_match('/^[a-z]:\//i', $value)) {
+            return $default;
+        }
+
+        while (str_starts_with($value, "./")) {
+            $value = substr($value, 2);
+        }
+
+        return $value;
     }
 
     private static function normalizeSeparators(string $path): string

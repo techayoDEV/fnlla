@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
 ===============================================================================
 FNLLA TEST CASE
-File: tests\StarterUpdateCommandTest.php
+File: tests\FrameworkUpdateCommandTest.php
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
@@ -70,18 +70,18 @@ final class FrameworkUpdateCommandTest extends TestCase
         );
     }
 
-    public function testFrameworkUpdateTracksStarterSurfaceFilesInFreshExports(): void
+    public function testFrameworkUpdateTracksProjectSurfaceFilesInFreshExports(): void
     {
-        $projectRoot = $this->exportProject("Framework Starter Surface Test");
+        $projectRoot = $this->exportProject("Framework Project Surface Test");
         $sourceClone = $this->cloneRepository();
-        $starterView = $sourceClone . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php";
+        $projectView = $sourceClone . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php";
 
         file_put_contents(
-            $starterView,
+            $projectView,
             str_replace(
                 "How teams work on it",
                 "How teams work on it updated by framework:update",
-                (string) file_get_contents($starterView)
+                (string) file_get_contents($projectView)
             )
         );
 
@@ -104,9 +104,9 @@ final class FrameworkUpdateCommandTest extends TestCase
         ));
     }
 
-    public function testFrameworkUpdateCanMigrateLegacyUntrackedStarterSurfaceFiles(): void
+    public function testFrameworkUpdateCanMigrateLegacyUntrackedProjectSurfaceFiles(): void
     {
-        $projectRoot = $this->exportProject("Framework Legacy Starter Test");
+        $projectRoot = $this->exportProject("Framework Legacy Project Test");
         $sourceClone = $this->cloneRepository();
         $lockPath = $projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json";
         $lock = json_decode((string) file_get_contents($lockPath), true);
@@ -215,7 +215,7 @@ final class FrameworkUpdateCommandTest extends TestCase
         );
     }
 
-    public function testLegacyStarterUpdateAliasStillRunsButStaysHiddenFromList(): void
+    public function testExportedProjectExposesSupportedFrameworkUpdateCommand(): void
     {
         $projectRoot = $this->exportProject("Framework Alias Test");
 
@@ -226,15 +226,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(0, $listExitCode, $listOutput);
         self::assertStringContainsString("framework:update", $listOutput);
-        self::assertFalse(str_contains($listOutput, "starter:update"));
-
-        [$legacyExitCode, $legacyOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["starter:update", "--check", "--source", base_path()]
-        );
-
-        self::assertSame(0, $legacyExitCode, $legacyOutput);
-        self::assertStringContainsString("Framework base is already aligned with the provided source export.", $legacyOutput);
+        self::assertStringContainsString("fnlla-runtime:validate", $listOutput);
     }
 
     public function testFrameworkUpdateCanAutoDetectSiblingSourceRepository(): void

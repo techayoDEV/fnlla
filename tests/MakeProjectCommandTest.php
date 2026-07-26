@@ -60,21 +60,26 @@ final class MakeProjectCommandTest extends TestCase
         rmdir($this->targetPath);
     }
 
-    public function testExportedStarterIncludesProjectSurfaceWithoutMaintainerResidue(): void
+    public function testExportedProjectIncludesProjectSurfaceWithoutMaintainerResidue(): void
     {
         $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
         self::assertInstanceOf(Container::class, $container);
 
         $command = new MakeProjectCommand($container);
 
-        self::assertSame(0, $command->handle([$this->targetPath, "Starter Test"]));
+        self::assertSame(0, $command->handle([$this->targetPath, "Project Test"]));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "LICENSE.md");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "SUPPORT.md");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "TRADEMARKS.md");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "VERSION");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "MANIFEST.json");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json");
-        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "starter-lock.json");
+        $frameworkLockFiles = array_map(
+            "basename",
+            glob($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "*.json") ?: []
+        );
+        sort($frameworkLockFiles);
+        self::assertSame(["framework-lock.json"], $frameworkLockFiles);
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "framework_update.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "maintenance.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php");
@@ -246,10 +251,81 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame(0, $listExitCode, $listOutput);
         self::assertStringContainsString("framework:update", $listOutput);
         self::assertStringContainsString("fnlla-runtime:validate", $listOutput);
-        self::assertFalse(str_contains($listOutput, "starter:update"));
+        self::assertStringContainsString("project:claim", $listOutput);
         self::assertFalse(str_contains($listOutput, "make:project"));
         self::assertFalse(str_contains($listOutput, "make:controller"));
         self::assertFalse(str_contains($listOutput, "make:migration"));
+
+        [$claimExitCode, $claimOutput] = $this->runPhpScript(
+            $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
+            [
+                "project:claim",
+                "--product",
+                "Claimed Project",
+                "--id",
+                "CLAIMED_PROJECT",
+                "--owner",
+                "Owner LTD",
+                "--developer",
+                "Developer LTD",
+                "--maintainer",
+                "Maintenance LTD",
+                "--summary",
+                "Claimed Project delivery workspace.",
+            ]
+        );
+
+        self::assertSame(0, $claimExitCode, $claimOutput);
+        self::assertStringContainsString("Project identity claimed.", $claimOutput);
+        self::assertStringContainsString("Identifier: CLAIMED_PROJECT", $claimOutput);
+        self::assertStringContainsString(
+            "'name' => 'Claimed Project'",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "app.php")
+        );
+        self::assertStringContainsString(
+            "PROJECT_ID=CLAIMED_PROJECT",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            'PROJECT_NAME="Claimed Project"',
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "PROJECT_MAINTAINER=\"Maintenance LTD\"",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "Product/project identifier: `CLAIMED_PROJECT`.",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+
+        $claimedManifest = json_decode(
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "MANIFEST.json"),
+            true
+        );
+        self::assertTrue(is_array($claimedManifest));
+        self::assertSame(2, $claimedManifest["schema_version"] ?? null);
+        self::assertSame("claimed_project", $claimedManifest["manifest_type"] ?? null);
+        self::assertSame("CLAIMED_PROJECT", $claimedManifest["product"]["identifier"] ?? null);
+        self::assertSame("Owner LTD", $claimedManifest["product"]["owner"]["name"] ?? null);
+        self::assertSame("Developer LTD", $claimedManifest["product"]["developer"]["name"] ?? null);
+        self::assertSame("Maintenance LTD", $claimedManifest["product"]["maintenance_provider"]["name"] ?? null);
+        self::assertSame("TechAyo LTD (techayo.co.uk)", $claimedManifest["framework"]["creator"] ?? null);
+        self::assertSame(".fnlla/framework-lock.json", $claimedManifest["framework"]["lock_file"] ?? null);
+        $claimedFrameworkLock = json_decode(
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json"),
+            true
+        );
+        self::assertTrue(is_array($claimedFrameworkLock));
+        self::assertSame("Claimed Project", $claimedFrameworkLock["framework_base"]["application"]["name"] ?? null);
+        self::assertSame("claimed-project", $claimedFrameworkLock["framework_base"]["application"]["package_slug"] ?? null);
+
+        [$claimedManifestExitCode, $claimedManifestOutput] = $this->runPhpScript(
+            $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "validate-version-manifest.php"
+        );
+
+        self::assertSame(0, $claimedManifestExitCode, $claimedManifestOutput);
+        self::assertStringContainsString("FNLLA version manifest passed.", $claimedManifestOutput);
 
         [$projectTestExitCode, $projectTestOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "test.php"
@@ -265,14 +341,6 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $updateCheckExitCode, $updateCheckOutput);
         self::assertStringContainsString("Framework base is already aligned with the provided source export.", $updateCheckOutput);
-
-        [$legacyUpdateCheckExitCode, $legacyUpdateCheckOutput] = $this->runPhpScript(
-            $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
-            ["starter:update", "--check", "--source", base_path()]
-        );
-
-        self::assertSame(0, $legacyUpdateCheckExitCode, $legacyUpdateCheckOutput);
-        self::assertStringContainsString("Framework base is already aligned with the provided source export.", $legacyUpdateCheckOutput);
 
         [$routeListExitCode, $routeListOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
@@ -291,7 +359,6 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("POST    /maintenance/lock", $routeListOutput);
         self::assertStringContainsString("GET     /health", $routeListOutput);
         self::assertStringContainsString("GET     /api/health", $routeListOutput);
-        self::assertFalse(str_contains($routeListOutput, "/starter/update"));
         self::assertFalse(str_contains($routeListOutput, "/platform"));
         self::assertFalse(str_contains($routeListOutput, "/project/launch"));
         self::assertFalse(str_contains($routeListOutput, "/login"));

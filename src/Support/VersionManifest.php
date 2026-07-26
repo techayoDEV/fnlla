@@ -55,7 +55,12 @@ final class VersionManifest
     {
         $version = self::readVersionValue(self::repositoryVersionPath());
         self::syncIntegratedRuntimeMetadata($version);
-        $manifest = self::buildRepositoryManifest();
+        $existingManifest = is_file(self::repositoryManifestPath())
+            ? self::readJsonFile(self::repositoryManifestPath())
+            : [];
+        $manifest = self::isClaimedProjectManifest($existingManifest)
+            ? self::buildClaimedProjectManifest(self::identityFromClaimedManifest($existingManifest), base_path())
+            : self::buildRepositoryManifest();
         file_put_contents(self::repositoryManifestPath(), self::encodeManifest($manifest));
 
         return $manifest;
@@ -111,6 +116,97 @@ final class VersionManifest
     public static function loadRepositoryManifest(): array
     {
         return self::readJsonFile(self::repositoryManifestPath());
+    }
+
+    public static function buildClaimedProjectManifest(array $identity, ?string $projectRoot = null): array
+    {
+        $projectRoot = rtrim($projectRoot ?? base_path(), "\\/");
+        $frameworkVersion = self::readVersionValue($projectRoot . DIRECTORY_SEPARATOR . self::ROOT_VERSION_FILE);
+        $runtimeVersion = self::readVersionValue($projectRoot . DIRECTORY_SEPARATOR . self::UI_VERSION_FILE);
+
+        return [
+            "schema_version" => 2,
+            "manifest_type" => "claimed_project",
+            "product" => [
+                "identifier" => (string) $identity["id"],
+                "name" => (string) $identity["product"],
+                "slug" => (string) $identity["slug"],
+                "version" => $frameworkVersion,
+                "summary" => (string) $identity["summary"],
+                "claimed" => true,
+                "owner" => [
+                    "name" => (string) $identity["owner"],
+                    "roles" => [
+                        "owner",
+                        "system_owner",
+                    ],
+                ],
+                "funder" => [
+                    "name" => (string) $identity["funder"],
+                    "roles" => [
+                        "funder",
+                    ],
+                ],
+                "client" => [
+                    "name" => (string) $identity["client"],
+                    "roles" => [
+                        "client",
+                    ],
+                ],
+                "developer" => [
+                    "name" => (string) $identity["developer"],
+                    "roles" => [
+                        "developer",
+                        "implementation_provider",
+                    ],
+                ],
+                "maintenance_provider" => [
+                    "name" => (string) $identity["maintainer"],
+                    "roles" => [
+                        "maintenance_provider",
+                        "update_provider",
+                    ],
+                ],
+            ],
+            "framework" => [
+                "name" => (string) $identity["runtime"],
+                "slug" => "fnlla",
+                "version" => $frameworkVersion,
+                "creator" => (string) $identity["runtime_creator"],
+                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "lock_file" => ".fnlla/framework-lock.json",
+            ],
+            "runtime" => [
+                "php" => "8.3",
+                "database" => "mysql",
+                "public_entrypoints" => [
+                    "public/index.php",
+                    "public/router.php",
+                ],
+            ],
+            "ui_runtime" => [
+                "name" => "Integrated FNLLA UI surface",
+                "slug" => "integrated-ui-surface",
+                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "source_of_truth" => "github",
+                "version_path" => self::UI_VERSION_FILE,
+                "distribution_path" => "public/vendor/fnlla-runtime",
+                "version" => $runtimeVersion,
+                "version_model" => "shared_with_framework",
+                "creator" => (string) $identity["runtime_creator"],
+            ],
+            "release" => [
+                "channel" => "stable",
+                "state_files" => [
+                    "MANIFEST.json",
+                    "README.md",
+                    "VERSION",
+                    "LICENSE.md",
+                    "SUPPORT.md",
+                    "TRADEMARKS.md",
+                ],
+            ],
+        ];
     }
 
     public static function status(): array
@@ -201,8 +297,19 @@ final class VersionManifest
 
             if ($actualManifestContent === false) {
                 $errors[] = "MANIFEST.json: unable to read file";
-            } elseif (self::normalizeNewlines($actualManifestContent) !== self::normalizeNewlines($expectedManifestContent)) {
-                $errors[] = "MANIFEST.json: repository manifest is out of sync. Run php scripts/sync-version-manifest.php";
+            } else {
+                try {
+                    $actualManifest = json_decode($actualManifestContent, true, 512, JSON_THROW_ON_ERROR);
+                } catch (JsonException $exception) {
+                    $actualManifest = null;
+                    $errors[] = "MANIFEST.json: invalid JSON (" . $exception->getMessage() . ")";
+                }
+
+                if (is_array($actualManifest) && self::isClaimedProjectManifest($actualManifest)) {
+                    self::validateClaimedProjectManifest($actualManifest, $frameworkVersion, $uiVersion, $errors);
+                } elseif (self::normalizeNewlines($actualManifestContent) !== self::normalizeNewlines($expectedManifestContent)) {
+                    $errors[] = "MANIFEST.json: repository manifest is out of sync. Run php scripts/sync-version-manifest.php";
+                }
             }
         }
 
@@ -364,6 +471,90 @@ final class VersionManifest
                 ],
             ],
         ];
+    }
+
+    private static function isClaimedProjectManifest(array $manifest): bool
+    {
+        return ($manifest["manifest_type"] ?? null) === "claimed_project"
+            || (bool) ($manifest["product"]["claimed"] ?? false);
+    }
+
+    private static function identityFromClaimedManifest(array $manifest): array
+    {
+        return [
+            "id" => (string) ($manifest["product"]["identifier"] ?? ""),
+            "product" => (string) ($manifest["product"]["name"] ?? ""),
+            "slug" => (string) ($manifest["product"]["slug"] ?? ""),
+            "summary" => (string) ($manifest["product"]["summary"] ?? ""),
+            "owner" => (string) ($manifest["product"]["owner"]["name"] ?? ""),
+            "funder" => (string) ($manifest["product"]["funder"]["name"] ?? ($manifest["product"]["owner"]["name"] ?? "")),
+            "client" => (string) ($manifest["product"]["client"]["name"] ?? ($manifest["product"]["owner"]["name"] ?? "")),
+            "system_owner" => (string) ($manifest["product"]["owner"]["name"] ?? ""),
+            "developer" => (string) ($manifest["product"]["developer"]["name"] ?? ""),
+            "maintainer" => (string) ($manifest["product"]["maintenance_provider"]["name"] ?? ($manifest["product"]["developer"]["name"] ?? "")),
+            "runtime" => (string) ($manifest["framework"]["name"] ?? "FNLLA"),
+            "runtime_creator" => (string) ($manifest["framework"]["creator"] ?? "TechAyo LTD (techayo.co.uk)"),
+        ];
+    }
+
+    private static function validateClaimedProjectManifest(array $manifest, string $frameworkVersion, string $uiVersion, array &$errors): void
+    {
+        foreach ([
+            "product.identifier",
+            "product.name",
+            "product.slug",
+            "product.summary",
+            "product.owner.name",
+            "product.funder.name",
+            "product.client.name",
+            "product.developer.name",
+            "product.maintenance_provider.name",
+            "framework.name",
+            "framework.version",
+            "framework.creator",
+            "framework.lock_file",
+            "ui_runtime.version",
+            "ui_runtime.creator",
+        ] as $path) {
+            if (self::manifestValue($manifest, $path) === "") {
+                $errors[] = "MANIFEST.json: claimed project manifest is missing " . $path;
+            }
+        }
+
+        if (($manifest["product"]["claimed"] ?? null) !== true) {
+            $errors[] = "MANIFEST.json: claimed project manifest must set product.claimed=true";
+        }
+
+        if ((string) ($manifest["product"]["version"] ?? "") !== $frameworkVersion) {
+            $errors[] = "MANIFEST.json: product.version must match VERSION";
+        }
+
+        if ((string) ($manifest["framework"]["version"] ?? "") !== $frameworkVersion) {
+            $errors[] = "MANIFEST.json: framework.version must match VERSION";
+        }
+
+        if ((string) ($manifest["ui_runtime"]["version"] ?? "") !== $uiVersion) {
+            $errors[] = "MANIFEST.json: ui_runtime.version must match public/vendor/fnlla-runtime/VERSION";
+        }
+
+        if ((string) ($manifest["framework"]["lock_file"] ?? "") !== ".fnlla/framework-lock.json") {
+            $errors[] = "MANIFEST.json: framework.lock_file must be .fnlla/framework-lock.json";
+        }
+    }
+
+    private static function manifestValue(array $manifest, string $path): string
+    {
+        $value = $manifest;
+
+        foreach (explode(".", $path) as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return "";
+            }
+
+            $value = $value[$segment];
+        }
+
+        return trim((string) $value);
     }
 
     private static function syncRuntimeJavascriptVersion(string $path, string $version): void

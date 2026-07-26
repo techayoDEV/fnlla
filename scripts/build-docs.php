@@ -78,7 +78,7 @@ $guidePages = [
         "source_name" => "STARTING-A-NEW-PROJECT.md",
         "title" => "Starting a New Project",
         "document_title" => "Starting a New Project - FNLLA Documentation",
-        "lead" => "Recommended starter-export workflow for real downstream projects built on FNLLA.",
+        "lead" => "Recommended project-export workflow for real downstream projects built on FNLLA.",
     ],
     [
         "label" => "Building with FNLLA",
@@ -141,7 +141,7 @@ $pagesToWrite = [
             "current_root_label" => "Getting Started",
             "document_title" => "Getting Started - FNLLA Documentation",
             "page_title" => "Getting Started",
-            "page_lead" => "Local setup, starter export, first delivery steps and the maintainer commands worth running before any real implementation work.",
+            "page_lead" => "Local setup, project export, first delivery steps and the maintainer commands worth running before any real implementation work.",
             "version" => $version,
             "content_html" => render_getting_started_content(),
         ]),
@@ -431,7 +431,7 @@ function render_overview_content(string $version): string
     <section class="section pt-1">
       <div class="section-header">
         <h2 class="section-title">Start here</h2>
-        <p class="section-text">FNLLA is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the starter-export workflow and the practical delivery rules for downstream websites and applications.</p>
+        <p class="section-text">FNLLA is the maintained PHP application framework in the FNLLA product family. This docs set maps the repository contract, the project-export workflow and the practical delivery rules for downstream websites and applications.</p>
       </div>
 
       <div class="grid">
@@ -450,7 +450,7 @@ views/</code></pre>
           <h2 class="card-title">Build real projects outside this repo</h2>
           <ul class="doc-checklist">
             <li><strong>Framework mode:</strong> maintain <code>techayoDEV/fnlla</code>, its scripts, docs and shared delivery foundations here.</li>
-            <li><strong>Project mode:</strong> export a downstream starter with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
+            <li><strong>Project mode:</strong> export a downstream project base with <code>php fnlla make:project</code> and build the real client application in that separate directory.</li>
             <li><strong>UI rule:</strong> keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code> as the only supported UI layer.</li>
           </ul>
         </article>
@@ -459,7 +459,7 @@ views/</code></pre>
           <h2 class="card-title">Read next by task</h2>
           <ul class="doc-checklist">
             <li><a href="./distribution.html"><code>distribution.html</code></a> for runtime and repository boundaries.</li>
-            <li><a href="./getting-started.html"><code>getting-started.html</code></a> for local setup and starter export.</li>
+            <li><a href="./getting-started.html"><code>getting-started.html</code></a> for local setup and project export.</li>
             <li><a href="./building.html"><code>building.html</code></a> for route, controller, view and form patterns.</li>
             <li><a href="./guides.html"><code>guides.html</code></a> for the long-form Markdown guides rendered as HTML.</li>
           </ul>
@@ -487,7 +487,7 @@ views/</code></pre>
         <a class="doc-link-card" href="./getting-started.html">
           <span class="doc-link-label">Bootstrap</span>
           <p class="doc-link-title">Getting Started</p>
-          <p class="doc-link-text">Local server boot, environment setup, starter export and the first files you normally touch in a real delivery.</p>
+          <p class="doc-link-text">Local server boot, environment setup, project export and the first files you normally touch in a real delivery.</p>
         </a>
         <a class="doc-link-card" href="./building.html">
           <span class="doc-link-label">Implementation</span>
@@ -547,7 +547,7 @@ function render_fnlla_runtime_content(): string
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
           <h2 class="card-title">Where it lives</h2>
-          <p class="card-text">The built-in runtime lives under <code>public/vendor/fnlla-runtime/</code>. That directory is the local downstream copy used by the framework and by starter exports created from this repository.</p>
+          <p class="card-text">The built-in runtime lives under <code>public/vendor/fnlla-runtime/</code>. That directory is the local downstream copy used by the framework and by project exports created from this repository.</p>
         </article>
         <article class="card">
           <h2 class="card-title">Why it matters</h2>
@@ -573,7 +573,7 @@ function render_fnlla_runtime_content(): string
           </ul>
         </article>
         <article class="card">
-          <h3 class="card-title">Healthy starter shape</h3>
+          <h3 class="card-title">Healthy project shape</h3>
           <pre><code>&lt;section class="section"&gt;
   &lt;div class="container"&gt;
     &lt;div class="stack gap-lg"&gt;
@@ -612,20 +612,20 @@ function render_fnlla_runtime_content(): string
         </article>
         <article class="card">
           <h3 class="card-title">Practical consequence</h3>
-          <p class="card-text">FNLLA docs, starter pages and application shell all assume the same runtime classes and behavior, so view work stays aligned when you build with those primitives from the start.</p>
+          <p class="card-text">FNLLA docs, project-base pages and application shell all assume the same runtime classes and behavior, so view work stays aligned when you build with those primitives from the start.</p>
         </article>
       </div>
     </section>
 
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Full starter shell syntax</h2>
-        <p class="section-text">The built-in runtime is meant to be used through the full FNLLA starter shell, not only through isolated page fragments. The real baseline is the shared layout in <code>views/layouts/app.php</code> plus page content rendered inside its <code>main</code> area.</p>
+        <h2 class="section-title">Full project shell syntax</h2>
+        <p class="section-text">The built-in runtime is meant to be used through the full FNLLA project shell, not only through isolated page fragments. The real baseline is the shared layout in <code>views/layouts/app.php</code> plus page content rendered inside its <code>main</code> area.</p>
       </div>
 
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
-          <h3 class="card-title">Shared starter layout</h3>
+          <h3 class="card-title">Shared project layout</h3>
           <pre><code class="language-php">&lt;!DOCTYPE html&gt;
 &lt;html lang="en"&gt;
 &lt;head&gt;
@@ -660,10 +660,10 @@ function render_fnlla_runtime_content(): string
   &lt;script src="&lt;?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?&gt;"&gt;&lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
-          <p class="card-text">This is the real starter baseline: runtime assets in <code>head</code>, shared navigation in <code>header</code>, page injection through <code>&lt;?= \$content ?&gt;</code> inside <code>main</code>, then a simple footer and runtime JavaScript at the end of <code>body</code>.</p>
+          <p class="card-text">This is the real project baseline: runtime assets in <code>head</code>, shared navigation in <code>header</code>, page injection through <code>&lt;?= \$content ?&gt;</code> inside <code>main</code>, then a simple footer and runtime JavaScript at the end of <code>body</code>.</p>
         </article>
         <article class="card">
-          <h3 class="card-title">Starter route, controller and page body</h3>
+          <h3 class="card-title">Project route, controller and page body</h3>
           <pre><code class="language-php">\$router->get("/", [PageController::class, "home"])->name("home");
 \$router->get("/about", [PageController::class, "about"])->name("about");
 \$router->get("/services", [PageController::class, "services"])->name("services");
@@ -674,7 +674,7 @@ public function home(Request \$request): Response
     return \$this->view("pages/home", [
         "pageTitle" => "Home",
         "pageTitleHome" => true,
-        "starterPages" => [
+        "projectPages" => [
             [
                 "title" => "Home",
                 "text" => "The opening story starts here.",
@@ -697,13 +697,13 @@ public function home(Request \$request): Response
   &lt;/div&gt;
 &lt;/section&gt;
 
-&lt;?php foreach (\$starterPages as \$starterPage): ?&gt;
+&lt;?php foreach (\$projectPages as \$projectPage): ?&gt;
   &lt;article class="feature-card"&gt;
-    &lt;h3 class="content-title"&gt;&lt;?= h(\$starterPage["title"]) ?&gt;&lt;/h3&gt;
-    &lt;p class="content-text"&gt;&lt;?= h(\$starterPage["text"]) ?&gt;&lt;/p&gt;
+    &lt;h3 class="content-title"&gt;&lt;?= h(\$projectPage["title"]) ?&gt;&lt;/h3&gt;
+    &lt;p class="content-text"&gt;&lt;?= h(\$projectPage["text"]) ?&gt;&lt;/p&gt;
   &lt;/article&gt;
 &lt;?php endforeach; ?&gt;</code></pre>
-          <p class="card-text">This is the second half of the starter: routes point at <code>PageController</code>, the controller passes plain PHP data into the view and the page body stays focused on sections rendered inside the shared <code>main</code> shell.</p>
+          <p class="card-text">This is the second half of the project base: routes point at <code>PageController</code>, the controller passes plain PHP data into the view and the page body stays focused on sections rendered inside the shared <code>main</code> shell.</p>
         </article>
       </div>
     </section>
@@ -731,7 +731,7 @@ php scripts/build-docs.php --check</code></pre>
 
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Starter-export consequence</h2>
+        <h2 class="section-title">Project-export consequence</h2>
         <p class="section-text">A new project created from FNLLA inherits the built-in runtime immediately, so downstream teams can build pages without adding a separate UI package step.</p>
       </div>
 
@@ -739,7 +739,7 @@ php scripts/build-docs.php --check</code></pre>
         <article class="card">
           <p class="doc-link-label">1. Export</p>
           <h3 class="card-title">Project scaffold</h3>
-          <p class="card-text">The starter export includes the application code and the built-in runtime together.</p>
+          <p class="card-text">The project export includes the application code and the built-in runtime together.</p>
         </article>
         <article class="card">
           <p class="doc-link-label">2. Build</p>
@@ -795,7 +795,7 @@ function render_distribution_content(): string
 
       <div class="grid grid-2 gap-md">
         <article class="card">
-          <h3 class="card-title">Included in a starter export</h3>
+          <h3 class="card-title">Included in a project export</h3>
           <pre><code>bootstrap/
 config/
 database/
@@ -809,7 +809,7 @@ views/</code></pre>
           <p class="card-text">The export already includes runtime code, templates, validation scripts and the built-in UI runtime so the new project can boot immediately.</p>
         </article>
         <article class="card">
-          <h3 class="card-title">Intentionally excluded from starter export</h3>
+          <h3 class="card-title">Intentionally excluded from project export</h3>
           <pre><code>.git
 .github
 README.md
@@ -874,8 +874,10 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
         </article>
 
         <article class="card">
-          <h2 class="card-title">Starter export workflow</h2>
-          <pre><code>php fnlla make:project ..\my-new-project "My New Project"</code></pre>
+          <h2 class="card-title">Project export workflow</h2>
+          <pre><code>php fnlla make:project ..\my-new-project "My New Project"
+cd ..\my-new-project
+php fnlla project:claim --product "My New Project" --owner "Owner LTD" --developer "Developer LTD"</code></pre>
           <p class="card-text">Use the exported directory as the real application repository. That keeps framework maintenance and project-specific delivery work cleanly separated.</p>
         </article>
       </div>
@@ -892,6 +894,7 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <h3 class="card-title">Initial commands</h3>
           <pre><code>php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
+php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php
@@ -920,7 +923,7 @@ php scripts/validate-version-manifest.php</code></pre>
       <div class="doc-mini-grid">
         <article class="card">
           <h3 class="card-title">Good reasons</h3>
-          <p class="card-text">Hardening shared routing, auth, migrations, docs, scripts, source layout or the starter export itself.</p>
+          <p class="card-text">Hardening shared routing, auth, migrations, docs, scripts, source layout or the project export itself.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Bad reasons</h3>
@@ -928,7 +931,7 @@ php scripts/validate-version-manifest.php</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Reference guide</h3>
-          <p class="card-text">Use <a href="./starting-a-new-project.html"><code>starting-a-new-project.html</code></a> for the full reasoning and starter-export flow.</p>
+          <p class="card-text">Use <a href="./starting-a-new-project.html"><code>starting-a-new-project.html</code></a> for the full reasoning and project-export flow.</p>
         </article>
       </div>
     </section>
@@ -1149,6 +1152,7 @@ throttle</code></pre>
           <h3 class="card-title">Framework and runtime commands</h3>
           <ul class="doc-checklist">
             <li><code>php fnlla make:project</code></li>
+            <li><code>php fnlla project:claim</code></li>
             <li><code>php fnlla fnlla-runtime:sync</code></li>
             <li><code>php fnlla fnlla-runtime:validate</code></li>
             <li><code>php fnlla framework:update --check --github</code></li>

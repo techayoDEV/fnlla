@@ -108,7 +108,7 @@ $unifiedVersionModel = $fnllaVersion !== "" && $fnllaVersion === $integratedRunt
         <h2 class="section-title">Status <?= h(strtoupper($serviceStatus)) ?> in <?= h((string) ($service["environment"] ?? "unknown")) ?> with release channel <?= h($releaseStatus) ?>.</h2>
       </div>
       <div class="feature-card">
-        <ul class="starter-note-list">
+        <ul class="project-note-list">
           <?php foreach ($operatorNotes as $note): ?>
           <li><?= h((string) $note) ?></li>
           <?php endforeach; ?>

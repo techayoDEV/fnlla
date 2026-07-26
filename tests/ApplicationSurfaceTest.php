@@ -15,8 +15,8 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Confirms the starter behaves like the public application base while maintenance and
-  health remain linked framework capabilities.
+- Confirms the project base behaves like the public application surface while
+  maintenance and health remain linked framework capabilities.
 ===============================================================================
 */
 
@@ -93,7 +93,7 @@ final class ApplicationSurfaceTest extends TestCase
         }
     }
 
-    public function testHomePageRendersStarterOwnedContent(): void
+    public function testHomePageRendersProjectOwnedContent(): void
     {
         $application = $this->makeApplication();
 
@@ -103,14 +103,14 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("Starter-first development", $response->body());
+        self::assertStringContainsString("Project-first development", $response->body());
         self::assertStringContainsString("Services", $response->body());
         self::assertStringContainsString("About", $response->body());
         self::assertStringNotContainsString("DEV OPERATIONS", $response->body());
         self::assertStringNotContainsString(">Operations<", $response->body());
     }
 
-    public function testLocalFreshStarterRedirectsHomeToDeveloperOnboarding(): void
+    public function testLocalFreshProjectRedirectsHomeToDeveloperOnboarding(): void
     {
         $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
             . DIRECTORY_SEPARATOR
@@ -142,7 +142,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame("/maintenance?redirect=%2F#developer-panel-setup", $response->headers()["Location"] ?? null);
     }
 
-    public function testStarterPagesAreAvailableThroughPublicRoutes(): void
+    public function testProjectPagesAreAvailableThroughPublicRoutes(): void
     {
         $application = $this->makeApplication();
 
@@ -162,7 +162,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $aboutResponse->status());
         self::assertSame(200, $servicesResponse->status());
         self::assertSame(404, $contactResponse->status());
-        self::assertStringContainsString("Who this starter is for", $aboutResponse->body());
+        self::assertStringContainsString("Who this project base is for", $aboutResponse->body());
         self::assertStringContainsString("Service websites", $servicesResponse->body());
     }
 
@@ -422,7 +422,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("Starter-first development", $homeResponse->body());
+        self::assertStringContainsString("Project-first development", $homeResponse->body());
     }
 
     public function testMaintenanceScreenRendersBrandedClientPreviewWhenEnabled(): void
@@ -519,7 +519,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
     }
 
-    public function testFreshStarterCanConfigureDeveloperAccessBeforeMaintenance(): void
+    public function testFreshProjectCanConfigureDeveloperAccessBeforeMaintenance(): void
     {
         $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
             . DIRECTORY_SEPARATOR
@@ -608,7 +608,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("Starter-first development", $homeResponse->body());
+        self::assertStringContainsString("Project-first development", $homeResponse->body());
     }
 
     public function testExistingProjectCanActivateDeveloperPanelAfterFrameworkUpdate(): void
@@ -744,7 +744,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $pageResponse->status());
-        self::assertStringContainsString("Set the first maintenance password from the starter itself", $pageResponse->body());
+        self::assertStringContainsString("Set the first maintenance password from the project itself", $pageResponse->body());
 
         $token = csrf_token();
         $setupResponse = $application->handle(Request::capture("", [

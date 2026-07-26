@@ -102,7 +102,7 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString(".doc-wrapper", $response->body());
     }
 
-    public function testBuildingGuideReflectsCurrentStarterControllerAndLayoutRules(): void
+    public function testBuildingGuideReflectsCurrentProjectControllerAndLayoutRules(): void
     {
         if ($this->skipWhenDocsWorkspaceMissing()) {
             return;
@@ -122,7 +122,7 @@ final class DocumentationRouteTest extends TestCase
         self::assertFalse(str_contains($response->body(), "HomeController::class"));
     }
 
-    public function testFnllaRuntimeGuideShowsFullStarterShell(): void
+    public function testFnllaRuntimeGuideShowsFullProjectShell(): void
     {
         if ($this->skipWhenDocsWorkspaceMissing()) {
             return;
@@ -136,8 +136,8 @@ final class DocumentationRouteTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("Shared starter layout", $response->body());
-        self::assertStringContainsString("Starter route, controller and page body", $response->body());
+        self::assertStringContainsString("Shared project layout", $response->body());
+        self::assertStringContainsString("Project route, controller and page body", $response->body());
         self::assertStringContainsString("&lt;header&gt;", $response->body());
         self::assertStringContainsString("&lt;main&gt;", $response->body());
         self::assertStringContainsString("&lt;footer&gt;", $response->body());

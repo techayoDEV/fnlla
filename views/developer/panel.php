@@ -74,7 +74,7 @@ $developerNotice ??= null;
         <article class="feature-card">
           <p class="feature-kicker">Navigation mode</p>
           <h2 class="content-title mb-0">DEV OPERATIONS only appears for unlocked developer sessions.</h2>
-          <p class="content-text">The public starter stays plain for the client. After a developer unlocks this hidden panel, the header surfaces a direct DEV OPERATIONS button for quick return to the panel.</p>
+          <p class="content-text">The public project shell stays plain for the client. After a developer unlocks this hidden panel, the header surfaces a direct DEV OPERATIONS button for quick return to the panel.</p>
         </article>
       </div>
     </section>
@@ -83,7 +83,7 @@ $developerNotice ??= null;
       <div class="grid gap-md site-login-grid">
         <article class="feature-card">
           <p class="feature-kicker">Maintenance credentials</p>
-          <h2 class="section-title mb-0">Rotate the preview password without reopening the starter bootstrap flow.</h2>
+          <h2 class="section-title mb-0">Rotate the preview password without reopening the project bootstrap flow.</h2>
           <p class="content-text"><?= ($maintenanceAccess["enabled"] ?? false)
               ? "Maintenance mode is currently active. Save settings here to keep the lock enabled or turn it off while preserving a prepared password."
               : "Maintenance mode is currently off. Save a password here when you want to prepare a private preview lock, then choose whether it should stay off or be enabled immediately." ?></p>

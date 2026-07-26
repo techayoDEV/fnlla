@@ -30,8 +30,8 @@ $developerNotice ??= null;
           <p class="feature-kicker">Private developer entry</p>
           <h1 class="section-title mb-0">Developer tools stay locked until this browser session is explicitly unlocked.</h1>
           <p class="content-text">This private address is only the login entry. The actual developer panel remains unavailable until the correct password opens a developer session for <?= h((string) ($developerAccess["unlock_ttl_minutes"] ?? 120)) ?> minutes.</p>
-          <ul class="starter-note-list">
-            <li>The public starter header stays plain for the client.</li>
+          <ul class="project-note-list">
+            <li>The public project header stays plain for the client.</li>
             <li>The developer panel itself only opens after a successful unlock.</li>
             <li>The private path and password can still be rotated later from inside the panel.</li>
           </ul>

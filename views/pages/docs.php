@@ -28,17 +28,17 @@ Purpose:
           <span class="badge">Local docs</span>
         </div>
         <h1 class="section-title">Use this page to bridge the running demo and the deeper framework docs without pretending they are the same thing.</h1>
-        <p class="section-text">The application surface shows how the starter behaves in a browser. The docs explain the repository contract, export workflow and how the built-in runtime should be used behind that surface.</p>
+        <p class="section-text">The application surface shows how the exported project behaves in a browser. The docs explain the repository contract, export workflow and how the built-in runtime should be used behind that surface.</p>
       </div>
-      <ul class="starter-note-list mb-3">
+      <ul class="project-note-list mb-3">
         <li><code>/docs</code> is the app-native entry point for the local documentation workspace.</li>
         <li>The HTML docs remain the source for long-form reference and guide reading.</li>
         <li>Exported downstream projects do not inherit this maintainer docs workspace.</li>
       </ul>
       <div class="d-flex flex-wrap gap-md mb-3">
         <a class="btn btn-primary" href="<?= h(route("docs.page", ["page" => "index.html"])) ?>">Open docs overview</a>
-        <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Read the starter workflow</a>
-        <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to starter</a>
+        <a class="btn btn-outline" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Read the project workflow</a>
+        <a class="btn btn-ghost" href="<?= h(route("home")) ?>">Back to project base</a>
       </div>
       <div class="grid grid-3 gap-md" aria-label="Documentation hub support facts">
         <article class="feature-card">
@@ -108,7 +108,7 @@ Purpose:
       <div class="section-header mb-0">
         <p class="feature-kicker">Guide set</p>
         <h2 class="section-title">Use these long-form guides when the work stops being exploratory and starts becoming delivery.</h2>
-        <p class="section-text">These documents are the ones teams usually return to while exporting a starter, shaping routes and checking which scripts belong in a real downstream application.</p>
+        <p class="section-text">These documents are the ones teams usually return to while exporting a project base, shaping routes and checking which scripts belong in a real downstream application.</p>
       </div>
       <div class="grid grid-3 gap-md">
         <?php foreach ($guideDocuments as $document): ?>

@@ -38,11 +38,11 @@ final class AuthController extends Controller
 
         return $this->view("pages/login", [
             "pageTitle" => __("messages.sign_in"),
-            "pageTitleSection" => "Starter access",
+            "pageTitleSection" => "Project access",
             "loginHighlights" => [
                 [
                     "title" => "Protected routes already exist",
-                    "text" => "The starter ships with authenticated dashboard and admin examples so protected areas have a reference shape from day one.",
+                    "text" => "The project base ships with authenticated dashboard and admin examples so protected areas have a reference shape from day one.",
                 ],
                 [
                     "title" => "Validation and session flows are real",

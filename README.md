@@ -204,7 +204,7 @@ Useful options:
 - `CLIENT_PREVIEW_LAST_UPDATED_VALUE=13 July 2026 at 15:20` shows a client-friendly update timestamp
 - `CLIENT_PREVIEW_PROGRESS_ENABLED=true` shows a progress bar when both `CLIENT_PREVIEW_STARTED_AT` and `CLIENT_PREVIEW_RESTORE_AT` are configured
 
-On a fresh starter, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
+On a fresh project export, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
 
 No Packagist download step is required for the framework itself.
 
@@ -215,7 +215,7 @@ For an actual new website or web application, the recommended workflow is not to
 Instead:
 
 1. keep `techayoDEV/fnlla` as the maintained framework source
-2. export a clean starter into a separate project directory
+2. export a clean project base into a separate project directory
 3. build the real website or application in that exported directory
 
 Use:
@@ -224,13 +224,17 @@ Use:
 php fnlla make:project ..\my-new-project "My New Project"
 ```
 
-Then open the exported directory, initialize its own Git repository and build the real project there by modifying the shipped starter itself.
+Then open the exported directory, claim the real product identity, initialize its own Git repository and build the real project there by modifying the shipped project base itself.
+
+```bash
+php fnlla project:claim --product "My New Project" --owner "Owner LTD" --developer "Developer LTD"
+```
 
 The intended model is:
 
-- the starter is the base public application shell
+- the exported project base is the public application shell
 - downstream teams replace and extend that shell directly
-- client preview can stay behind the built-in maintenance access screen until the public release is ready, including browser-based first-password setup on a fresh starter
+- client preview can stay behind the built-in maintenance access screen until the public release is ready, including browser-based first-password setup on a fresh project export
 - maintenance, health and CLI remain linked framework capabilities around the app
 - the framework repo stays the public source of truth for the shared built-in runtime, docs and update rules
 
@@ -323,6 +327,7 @@ Important commands:
 
 - `php fnlla fnlla-runtime:sync`
 - `php fnlla fnlla-runtime:validate`
+- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
 - `php fnlla framework:update --check --github`
 - `php fnlla framework:update --check [--source <path-to-fnlla>]`
 - `php fnlla migrate`
@@ -360,10 +365,10 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/validate-version-manifest.php` validates unified FNLLA version metadata across the repository and integrated UI surface
 - `scripts/validate-release-metadata.php` audits release-facing links, ownership markers and repository references before publication work
 - `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
-- exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock, while older compatibility artifacts stay internal to update flows
-- exported projects keep `php fnlla framework:update` as the public downstream update command, while older compatibility aliases stay hidden
+- exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock
+- exported projects keep `php fnlla framework:update` as the public downstream update command
 - exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
-- the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release starter builds
+- the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release project builds
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
 - `bootstrap/common.php` enforces the shared integrated UI surface guard during bootstrap

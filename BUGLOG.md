@@ -6,7 +6,7 @@ while building downstream projects on top of `techayoDEV/fnlla`.
 
 Use it when:
 - a downstream project exposes a real framework bug
-- a generated starter behaves differently than the maintainer repository
+- a generated project export behaves differently than the maintainer repository
 - docs, tests or version contracts drift from actual framework behavior
 - a fix should be tracked before it is implemented in `techayoDEV/fnlla`
 

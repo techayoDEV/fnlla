@@ -15,8 +15,8 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Provides the public starter pages that downstream teams are expected to extend
-  directly into the real application.
+- Provides the public project-base pages that downstream teams are expected to
+  extend directly into the real application.
 */
 
 namespace Fnlla\Php\Controllers;
@@ -31,9 +31,9 @@ final class PageController extends Controller
         return $this->view("pages/home", [
             "pageTitle" => "Home",
             "pageTitleHome" => true,
-            "starterPrinciples" => [
+            "projectPrinciples" => [
                 [
-                    "title" => "Starter-first development",
+                    "title" => "Project-first development",
                     "text" => "The shipped skeleton is the application base itself, so teams extend it instead of building a second front-end beside it.",
                 ],
                 [
@@ -42,14 +42,14 @@ final class PageController extends Controller
                 ],
                 [
                     "title" => "One integrated UI surface",
-                    "text" => "FNLLA already ships the UI surface used by the starter, so layout and page work can stay inside one supported contract.",
+                    "text" => "FNLLA already ships the UI surface used by the project base, so layout and page work can stay inside one supported contract.",
                 ],
             ],
             "growthSteps" => [
                 [
                     "number" => "1",
                     "title" => "Reshape the public page map",
-                    "text" => "Adjust the starter routes, labels and navigation until they match the real information architecture of the project.",
+                    "text" => "Adjust the exported routes, labels and navigation until they match the real information architecture of the project.",
                 ],
                 [
                     "number" => "2",
@@ -59,7 +59,7 @@ final class PageController extends Controller
                 [
                     "number" => "3",
                     "title" => "Attach real workflows",
-                    "text" => "Expand the starter with forms, auth, data capture, dashboards or integrations only where the project actually needs them.",
+                    "text" => "Expand the project base with forms, auth, data capture, dashboards or integrations only where the project actually needs them.",
                 ],
             ],
         ]);
@@ -71,12 +71,12 @@ final class PageController extends Controller
             "pageTitle" => "About",
             "aboutPillars" => [
                 [
-                    "title" => "Who this starter is for",
+                    "title" => "Who this project base is for",
                     "text" => "Teams that want the first version of the site or application to already feel like project code rather than framework decoration.",
                 ],
                 [
                     "title" => "How this page should evolve",
-                    "text" => "Replace the placeholder narrative with the real company, product or service story without changing the starter model itself.",
+                    "text" => "Replace the placeholder narrative with the real company, product or service story without changing the project model itself.",
                 ],
                 [
                     "title" => "What stays shared",
@@ -97,7 +97,7 @@ final class PageController extends Controller
                 [
                     "number" => "3",
                     "title" => "Keep the structure reusable",
-                    "text" => "Use the same section and container rhythm the other starter pages follow so the application stays coherent.",
+                    "text" => "Use the same section and container rhythm the other project-base pages follow so the application stays coherent.",
                 ],
             ],
         ]);
@@ -110,7 +110,7 @@ final class PageController extends Controller
             "serviceCards" => [
                 [
                     "title" => "Service websites",
-                    "text" => "Use this starter as the basis for a clear service page map, enquiry flow and structured presentation of what is offered.",
+                    "text" => "Use this project base as the basis for a clear service page map, enquiry flow and structured presentation of what is offered.",
                 ],
                 [
                     "title" => "Portals and internal tools",
@@ -118,7 +118,7 @@ final class PageController extends Controller
                 ],
                 [
                     "title" => "Server-rendered product surfaces",
-                    "text" => "The starter remains useful when the project grows past simple marketing pages into richer application behavior.",
+                    "text" => "The exported application base remains useful when the project grows past simple marketing pages into richer application behavior.",
                 ],
             ],
             "deliverySteps" => [
@@ -135,7 +135,7 @@ final class PageController extends Controller
                 [
                     "number" => "3",
                     "title" => "Keep the page extendable",
-                    "text" => "Leave room for future sections such as pricing, proof, FAQs or case studies without breaking the starter rhythm.",
+                    "text" => "Leave room for future sections such as pricing, proof, FAQs or case studies without breaking the project rhythm.",
                 ],
             ],
         ]);

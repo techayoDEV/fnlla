@@ -26,6 +26,7 @@ For a normal exported project, the important script set is:
 
 The exported application also keeps one framework-update command on purpose:
 
+- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
 - `php fnlla framework:update --check --github`
 - `php fnlla framework:update --check [--source <path-to-fnlla>]`
 
@@ -141,6 +142,33 @@ Important boundary:
 - this is a metadata synchronization step
 - it should follow a real version decision rather than replace one
 
+### `php fnlla project:claim`
+
+Purpose:
+
+- turns a fresh exported project base into a claimed downstream product
+- writes owner, funder, client, developer, maintenance provider, product identifier and runtime creator metadata
+- updates `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
+- keeps client branding and business logic out of the upstream FNLLA framework
+
+Use it when:
+
+- you have just exported a new project with `php fnlla make:project`
+- a generic project base is becoming a real website, portal or application
+- handover/release metadata needs to show who owns, funds, builds and maintains the system
+
+Typical example:
+
+```bash
+php fnlla project:claim --product "Acme Service Portal" --id ACME_SERVICE_PORTAL --owner "Acme LTD" --developer "Delivery Studio LTD" --maintainer "Delivery Studio LTD"
+```
+
+Important boundary:
+
+- this command claims metadata and the visible application name
+- it does not generate client pages, copy client branding or decide business workflows
+- project-specific content, data models and UI still belong to normal delivery work after claim
+
 ### `scripts/sync-fnlla-runtime.ps1`
 
 Purpose:
@@ -180,7 +208,7 @@ Use it when:
 Important boundary:
 
 - it publishes from the integrated maintainer repository
-- it does not change starter pages, routes or application-owned project files
+- it does not change project pages, routes or application-owned project files
 
 ### `php fnlla framework:update`
 
@@ -287,6 +315,7 @@ After export, a healthy first pass is:
 
 ```bash
 php fnlla fnlla-runtime:validate
+php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
 php fnlla framework:update --check --github
 php scripts/test.php
 php scripts/lint.php

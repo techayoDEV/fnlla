@@ -186,7 +186,7 @@ final class HomeController extends Controller
             flash_set("developer_access_notice", [
                 "path" => $generatedDeveloperPath,
                 "title" => "Private developer panel created",
-            "text" => "Save this hidden address. It is the private developer entry point that keeps the public starter header clean for the client.",
+            "text" => "Save this hidden address. It is the private developer entry point that keeps the public project header clean for the client.",
         ]);
         }
 
@@ -194,8 +194,8 @@ final class HomeController extends Controller
             "variant" => "success",
             "title" => "Maintenance access configured",
             "text" => $generatedDeveloperPath !== ""
-                ? "The starter saved the maintenance credentials, generated a private developer panel path and kept this browser session unlocked for follow-up work."
-                : "The starter saved the maintenance credentials to .env, enabled preview protection and kept this browser session unlocked for setup work.",
+                ? "The project setup flow saved the maintenance credentials, generated a private developer panel path and kept this browser session unlocked for follow-up work."
+                : "The project setup flow saved the maintenance credentials to .env, enabled preview protection and kept this browser session unlocked for setup work.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
@@ -418,7 +418,7 @@ final class HomeController extends Controller
                 "status" => "ok",
                 "environment" => app_environment(),
                 "timestamp" => gmdate(DATE_ATOM),
-                "description" => "FNLLA starter application health status.",
+                "description" => "FNLLA project application health status.",
             ],
             "versions" => [
                 "fnlla" => $frameworkVersion,
@@ -572,7 +572,7 @@ final class HomeController extends Controller
             $setupEnabled !== true => "Browser-based maintenance setup is disabled in this environment.",
             $isLocalContext !== true => "Browser-based maintenance setup is local-only. Open this page from the same machine as the project runtime.",
             $envWritable !== true => "The project .env file is not writable. Make .env or the project directory writable before configuring maintenance here.",
-            default => "This starter can save maintenance credentials directly into the project environment file.",
+            default => "This project setup flow can save maintenance credentials directly into the project environment file.",
         };
 
         return [

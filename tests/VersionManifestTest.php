@@ -44,4 +44,31 @@ final class VersionManifestTest extends TestCase
     {
         self::assertSame([], VersionManifest::validateRepositoryManifest());
     }
+
+    public function testBuildClaimedProjectManifestRecordsOwnershipAndRuntimeCreator(): void
+    {
+        $manifest = VersionManifest::buildClaimedProjectManifest([
+            "id" => "ACME_PORTAL",
+            "product" => "Acme Portal",
+            "slug" => "acme-portal",
+            "summary" => "Acme Portal built on FNLLA.",
+            "owner" => "Acme LTD",
+            "funder" => "Acme LTD",
+            "client" => "Acme LTD",
+            "system_owner" => "Acme LTD",
+            "developer" => "Delivery LTD",
+            "maintainer" => "Care LTD",
+            "runtime" => "FNLLA",
+            "runtime_creator" => "TechAyo LTD (techayo.co.uk)",
+        ]);
+
+        self::assertSame(2, $manifest["schema_version"] ?? null);
+        self::assertSame("claimed_project", $manifest["manifest_type"] ?? null);
+        self::assertSame("ACME_PORTAL", $manifest["product"]["identifier"] ?? null);
+        self::assertSame("Acme LTD", $manifest["product"]["owner"]["name"] ?? null);
+        self::assertSame("Delivery LTD", $manifest["product"]["developer"]["name"] ?? null);
+        self::assertSame("Care LTD", $manifest["product"]["maintenance_provider"]["name"] ?? null);
+        self::assertSame("FNLLA", $manifest["framework"]["name"] ?? null);
+        self::assertSame("TechAyo LTD (techayo.co.uk)", $manifest["framework"]["creator"] ?? null);
+    }
 }

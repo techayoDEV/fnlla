@@ -36,7 +36,7 @@ final class MakeProjectCommand extends Command
 
     public function description(): string
     {
-        return "Export a clean FNLLA starter into a new project directory.";
+        return "Export a clean FNLLA project base into a new project directory.";
     }
 
     public function handle(array $arguments): int
@@ -76,7 +76,7 @@ final class MakeProjectCommand extends Command
 
         try {
             $this->prepareTargetDirectory($targetPath);
-            $this->copyStarterTree($sourceRoot, $targetPath);
+            $this->copyProjectTree($sourceRoot, $targetPath);
             $this->customizeExport($targetPath, $appName, $packageSlug);
         } catch (RuntimeException $exception) {
             $this->error($exception->getMessage());
@@ -84,15 +84,16 @@ final class MakeProjectCommand extends Command
             return 1;
         }
 
-        $this->line("Exported FNLLA starter to: " . $targetPath);
+        $this->line("Exported FNLLA project base to: " . $targetPath);
         $this->line("Application name: " . $appName);
         $this->line("");
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
-        $this->line("2. Copy .env.example to .env, or open /maintenance locally and let the starter create .env while configuring the first maintenance password.");
-        $this->line("3. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the starter surface into your real project pages.");
-        $this->line("4. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
-        $this->line("5. Initialize a separate Git repository for the new website or application.");
+        $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner LTD\" --developer \"Developer LTD\".");
+        $this->line("3. Copy .env.example to .env, or open /maintenance locally and let the project setup flow create .env while configuring the first maintenance password.");
+        $this->line("4. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
+        $this->line("5. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
+        $this->line("6. Initialize a separate Git repository for the new website or application.");
 
         return 0;
     }
@@ -124,7 +125,7 @@ final class MakeProjectCommand extends Command
         }
     }
 
-    private function copyStarterTree(string $sourceRoot, string $targetRoot): void
+    private function copyProjectTree(string $sourceRoot, string $targetRoot): void
     {
         $iterator = new FilesystemIterator($sourceRoot, FilesystemIterator::SKIP_DOTS);
 
@@ -274,7 +275,7 @@ final class MakeProjectCommand extends Command
         $this->sanitizeExportedStorage($targetRoot);
         $this->rewriteAppConfig($targetRoot, $appName);
         $this->rewriteComposerMetadata($targetRoot, $appName, $packageSlug);
-        $this->rewriteStarterReadme($targetRoot, $appName);
+        $this->rewriteProjectReadme($targetRoot, $appName);
         $this->rewriteApplicationSurface($targetRoot, $appName);
         $this->rewriteDatabaseSurface($targetRoot);
         $this->rewriteProjectTests($targetRoot);
@@ -337,7 +338,7 @@ final class MakeProjectCommand extends Command
         );
     }
 
-    private function rewriteStarterReadme(string $targetRoot, string $appName): void
+    private function rewriteProjectReadme(string $targetRoot, string $appName): void
     {
         $readme = <<<MD
 # {$appName}
@@ -357,9 +358,8 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
-- a legacy compatibility lock in `.fnlla/starter-lock.json` for older update flows
 - root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
-- a starter application skeleton with public pages for home, about and services
+- an application base with public pages for home, about and services
 - an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
@@ -368,9 +368,15 @@ It is intended to be the beginning of a new server-rendered website or web appli
 
 ## How to start working
 
-1. Copy `.env.example` to `.env`.
-2. Set `APP_URL` and your MySQL credentials.
-3. Run:
+1. Claim the project identity:
+
+```bash
+php fnlla project:claim --product "{$appName}" --owner "Owner LTD" --developer "Developer LTD" --maintainer "Developer LTD"
+```
+
+2. Copy `.env.example` to `.env`.
+3. Set `APP_URL` and your MySQL credentials.
+4. Run:
 
 ```bash
 php fnlla fnlla-runtime:validate
@@ -379,17 +385,17 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-4. Start the local server:
+5. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-5. Open `http://127.0.0.1:8080` in your browser and review the starter pages at `/`, `/about` and `/services`.
-6. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
-7. When client preview should stay private, either:
+6. Open `http://127.0.0.1:8080` in your browser and review the exported pages at `/`, `/about` and `/services`.
+7. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
+8. When client preview should stay private, either:
 
-   - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh starter, or
+   - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh project export, or
    - set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`
 
 The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `FRAMEWORK_UPDATE_SOURCE_PATH`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
@@ -438,6 +444,7 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
 - `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
+- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
 - `php fnlla framework:update --check --github` checks the latest published FNLLA release from GitHub and caches the release source locally before comparing drift
 - `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
 - `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
@@ -448,12 +455,13 @@ The export intentionally leaves `make:*`, `make:project` and broader framework-i
 
 The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
 
-The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release starter builds.
+The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
 
 ```bash
 php fnlla list
 php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
+php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
 php fnlla framework:update --check --github
 php fnlla framework:update --check --source ..\fnlla  # optional local override
 php fnlla route:list
@@ -481,7 +489,7 @@ MD;
 
     private function rewriteApplicationSurface(string $targetRoot, string $appName): void
     {
-        $this->synchronizeStarterSurfaceFiles($targetRoot, [
+        $this->synchronizeProjectSurfaceFiles($targetRoot, [
             "routes/web.php",
             "src/Controllers/HomeController.php",
             "src/Controllers/PageController.php",
@@ -499,7 +507,7 @@ MD;
         }
     }
 
-    private function synchronizeStarterSurfaceFiles(string $targetRoot, array $relativePaths): void
+    private function synchronizeProjectSurfaceFiles(string $targetRoot, array $relativePaths): void
     {
         foreach ($relativePaths as $relativePath) {
             if (!is_string($relativePath) || $relativePath === "") {
@@ -509,7 +517,7 @@ MD;
             $sourcePath = base_path($relativePath);
 
             if (!is_file($sourcePath)) {
-                throw new RuntimeException("Starter surface source file is missing: " . $sourcePath);
+                throw new RuntimeException("Project surface source file is missing: " . $sourcePath);
             }
 
             $targetPath = $targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
@@ -522,7 +530,7 @@ MD;
             $contents = file_get_contents($sourcePath);
 
             if ($contents === false) {
-                throw new RuntimeException("Unable to read starter surface source file: " . $sourcePath);
+                throw new RuntimeException("Unable to read project surface source file: " . $sourcePath);
             }
 
             file_put_contents($targetPath, $contents);
@@ -619,15 +627,15 @@ use Fnlla\Php\Console\Commands\FrameworkUpdateCommand;
 use Fnlla\Php\Console\Commands\MigrateCommand;
 use Fnlla\Php\Console\Commands\MigrateRollbackCommand;
 use Fnlla\Php\Console\Commands\MigrateStatusCommand;
+use Fnlla\Php\Console\Commands\ProjectClaimCommand;
 use Fnlla\Php\Console\Commands\QueueWorkCommand;
 use Fnlla\Php\Console\Commands\RouteListCommand;
 use Fnlla\Php\Console\Commands\ScheduleRunCommand;
 use Fnlla\Php\Console\Commands\SeedCommand;
-use Fnlla\Php\Console\Commands\StarterUpdateCommand;
 use Fnlla\Php\Console\Commands\VersionStatusCommand;
 use Fnlla\Php\Console\Commands\VersionSyncCommand;
 
-if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:validate", "framework:update", "starter:update", "version:status", "version:sync"], true) && !defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
+if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:validate", "framework:update", "version:status", "version:sync"], true) && !defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
     define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true);
 }
 
@@ -642,10 +650,10 @@ $console->register(SeedCommand::class);
 $console->register(MigrateRollbackCommand::class);
 $console->register(MigrateCommand::class);
 $console->register(MigrateStatusCommand::class);
+$console->register(ProjectClaimCommand::class);
 $console->register(QueueWorkCommand::class);
 $console->register(RouteListCommand::class);
 $console->register(ScheduleRunCommand::class);
-$console->register(StarterUpdateCommand::class);
 $console->register(VersionStatusCommand::class);
 $console->register(VersionSyncCommand::class);
 

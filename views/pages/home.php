@@ -4,7 +4,7 @@ declare(strict_types=1);
 ?>
 <section class="section">
   <div class="container">
-    <section class="process-section" aria-label="Starter growth steps">
+    <section class="process-section" aria-label="Project growth steps">
       <div class="section-header mb-0">
         <p class="process-kicker">How teams work on it</p>
       </div>
@@ -23,12 +23,12 @@ declare(strict_types=1);
 
 <section class="section">
   <div class="container">
-    <section class="feature-section" aria-label="Starter principles">
+    <section class="feature-section" aria-label="Project principles">
       <div class="section-header mb-0">
         <p class="feature-kicker">Why this shape matters</p>
       </div>
       <div class="grid grid-3 gap-md">
-        <?php foreach ($starterPrinciples as $principle): ?>
+        <?php foreach ($projectPrinciples as $principle): ?>
         <article class="feature-card">
           <h3 class="content-title"><?= h($principle["title"]) ?></h3>
           <p class="content-text"><?= h($principle["text"]) ?></p>

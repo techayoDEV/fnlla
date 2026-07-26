@@ -117,7 +117,7 @@ $updateActionLabel = static function (array $update): string {
                   <p class="contact-kicker">Recommended workflow</p>
                   <h2 class="contact-card-title">GitHub release channel</h2>
                 </div>
-                <span class="framework-update-badge">Preferred for starters</span>
+                <span class="framework-update-badge">Preferred for projects</span>
               </div>
               <p class="contact-text">Use this when the application should fetch the latest published FNLLA release, cache it locally and prepare a browser-readable drift report before any apply step.</p>
 
@@ -191,13 +191,13 @@ $updateActionLabel = static function (array $update): string {
       <div class="section-header mb-0">
         <p class="process-kicker">Update workflow</p>
         <h2 class="section-title">A professional downstream update flow should stay understandable to any developer who joins the project later.</h2>
-        <p class="section-text">The goal is not just to copy files. The goal is to make framework drift visible, explain what is safe and preserve project-owned changes when the starter grows into a real product.</p>
+        <p class="section-text">The goal is not just to copy files. The goal is to make framework drift visible, explain what is safe and preserve project-owned changes when the exported base grows into a real product.</p>
       </div>
       <div class="process-grid">
         <article class="process-step">
           <span class="process-step-number">1</span>
           <h3 class="process-step-title">Resolve the source and export a fresh baseline</h3>
-          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository before exporting a clean starter baseline for comparison.</p>
+          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository before exporting a clean project baseline for comparison.</p>
         </article>
         <article class="process-step">
           <span class="process-step-number">2</span>
@@ -463,7 +463,7 @@ $updateActionLabel = static function (array $update): string {
           },
           {
             label: "Exporting a fresh project baseline from the cached release.",
-            meta: "Creates a clean framework reference that matches the published starter contract."
+            meta: "Creates a clean framework reference that matches the published project contract."
           },
           {
             label: "Comparing framework-managed files against the current application.",
@@ -505,7 +505,7 @@ $updateActionLabel = static function (array $update): string {
           },
           {
             label: "Comparing framework-managed files against the current application.",
-            meta: "Detects starter drift without touching project-owned business logic."
+            meta: "Detects framework drift without touching project-owned business logic."
           },
           {
             label: "Preparing the structured drift report.",

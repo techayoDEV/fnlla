@@ -60,7 +60,7 @@ $unifiedVersionModel = $fnllaVersion !== "" && $fnllaVersion === $integratedRunt
         <article class="feature-card">
           <p class="feature-kicker">Machine mode</p>
           <h2 class="content-title">Exact payload</h2>
-          <ul class="starter-note-list">
+          <ul class="project-note-list">
             <li>Send <code>Accept: application/json</code> to receive JSON directly.</li>
             <li>Append <code>?format=json</code> when you want raw output in a browser tab.</li>
             <li>Use the same endpoint for dashboards, smoke checks and deployment scripts.</li>

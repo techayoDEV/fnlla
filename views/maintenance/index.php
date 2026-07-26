@@ -70,7 +70,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
             <p class="feature-kicker">Access rules</p>
             <h2 class="content-title">Locked requests are redirected here until the session is unlocked.</h2>
             <p class="content-text">Once the password is accepted, this browser session stays open for <?= h((string) ($maintenanceAccess["unlock_ttl_minutes"] ?? 10)) ?> minutes before the maintenance lock restores itself automatically.</p>
-            <ul class="starter-note-list">
+            <ul class="project-note-list">
               <li>Public routes stay protected until maintenance access succeeds.</li>
               <li>Repeated failed attempts are temporarily blocked.</li>
               <li>The lock can be restored immediately from the operator surface after review.</li>
@@ -82,7 +82,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
           <div class="card-body maintenance-lock-panel-body">
             <?php if (!($maintenanceAccess["configured"] ?? false) && ($maintenanceSetup["show_setup"] ?? false)): ?>
             <p class="feature-kicker">Configure maintenance</p>
-            <h2 class="content-title">Set the first maintenance password from the starter itself</h2>
+            <h2 class="content-title">Set the first maintenance password from the project itself</h2>
             <p class="content-text">This local setup flow can create <code>.env</code> when it is still missing, enable maintenance mode, generate a private developer panel path and keep your current browser session unlocked for follow-up work.</p>
             <form class="form stack gap-md maintenance-lock-form" id="maintenance-setup" action="<?= h(route("maintenance.setup_access")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -246,13 +246,13 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
       <div class="grid grid-2 gap-lg site-login-grid">
         <article class="feature-card">
           <p class="feature-kicker">Client preview setup</p>
-          <h2 class="section-title mb-0">Enable maintenance protection directly from the starter before you share work in progress.</h2>
+          <h2 class="section-title mb-0">Enable maintenance protection directly from the project before you share work in progress.</h2>
           <p class="content-text">This local setup flow writes the maintenance credentials into the project <code>.env</code>, turns the protection on, generates a hidden developer panel path and keeps this browser session unlocked so the developer can continue working.</p>
-          <ul class="starter-note-list">
-            <li>Use it on a fresh starter when you want a private preview link for the client.</li>
+          <ul class="project-note-list">
+            <li>Use it on a fresh project export when you want a private preview link for the client.</li>
             <li>Password is required and immediately activates maintenance mode.</li>
-            <li>The starter can reuse the maintenance password for the hidden developer panel or accept a separate password here.</li>
-            <li>If <code>.env</code> does not exist yet, the starter can create it from <code>.env.example</code>.</li>
+            <li>The project setup flow can reuse the maintenance password for the hidden developer panel or accept a separate password here.</li>
+            <li>If <code>.env</code> does not exist yet, the project setup flow can create it from <code>.env.example</code>.</li>
           </ul>
         </article>
         <article class="feature-card">
@@ -341,8 +341,8 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               : "Activate the hidden developer panel for an existing project that predates this feature." ?></h2>
           <p class="content-text"><?= $freshDeveloperOnboarding
               ? "This first local setup step creates the private developer path, saves the developer password and opens the panel in the current browser session. Once inside the panel, you can decide whether maintenance should stay off or be enabled for client preview."
-              : "Use this once after updating an older FNLLA project. The framework will generate a private path, save a developer password and keep the public starter shell clean for the client." ?></p>
-          <ul class="starter-note-list">
+              : "Use this once after updating an older FNLLA project. The framework will generate a private path, save a developer password and keep the public project shell clean for the client." ?></p>
+          <ul class="project-note-list">
             <?php if ($freshDeveloperOnboarding): ?>
             <li>The generated path becomes the private entry point for the developer team.</li>
             <li>The public site stays open until you explicitly enable maintenance later from the developer panel.</li>

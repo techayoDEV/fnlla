@@ -16,7 +16,7 @@ templates and release metadata.
 
 Purpose:
 - Writes project-local environment values so downstream maintenance setup can
-  enable preview protection directly from the starter surface.
+  enable preview protection directly from the project setup surface.
 */
 
 namespace Fnlla\Php\Support;

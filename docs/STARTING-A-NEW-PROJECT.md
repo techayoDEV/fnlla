@@ -6,7 +6,7 @@ Do not treat the `techayoDEV/fnlla` repository itself as the normal place where 
 
 The recommended workflow is:
 
-1. Keep `techayoDEV/fnlla` as the framework source and starter-export base.
+1. Keep `techayoDEV/fnlla` as the framework source and project-export base.
 2. Export a new working project into its own directory.
 3. Give that new directory its own project name and its own Git repository.
 4. Build the actual website or application there.
@@ -27,17 +27,17 @@ That quickly becomes messy because:
 
 ## Official recommended workflow
 
-Use the built-in starter export command from the maintained `techayoDEV/fnlla` repository:
+Use the built-in project export command from the maintained `techayoDEV/fnlla` repository:
 
 ```bash
 php fnlla make:project ..\my-new-project "My New Project"
 ```
 
-That command exports a clean working starter into a new directory outside the framework repository.
+That command exports a clean working project base into a new directory outside the framework repository.
 
 Treat that exported surface as the real beginning of the application itself.
 Do not build a second public front beside it.
-Replace and extend the starter routes, views, assets and controllers directly, while leaving maintenance, health and CLI as linked framework capabilities around the project.
+Replace and extend the exported routes, views, assets and controllers directly, while leaving maintenance, health and CLI as linked framework capabilities around the project.
 
 ## What the export gives you
 
@@ -49,10 +49,10 @@ The exported project already includes:
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
 - lint, test and runtime validation scripts
-- a starter skeleton with public pages for `/`, `/about` and `/services`
+- an application base with public pages for `/`, `/about` and `/services`
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - an optional password-protected maintenance access screen for client preview or staged review
-- a browser-based first-time maintenance setup flow available from `/maintenance` on a fresh local starter
+- a browser-based first-time maintenance setup flow available from `/maintenance` on a fresh local project export
 - a project README that explains the next steps
 
 It also avoids copying framework-maintainer-only surfaces such as:
@@ -77,6 +77,42 @@ That means the normal flow is:
 3. Open the exported directory.
 4. Initialize a new Git repository there.
 5. Build the real project in that new directory.
+
+## Claim the project identity
+
+After export, the directory is no longer just a generic base. Before real
+delivery work starts, claim the project with the built-in command:
+
+```bash
+php fnlla project:claim \
+  --product "Acme Service Portal" \
+  --id ACME_SERVICE_PORTAL \
+  --owner "Acme LTD" \
+  --developer "Delivery Studio LTD" \
+  --maintainer "Delivery Studio LTD"
+```
+
+The command writes project-owned metadata into `MANIFEST.json`, `.env.example`,
+`README.md` and `config/app.php`.
+
+Claimed metadata records:
+
+- product or application name
+- product identifier and slug
+- owner, funder, client and system owner where applicable
+- developer and implementation provider
+- maintenance and update provider
+- runtime/framework name, version and creator
+
+The current framework metadata already records the FNLLA runtime and integrated
+UI surface. Downstream project metadata should extend that structure with the
+real product identity instead of leaving the exported application described only
+as a template.
+
+Do not copy client branding, proprietary business logic or project-specific
+data back into `techayoDEV/fnlla`. Generic improvements discovered in a
+downstream project should be reimplemented in FNLLA with framework-owned naming,
+tests and documentation.
 
 ## Example
 
@@ -105,13 +141,14 @@ and leaves the framework repository untouched.
 
 Inside the new project directory:
 
-1. Copy `.env.example` to `.env`.
-2. Set `APP_URL`.
-3. Set MySQL credentials.
-4. Review `config/app.php`.
-5. Open `/`, `/about` and `/services` and treat them as the real starter pages you will reshape.
-6. Replace the demo routes and pages with the real application flow.
-7. Run:
+1. Run `php fnlla project:claim --product "..." --owner "..." --developer "..."`.
+2. Copy `.env.example` to `.env`.
+3. Set `APP_URL`.
+4. Set MySQL credentials.
+5. Review `config/app.php`.
+6. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
+7. Replace the demo routes and pages with the real application flow.
+8. Run:
 
 ```bash
 php fnlla fnlla-runtime:validate
@@ -121,17 +158,17 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-8. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
+9. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
 
-9. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
+10. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 
-10. Start the local server:
+11. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-11. Open `http://127.0.0.1:8080` in your browser.
+12. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.
@@ -150,15 +187,15 @@ For a new project, the first files are usually:
 - `public/assets/app.css`
 - `database/migrations/`
 
-## Should there still be a separate starter directory inside fnlla
+## Should there still be a separate template directory inside fnlla
 
-No separate duplicated `starter/` copy is recommended as the primary workflow.
+No separate duplicated `template/` copy is recommended as the primary workflow.
 
 The reason is simple:
 
-- a duplicated starter directory would copy large parts of the framework source
+- a duplicated template directory would copy large parts of the framework source
 - that duplicate would drift over time
-- maintainers would have to update the framework and the starter copy separately
+- maintainers would have to update the framework and the template copy separately
 
 The export command is safer because it always uses the current maintained repository state as the source of truth.
 
@@ -169,7 +206,7 @@ It is also cleaner because it now exports the downstream application surface rat
 Cloning `techayoDEV/fnlla` directly is still fine when the goal is:
 
 - framework maintenance
-- hardening the starter base itself
+- hardening the project export base itself
 - updating shared docs
 - improving the common routing, auth, migration or UI contract
 
@@ -180,7 +217,7 @@ That is framework work, not downstream project work.
 Treat `techayoDEV/fnlla` as:
 
 - the maintained framework repository
-- the official starter export source
+- the official project export source
 
 Treat each exported directory as:
 
