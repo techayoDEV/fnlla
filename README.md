@@ -339,6 +339,7 @@ Important commands:
 - `php fnlla schedule:run`
 - `php fnlla route:list`
 - `php fnlla version:status`
+- `php fnlla version:set 1.1.0`
 - `php fnlla version:sync`
 
 ## Public source of truth
@@ -381,6 +382,8 @@ Important boundary:
 Recommended maintainer sequence:
 
 ```bash
+php fnlla version:set 1.1.0
+php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-fnlla-runtime.php

@@ -294,6 +294,33 @@ Why it is not exported:
 
 - downstream FNLLA application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior
 
+### `php fnlla version:set`
+
+Purpose:
+
+- sets the maintained FNLLA release version from one CLI entry point
+- rewrites `VERSION`
+- regenerates `MANIFEST.json`
+- re-syncs integrated UI surface version metadata
+- prints the recommended release validation sequence
+
+Typical example:
+
+```bash
+php fnlla version:set 1.1.0
+php scripts/build-docs.php
+php scripts/test.php
+php scripts/lint.php
+php scripts/validate-fnlla-runtime.php
+php scripts/validate-version-manifest.php
+php scripts/validate-release-metadata.php
+```
+
+Why it is not exported:
+
+- downstream projects should update their locked framework base through `php fnlla framework:update`
+- public FNLLA version decisions belong to the upstream maintainer repository
+
 ## What `make:project` now leaves behind on purpose
 
 The exported project intentionally does not copy:
@@ -305,7 +332,7 @@ The exported project intentionally does not copy:
 - `CODE_OF_CONDUCT.md`
 - `SECURITY.md`
 - runtime residue from `storage/` such as logs, cache files, queue files, session files and UI runtime guard state
-- the `make:*` scaffolding commands, the `make:project` export command and their maintainer-only regression coverage
+- the `make:*` scaffolding commands, the `make:project` export command, `version:set` and their maintainer-only regression coverage
 
 That keeps the exported project closer to what a delivery repository should actually own.
 

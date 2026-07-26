@@ -46,6 +46,8 @@ final class VersionStatusCommand extends Command
                 ? "synced"
                 : ("out of sync (" . ($status["integrated_runtime_version"] ?? "unknown") . ")"))
         );
+        $this->line("Repository manifest version: " . ($status["repository_manifest_version"] ?? "unknown"));
+        $this->line("Integrated runtime manifest version: " . ($status["integrated_runtime_manifest_version"] ?? "unknown"));
         $this->line("Repository MANIFEST.json: " . ($status["repository_manifest_exists"] ? "present" : "missing"));
         $this->line("Version contract: " . ($status["version_contract_ok"] ? "ok" : "out of sync"));
 

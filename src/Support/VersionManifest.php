@@ -66,6 +66,19 @@ final class VersionManifest
         return $manifest;
     }
 
+    public static function setRepositoryVersion(string $version): array
+    {
+        $version = trim($version);
+
+        if (!preg_match(self::SEMVER_PATTERN, $version)) {
+            throw new RuntimeException("FNLLA version must be a semantic version like 1.1.0.");
+        }
+
+        self::syncVersionFile(self::repositoryVersionPath(), $version);
+
+        return self::syncRepositoryManifest();
+    }
+
     public static function buildRepositoryManifest(): array
     {
         $frameworkVersion = self::readVersionValue(self::repositoryVersionPath());
@@ -223,6 +236,8 @@ final class VersionManifest
             "fnlla_version" => $fnllaVersion,
             "integrated_runtime_version" => $uiVersion,
             "integrated_runtime_synced" => $integratedRuntimeSynced,
+            "repository_manifest_version" => self::safeReadManifestVersion(self::repositoryManifestPath(), "product.version"),
+            "integrated_runtime_manifest_version" => self::safeReadManifestVersion(base_path(self::UI_MANIFEST_FILE), "product.version"),
             "repository_manifest_exists" => $repositoryManifestExists,
             "version_contract_ok" => $errors === [],
             "errors" => $errors,
@@ -388,6 +403,10 @@ final class VersionManifest
         }
 
         $lines[0] = $version;
+        while (count($lines) > 1 && trim((string) end($lines)) === "") {
+            array_pop($lines);
+        }
+
         file_put_contents($path, implode(PHP_EOL, $lines) . PHP_EOL);
     }
 
@@ -610,6 +629,18 @@ final class VersionManifest
     {
         try {
             return self::readVersionValue($path);
+        } catch (RuntimeException) {
+            return null;
+        }
+    }
+
+    private static function safeReadManifestVersion(string $path, string $manifestPath): ?string
+    {
+        try {
+            $manifest = self::readJsonFile($path);
+            $version = self::manifestValue($manifest, $manifestPath);
+
+            return $version !== "" ? $version : null;
         } catch (RuntimeException) {
             return null;
         }

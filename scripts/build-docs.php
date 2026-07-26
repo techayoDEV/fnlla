@@ -1158,7 +1158,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --check --github</code></li>
             <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
-            <li><code>php fnlla version:status</code> and <code>php fnlla version:sync</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 1.1.0</code></li>
           </ul>
         </article>
         <article class="card">
@@ -1183,7 +1183,7 @@ throttle</code></pre>
       <div class="doc-mini-grid">
         <article class="card">
           <h3 class="card-title">State files</h3>
-          <p class="card-text"><code>MANIFEST.json</code>, <code>README.md</code>, <code>VERSION</code> and <code>LICENSE.md</code> should stay aligned whenever release metadata changes.</p>
+          <p class="card-text"><code>php fnlla version:set &lt;semver&gt;</code> updates <code>VERSION</code>, repository manifest metadata and integrated UI surface version markers before release validation.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Validation scripts</h3>
