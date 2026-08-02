@@ -46,6 +46,8 @@ final class UrlGenerator
             throw new RuntimeException("Missing parameters for route: " . $name);
         }
 
-        return url(ltrim($path, "/"));
+        $normalized = "/" . ltrim($path, "/");
+
+        return $normalized === "/" ? "/" : $normalized;
     }
 }
