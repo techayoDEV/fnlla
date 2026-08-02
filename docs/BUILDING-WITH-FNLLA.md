@@ -55,7 +55,7 @@ When starting a new delivery on top of FNLLA, the safest sequence is:
 6. Add views.
 7. Add forms, validation and flash feedback where needed.
 8. Add database tables and migrations when persistence is required.
-9. Add auth or authorization boundaries when a page is protected.
+9. Add auth or authorisation boundaries when a page is protected.
 10. Run tests, lint and runtime validation before shipping.
 
 ## Local setup for a new project
@@ -254,7 +254,7 @@ Use controllers for:
 - events, mail or side effects
 - anything you may want to test or extend later
 
-If a route looks like real product behavior, move it into a controller.
+If a route looks like real product behaviour, move it into a controller.
 
 ## Handling forms correctly
 
@@ -266,6 +266,8 @@ For forms:
 - validate incoming data in the controller
 - flash errors and previous input back into the next request
 - redirect after success
+- send notifications through `mailer()` only after validation and rate limits
+  have accepted the submission
 
 The existing maintenance flows are the reference patterns:
 
@@ -280,6 +282,71 @@ Those patterns are already visible in:
 - `routes/maintenance.php`
 - `src/Controllers/HomeController.php`
 - `views/maintenance/index.php`
+
+## Sending form notifications
+
+FNLLA includes a small mail surface for contact forms and operational
+notifications:
+
+```php
+mailer()->to(config("mail.contact_recipient", "team@example.com"))
+    ->sendFormSubmission("New contact form submission", [
+        "Name" => trim((string) $request->input("name", "")),
+        "Email" => trim((string) $request->input("email", "")),
+        "Message" => trim((string) $request->input("message", "")),
+    ]);
+```
+
+The default `MAIL_MAILER=log` writes JSON lines under `storage/mail/`, which is
+safe for local development and tests. `MAIL_MAILER=http` posts a structured JSON
+message to `MAIL_HTTP_ENDPOINT` and is the recommended production integration
+point for a transactional mail provider, internal relay or audited mail gateway.
+Set `MAIL_HTTP_ALLOWED_HOSTS` in production to pin the expected provider or
+relay host, for example `mail-relay.example.com` or `*.provider.example`.
+`MAIL_MAILER=native` calls PHP's `mail()` function after validating recipients,
+subject and headers, but it is disabled until `MAIL_NATIVE_ENABLED=true` is set.
+
+Important boundary: native PHP mail is not SMTP or IMAP implemented inside
+FNLLA. It delegates delivery to the server or hosting platform. On production
+hosting, configure the platform mail transport first, use a real
+`MAIL_FROM_ADDRESS`, then enable the native driver only after a controlled test
+send has passed.
+
+For business deployments:
+
+- keep recipient addresses in `.env`, not in views
+- validate and throttle public forms before sending
+- do not place secrets, raw cookies, passwords or full request dumps into mail
+- prefer `MAIL_MAILER=http` with a transactional provider or internal mail relay
+  when deliverability, DKIM, SPF, DMARC reporting or audit trails are required
+- keep successful form submissions as redirects with flash feedback, not as
+  repeatable POST responses
+
+## Local runtime AI for user-facing guidance
+
+FNLLA's runtime AI service is local and deterministic:
+
+```php
+$answer = runtime_ai()->answer($request->input("question", ""), [
+    "surface" => "support",
+]);
+```
+
+Configure its direction, fallback, intents and knowledge in `config/ai.php`.
+Enable it with `AI_RUNTIME_ENABLED=true`. Optional learning is disabled by
+default and writes approved knowledge only under `storage/` when explicitly
+enabled.
+
+The integrated runtime bundle lives under `resources/fnlla-ai-runtime/`, not
+under `public/`. Treat it like a private server-side runtime: versioned,
+manifested and validated, but never served as a browser asset. Put reusable
+project records in `config/ai.php` or in a project-local bundle, and keep
+learned records in `storage/`.
+
+Use it for support assistants, onboarding flows, form triage, policy explainers,
+product/service recommendations and admin guidance. Do not use it as a source
+of legal, medical or financial judgement unless the project adds its own
+reviewed domain rules and human escalation path.
 
 ## Validation pattern
 
@@ -351,7 +418,7 @@ Keep query logic out of views. Put it in controllers or in a dedicated service c
 For protected pages:
 
 - add the `auth` middleware
-- add authorization where permission checks are needed
+- add authorisation where permission checks are needed
 - keep login/logout flows explicit
 
 Examples already exist:
@@ -372,7 +439,7 @@ $router->get("/dashboard", [AuthController::class, "dashboard"])
 
 Use authentication for identity.
 
-Use authorization for capability checks such as:
+Use authorisation for capability checks such as:
 
 - admin area access
 - management tools
@@ -385,7 +452,7 @@ Middleware should handle cross-cutting HTTP concerns, not page-specific business
 Use middleware for:
 
 - authentication
-- authorization
+- authorisation
 - CSRF
 - CORS
 - throttling
@@ -468,7 +535,7 @@ Do not move too fast into heavy architecture. Start with readable controllers an
 Recommended pattern:
 
 1. Protect the route with `auth`.
-2. Add an authorization gate for the role or capability.
+2. Add an authorisation gate for the role or capability.
 3. Keep admin views under `views/pages/`.
 4. Return dashboard-specific data from a controller.
 5. Keep dangerous write actions behind POST routes with CSRF.
@@ -510,7 +577,7 @@ Avoid these common mistakes:
 - writing raw HTML documents inside page partials
 - skipping CSRF on form POST routes
 - using closures for large business flows
-- mixing downstream project hacks into shared framework behavior without intent
+- mixing downstream project hacks into shared framework behaviour without intent
 - bypassing named routes and hardcoding links everywhere
 
 ## Suggested workflow for a new client project
@@ -524,7 +591,7 @@ For a brand-new website or application delivery, use this checklist:
 5. Build controllers page by page.
 6. Build views using the shipped runtime structure.
 7. Add validation and flash feedback to every form.
-8. Add auth and authorization guards.
+8. Add auth and authorisation guards.
 9. Add seed data if it improves local setup.
 10. Run validation and hardening checks before every release candidate.
 

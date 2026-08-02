@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates maintained framework behavior inside the repository-local test harness.
+- Validates maintained framework behaviour inside the repository-local test harness.
 */
 
 namespace Fnlla\Php\Tests;
@@ -30,6 +30,7 @@ use Fnlla\Php\Cache\FileCacheStore;
 use Fnlla\Php\Cache\RateLimiter;
 use Fnlla\Php\Container\Container;
 use Fnlla\Php\Exceptions\ExceptionHandler;
+use Fnlla\Php\Filesystem\FilesystemAdapter;
 use Fnlla\Php\Hashing\Hasher;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
@@ -188,6 +189,20 @@ final class FrameworkExtensionsTest extends TestCase
         self::assertSame("avatar.png", $file->originalName());
 
         unlink($temporaryFile);
+    }
+
+    public function testFilesystemAdapterRejectsTraversalOutsideDiskRoot(): void
+    {
+        $adapter = new FilesystemAdapter(storage_path("framework/filesystem-tests"));
+        $expectedRoot = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, storage_path("framework/filesystem-tests"));
+
+        self::assertStringContainsString(
+            $expectedRoot,
+            $adapter->path("avatars/profile.txt")
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $adapter->path("../app.log");
     }
 
     public function testApplicationNormalizesJsonResources(): void

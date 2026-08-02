@@ -15,13 +15,14 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements the maintained CLI surface and scheduler-oriented console behavior.
+- Implements the maintained CLI surface and scheduler-oriented console behaviour.
 */
 
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Cache\CacheStoreInterface;
 use Fnlla\Php\Console\Command;
+use Fnlla\Php\Observability\MetricsRecorder;
 
 final class CacheClearCommand extends Command
 {
@@ -38,6 +39,14 @@ final class CacheClearCommand extends Command
     public function handle(array $arguments): int
     {
         $this->container->make(CacheStoreInterface::class)->clear();
+        $this->container->make(MetricsRecorder::class)->clear();
+
+        foreach ([framework_ai_context_path(), framework_ai_review_pack_path(), framework_ai_upgrade_brief_path(), framework_app_map_path(), framework_upgrade_plan_path()] as $path) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+
         $this->line("Cache cleared.");
 
         return 0;

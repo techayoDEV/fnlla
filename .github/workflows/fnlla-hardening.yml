@@ -38,7 +38,15 @@ jobs:
 
       - name: Run repository tests
         shell: pwsh
-        run: php .\scripts\test.php
+        run: php .\scripts\test.php --suite fast
+
+      - name: Run runtime doctor
+        shell: pwsh
+        run: php .\fnlla doctor
+
+      - name: Run security audit
+        shell: pwsh
+        run: php .\fnlla security:audit
 
       - name: Run syntax lint
         shell: pwsh
@@ -74,3 +82,26 @@ jobs:
       - name: Audit cross-repository ecosystem contract
         shell: pwsh
         run: .\scripts\audit-fnlla-ecosystem.ps1 -SkipLocalChecks
+
+  export-regression:
+    runs-on: windows-latest
+    env:
+      FNLLA_RUNTIME_AUTO_SYNC: false
+      FNLLA_RUNTIME_ENFORCE: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Run export and update regression tests
+        shell: pwsh
+        run: php .\scripts\test.php --suite slow

@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates maintained framework behavior inside the repository-local test harness.
+- Validates maintained framework behaviour inside the repository-local test harness.
 */
 
 namespace Fnlla\Php\Tests;
@@ -70,6 +70,20 @@ final class RouterTest extends TestCase
         self::assertSame("GET, HEAD, OPTIONS", $response->headers()["Allow"] ?? null);
     }
 
+    public function testStaticRouteIndexPreservesFirstRegisteredMatch(): void
+    {
+        $router = new Router(new Container());
+        $router->get("/indexed", static fn (): string => "first");
+        $router->get("/indexed", static fn (): string => "second");
+
+        $result = $router->dispatch(Request::capture("", [
+            "REQUEST_URI" => "/indexed",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame("first", $result);
+    }
+
     public function testRouteMiddlewareAliasWrapsHandler(): void
     {
         $container = new Container();
@@ -95,5 +109,41 @@ final class RouterTest extends TestCase
 
         self::assertInstanceOf(Response::class, $response);
         self::assertSame("applied", $response->headers()["X-Middleware"] ?? null);
+    }
+
+    public function testRouteCacheExportsAndReloadsControllerRoutes(): void
+    {
+        $container = new Container();
+        $router = new Router($container);
+        $router->get("/cached/{name}", [RouterCacheFixtureController::class, "show"])->name("cached.show");
+
+        $cachedRoutes = $router->exportCache();
+        $loadedRouter = new Router($container);
+        $loadedRouter->loadCachedRoutes($cachedRoutes);
+
+        $result = $loadedRouter->dispatch(Request::capture("", [
+            "REQUEST_URI" => "/cached/fnlla",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame("cached.show", $loadedRouter->routeByName("cached.show")?->routeName());
+        self::assertSame(["name" => "fnlla"], $result);
+    }
+
+    public function testRouteCacheRejectsClosureHandlers(): void
+    {
+        $router = new Router(new Container());
+        $router->get("/closure", static fn (): string => "not-cacheable");
+
+        $this->expectException(\RuntimeException::class);
+        $router->exportCache();
+    }
+}
+
+final class RouterCacheFixtureController
+{
+    public function show(Request $request, string $name): array
+    {
+        return ["name" => $name];
     }
 }

@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates maintained framework behavior inside the repository-local test harness.
+- Validates maintained framework behaviour inside the repository-local test harness.
 */
 
 namespace Fnlla\Php\Tests;
@@ -175,5 +175,33 @@ final class ApplicationTest extends TestCase
         self::assertSame("true", $allowed->headers()["Access-Control-Allow-Credentials"] ?? null);
         self::assertSame("Origin", $allowed->headers()["Vary"] ?? null);
         self::assertArrayNotHasKey("Access-Control-Allow-Origin", $blocked->headers());
+    }
+
+    public function testCorsMiddlewareRejectsCredentialedWildcardOrigins(): void
+    {
+        config_set("cors", [
+            "allowed_origins" => ["*"],
+            "allowed_methods" => ["GET", "OPTIONS"],
+            "allowed_headers" => ["Content-Type"],
+            "supports_credentials" => true,
+            "max_age" => 600,
+        ]);
+
+        $container = new Container();
+        $router = new Router($container);
+        $router->middleware("cors", HandleCors::class);
+        $router->get("/status", static fn (): Response => Response::html("ok"));
+
+        $application = new Application($router, $container, new ExceptionHandler());
+        $application->middleware("cors");
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/status",
+            "REQUEST_METHOD" => "GET",
+            "HTTP_ORIGIN" => "https://portal.example.test",
+        ]));
+
+        self::assertArrayNotHasKey("Access-Control-Allow-Origin", $response->headers());
+        self::assertArrayNotHasKey("Access-Control-Allow-Credentials", $response->headers());
     }
 }

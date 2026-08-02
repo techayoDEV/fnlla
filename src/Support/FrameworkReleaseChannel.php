@@ -28,6 +28,12 @@ final class FrameworkReleaseChannel
 {
     public static function prepareReleaseSource(string $projectRoot, ?string $requestedTag = null): array
     {
+        /*
+        GitHub release metadata and cloned source are cached under storage so a
+        downstream update page can be refreshed without recloning the same tag
+        on every request. The cloned directory is still validated as a maintained
+        FNLLA source root before it is trusted by FrameworkUpdater.
+        */
         $projectRoot = rtrim($projectRoot, "\\/");
         $release = $requestedTag !== null && trim($requestedTag) !== ""
             ? self::fetchReleaseByTag($projectRoot, trim($requestedTag))
@@ -48,6 +54,8 @@ final class FrameworkReleaseChannel
             self::cloneTaggedRelease($projectRoot, $release, $sourceRoot);
             $downloadedNow = true;
         }
+
+        self::assertReleaseSourceIntegrity($sourceRoot, self::repositoryConfig($projectRoot)["slug"]);
 
         $summary = self::releaseSummary($projectRoot, $release, $sourceRoot, $releaseDirectory, $downloadedNow);
         self::writeReleaseMetadata($cacheRoot, $releaseDirectory, $summary);
@@ -207,52 +215,50 @@ final class FrameworkReleaseChannel
             throw new RuntimeException("Unable to prepare the framework update download directory: " . $directory);
         }
 
-        $command = self::escapeArgument($gitBinary)
-            . " clone --depth 1 --branch "
-            . self::escapeArgument($tag)
-            . " "
-            . self::escapeArgument($repository["clone_url"])
-            . " "
-            . self::escapeArgument($sourceRoot)
-            . " 2>&1";
+        $result = ProcessRunner::run([
+            $gitBinary,
+            "clone",
+            "--depth",
+            "1",
+            "--branch",
+            $tag,
+            $repository["clone_url"],
+            $sourceRoot,
+        ]);
 
-        $lines = [];
-        $exitCode = 1;
-
-        exec($command, $lines, $exitCode);
-
-        if ($exitCode !== 0 || !self::isMaintainedSourceRoot($sourceRoot)) {
+        if ($result["exit_code"] !== 0 || !self::isMaintainedSourceRoot($sourceRoot)) {
             self::removeDirectory($sourceRoot);
 
             throw new RuntimeException(
                 "Unable to download the requested FNLLA release from GitHub into the local update cache."
                 . PHP_EOL
-                . implode(PHP_EOL, $lines)
+                . $result["output"]
             );
         }
+
+        self::assertReleaseSourceIntegrity($sourceRoot, $repository["slug"]);
     }
 
     private static function latestTagFromGit(string $repositoryUrl): string
     {
         $gitBinary = trim((string) env("GIT_BINARY", "git"));
-        $command = self::escapeArgument($gitBinary)
-            . " ls-remote --tags --refs "
-            . self::escapeArgument($repositoryUrl)
-            . " 2>&1";
-        $lines = [];
-        $exitCode = 1;
+        $result = ProcessRunner::run([
+            $gitBinary,
+            "ls-remote",
+            "--tags",
+            "--refs",
+            $repositoryUrl,
+        ]);
 
-        exec($command, $lines, $exitCode);
-
-        if ($exitCode !== 0) {
+        if ($result["exit_code"] !== 0) {
             throw new RuntimeException(
-                "Unable to resolve the latest FNLLA release tag from GitHub." . PHP_EOL . implode(PHP_EOL, $lines)
+                "Unable to resolve the latest FNLLA release tag from GitHub." . PHP_EOL . $result["output"]
             );
         }
 
         $tags = [];
 
-        foreach ($lines as $line) {
+        foreach (preg_split('/\R/', $result["output"]) ?: [] as $line) {
             if (!is_string($line) || !preg_match('/refs\/tags\/(v?\d+\.\d+\.\d+)$/', $line, $matches)) {
                 continue;
             }
@@ -271,6 +277,11 @@ final class FrameworkReleaseChannel
 
     private static function requestJson(string $url): array
     {
+        /*
+        cURL is preferred for predictable timeouts and status handling. The
+        allow_url_fopen fallback keeps the release channel usable on smaller PHP
+        installations where cURL is not available.
+        */
         $decoded = function (string $payload, string $context): array {
             try {
                 $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
@@ -467,6 +478,35 @@ final class FrameworkReleaseChannel
         return is_file($launcher) && is_file($makeProjectCommand);
     }
 
+    private static function assertReleaseSourceIntegrity(string $sourceRoot, string $expectedSlug): void
+    {
+        $manifestPath = $sourceRoot . DIRECTORY_SEPARATOR . "MANIFEST.json";
+        $versionPath = $sourceRoot . DIRECTORY_SEPARATOR . "VERSION";
+
+        if (!is_file($manifestPath) || !is_file($versionPath)) {
+            throw new RuntimeException("Downloaded FNLLA release is missing required release identity files.");
+        }
+
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+
+        if (!is_array($manifest)) {
+            throw new RuntimeException("Downloaded FNLLA release manifest is invalid JSON.");
+        }
+
+        $repository = (string) ($manifest["product"]["repository"] ?? "");
+        $slug = self::parseRepositorySlug($repository);
+
+        if (strcasecmp($slug, $expectedSlug) !== 0) {
+            throw new RuntimeException("Downloaded FNLLA release manifest repository does not match the configured release channel.");
+        }
+
+        $version = self::readVersionLine($versionPath);
+
+        if ($version === null || self::normalizeVersion($version) !== self::normalizeVersion((string) ($manifest["product"]["version"] ?? ""))) {
+            throw new RuntimeException("Downloaded FNLLA release manifest version does not match VERSION.");
+        }
+    }
+
     private static function removeDirectory(string $path): void
     {
         if (!is_dir($path)) {
@@ -498,8 +538,4 @@ final class FrameworkReleaseChannel
         }
     }
 
-    private static function escapeArgument(string $value): string
-    {
-        return '"' . str_replace('"', '\"', $value) . '"';
-    }
 }

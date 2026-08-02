@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements authentication, authorization or access-control primitives for the framework.
+- Implements authentication, authorisation or access-control primitives for the framework.
 */
 
 namespace Fnlla\Php\Auth\Middleware;

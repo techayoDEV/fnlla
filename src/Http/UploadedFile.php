@@ -20,6 +20,8 @@ Purpose:
 
 namespace Fnlla\Php\Http;
 
+use RuntimeException;
+
 final class UploadedFile
 {
     public function __construct(
@@ -67,6 +69,24 @@ final class UploadedFile
         return strtolower(pathinfo($this->originalName, PATHINFO_EXTENSION));
     }
 
+    public function validate(?int $maxBytes = null, ?array $allowedMimeTypes = null): void
+    {
+        if (!$this->isValid()) {
+            throw new RuntimeException("Uploaded file is not valid.");
+        }
+
+        $maxBytes ??= max(1, (int) config("security.uploads.max_file_bytes", 5242880));
+        $allowedMimeTypes ??= (array) config("security.uploads.allowed_mime_types", []);
+
+        if ($this->size > $maxBytes) {
+            throw new RuntimeException("Uploaded file exceeds the configured size limit.");
+        }
+
+        if ($allowedMimeTypes !== [] && !in_array($this->detectedMimeType(), $allowedMimeTypes, true)) {
+            throw new RuntimeException("Uploaded file type is not allowed.");
+        }
+    }
+
     public function hashName(): string
     {
         $extension = $this->extension();
@@ -90,6 +110,26 @@ final class UploadedFile
 
     public function store(string $directory, string $disk = "public"): string
     {
+        $this->validate();
+
         return app(\Fnlla\Php\Filesystem\StorageManager::class)->disk($disk)->putFile($directory, $this);
+    }
+
+    public function detectedMimeType(): string
+    {
+        if (is_file($this->tmpName) && function_exists("finfo_open")) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+            if ($finfo !== false) {
+                $detected = finfo_file($finfo, $this->tmpName);
+                finfo_close($finfo);
+
+                if (is_string($detected) && $detected !== "") {
+                    return $detected;
+                }
+            }
+        }
+
+        return $this->mimeType;
     }
 }

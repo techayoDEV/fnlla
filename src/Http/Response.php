@@ -21,6 +21,7 @@ Purpose:
 namespace Fnlla\Php\Http;
 
 use JsonException;
+use RuntimeException;
 
 final class Response
 {
@@ -29,6 +30,7 @@ final class Response
         private int $status = 200,
         private array $headers = []
     ) {
+        $this->headers = self::normalizeHeaders($headers);
     }
 
     public static function html(string $body, int $status = 200, array $headers = []): self
@@ -73,6 +75,8 @@ final class Response
     public function withHeader(string $name, string $value): self
     {
         $clone = clone $this;
+        self::assertHeaderName($name);
+        self::assertHeaderValue($value);
         $clone->headers[$name] = $value;
 
         return $clone;
@@ -81,7 +85,7 @@ final class Response
     public function withHeaders(array $headers): self
     {
         $clone = clone $this;
-        $clone->headers = array_merge($clone->headers, $headers);
+        $clone->headers = array_merge($clone->headers, self::normalizeHeaders($headers));
 
         return $clone;
     }
@@ -166,6 +170,62 @@ final class Response
             $defaultHeaders = [];
         }
 
-        return array_merge($defaultHeaders, $this->headers);
+        return array_merge(
+            array_filter(
+                self::normalizeHeaders($defaultHeaders),
+                static fn (string|array $value): bool => is_array($value) || trim($value) !== ""
+            ),
+            $this->headers
+        );
+    }
+
+    private static function normalizeHeaders(array $headers): array
+    {
+        $normalized = [];
+
+        foreach ($headers as $name => $value) {
+            if (!is_string($name)) {
+                throw new RuntimeException("HTTP header names must be strings.");
+            }
+
+            self::assertHeaderName($name);
+
+            if (is_array($value)) {
+                $normalized[$name] = array_map(static function (mixed $headerValue) use ($name): string {
+                    if (!is_string($headerValue)) {
+                        throw new RuntimeException("HTTP header value for {$name} must be a string.");
+                    }
+
+                    self::assertHeaderValue($headerValue);
+
+                    return $headerValue;
+                }, $value);
+
+                continue;
+            }
+
+            if (!is_string($value)) {
+                throw new RuntimeException("HTTP header value for {$name} must be a string.");
+            }
+
+            self::assertHeaderValue($value);
+            $normalized[$name] = $value;
+        }
+
+        return $normalized;
+    }
+
+    private static function assertHeaderName(string $name): void
+    {
+        if ($name === "" || preg_match('/^[A-Za-z0-9!#$%&\'*+.^_`|~-]+$/', $name) !== 1) {
+            throw new RuntimeException("Invalid HTTP header name: " . $name);
+        }
+    }
+
+    private static function assertHeaderValue(string $value): void
+    {
+        if (str_contains($value, "\r") || str_contains($value, "\n") || str_contains($value, "\0")) {
+            throw new RuntimeException("HTTP header values cannot contain control line breaks or null bytes.");
+        }
     }
 }

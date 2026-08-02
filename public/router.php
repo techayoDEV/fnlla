@@ -25,7 +25,13 @@ $trimmedPath = trim($normalizedPath, "/");
 $pathSegments = $trimmedPath === "" ? [] : array_values(array_filter(explode("/", $trimmedPath), static fn (string $segment): bool => $segment !== ""));
 
 foreach ($pathSegments as $segment) {
-    if ($segment === "." || $segment === ".." || (str_starts_with($segment, ".") && $segment !== ".well-known")) {
+    if (
+        $segment === "."
+        || $segment === ".."
+        || str_contains($segment, "\0")
+        || str_contains($segment, ":")
+        || (str_starts_with($segment, ".") && $segment !== ".well-known")
+    ) {
         http_response_code(404);
         header("Content-Type: text/plain; charset=UTF-8");
         echo "Not Found";
@@ -37,6 +43,22 @@ foreach ($pathSegments as $segment) {
 $publicFile = __DIR__ . ($pathSegments !== [] ? DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $pathSegments) : "");
 
 if ($pathSegments !== [] && is_file($publicFile)) {
+    /*
+    The built-in server delegates static files when this script returns false.
+    Resolve the candidate first so encoded traversal, symlink escapes and
+    Windows alternate-data-stream syntax cannot cross the public document root.
+    */
+    $publicRoot = realpath(__DIR__);
+    $resolvedFile = realpath($publicFile);
+
+    if (!is_string($publicRoot) || !is_string($resolvedFile) || strncmp($resolvedFile, $publicRoot . DIRECTORY_SEPARATOR, strlen($publicRoot) + 1) !== 0) {
+        http_response_code(404);
+        header("Content-Type: text/plain; charset=UTF-8");
+        echo "Not Found";
+
+        return true;
+    }
+
     return false;
 }
 

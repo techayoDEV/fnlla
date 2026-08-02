@@ -45,6 +45,16 @@ final class DatabaseManager
             throw new RuntimeException("Database connection failed: the PDO MySQL driver (pdo_mysql) is not installed.");
         }
 
+        $options = [];
+
+        if (!empty($connection["persistent"])) {
+            $options[PDO::ATTR_PERSISTENT] = true;
+        }
+
+        foreach ($this->sslOptions((array) ($connection["ssl"] ?? [])) as $option => $value) {
+            $options[$option] = $value;
+        }
+
         try {
             $pdo = new PDO(
                 sprintf(
@@ -55,7 +65,8 @@ final class DatabaseManager
                     $connection["charset"] ?? "utf8mb4"
                 ),
                 (string) ($connection["username"] ?? ""),
-                (string) ($connection["password"] ?? "")
+                (string) ($connection["password"] ?? ""),
+                $options
             );
         } catch (PDOException $exception) {
             throw new RuntimeException("Database connection failed: " . $exception->getMessage(), 0, $exception);
@@ -101,5 +112,39 @@ final class DatabaseManager
             $pdo->rollBack();
             throw $exception;
         }
+    }
+
+    private function sslOptions(array $ssl): array
+    {
+        if (!($ssl["enabled"] ?? false)) {
+            return [];
+        }
+
+        $options = [];
+        $map = [
+            "ca" => "PDO::MYSQL_ATTR_SSL_CA",
+            "cert" => "PDO::MYSQL_ATTR_SSL_CERT",
+            "key" => "PDO::MYSQL_ATTR_SSL_KEY",
+            "verify_server_cert" => "PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT",
+        ];
+
+        foreach ($map as $key => $constant) {
+            if (!defined($constant)) {
+                continue;
+            }
+
+            $value = $ssl[$key] ?? null;
+
+            if ($key === "verify_server_cert") {
+                $options[constant($constant)] = (bool) $value;
+                continue;
+            }
+
+            if (is_string($value) && trim($value) !== "") {
+                $options[constant($constant)] = trim($value);
+            }
+        }
+
+        return $options;
     }
 }

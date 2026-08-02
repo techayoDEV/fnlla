@@ -131,7 +131,9 @@ final class FrameworkUpdater
             $appliedChanges = self::applyReport($report, $projectRoot, $exportRoot);
             FrameworkLock::syncFromExport($exportRoot, $projectRoot);
             $report["applied_changes"] = $appliedChanges;
-            $report["post_install_checks"] = self::runPostInstallChecks($projectRoot);
+            $report["post_install_checks"] = (bool) config("framework_update.post_install_checks", true)
+                ? self::runPostInstallChecks($projectRoot)
+                : self::skippedPostInstallChecks();
             $report["post_install_ok"] = self::postInstallChecksPassed((array) $report["post_install_checks"]);
 
             return $report;
@@ -142,6 +144,13 @@ final class FrameworkUpdater
 
     private static function prepare(string $projectRoot, string $source, ?string $appName): array
     {
+        /*
+        The update engine never diffs a maintained repository directly against
+        a live downstream app. It first exports the source into a clean project
+        baseline, then compares lock metadata and file hashes. That mirrors the
+        real downstream contract and avoids treating maintainer-only files as
+        project-owned update candidates.
+        */
         $projectRoot = rtrim($projectRoot, "\\/");
         $currentLock = FrameworkLock::load($projectRoot);
         $resolvedAppName = $appName !== null && trim($appName) !== ""
@@ -213,33 +222,34 @@ final class FrameworkUpdater
     {
         self::extendExecutionTime();
 
-        if (!function_exists("exec")) {
-            throw new RuntimeException("framework:update requires the PHP exec() function to export a fresh project baseline.");
+        if (!function_exists("proc_open")) {
+            throw new RuntimeException("framework:update requires the PHP proc_open() function to export a fresh project baseline.");
         }
 
-        $command = self::escapeArgument(PHP_BINARY)
-            . " "
-            . self::escapeArgument($sourceRoot . DIRECTORY_SEPARATOR . "fnlla")
-            . " make:project "
-            . self::escapeArgument($targetRoot)
-            . " "
-            . self::escapeArgument($appName)
-            . " 2>&1";
+        $result = ProcessRunner::run([
+            PHP_BINARY,
+            $sourceRoot . DIRECTORY_SEPARATOR . "fnlla",
+            "make:project",
+            $targetRoot,
+            $appName,
+        ]);
 
-        $lines = [];
-        $exitCode = 1;
-
-        exec($command, $lines, $exitCode);
-
-        if ($exitCode !== 0) {
+        if ($result["exit_code"] !== 0) {
             throw new RuntimeException(
-                "Unable to export a fresh project baseline from the provided source repository." . PHP_EOL . implode(PHP_EOL, $lines)
+                "Unable to export a fresh project baseline from the provided source repository." . PHP_EOL . $result["output"]
             );
         }
     }
 
     private static function buildReport(array $currentLock, array $sourceLock, string $projectRoot, string $sourceExportRoot): array
     {
+        /*
+        Merge decisions are intentionally conservative:
+        - unchanged local file + changed upstream => automatic update
+        - changed local file + unchanged upstream => local-only drift report
+        - changed local file + changed upstream => conflict
+        - formatting-equivalent content => safe sync
+        */
         $baseManagedFiles = (array) ($currentLock["framework_base"]["managed_files"] ?? []);
         $sourceManagedFiles = (array) ($sourceLock["framework_base"]["managed_files"] ?? []);
         $legacyManagedFiles = FrameworkLock::legacyUntrackedManagedHashes(
@@ -417,6 +427,20 @@ final class FrameworkUpdater
         return $checks;
     }
 
+    private static function skippedPostInstallChecks(): array
+    {
+        return [
+            "post_install_checks" => [
+                "label" => "Post-install checks",
+                "path" => null,
+                "status" => "skipped",
+                "exit_code" => null,
+                "ok" => true,
+                "output" => "Post-install checks were skipped by FRAMEWORK_UPDATE_POST_INSTALL_CHECKS.",
+            ],
+        ];
+    }
+
     private static function runProjectCheck(string $projectRoot, string $relativePath, string $label): array
     {
         self::extendExecutionTime();
@@ -433,30 +457,26 @@ final class FrameworkUpdater
             ];
         }
 
-        if (!function_exists("exec")) {
+        if (!function_exists("proc_open")) {
             return [
                 "label" => $label,
                 "path" => $relativePath,
                 "status" => "skipped",
                 "exit_code" => null,
                 "ok" => false,
-                "output" => "Post-install checks require the PHP exec() function to be enabled.",
+                "output" => "Post-install checks require the PHP proc_open() function to be enabled.",
             ];
         }
 
-        $command = self::escapeArgument(PHP_BINARY) . " " . self::escapeArgument($scriptPath) . " 2>&1";
-        $lines = [];
-        $exitCode = 1;
-
-        exec($command, $lines, $exitCode);
+        $result = ProcessRunner::run([PHP_BINARY, $scriptPath], $projectRoot);
 
         return [
             "label" => $label,
             "path" => $relativePath,
-            "status" => $exitCode === 0 ? "passed" : "failed",
-            "exit_code" => $exitCode,
-            "ok" => $exitCode === 0,
-            "output" => implode(PHP_EOL, $lines),
+            "status" => $result["exit_code"] === 0 ? "passed" : "failed",
+            "exit_code" => $result["exit_code"],
+            "ok" => $result["exit_code"] === 0,
+            "output" => $result["output"],
         ];
     }
 
@@ -680,11 +700,6 @@ final class FrameworkUpdater
         }
 
         return ($isAbsolute ? DIRECTORY_SEPARATOR : "") . $normalized;
-    }
-
-    private static function escapeArgument(string $value): string
-    {
-        return '"' . str_replace('"', '\"', $value) . '"';
     }
 
     private static function readVersionLine(string $path): ?string

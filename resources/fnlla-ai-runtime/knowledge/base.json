@@ -1,0 +1,13 @@
+{
+    "schema": "fnlla.runtime_ai.records.v1",
+    "items": [
+        {
+            "id": "runtime_scope",
+            "title": "Runtime scope",
+            "utterances": ["what can you do", "assistant scope", "runtime help"],
+            "answer": "I can answer from approved local project knowledge, suggest configured actions and route users to the right project surface.",
+            "actions": [],
+            "tags": ["scope", "assistant"]
+        }
+    ]
+}

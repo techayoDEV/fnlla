@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Registers maintained framework services and application-level boot behavior.
+- Registers maintained framework services and application-level boot behaviour.
 */
 
 namespace Fnlla\Php\Providers;

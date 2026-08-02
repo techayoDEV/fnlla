@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements middleware behavior for request hardening, policy and response shaping.
+- Implements middleware behaviour for request hardening, policy and response shaping.
 */
 
 namespace Fnlla\Php\Middleware;

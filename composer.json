@@ -1,5 +1,5 @@
 {
-    "name": "techayoDEV/fnlla",
+    "name": "techayodev/fnlla",
     "description": "Open-source server-rendered PHP framework by TechAyo LTD. Public home of the FNLLA stack.",
     "type": "project",
     "license": "MIT",
@@ -28,6 +28,17 @@
     "scripts": {
         "console": "@php fnlla",
         "test": "@php scripts/test.php",
+        "analyse": "@php scripts/static-analysis.php",
+        "doctor": "@php fnlla doctor",
+        "ai:context": "@php fnlla ai:context",
+        "ai:review-pack": "@php fnlla ai:review-pack",
+        "app:map": "@php fnlla app:map",
+        "perf": "@php fnlla perf:profile",
+        "perf:baseline": "@php fnlla perf:baseline:update",
+        "perf:budget": "@php fnlla perf:budget",
+        "upgrade:check": "@php fnlla upgrade:check",
+        "security": "@php fnlla security:audit",
+        "release:prepare": "@php fnlla release:prepare",
         "lint": [
             "@php scripts/lint.php",
             "@php scripts/validate-fnlla-runtime.php",

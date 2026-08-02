@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements maintained file storage behavior for uploads and local runtime assets.
+- Implements maintained file storage behaviour for uploads and local runtime assets.
 */
 
 namespace Fnlla\Php\Filesystem;
@@ -29,6 +29,8 @@ final class FilesystemAdapter
         private string $root,
         private string $baseUrl = ""
     ) {
+        $this->root = rtrim($this->normalizeAbsolutePath($this->root), "\\/");
+
         if (!is_dir($this->root)) {
             mkdir($this->root, 0777, true);
         }
@@ -89,6 +91,61 @@ final class FilesystemAdapter
 
     public function path(string $path): string
     {
-        return rtrim($this->root, "\\/") . DIRECTORY_SEPARATOR . ltrim(str_replace("/", DIRECTORY_SEPARATOR, $path), "\\/");
+        $relativePath = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, ltrim($path, "\\/"));
+        $segments = [];
+
+        foreach (explode(DIRECTORY_SEPARATOR, $relativePath) as $segment) {
+            if ($segment === "" || $segment === ".") {
+                continue;
+            }
+
+            if ($segment === "..") {
+                throw new RuntimeException("Filesystem path cannot traverse outside the disk root.");
+            }
+
+            $segments[] = $segment;
+        }
+
+        $resolved = $this->root . ($segments !== [] ? DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $segments) : "");
+        $normalized = $this->normalizeAbsolutePath($resolved);
+        $rootPrefix = $this->root . DIRECTORY_SEPARATOR;
+
+        if ($normalized !== $this->root && !str_starts_with($normalized, $rootPrefix)) {
+            throw new RuntimeException("Filesystem path resolves outside the disk root.");
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeAbsolutePath(string $path): string
+    {
+        $normalized = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
+
+        if (preg_match('/^[A-Za-z]:/', $normalized) !== 1 && !str_starts_with($normalized, DIRECTORY_SEPARATOR)) {
+            $normalized = getcwd() . DIRECTORY_SEPARATOR . $normalized;
+        }
+
+        $parts = [];
+
+        foreach (explode(DIRECTORY_SEPARATOR, $normalized) as $part) {
+            if ($part === "" || $part === ".") {
+                continue;
+            }
+
+            if ($part === "..") {
+                array_pop($parts);
+                continue;
+            }
+
+            $parts[] = $part;
+        }
+
+        if (DIRECTORY_SEPARATOR === "\\" && isset($parts[0]) && preg_match('/^[A-Za-z]:$/', $parts[0]) === 1) {
+            $drive = array_shift($parts);
+
+            return $drive . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts);
+        }
+
+        return DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts);
     }
 }

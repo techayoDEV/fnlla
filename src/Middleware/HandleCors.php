@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements middleware behavior for request hardening, policy and response shaping.
+- Implements middleware behaviour for request hardening, policy and response shaping.
 */
 
 namespace Fnlla\Php\Middleware;
@@ -75,6 +75,16 @@ final class HandleCors implements MiddlewareInterface
         $allowedOrigins = (array) config("cors.allowed_origins", ["*"]);
         $supportsCredentials = (bool) config("cors.supports_credentials", false);
         $allowsWildcard = in_array("*", $allowedOrigins, true);
+
+        /*
+        Credentialed wildcard CORS is convenient during experiments but too
+        permissive for business deployments. Require explicit origins before
+        reflecting Origin with Access-Control-Allow-Credentials.
+        */
+        if ($supportsCredentials && $allowsWildcard) {
+            return [];
+        }
+
         $isAllowedOrigin = $allowsWildcard || in_array($origin, $allowedOrigins, true);
 
         if (!$isAllowedOrigin) {

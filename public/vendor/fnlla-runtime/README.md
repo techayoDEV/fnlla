@@ -22,9 +22,14 @@ In the integrated `techayoDEV/fnlla` maintainer repository, this directory is th
 3. Load `assets/js/fnlla-runtime.js` near the end of `body`.
 4. Keep `assets/icons/` next to the runtime so local icon paths continue to work.
 
+The JavaScript runtime also exposes `FNLLARUNTIME.setBusy(target, busy, label)`
+and supports `data-fnlla-busy-form` for operator forms that should show an
+accessible in-progress state and block accidental double submission without
+removing submitted form values.
+
 ## Version
 
-1.1.0
+2.0.0
 
 ## Maintainer notes
 

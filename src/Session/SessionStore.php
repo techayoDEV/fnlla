@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements maintained session storage behavior for the framework runtime.
+- Implements maintained session storage behaviour for the framework runtime.
 */
 
 namespace Fnlla\Php\Session;
@@ -24,26 +24,35 @@ final class SessionStore
 {
     public function has(string $key): bool
     {
+        framework_start_session_if_needed();
+
         return array_key_exists($key, $_SESSION);
     }
 
     public function get(string $key, mixed $default = null): mixed
     {
+        framework_start_session_if_needed();
+
         return $_SESSION[$key] ?? $default;
     }
 
     public function put(string $key, mixed $value): void
     {
+        framework_start_session_if_needed();
+
         $_SESSION[$key] = $value;
     }
 
     public function forget(string $key): void
     {
+        framework_start_session_if_needed();
+
         unset($_SESSION[$key]);
     }
 
     public function invalidate(): void
     {
+        framework_start_session_if_needed();
         $_SESSION = [];
 
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -53,6 +62,8 @@ final class SessionStore
 
     public function regenerate(): void
     {
+        framework_start_session_if_needed();
+
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_regenerate_id(true);
         }

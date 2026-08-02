@@ -32,4 +32,9 @@ final class PendingMail
     {
         $this->mailer->send($this->recipients, $subject, $html, $text);
     }
+
+    public function sendFormSubmission(string $subject, array $fields): void
+    {
+        $this->mailer->sendFormSubmission($this->recipients, $subject, $fields);
+    }
 }

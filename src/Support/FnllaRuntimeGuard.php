@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements shared helpers, environment loading, metadata and framework support behavior.
+- Implements shared helpers, environment loading, metadata and framework support behaviour.
 */
 
 namespace Fnlla\Php\Support;
@@ -37,9 +37,31 @@ final class FnllaRuntimeGuard
             return;
         }
 
-        self::validateLocalContract($config);
+        $statePath = (string) ($config["state_path"] ?? storage_path("framework/fnlla-runtime-guard.json"));
+        $currentVersion = self::readLocalVersion((string) ($config["version_file"] ?? public_path("vendor/fnlla-runtime/VERSION")));
+
+        if (self::hasValidRecentState(self::loadState($statePath), $currentVersion, max(0, (int) ($config["check_interval_seconds"] ?? 900)))) {
+            return;
+        }
+
+        try {
+            self::validateLocalContract($config);
+        } catch (RuntimeException $exception) {
+            if (!($config["auto_sync"] ?? false)) {
+                throw $exception;
+            }
+
+            self::runSync($config, []);
+            self::validateLocalContract($config);
+            $currentVersion = self::readLocalVersion((string) ($config["version_file"] ?? public_path("vendor/fnlla-runtime/VERSION")));
+        }
 
         if (!($config["auto_sync"] ?? false)) {
+            self::saveState($statePath, [
+                "last_checked_at" => time(),
+                "local_version" => $currentVersion,
+            ]);
+
             return;
         }
 
@@ -106,13 +128,7 @@ final class FnllaRuntimeGuard
         $state = self::loadState($statePath);
         $interval = max(0, (int) ($config["check_interval_seconds"] ?? 900));
         $currentVersion = self::readLocalVersion((string) ($config["version_file"] ?? public_path("vendor/fnlla-runtime/VERSION")));
-        $lastCheckedAt = (int) ($state["last_checked_at"] ?? 0);
-        $lastKnownVersion = (string) ($state["local_version"] ?? "");
-        $hasValidRecentState = !$force
-            && $currentVersion !== ""
-            && $currentVersion === $lastKnownVersion
-            && ($lastCheckedAt > 0)
-            && ((time() - $lastCheckedAt) < $interval);
+        $hasValidRecentState = !$force && self::hasValidRecentState($state, $currentVersion, $interval);
 
         if ($hasValidRecentState) {
             return;
@@ -136,6 +152,17 @@ final class FnllaRuntimeGuard
         ]);
     }
 
+    private static function hasValidRecentState(array $state, string $currentVersion, int $interval): bool
+    {
+        $lastCheckedAt = (int) ($state["last_checked_at"] ?? 0);
+        $lastKnownVersion = (string) ($state["local_version"] ?? "");
+
+        return $currentVersion !== ""
+            && $currentVersion === $lastKnownVersion
+            && ($lastCheckedAt > 0)
+            && ((time() - $lastCheckedAt) < $interval);
+    }
+
     private static function runSync(array $config, array $options): void
     {
         /* GitHub-driven sync is delegated to the maintained PowerShell script so clone safety stays in one place. */
@@ -156,17 +183,13 @@ final class FnllaRuntimeGuard
         $errors = [];
 
         foreach ($commands as $command) {
-            $output = [];
-            $exitCode = 0;
-            $commandString = implode(" ", array_map("escapeshellarg", $command)) . " 2>&1";
+            $result = ProcessRunner::run($command);
 
-            exec($commandString, $output, $exitCode);
-
-            if ($exitCode === 0) {
+            if ($result["exit_code"] === 0) {
                 return;
             }
 
-            $errors[] = trim(implode(PHP_EOL, $output)) ?: ("Command failed with exit code " . $exitCode);
+            $errors[] = $result["output"] !== "" ? $result["output"] : ("Command failed with exit code " . $result["exit_code"]);
         }
 
         throw new RuntimeException("FNLLA integrated UI surface sync failed. " . implode(" | ", $errors));

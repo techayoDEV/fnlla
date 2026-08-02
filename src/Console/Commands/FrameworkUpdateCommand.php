@@ -64,12 +64,18 @@ final class FrameworkUpdateCommand extends Command
                     : FrameworkUpdater::check($projectRoot, (string) ($options["source"] ?? ""), $appName)
             );
 
-        $this->renderReport($report);
+        if ($options["json"] === true) {
+            $this->line($this->encodeJson($report));
+        } else {
+            $this->renderReport($report);
+        }
 
         if ($options["apply"] === true) {
-            $this->line("");
-            $this->line("Applied framework update changes: " . (int) ($report["applied_changes"] ?? 0));
-            $this->renderPostInstallChecks((array) ($report["post_install_checks"] ?? []));
+            if ($options["json"] !== true) {
+                $this->line("");
+                $this->line("Applied framework update changes: " . (int) ($report["applied_changes"] ?? 0));
+                $this->renderPostInstallChecks((array) ($report["post_install_checks"] ?? []));
+            }
 
             return ($report["post_install_ok"] ?? true) === true ? 0 : 1;
         }
@@ -83,6 +89,7 @@ final class FrameworkUpdateCommand extends Command
             "apply" => false,
             "github" => false,
             "help" => false,
+            "json" => false,
             "release_tag" => null,
             "source" => null,
         ];
@@ -106,6 +113,11 @@ final class FrameworkUpdateCommand extends Command
 
             if ($argument === "--github") {
                 $options["github"] = true;
+                continue;
+            }
+
+            if ($argument === "--json") {
+                $options["json"] = true;
                 continue;
             }
 
@@ -150,6 +162,7 @@ final class FrameworkUpdateCommand extends Command
         $this->line("   or: php fnlla framework:update --apply --github [--release-tag v1.0.x]");
         $this->line("If --source is omitted, FNLLA will try to auto-detect a sibling maintained repository.");
         $this->line("Use --github to compare against the latest published FNLLA release downloaded into the local update cache.");
+        $this->line("Use --json to emit the framework update report as machine-readable JSON.");
     }
 
     private function renderReport(array $report): void
@@ -253,5 +266,16 @@ final class FrameworkUpdateCommand extends Command
         }
 
         return $frameworkVersion . " / integrated UI surface " . $uiVersion;
+    }
+
+    private function encodeJson(array $payload): string
+    {
+        $encoded = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if (!is_string($encoded)) {
+            throw new RuntimeException("Unable to encode framework update report as JSON.");
+        }
+
+        return $encoded;
     }
 }

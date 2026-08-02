@@ -22,11 +22,18 @@ namespace Fnlla\Php\Cache;
 
 final class FileCacheStore implements CacheStoreInterface
 {
-    public function __construct(private string $directory)
+    public function __construct(
+        private string $directory,
+        private ?CacheSerializerInterface $serializer = null,
+        private ?CacheSerializerInterface $legacySerializer = null
+    )
     {
         if (!is_dir($this->directory)) {
             mkdir($this->directory, 0777, true);
         }
+
+        $this->serializer ??= new JsonCacheSerializer();
+        $this->legacySerializer ??= new PhpCacheSerializer();
     }
 
     public function get(string $key, mixed $default = null): mixed
@@ -84,11 +91,13 @@ final class FileCacheStore implements CacheStoreInterface
 
     public function increment(string $key, int $value = 1, int $ttlSeconds = 3600): int
     {
-        $current = (int) $this->get($key, 0);
-        $current += $value;
-        $this->put($key, $current, $ttlSeconds);
+        return $this->locked($key, function () use ($key, $value, $ttlSeconds): int {
+            $current = (int) $this->get($key, 0);
+            $current += $value;
+            $this->put($key, $current, $ttlSeconds);
 
-        return $current;
+            return $current;
+        });
     }
 
     public function decrement(string $key, int $value = 1, int $ttlSeconds = 3600): int
@@ -110,7 +119,16 @@ final class FileCacheStore implements CacheStoreInterface
             return null;
         }
 
-        $payload = @unserialize($contents);
+        $payload = $this->serializer?->unserialize($contents);
+
+        /*
+        JSON is the forward format. The legacy PHP serializer remains readable
+        so existing deployments can upgrade without manually clearing cache
+        files, but object hydration is still explicitly blocked there.
+        */
+        if (!is_array($payload)) {
+            $payload = $this->legacySerializer?->unserialize($contents);
+        }
 
         if (!is_array($payload)) {
             return null;
@@ -127,11 +145,30 @@ final class FileCacheStore implements CacheStoreInterface
 
     private function write(string $key, array $payload): bool
     {
-        return file_put_contents($this->path($key), serialize($payload), LOCK_EX) !== false;
+        return file_put_contents($this->path($key), $this->serializer?->serialize($payload) ?? "", LOCK_EX) !== false;
     }
 
     private function path(string $key): string
     {
         return $this->directory . DIRECTORY_SEPARATOR . sha1($key) . ".cache";
+    }
+
+    private function locked(string $key, callable $callback): mixed
+    {
+        $lockPath = $this->directory . DIRECTORY_SEPARATOR . sha1($key) . ".lock";
+        $handle = fopen($lockPath, "c");
+
+        if (!is_resource($handle)) {
+            return $callback();
+        }
+
+        try {
+            flock($handle, LOCK_EX);
+
+            return $callback();
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
     }
 }

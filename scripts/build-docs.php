@@ -98,12 +98,62 @@ $guidePages = [
         "document_title" => "Project Scripts Reference - FNLLA Documentation",
         "lead" => "Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA project export.",
     ],
+    [
+        "label" => "Release And Operations",
+        "href" => "release-and-operations.html",
+        "source" => "docs/RELEASE-AND-OPERATIONS.md",
+        "source_name" => "RELEASE-AND-OPERATIONS.md",
+        "title" => "Release And Operations",
+        "document_title" => "Release And Operations - FNLLA Documentation",
+        "lead" => "Operational readiness, observability and supply-chain release workflow for FNLLA deployments.",
+    ],
+    [
+        "label" => "Performance",
+        "href" => "performance.html",
+        "source" => "docs/PERFORMANCE.md",
+        "source_name" => "PERFORMANCE.md",
+        "title" => "Performance",
+        "document_title" => "Performance - FNLLA Documentation",
+        "lead" => "Production cache warmup, performance profiling and regression budgets for FNLLA deployments.",
+    ],
+    [
+        "label" => "AI Context",
+        "href" => "ai-context.html",
+        "source" => "docs/AI-CONTEXT.md",
+        "source_name" => "AI-CONTEXT.md",
+        "title" => "AI Context",
+        "document_title" => "AI Context - FNLLA Documentation",
+        "lead" => "Privacy-first local context packs for AI-assisted code review, release checks and architecture work.",
+    ],
+    [
+        "label" => "Migration",
+        "href" => "migration.html",
+        "source" => "docs/MIGRATION.md",
+        "source_name" => "MIGRATION.md",
+        "title" => "Migration",
+        "document_title" => "Migration - FNLLA Documentation",
+        "lead" => "Major-version migration workflow, public contract review and AI-assisted upgrade guidance.",
+    ],
+    [
+        "label" => "Major Release Checklist",
+        "href" => "major-release-checklist.html",
+        "source" => "docs/MAJOR-RELEASE-CHECKLIST.md",
+        "source_name" => "MAJOR-RELEASE-CHECKLIST.md",
+        "title" => "Major Release Checklist",
+        "document_title" => "Major Release Checklist - FNLLA Documentation",
+        "lead" => "Release-owner checklist for contract, validation, performance, privacy and publication readiness.",
+    ],
 ];
 
 $guideLinkMap = [
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
     "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
+    "./RELEASE-AND-OPERATIONS.md" => "./release-and-operations.html",
+    "./PERFORMANCE.md" => "./performance.html",
+    "./AI-CONTEXT.md" => "./ai-context.html",
+    "./MIGRATION.md" => "./migration.html",
+    "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
 ];
 
 $pagesToWrite = [
@@ -551,7 +601,7 @@ function render_fnlla_runtime_content(): string
         </article>
         <article class="card">
           <h2 class="card-title">Why it matters</h2>
-          <p class="card-text">Shared views, docs shells, theme switching, consent UI and application primitives all expect the shipped runtime classes, tokens and JavaScript behavior to exist locally.</p>
+          <p class="card-text">Shared views, docs shells, theme switching, consent UI and application primitives all expect the shipped runtime classes, tokens and JavaScript behaviour to exist locally.</p>
         </article>
       </div>
     </section>
@@ -612,7 +662,7 @@ function render_fnlla_runtime_content(): string
         </article>
         <article class="card">
           <h3 class="card-title">Practical consequence</h3>
-          <p class="card-text">FNLLA docs, project-base pages and application shell all assume the same runtime classes and behavior, so view work stays aligned when you build with those primitives from the start.</p>
+          <p class="card-text">FNLLA docs, project-base pages and application shell all assume the same runtime classes and behaviour, so view work stays aligned when you build with those primitives from the start.</p>
         </article>
       </div>
     </section>
@@ -724,7 +774,7 @@ php scripts/build-docs.php --check</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Operational rule</h3>
-          <p class="card-text">If the maintained runtime changes upstream, sync the vendored copy before shipping FNLLA changes that rely on the new runtime behavior or styles.</p>
+          <p class="card-text">If the maintained runtime changes upstream, sync the vendored copy before shipping FNLLA changes that rely on the new runtime behaviour or styles.</p>
         </article>
       </div>
     </section>
@@ -778,7 +828,7 @@ function render_distribution_content(): string
         <article class="card">
           <h2 class="card-title">Maintainer-owned internals</h2>
           <ul class="doc-checklist">
-            <li><code>bootstrap/</code>, <code>config/</code>, <code>routes/</code> and <code>src/</code> define framework behavior.</li>
+            <li><code>bootstrap/</code>, <code>config/</code>, <code>routes/</code> and <code>src/</code> define framework behaviour.</li>
             <li><code>database/</code> and <code>tests/</code> keep schema, seed and repository-level verification logic.</li>
             <li><code>scripts/</code> owns sync, validation, lint and docs-generation routines.</li>
             <li><code>MANIFEST.json</code>, <code>VERSION</code>, <code>README.md</code> and <code>LICENSE.md</code> are release state files, not app content.</li>
@@ -1061,7 +1111,7 @@ public function services(Request \$request): Response
     <section class="section">
       <div class="section-header">
         <h2 class="section-title">Persistence and protected areas</h2>
-        <p class="section-text">Use MySQL for official projects, keep query logic out of views and rely on middleware plus authorization gates for protected sections.</p>
+        <p class="section-text">Use MySQL for official projects, keep query logic out of views and rely on middleware plus authorisation gates for protected sections.</p>
       </div>
 
       <div class="doc-mini-grid">
@@ -1071,7 +1121,7 @@ public function services(Request \$request): Response
         </article>
         <article class="card">
           <h3 class="card-title">Protected routes</h3>
-          <p class="card-text">Use <code>auth</code> middleware for identity checks and <code>authorize()</code> or route-level authorization for capabilities such as admin access.</p>
+          <p class="card-text">Use <code>auth</code> middleware for identity checks and <code>authorize()</code> or route-level authorisation for capabilities such as admin access.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Reference guide</h3>
@@ -1136,7 +1186,7 @@ throttle</code></pre>
     ->middleware("auth")
     ->authorize("view-dashboard")
     ->name("dashboard");</code></pre>
-          <p class="card-text"><code>authorize()</code> and <code>throttle()</code> add metadata and the matching middleware behavior to the route definition.</p>
+          <p class="card-text"><code>authorize()</code> and <code>throttle()</code> add metadata and the matching middleware behaviour to the route definition.</p>
         </article>
       </div>
     </section>
@@ -1158,7 +1208,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --check --github</code></li>
             <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
             <li><code>php fnlla route:list</code></li>
-            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 1.1.0</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.0.0</code></li>
           </ul>
         </article>
         <article class="card">

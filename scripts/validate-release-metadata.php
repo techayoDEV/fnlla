@@ -45,6 +45,15 @@ $requiredContains = [
         '"distribution_root": "."',
         'https://github.com/techayoDEV/fnlla.git',
     ],
+    'resources/fnlla-ai-runtime/MANIFEST.json' => [
+        '"slug": "fnlla-ai-runtime"',
+        '"external_calls": false',
+        'https://github.com/techayoDEV/fnlla.git',
+    ],
+    'resources/fnlla-ai-runtime/README.md' => [
+        'resources/fnlla-ai-runtime',
+        'AI_RUNTIME_LOAD_INTEGRATED',
+    ],
 ];
 
 $forbiddenPatterns = [
@@ -63,6 +72,19 @@ $forbiddenPatterns = [
         '/dist\/fnlla-runtime/i',
     ],
 ];
+
+$forbiddenPublishedMarkers = array_map(
+    static fn (array $parts): string => '/\b' . preg_quote(implode('', $parts), '/') . '\b/i',
+    [
+        ['Co', 'dex'],
+        ['Chat', 'G', 'PT'],
+        ['Open', 'A', 'I'],
+        ['Clau', 'de'],
+        ['Anth', 'ropic'],
+        ['Google', ' ', 'Gem', 'ini'],
+        ['Gem', 'ini', ' ', 'A', 'I'],
+    ]
+);
 
 foreach ($requiredContains as $relativePath => $needles) {
     $absolutePath = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
@@ -90,6 +112,34 @@ foreach ($forbiddenPatterns as $relativePath => $patterns) {
     foreach ($patterns as $pattern) {
         if (preg_match($pattern, $contents) === 1) {
             $errors[] = "{$relativePath}: forbidden release metadata marker {$pattern}";
+        }
+    }
+}
+
+$iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($root, RecursiveDirectoryIterator::SKIP_DOTS)
+);
+
+foreach ($iterator as $item) {
+    if (!$item->isFile()) {
+        continue;
+    }
+
+    $relativePath = str_replace('\\', '/', substr($item->getPathname(), strlen($root) + 1));
+
+    if (preg_match('#^(\.git|dist|storage|vendor)/#', $relativePath) === 1) {
+        continue;
+    }
+
+    if (preg_match('/\.(png|jpe?g|gif|webp|ico|pdf|zip|phar)$/i', $relativePath) === 1) {
+        continue;
+    }
+
+    $contents = (string) file_get_contents($item->getPathname());
+
+    foreach ($forbiddenPublishedMarkers as $pattern) {
+        if (preg_match($pattern, $contents) === 1) {
+            $errors[] = "{$relativePath}: forbidden assistant-vendor marker {$pattern}";
         }
     }
 }

@@ -58,8 +58,8 @@ Purpose:
 
 Use it when:
 
-- you changed routes, controllers, helpers, middleware or validation behavior
-- you updated project-export behavior
+- you changed routes, controllers, helpers, middleware or validation behaviour
+- you updated project-export behaviour
 - you want a quick regression pass before a commit or deployment candidate
 
 Important boundary:
@@ -83,7 +83,7 @@ Use it when:
 Important boundary:
 
 - it only checks syntax
-- it does not prove behavior, data flow or runtime correctness by itself
+- it does not prove behaviour, data flow or runtime correctness by itself
 
 ### `scripts/validate-fnlla-runtime.php`
 
@@ -292,7 +292,7 @@ Purpose:
 
 Why it is not exported:
 
-- downstream FNLLA application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behavior
+- downstream FNLLA application repositories should not inherit TechAyo-specific maintainer automation unless a project explicitly wants that behaviour
 
 ### `php fnlla version:set`
 
@@ -307,7 +307,7 @@ Purpose:
 Typical example:
 
 ```bash
-php fnlla version:set 1.1.0
+php fnlla version:set 2.0.0
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php

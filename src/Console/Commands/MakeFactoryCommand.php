@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements the maintained CLI surface and scheduler-oriented console behavior.
+- Implements the maintained CLI surface and scheduler-oriented console behaviour.
 */
 
 namespace Fnlla\Php\Console\Commands;
@@ -78,7 +78,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements the maintained CLI surface and scheduler-oriented console behavior.
+- Implements the maintained CLI surface and scheduler-oriented console behaviour.
 */
 
 namespace Database\\Factories;

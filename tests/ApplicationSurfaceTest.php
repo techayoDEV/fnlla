@@ -284,6 +284,54 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Compare the local project file with the maintained source version", $response->body());
     }
 
+    public function testFrameworkUpdatePageIncludesMajorUpgradeGui(): void
+    {
+        config_set("framework_update", array_merge((array) config("framework_update", []), [
+            "ui_enabled" => true,
+            "ui_local_only" => true,
+            "ui_apply_enabled" => true,
+        ]));
+        $_SESSION["_flash_old"]["framework_upgrade_report"] = [
+            "target_version" => "2.0.0",
+            "executed_at_utc" => "2026-07-13T10:00:00+00:00",
+            "summary" => [
+                "passed" => 6,
+                "warnings" => 0,
+                "failures" => 0,
+            ],
+            "checks" => [
+                [
+                    "id" => "required-files",
+                    "status" => "pass",
+                    "detail" => "Required release files are present.",
+                ],
+            ],
+            "plan" => [
+                "actions" => [
+                    [
+                        "id" => "write-upgrade-plan",
+                        "title" => "Persist machine-readable upgrade plan",
+                        "detail" => "Write the upgrade report to storage.",
+                        "safe_to_apply" => true,
+                    ],
+                ],
+            ],
+        ];
+
+        $application = $this->makeApplication();
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance/framework-update",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("Major upgrade safety", $response->body());
+        self::assertStringContainsString("Check major readiness", $response->body());
+        self::assertStringContainsString("Apply safe actions", $response->body());
+        self::assertStringContainsString("Persist machine-readable upgrade plan", $response->body());
+    }
+
     public function testApiHealthReturnsStructuredJsonPayload(): void
     {
         $application = $this->makeApplication();

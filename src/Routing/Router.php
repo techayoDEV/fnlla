@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements maintained route registration, matching and URL generation behavior.
+- Implements maintained route registration, matching and URL generation behaviour.
 */
 
 namespace Fnlla\Php\Routing;
@@ -32,6 +32,7 @@ use RuntimeException;
 final class Router
 {
     private array $routes = [];
+    private array $staticRouteIndex = [];
     private array $middlewareAliases = [];
     private array $namedRoutes = [];
     private array $groupStack = [];
@@ -72,7 +73,12 @@ final class Router
 
     public function group(array $attributes, Closure $callback): void
     {
-        /* Groups are merged into route definitions at registration time so dispatch stays simple and fast. */
+        /*
+        Groups are a registration-time convenience, not a dispatch-time feature.
+        Prefixes, name prefixes and middleware are flattened into each route as
+        it is added. That means matching stays a simple scan over compiled route
+        patterns with no nested context to rebuild during every request.
+        */
         $group = new RouteGroup(
             prefix: $this->normalizeGroupPrefix((string) ($attributes["prefix"] ?? "")),
             namePrefix: (string) ($attributes["as"] ?? ""),
@@ -98,6 +104,70 @@ final class Router
         return $this->routes;
     }
 
+    public function exportCache(): array
+    {
+        $cached = [];
+
+        foreach ($this->routes as $method => $routesByMethod) {
+            foreach ($routesByMethod as $route) {
+                /** @var RouteDefinition $definition */
+                $definition = $route["definition"];
+                $handler = $definition->handler();
+
+                if (!$this->handlerCanBeCached($handler)) {
+                    throw new RuntimeException("Route cache cannot store closure or object handlers for: " . $definition->path());
+                }
+
+                $metadata = $definition->metadataAll();
+                unset($metadata["router"], $metadata["name_prefix"]);
+
+                $cached[] = [
+                    "method" => $method,
+                    "path" => $definition->path(),
+                    "handler" => $handler,
+                    "name" => $definition->routeName(),
+                    "middleware" => $definition->middlewareStack(),
+                    "metadata" => $metadata,
+                ];
+            }
+        }
+
+        return $cached;
+    }
+
+    public function loadCachedRoutes(array $routes): void
+    {
+        foreach ($routes as $route) {
+            if (!is_array($route)) {
+                continue;
+            }
+
+            $handler = $route["handler"] ?? null;
+
+            if (!$this->handlerCanBeCached($handler)) {
+                throw new RuntimeException("Cached route handler is invalid.");
+            }
+
+            $definition = $this->add((string) ($route["method"] ?? "GET"), (string) ($route["path"] ?? "/"), $handler);
+
+            foreach ((array) ($route["metadata"] ?? []) as $key => $value) {
+                if (is_string($key)) {
+                    $definition->setMetadata($key, $value);
+                }
+            }
+
+            $middleware = (array) ($route["middleware"] ?? []);
+
+            if ($middleware !== []) {
+                $definition->middleware($middleware);
+            }
+
+            if (is_string($route["name"] ?? null) && $route["name"] !== "") {
+                $definition->name((string) $route["name"]);
+            }
+        }
+    }
+
     public function routeByName(string $name): ?RouteDefinition
     {
         return $this->namedRoutes[$name] ?? null;
@@ -105,7 +175,12 @@ final class Router
 
     public function add(string $method, string $path, callable|array $handler): RouteDefinition
     {
-        /* Each route stores both the human-friendly definition and the compiled matcher used at dispatch time. */
+        /*
+        Store two views of the same route:
+        - RouteDefinition keeps the user-facing metadata used by commands,
+          middleware and URL generation.
+        - The compiled regex and parameter names are optimized for dispatch.
+        */
         [$normalizedPath, $groupMiddleware, $groupNamePrefix] = $this->applyGroupContext($path);
         $compiled = $this->compileRoutePattern($normalizedPath);
         $definition = new RouteDefinition(strtoupper($method), $normalizedPath, $handler);
@@ -119,12 +194,23 @@ final class Router
             "parameters" => $compiled["parameters"],
         ];
 
+        if ($compiled["parameters"] === [] && !isset($this->staticRouteIndex[strtoupper($method)][$normalizedPath])) {
+            $this->staticRouteIndex[strtoupper($method)][$normalizedPath] = array_key_last($this->routes[strtoupper($method)]);
+        }
+
         return $definition;
     }
 
     public function dispatch(Request $request): mixed
     {
-        /* HEAD and OPTIONS are normalized here so controllers do not need transport-specific branching. */
+        unset($_SERVER["FNLLA_ROUTE_NAME"]);
+
+        /*
+        HEAD and OPTIONS are normalized in the router. Controllers can stay
+        focused on application behaviour, while the framework supplies HTTP
+        protocol conveniences such as GET fallback for HEAD and Allow headers
+        for preflight/unsupported method discovery.
+        */
         $method = $request->method();
         $path = $request->path();
         $route = $this->findRoute($method, $path);
@@ -156,6 +242,7 @@ final class Router
         }
 
         $definition = $route["definition"];
+        $_SERVER["FNLLA_ROUTE_NAME"] = (string) ($definition->routeName() ?? "");
         $resolvedRequest = $request
             ->withRouteParams($route["route_params"])
             ->withAttribute("route", $definition)
@@ -259,6 +346,14 @@ final class Router
 
     private function findRoute(string $method, string $path): ?array
     {
+        $staticIndex = $this->staticRouteIndex[$method][$path] ?? null;
+
+        if (is_int($staticIndex) && isset($this->routes[$method][$staticIndex])) {
+            return array_merge($this->routes[$method][$staticIndex], [
+                "route_params" => [],
+            ]);
+        }
+
         foreach ($this->routes[$method] ?? [] as $route) {
             $routeParams = $this->matchesRoute($route, $path);
 
@@ -291,7 +386,11 @@ final class Router
 
     private function compileRoutePattern(string $path): array
     {
-        /* The router supports a deliberately small parameter syntax: one segment per `{parameter}` token. */
+        /*
+        Route parameters are deliberately segment-scoped. A token such as
+        `{page}` can match `guides`, but it cannot swallow slashes. This keeps
+        route behaviour predictable and avoids ambiguous greedy patterns.
+        */
         if ($path === "/") {
             return [
                 "regex" => "/^\/$/",
@@ -347,6 +446,14 @@ final class Router
     private function normalizeMiddleware(array|string $middleware): array
     {
         return is_array($middleware) ? $middleware : [$middleware];
+    }
+
+    private function handlerCanBeCached(mixed $handler): bool
+    {
+        return is_array($handler)
+            && count($handler) === 2
+            && is_string($handler[0] ?? null)
+            && is_string($handler[1] ?? null);
     }
 
     public function registerNamedRoute(RouteDefinition $definition): void

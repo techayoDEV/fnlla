@@ -1,6 +1,6 @@
 /*
   ============================================================================
-  Documentation-only behavior for FNLLA docs.
+  Documentation-only behaviour for FNLLA docs.
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
 */

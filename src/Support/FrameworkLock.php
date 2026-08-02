@@ -256,6 +256,7 @@ final class FrameworkLock
             "lang/",
             "public/assets/",
             "public/vendor/fnlla-runtime/",
+            "resources/fnlla-ai-runtime/",
             "storage/",
             "views/",
         ] as $prefix) {

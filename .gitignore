@@ -14,6 +14,9 @@
 /storage/framework/queue/*
 !/storage/framework/queue/.gitignore
 /storage/framework/fnlla-runtime-guard.json
+/storage/framework/metrics.json
+/storage/framework/metrics.json.lock
+/storage/framework/updates/
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore
 /contact*.html

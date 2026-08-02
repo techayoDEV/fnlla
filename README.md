@@ -67,7 +67,7 @@ FNLLA currently ships with:
 - MySQL-only PDO database access and a query builder
 - migrations, rollback, seeders and factories
 - sessions, cookies, CSRF protection and session-backed authentication
-- authorization gates
+- authorisation gates
 - file cache and file-backed queue primitives
 - a simple scheduler and CLI command surface
 - localization helpers
@@ -96,6 +96,7 @@ Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding
 - `database/seeders/` contains seeders
 - `database/factories/` contains factories
 - `docs/` contains maintainer and delivery guides for building on top of the framework
+- `docs/TECH-DEBT-AND-FUTURE-PROOFING.md` tracks known future-facing maintenance work
 - `lang/` contains translation lines
 - `public/` contains the public entrypoints, static assets and the built-in runtime
 - `routes/` contains HTTP and console route definitions
@@ -208,6 +209,60 @@ On a fresh project export, you can also open `/maintenance` locally and use the 
 
 No Packagist download step is required for the framework itself.
 
+## Operations and release gate
+
+FNLLA ships local-first operational checks for development, CI and public
+release preparation:
+
+```bash
+php fnlla doctor
+php fnlla security:audit
+php fnlla optimize
+php fnlla optimize:warm
+php fnlla app:map
+php fnlla upgrade:check --target=2.0.0
+php fnlla perf:profile --iterations=5
+php fnlla perf:baseline:update --iterations=7
+php fnlla ai:context
+php fnlla ai:review-pack --target=2.0.0
+php fnlla release:prepare
+```
+
+- `doctor` checks PHP/runtime readiness, writable storage, manifests and the vendored FNLLA runtime.
+- `security:audit` checks deploy-time security posture and supports `--strict` for production pipelines.
+- `optimize` builds configuration and route caches for production-style deployments.
+- `optimize:warm` also builds the asset manifest and optional OPcache preload file.
+- `app:map` generates a route/controller/view map for onboarding, audits and AI-assisted review.
+- `upgrade:check`, `upgrade:plan` and `upgrade:apply` provide a local major-release upgrade workflow; `/maintenance/framework-update` exposes the same major readiness and safe-action flow through the browser maintenance GUI.
+- `perf:profile` records local CLI timings, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
+- `perf:baseline:update` and `perf:compare` make performance baselines explicit for release work.
+- `ai:context`, `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` write local redacted artefacts for tool-assisted review without raw `.env`, credentials or source-file contents.
+- `release:prepare` runs the release gate, clears runtime residue and generates CycloneDX SBOM plus SHA-256 checksum artefacts under `dist/release/`.
+- `release:prepare --major --target=2.0.0` adds major-release readiness checks and emits app-map, upgrade-plan and review artefacts.
+
+Mail is intentionally transport-light but production-ready. FNLLA ships a `log`
+mail driver for development, an `http` driver for a transactional provider or
+internal mail relay, and a guarded `native` driver that calls PHP's `mail()`
+function only when `MAIL_NATIVE_ENABLED=true`. The native driver does not
+implement SMTP or IMAP inside the application; production delivery still
+depends on the hosting environment having a working mail transfer agent or
+equivalent platform mail transport.
+
+Runtime AI is local by default. `runtime_ai()` resolves a deterministic,
+project-owned assistant from `config/ai.php`, so applications can build guided
+FAQ, onboarding, form triage, support routing and policy-helper features without
+calling external model providers. Its integrated private bundle lives under
+`resources/fnlla-ai-runtime/`, with approved learned records kept under
+`storage/`.
+
+Runtime observability is enabled through structured access logs, local JSON
+metrics and the optional `X-Response-Time` header. See
+[`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for the
+full operator workflow.
+See [`docs/PERFORMANCE.md`](./docs/PERFORMANCE.md) and
+[`docs/AI-CONTEXT.md`](./docs/AI-CONTEXT.md) for performance and AI-assisted
+review workflows.
+
 ## How to start a real new project
 
 For an actual new website or web application, the recommended workflow is not to clone `techayoDEV/fnlla` and build the downstream project directly inside the framework repository.
@@ -291,7 +346,7 @@ That guide covers:
 - how to add routes, controllers and views
 - how to structure forms, validation and flash feedback
 - how to use MySQL, migrations and the query builder
-- how to protect pages with auth and authorization
+- how to protect pages with auth and authorisation
 - how to use the built-in runtime while composing and extending views
 
 ## Documentation set
@@ -311,6 +366,11 @@ The long-form guide pages are generated from:
 
 - `docs/STARTING-A-NEW-PROJECT.md`
 - `docs/BUILDING-WITH-FNLLA.md`
+- `docs/AI-CONTEXT.md`
+- `docs/MAJOR-RELEASE-CHECKLIST.md`
+- `docs/MIGRATION.md`
+- `docs/PERFORMANCE.md`
+- `docs/RELEASE-AND-OPERATIONS.md`
 
 When docs content or the shared docs shell changes, rebuild or verify the HTML with:
 
@@ -335,11 +395,25 @@ Important commands:
 - `php fnlla migrate:status`
 - `php fnlla db:seed`
 - `php fnlla cache:clear`
+- `php fnlla optimize`
+- `php fnlla optimize:warm`
+- `php fnlla app:map`
+- `php fnlla upgrade:check --target=2.0.0`
+- `php fnlla upgrade:plan --target=2.0.0`
+- `php fnlla upgrade:apply --target=2.0.0`
+- `php fnlla perf:profile --iterations=5`
+- `php fnlla perf:baseline:update --iterations=7`
+- `php fnlla perf:compare --iterations=5`
+- `php fnlla perf:budget --iterations=5`
+- `php fnlla ai:context`
+- `php fnlla ai:review-pack --target=2.0.0`
+- `php fnlla ai:upgrade-brief --target=2.0.0`
+- `php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json`
 - `php fnlla queue:work`
 - `php fnlla schedule:run`
 - `php fnlla route:list`
 - `php fnlla version:status`
-- `php fnlla version:set 1.1.0`
+- `php fnlla version:set 2.0.0`
 - `php fnlla version:sync`
 
 ## Public source of truth
@@ -382,7 +456,7 @@ Important boundary:
 Recommended maintainer sequence:
 
 ```bash
-php fnlla version:set 1.1.0
+php fnlla version:set 2.0.0
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php
@@ -390,6 +464,12 @@ php scripts/validate-fnlla-runtime.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
+php fnlla upgrade:check --target=2.0.0
+php fnlla app:map
+php fnlla ai:review-pack --target=2.0.0
+php fnlla perf:profile --iterations=5 --write-baseline
+php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
+php fnlla release:prepare --major --target=2.0.0
 powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 php fnlla version:status

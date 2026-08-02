@@ -27,6 +27,7 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Support\FrameworkLock;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
+use Fnlla\Php\Support\UpgradeAnalyzer;
 use RuntimeException;
 
 final class FrameworkUpdateController extends Controller
@@ -36,6 +37,8 @@ final class FrameworkUpdateController extends Controller
         $pageState = $this->pageState($request);
         $lock = $this->safeLoadLock();
         $report = flash("framework_update_report");
+        $upgradeReport = flash("framework_upgrade_report");
+        $upgradeApply = flash("framework_upgrade_apply");
         $configuredSourcePath = (string) config("framework_update.source_path", "");
         $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
         $oldSourcePath = trim((string) old("source_path", ""));
@@ -53,6 +56,8 @@ final class FrameworkUpdateController extends Controller
             "frameworkUpdateSourcePath" => $sourcePathValue,
             "frameworkUpdateSourceDetection" => $sourceDetection,
             "frameworkUpdateCachedRelease" => $cachedRelease,
+            "frameworkUpgradeReport" => is_array($upgradeReport) ? $upgradeReport : null,
+            "frameworkUpgradeApply" => is_array($upgradeApply) ? $upgradeApply : null,
         ]);
     }
 
@@ -73,6 +78,10 @@ final class FrameworkUpdateController extends Controller
         }
 
         $mode = trim((string) $request->input("mode", "check"));
+        if (in_array($mode, ["upgrade-check", "upgrade-apply"], true)) {
+            return $this->runUpgradeWorkflow($request, $mode, $pageState);
+        }
+
         $usesGitHub = in_array($mode, ["github-check", "github-apply"], true);
         $configuredSourcePath = (string) config("framework_update.source_path", "");
         $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
@@ -186,6 +195,63 @@ final class FrameworkUpdateController extends Controller
             ]);
         }
 
+        regenerate_csrf_token();
+
+        return $this->redirect(route("maintenance.framework_update"));
+    }
+
+    private function runUpgradeWorkflow(Request $request, string $mode, array $pageState): Response
+    {
+        $target = trim((string) $request->input("target_version", "2.0.0"));
+        $target = $target !== "" ? $target : "2.0.0";
+
+        if ($mode === "upgrade-apply" && $pageState["can_apply"] !== true) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Safe upgrade apply is disabled here",
+                "text" => "Enable FRAMEWORK_UPDATE_UI_APPLY_ENABLED when this browser maintenance page should execute safe major-upgrade actions.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("maintenance.framework_update"));
+        }
+
+        $analyzer = app(UpgradeAnalyzer::class);
+        $report = $analyzer->report($target);
+        $apply = null;
+
+        if ($mode === "upgrade-apply") {
+            $apply = $analyzer->applySafePlan($report, false);
+            $report = $analyzer->report($target);
+        }
+
+        $summary = (array) ($report["summary"] ?? []);
+        $warnings = (int) ($summary["warnings"] ?? 0);
+        $failures = (int) ($summary["failures"] ?? 0);
+        $variant = $failures > 0 ? "danger" : ($warnings > 0 ? "warning" : "success");
+
+        flash_set("framework_upgrade_report", array_merge($report, [
+            "mode" => $mode,
+            "executed_at_utc" => gmdate(DATE_ATOM),
+        ]));
+
+        if (is_array($apply)) {
+            flash_set("framework_upgrade_apply", $apply);
+        }
+
+        flash_set("status", [
+            "variant" => $variant,
+            "title" => $mode === "upgrade-apply" ? "Major upgrade safe actions finished" : "Major upgrade readiness checked",
+            "text" => sprintf(
+                "Readiness for %s: %d passed, %d warnings, %d failures. Manual review items remain visible in the plan.",
+                $target,
+                (int) ($summary["passed"] ?? 0),
+                $warnings,
+                $failures
+            ),
+            "toast" => false,
+        ]);
         regenerate_csrf_token();
 
         return $this->redirect(route("maintenance.framework_update"));

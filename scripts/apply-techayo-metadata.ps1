@@ -50,30 +50,30 @@ function Get-TitleAndPurpose {
         '^public\\' { return @("FNLLA PUBLIC ENTRYPOINT", "Handles a public web request or static file routing boundary for the maintained framework.") }
         '^routes\\' { return @("FNLLA ROUTE DEFINITION", "Registers maintained HTTP or console routes for the framework runtime.") }
         '^scripts\\' { return @("FNLLA MAINTAINER SCRIPT", "Supports framework maintenance, validation, release hygiene or repository hardening.") }
-        '^src\\Auth\\' { return @("FNLLA AUTHENTICATION SOURCE", "Implements authentication, authorization or access-control primitives for the framework.") }
+        '^src\\Auth\\' { return @("FNLLA AUTHENTICATION SOURCE", "Implements authentication, authorisation or access-control primitives for the framework.") }
         '^src\\Cache\\' { return @("FNLLA CACHE SOURCE", "Implements maintained cache and rate-limiting primitives for the framework runtime.") }
-        '^src\\Console\\' { return @("FNLLA CONSOLE SOURCE", "Implements the maintained CLI surface and scheduler-oriented console behavior.") }
+        '^src\\Console\\' { return @("FNLLA CONSOLE SOURCE", "Implements the maintained CLI surface and scheduler-oriented console behaviour.") }
         '^src\\Container\\' { return @("FNLLA CONTAINER SOURCE", "Implements dependency resolution for the maintained framework runtime.") }
-        '^src\\Controllers\\' { return @("FNLLA CONTROLLER SOURCE", "Provides HTTP-facing controller behavior for maintained framework flows and demos.") }
+        '^src\\Controllers\\' { return @("FNLLA CONTROLLER SOURCE", "Provides HTTP-facing controller behaviour for maintained framework flows and demos.") }
         '^src\\Database\\' { return @("FNLLA DATABASE SOURCE", "Implements the maintained MySQL data access and migration runtime.") }
         '^src\\Events\\' { return @("FNLLA EVENT SOURCE", "Implements the maintained event dispatching layer for the framework runtime.") }
-        '^src\\Exceptions\\' { return @("FNLLA EXCEPTION SOURCE", "Implements framework-level exception reporting and rendering behavior.") }
-        '^src\\Filesystem\\' { return @("FNLLA FILESYSTEM SOURCE", "Implements maintained file storage behavior for uploads and local runtime assets.") }
+        '^src\\Exceptions\\' { return @("FNLLA EXCEPTION SOURCE", "Implements framework-level exception reporting and rendering behaviour.") }
+        '^src\\Filesystem\\' { return @("FNLLA FILESYSTEM SOURCE", "Implements maintained file storage behaviour for uploads and local runtime assets.") }
         '^src\\Hashing\\' { return @("FNLLA HASHING SOURCE", "Implements password and hashing helpers for the maintained framework stack.") }
         '^src\\Http\\' { return @("FNLLA HTTP SOURCE", "Implements request, response and HTTP-facing runtime primitives.") }
         '^src\\Localization\\' { return @("FNLLA LOCALIZATION SOURCE", "Implements translation lookup for maintained framework views and flows.") }
         '^src\\Mail\\' { return @("FNLLA MAIL SOURCE", "Implements maintained mail delivery helpers for framework flows and notifications.") }
-        '^src\\Middleware\\' { return @("FNLLA MIDDLEWARE SOURCE", "Implements middleware behavior for request hardening, policy and response shaping.") }
-        '^src\\Providers\\' { return @("FNLLA SERVICE PROVIDER SOURCE", "Registers maintained framework services and application-level boot behavior.") }
+        '^src\\Middleware\\' { return @("FNLLA MIDDLEWARE SOURCE", "Implements middleware behaviour for request hardening, policy and response shaping.") }
+        '^src\\Providers\\' { return @("FNLLA SERVICE PROVIDER SOURCE", "Registers maintained framework services and application-level boot behaviour.") }
         '^src\\Queue\\' { return @("FNLLA QUEUE SOURCE", "Implements the maintained file-backed queue runtime for asynchronous tasks.") }
-        '^src\\Routing\\' { return @("FNLLA ROUTING SOURCE", "Implements maintained route registration, matching and URL generation behavior.") }
-        '^src\\Session\\' { return @("FNLLA SESSION SOURCE", "Implements maintained session storage behavior for the framework runtime.") }
-        '^src\\Support\\' { return @("FNLLA SUPPORT SOURCE", "Implements shared helpers, environment loading, metadata and framework support behavior.") }
+        '^src\\Routing\\' { return @("FNLLA ROUTING SOURCE", "Implements maintained route registration, matching and URL generation behaviour.") }
+        '^src\\Session\\' { return @("FNLLA SESSION SOURCE", "Implements maintained session storage behaviour for the framework runtime.") }
+        '^src\\Support\\' { return @("FNLLA SUPPORT SOURCE", "Implements shared helpers, environment loading, metadata and framework support behaviour.") }
         '^src\\Validation\\' { return @("FNLLA VALIDATION SOURCE", "Implements maintained validation rules and validation error handling.") }
         '^src\\View\\' { return @("FNLLA VIEW SOURCE", "Implements maintained server-rendered view composition for the framework.") }
         '^src\\Application\.php$' { return @("FNLLA APPLICATION KERNEL", "Coordinates the maintained request lifecycle for the FNLLA runtime.") }
         '^tests\\PHPUnit\\' { return @("FNLLA TEST HARNESS SOURCE", "Implements the repository-local test harness used by FNLLA without Packagist dependencies.") }
-        '^tests\\' { return @("FNLLA TEST CASE", "Validates maintained framework behavior inside the repository-local test harness.") }
+        '^tests\\' { return @("FNLLA TEST CASE", "Validates maintained framework behaviour inside the repository-local test harness.") }
         '^views\\layouts\\' { return @("FNLLA VIEW LAYOUT", "Defines the shared delivery shell for server-rendered pages built on FNLLA's integrated UI surface.") }
         '^views\\pages\\' { return @("FNLLA VIEW TEMPLATE", "Defines a maintained page template for the official FNLLA demonstration surface.") }
         '^fnlla$' { return @("FNLLA REPOSITORY LAUNCHER", "Provides the maintained CLI entrypoint for the FNLLA framework repository.") }

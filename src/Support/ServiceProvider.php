@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements shared helpers, environment loading, metadata and framework support behavior.
+- Implements shared helpers, environment loading, metadata and framework support behaviour.
 */
 
 namespace Fnlla\Php\Support;

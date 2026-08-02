@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements shared helpers, environment loading, metadata and framework support behavior.
+- Implements shared helpers, environment loading, metadata and framework support behaviour.
 */
 
 use Fnlla\Php\Container\Container;
@@ -252,6 +252,16 @@ function config_set(string $key, mixed $value): void
 
 function load_config_directory(string $directory): array
 {
+    $cachedConfig = framework_config_cache_path();
+
+    if (is_file($cachedConfig)) {
+        $config = require $cachedConfig;
+
+        if (is_array($config)) {
+            return $config;
+        }
+    }
+
     $config = [];
     $files = glob(rtrim($directory, "\\/") . DIRECTORY_SEPARATOR . "*.php");
 
@@ -273,6 +283,61 @@ function load_config_directory(string $directory): array
     }
 
     return $config;
+}
+
+function framework_cache_path(string $path = ""): string
+{
+    return storage_path("framework/cache" . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : ""));
+}
+
+function framework_config_cache_path(): string
+{
+    return framework_cache_path("bootstrap-config.php");
+}
+
+function framework_route_cache_path(): string
+{
+    return framework_cache_path("routes.php");
+}
+
+function framework_asset_manifest_path(): string
+{
+    return framework_cache_path("assets.php");
+}
+
+function framework_preload_path(): string
+{
+    return framework_cache_path("preload.php");
+}
+
+function framework_performance_baseline_path(): string
+{
+    return framework_cache_path("performance-baseline.json");
+}
+
+function framework_ai_context_path(): string
+{
+    return framework_cache_path("ai-context.json");
+}
+
+function framework_ai_review_pack_path(): string
+{
+    return framework_cache_path("ai-review-pack.json");
+}
+
+function framework_ai_upgrade_brief_path(): string
+{
+    return framework_cache_path("ai-upgrade-brief.md");
+}
+
+function framework_app_map_path(): string
+{
+    return framework_cache_path("app-map.json");
+}
+
+function framework_upgrade_plan_path(): string
+{
+    return framework_cache_path("upgrade-plan.json");
 }
 
 function base_path(string $path = ""): string
@@ -304,8 +369,21 @@ function url(string $path = ""): string
 
 function asset(string $path = ""): string
 {
-    $publicPath = public_path(ltrim($path, "/"));
     $assetUrl = url($path);
+    $normalizedPath = ltrim(str_replace("\\", "/", $path), "/");
+    $manifestPath = framework_asset_manifest_path();
+
+    if (is_file($manifestPath)) {
+        $manifest = require $manifestPath;
+
+        if (is_array($manifest) && isset($manifest[$normalizedPath]) && is_array($manifest[$normalizedPath])) {
+            $version = (string) ($manifest[$normalizedPath]["version"] ?? "");
+
+            return $version !== "" ? $assetUrl . "?v=" . rawurlencode($version) : $assetUrl;
+        }
+    }
+
+    $publicPath = public_path($normalizedPath);
 
     if (!is_file($publicPath)) {
         return $assetUrl;
@@ -348,17 +426,126 @@ function app_debug(): bool
 function request_id(): string
 {
     $current = $_SERVER["FNLLA_REQUEST_ID"] ?? $_SERVER["HTTP_X_REQUEST_ID"] ?? null;
+    $normalized = is_string($current) ? framework_normalize_request_id($current) : null;
 
-    if (is_string($current) && $current !== "") {
-        $_SERVER["FNLLA_REQUEST_ID"] = $current;
+    if ($normalized !== null) {
+        $_SERVER["FNLLA_REQUEST_ID"] = $normalized;
 
-        return $current;
+        return $normalized;
     }
 
     $generated = bin2hex(random_bytes(16));
     $_SERVER["FNLLA_REQUEST_ID"] = $generated;
 
     return $generated;
+}
+
+function framework_normalize_request_id(string $requestId): ?string
+{
+    $requestId = trim($requestId);
+
+    if ($requestId === "" || strlen($requestId) > 128) {
+        return null;
+    }
+
+    if (preg_match('/^[A-Za-z0-9._:-]+$/', $requestId) !== 1) {
+        return null;
+    }
+
+    return $requestId;
+}
+
+function framework_start_session_if_needed(): void
+{
+    if (PHP_SAPI === "cli" && session_status() !== PHP_SESSION_ACTIVE) {
+        $_SESSION = is_array($_SESSION ?? null) ? $_SESSION : [];
+        framework_bootstrap_session_state();
+        return;
+    }
+
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        framework_bootstrap_session_state();
+        return;
+    }
+
+    if (headers_sent()) {
+        $_SESSION = is_array($_SESSION ?? null) ? $_SESSION : [];
+        framework_bootstrap_session_state();
+        return;
+    }
+
+    $sessionConfig = config("session", []);
+    $sessionPath = (string) config("app.session_path");
+
+    if (!is_dir($sessionPath)) {
+        mkdir($sessionPath, 0777, true);
+    }
+
+    session_save_path($sessionPath);
+    session_name((string) ($sessionConfig["name"] ?? "fnlla_session"));
+    ini_set("session.use_strict_mode", !empty($sessionConfig["strict_mode"]) ? "1" : "0");
+    ini_set("session.use_only_cookies", !empty($sessionConfig["use_only_cookies"]) ? "1" : "0");
+    ini_set("session.cookie_httponly", !empty($sessionConfig["http_only"]) ? "1" : "0");
+    ini_set("session.cookie_secure", !empty($sessionConfig["secure"]) ? "1" : "0");
+    ini_set("session.gc_maxlifetime", (string) ($sessionConfig["cookie_lifetime"] ?? 7200));
+    session_set_cookie_params([
+        "lifetime" => (int) ($sessionConfig["cookie_lifetime"] ?? 7200),
+        "path" => (string) ($sessionConfig["path"] ?? "/"),
+        "domain" => is_string($sessionConfig["domain"] ?? null) ? (string) $sessionConfig["domain"] : "",
+        "secure" => !empty($sessionConfig["secure"]),
+        "httponly" => !empty($sessionConfig["http_only"]),
+        "samesite" => (string) ($sessionConfig["same_site"] ?? "Lax"),
+    ]);
+    session_start();
+    framework_bootstrap_session_state();
+}
+
+function framework_bootstrap_session_state(): void
+{
+    static $bootstrapped = false;
+
+    if ($bootstrapped && isset($_SESSION["_meta"]) && is_array($_SESSION["_meta"])) {
+        return;
+    }
+
+    $_SESSION = is_array($_SESSION ?? null) ? $_SESSION : [];
+    $sessionConfig = config("session", []);
+
+    if (!isset($_SESSION["_meta"]) || !is_array($_SESSION["_meta"])) {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
+        $_SESSION["_meta"] = [
+            "started_at" => time(),
+            "last_regenerated_at" => time(),
+        ];
+    } else {
+        $rotationWindow = max(1, (int) ($sessionConfig["rotate_after_minutes"] ?? 30)) * 60;
+        $lastRegeneratedAt = (int) ($_SESSION["_meta"]["last_regenerated_at"] ?? 0);
+
+        if ($lastRegeneratedAt <= 0 || (time() - $lastRegeneratedAt) >= $rotationWindow) {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
+
+            $_SESSION["_meta"]["last_regenerated_at"] = time();
+        }
+    }
+
+    /*
+    Flash data normally moves from `_flash` to `_flash_old` at the beginning of
+    the next request. When a test or CLI command seeds `_flash_old` directly and
+    no new `_flash` bucket exists yet, preserve it instead of erasing it.
+    */
+    if (isset($_SESSION["_flash"]) && is_array($_SESSION["_flash"])) {
+        $_SESSION["_flash_old"] = $_SESSION["_flash"];
+    } elseif (!isset($_SESSION["_flash_old"]) || !is_array($_SESSION["_flash_old"])) {
+        $_SESSION["_flash_old"] = [];
+    }
+
+    $_SESSION["_flash"] = [];
+    $bootstrapped = true;
 }
 
 function app(?string $abstract = null, array $parameters = []): mixed
@@ -395,6 +582,7 @@ function is_current_path(string $path): bool
 
 function flash(string $key, mixed $default = null): mixed
 {
+    framework_start_session_if_needed();
     $flash = $_SESSION["_flash_old"] ?? [];
 
     return $flash[$key] ?? $default;
@@ -402,6 +590,7 @@ function flash(string $key, mixed $default = null): mixed
 
 function flash_set(string $key, mixed $value): void
 {
+    framework_start_session_if_needed();
     if (!isset($_SESSION["_flash"]) || !is_array($_SESSION["_flash"])) {
         $_SESSION["_flash"] = [];
     }
@@ -432,6 +621,7 @@ function error_for(string $field): ?string
 
 function csrf_token(): string
 {
+    framework_start_session_if_needed();
     $token = $_SESSION["_csrf_token"] ?? null;
     $issuedAt = (int) ($_SESSION["_csrf_token_issued_at"] ?? 0);
     $rotationWindow = max(1, (int) config("security.csrf.rotate_after_minutes", 120)) * 60;
@@ -445,6 +635,7 @@ function csrf_token(): string
 
 function regenerate_csrf_token(): string
 {
+    framework_start_session_if_needed();
     $_SESSION["_csrf_token"] = bin2hex(random_bytes(32));
     $_SESSION["_csrf_token_issued_at"] = time();
 
@@ -525,6 +716,11 @@ function __(string $key, array $replace = [], ?string $locale = null): string
 function mailer(): \Fnlla\Php\Mail\Mailer
 {
     return app(\Fnlla\Php\Mail\Mailer::class);
+}
+
+function runtime_ai(): \Fnlla\Php\Ai\LocalRuntimeAssistant
+{
+    return app(\Fnlla\Php\Ai\LocalRuntimeAssistant::class);
 }
 
 function queue(): \Fnlla\Php\Queue\QueueManager

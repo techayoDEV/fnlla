@@ -49,12 +49,19 @@ final class Request
         ?array $files = null
     ): self
     {
+        /*
+        Capture accepts injectable superglobal snapshots so tests and internal
+        tools can build realistic requests without mutating PHP globals. The
+        production path simply falls back to $_SERVER, $_GET, $_POST, $_COOKIE
+        and $_FILES.
+        */
         $serverData = $server ?? $_SERVER;
         $queryData = $query ?? $_GET;
         $requestData = $request ?? $_POST;
         $cookieData = $cookies ?? $_COOKIE;
         $fileData = self::normalizeFiles($files ?? $_FILES);
         $resolvedRawBody = $rawBody ?? (string) file_get_contents("php://input");
+        self::assertBodySizeAllowed($serverData, $resolvedRawBody);
         $headers = self::captureHeaders($serverData);
         $jsonPayload = self::parseJsonPayload($headers, $resolvedRawBody);
 
@@ -89,6 +96,31 @@ final class Request
             [],
             $requestId,
             strtoupper((string) ($serverData["REQUEST_METHOD"] ?? "GET"))
+        );
+    }
+
+    public static function fromTrustedFallback(array $server = []): self
+    {
+        $headers = self::captureHeaders($server);
+        $requestUri = $server["REQUEST_URI"] ?? "/";
+        $path = parse_url($requestUri, PHP_URL_PATH) ?: "/";
+        $requestId = self::detectRequestId($headers, $server);
+        $server["FNLLA_REQUEST_ID"] = $requestId;
+
+        return new self(
+            strtoupper((string) ($server["REQUEST_METHOD"] ?? "GET")),
+            self::normalizePath($path),
+            [],
+            [],
+            $server,
+            $headers,
+            [],
+            [],
+            "",
+            null,
+            [],
+            $requestId,
+            strtoupper((string) ($server["REQUEST_METHOD"] ?? "GET"))
         );
     }
 
@@ -301,6 +333,17 @@ final class Request
         }
     }
 
+    private static function assertBodySizeAllowed(array $server, string $rawBody): void
+    {
+        $maxBytes = max(1, (int) config("security.request.max_body_bytes", 1048576));
+        $contentLength = (int) ($server["CONTENT_LENGTH"] ?? $server["HTTP_CONTENT_LENGTH"] ?? 0);
+        $actualLength = strlen($rawBody);
+
+        if ($contentLength > $maxBytes || $actualLength > $maxBytes) {
+            throw new HttpException(413, "Request body is too large.");
+        }
+    }
+
     private static function isFormUrlEncoded(array $headers): bool
     {
         $contentType = strtolower((string) ($headers["content-type"] ?? ""));
@@ -310,6 +353,11 @@ final class Request
 
     private static function detectMethod(array $server, array $request, array $headers): string
     {
+        /*
+        Method override is restricted to POST requests and a small set of HTTP
+        verbs. This supports browser forms while avoiding surprising overrides
+        on normal GET/HEAD traffic.
+        */
         $method = strtoupper((string) ($server["REQUEST_METHOD"] ?? "GET"));
 
         if ($method !== "POST") {
@@ -330,13 +378,19 @@ final class Request
 
     private static function detectRequestId(array $headers, array $server): string
     {
+        /*
+        Incoming request IDs are useful when FNLLA sits behind a proxy or a
+        larger platform, but they must remain header/log safe. Invalid IDs are
+        discarded and replaced with a local random correlation ID.
+        */
         $incoming = $headers["x-request-id"] ?? $server["FNLLA_REQUEST_ID"] ?? null;
+        $normalized = is_string($incoming) ? framework_normalize_request_id($incoming) : null;
 
-        if (is_string($incoming) && $incoming !== "") {
-            return $incoming;
+        if ($normalized !== null) {
+            return $normalized;
         }
 
-        return request_id();
+        return bin2hex(random_bytes(16));
     }
 
     private static function normalizePath(string $path): string

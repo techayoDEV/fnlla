@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Provides HTTP-facing controller behavior for maintained framework flows and demos.
+- Provides HTTP-facing controller behaviour for maintained framework flows and demos.
 */
 
 namespace Fnlla\Php\Controllers;
@@ -380,7 +380,51 @@ final class HomeController extends Controller
         ]);
     }
 
+    public function profileApi(): array
+    {
+        return [
+            "meta" => [
+                "name" => config("app.name"),
+                "version" => "1.0",
+                "supports" => ["routing", "middleware", "auth", "queues"],
+            ],
+        ];
+    }
+
     private function buildHealthPayload(Request $request): array
+    {
+        $cached = $this->cachedHealthSnapshot();
+
+        return array_replace_recursive($cached, [
+            "service" => [
+                "timestamp" => gmdate(DATE_ATOM),
+            ],
+            "request" => [
+                "id" => request_id(),
+                "method" => $request->method(),
+                "path" => $request->path(),
+                "secure" => app_request_is_secure(),
+                "ip" => $request->ip(),
+            ],
+        ]);
+    }
+
+    private function cachedHealthSnapshot(): array
+    {
+        $ttl = max(0, (int) config("health.cache_ttl_seconds", 10));
+
+        if ($ttl <= 0) {
+            return $this->buildCachedHealthSnapshot(0);
+        }
+
+        return cache()->remember(
+            "fnlla:health:snapshot:" . app_environment(),
+            $ttl,
+            fn (): array => $this->buildCachedHealthSnapshot($ttl)
+        );
+    }
+
+    private function buildCachedHealthSnapshot(int $ttlSeconds): array
     {
         $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), (string) config("framework_update.source_path", ""));
         $versionStatus = VersionManifest::status();
@@ -418,6 +462,8 @@ final class HomeController extends Controller
                 "status" => "ok",
                 "environment" => app_environment(),
                 "timestamp" => gmdate(DATE_ATOM),
+                "health_cache_ttl_seconds" => $ttlSeconds,
+                "health_snapshot_generated_at" => gmdate(DATE_ATOM),
                 "description" => "FNLLA project application health status.",
             ],
             "versions" => [
@@ -431,11 +477,11 @@ final class HomeController extends Controller
                 "timezone" => (string) date_default_timezone_get(),
             ],
             "request" => [
-                "id" => request_id(),
-                "method" => $request->method(),
-                "path" => $request->path(),
+                "id" => "",
+                "method" => "",
+                "path" => "",
                 "secure" => app_request_is_secure(),
-                "ip" => $request->ip(),
+                "ip" => "",
             ],
             "checks" => [
                 "framework_lock" => $frameworkLockPresent ? "ok" : "missing",
@@ -499,6 +545,29 @@ final class HomeController extends Controller
                 "updates_path" => $updatesStoragePath,
                 "updates_writable" => $this->isWritableDirectory($updatesStoragePath),
             ],
+            "cache" => [
+                "default_store" => (string) config("cache.default", "file"),
+                "serializer" => (string) config("cache.serializer", "json"),
+                "path" => (string) config("cache.stores.file.path", storage_path("framework/cache")),
+                "writable" => $this->isWritableDirectory((string) config("cache.stores.file.path", storage_path("framework/cache"))),
+            ],
+            "observability" => [
+                "access_log_enabled" => (bool) config("observability.access_log.enabled", true),
+                "metrics_enabled" => (bool) config("observability.metrics.enabled", true),
+                "metrics_path" => storage_path((string) config("observability.metrics.path", "framework/metrics.json")),
+                "response_time_header_enabled" => (bool) config("observability.response_time_header.enabled", true),
+            ],
+            "queue" => [
+                "default_connection" => (string) config("queue.default", "file"),
+                "path" => storage_path((string) config("queue.connections.file.path", "framework/queue")),
+                "pending_jobs" => $this->countFiles(storage_path((string) config("queue.connections.file.path", "framework/queue")), "*.job"),
+                "failed_jobs" => $this->countFiles(storage_path((string) config("queue.connections.file.path", "framework/queue")) . DIRECTORY_SEPARATOR . "failed", "*.failed.job"),
+            ],
+            "migrations" => [
+                "table" => (string) config("database.migrations_table", "migrations"),
+                "files" => $this->countFiles(base_path("database/migrations"), "*.php"),
+                "pdo_mysql" => extension_loaded("pdo_mysql") ? "available" : "unavailable",
+            ],
             "framework_update" => [
                 "source_path" => $sourceDetection["resolved_path"] ?? null,
                 "source_origin" => $sourceDetection["origin"] ?? "manual input required",
@@ -527,6 +596,17 @@ final class HomeController extends Controller
     private function isWritableDirectory(string $path): bool
     {
         return is_dir($path) && is_writable($path);
+    }
+
+    private function countFiles(string $directory, string $pattern): int
+    {
+        if (!is_dir($directory)) {
+            return 0;
+        }
+
+        $files = glob(rtrim($directory, "\\/") . DIRECTORY_SEPARATOR . $pattern);
+
+        return is_array($files) ? count(array_filter($files, "is_file")) : 0;
     }
 
     private function readVersionLine(string $path): ?string

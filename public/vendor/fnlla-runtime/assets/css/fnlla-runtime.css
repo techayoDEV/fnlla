@@ -1749,6 +1749,17 @@ textarea {
   gap: var(--fnlla-space-4);
 }
 
+.form.is-busy {
+  cursor: progress;
+}
+
+.form.is-busy .btn,
+.form.is-busy .input,
+.form.is-busy .select,
+.form.is-busy .textarea {
+  cursor: progress;
+}
+
 .form-group {
   display: grid;
   gap: var(--fnlla-space-2);

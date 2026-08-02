@@ -118,7 +118,7 @@ final class Migrator
 
     private function ensureRepository(): void
     {
-        $table = (string) config("database.migrations_table", "migrations");
+        $table = $this->quoteIdentifier((string) config("database.migrations_table", "migrations"));
         $sql = "CREATE TABLE IF NOT EXISTS {$table} (id INT AUTO_INCREMENT PRIMARY KEY, migration VARCHAR(255) NOT NULL UNIQUE, batch INT NOT NULL, ran_at DATETIME NOT NULL)";
 
         $this->database->statement($sql);
@@ -160,8 +160,9 @@ final class Migrator
 
     private function nextBatchNumber(): int
     {
+        $table = $this->quoteIdentifier((string) config("database.migrations_table", "migrations"));
         $rows = $this->database->select(
-            "SELECT MAX(batch) AS batch FROM " . config("database.migrations_table", "migrations")
+            "SELECT MAX(batch) AS batch FROM " . $table
         );
 
         return (int) (($rows[0]["batch"] ?? 0) + 1);
@@ -169,8 +170,9 @@ final class Migrator
 
     private function rollbackBatches(int $steps): array
     {
+        $table = $this->quoteIdentifier((string) config("database.migrations_table", "migrations"));
         $rows = $this->database->select(
-            "SELECT DISTINCT batch FROM " . config("database.migrations_table", "migrations") . " ORDER BY batch DESC"
+            "SELECT DISTINCT batch FROM " . $table . " ORDER BY batch DESC"
         );
 
         $batches = array_map(static fn (array $row): int => (int) $row["batch"], $rows);
@@ -187,5 +189,16 @@ final class Migrator
             ->get();
 
         return array_map(static fn (array $row): string => (string) $row["migration"], $rows);
+    }
+
+    private function quoteIdentifier(string $identifier): string
+    {
+        $identifier = trim($identifier);
+
+        if ($identifier === "" || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier) !== 1) {
+            throw new RuntimeException("Invalid migration table identifier: " . $identifier);
+        }
+
+        return "`" . $identifier . "`";
     }
 }

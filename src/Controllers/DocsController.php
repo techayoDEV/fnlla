@@ -58,7 +58,7 @@ final class DocsController extends Controller
         [
             "file" => "api.html",
             "title" => "API",
-            "summary" => "The maintained runtime surface for routing, middleware, responses and related framework behaviors.",
+            "summary" => "The maintained runtime surface for routing, middleware, responses and related framework behaviours.",
             "kind" => "Reference",
         ],
         [
@@ -83,6 +83,36 @@ final class DocsController extends Controller
             "file" => "project-scripts-reference.html",
             "title" => "Project Scripts Reference",
             "summary" => "What the project-facing scripts are responsible for and which ones belong only in the maintainer workspace.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "release-and-operations.html",
+            "title" => "Release And Operations",
+            "summary" => "Operational readiness, observability and release supply-chain workflow for FNLLA deployments.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "performance.html",
+            "title" => "Performance",
+            "summary" => "Production warmup, local profiling and regression budgets for performance-aware releases.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "ai-context.html",
+            "title" => "AI Context",
+            "summary" => "Privacy-first local context packs for AI-assisted development without raw secrets.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "migration.html",
+            "title" => "Migration",
+            "summary" => "Major-version migration workflow, contract review and downstream upgrade guidance.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "major-release-checklist.html",
+            "title" => "Major Release Checklist",
+            "summary" => "Release-owner checklist for validation, performance, privacy and publication readiness.",
             "kind" => "Guide",
         ],
     ];
@@ -142,6 +172,11 @@ final class DocsController extends Controller
         return $this->assetResponse("docs/assets/brand/fnlla.svg", "image/svg+xml");
     }
 
+    public function runtimeBrandIcon(): Response
+    {
+        return $this->assetResponse("docs/assets/brand/fnlla-runtime.svg", "image/svg+xml");
+    }
+
     private function assetResponse(string $relativePath, string $contentType): Response
     {
         if (!has_local_docs_workspace()) {
@@ -177,7 +212,7 @@ final class DocsController extends Controller
                 asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"),
                 route("docs.asset.stylesheet"),
                 route("docs.asset.script"),
-                route("docs.asset.brand"),
+                route("docs.asset.runtime_brand"),
                 route("docs.asset.brand"),
             ],
             $contents

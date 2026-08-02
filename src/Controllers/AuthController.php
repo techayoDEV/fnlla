@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Provides HTTP-facing controller behavior for maintained framework flows and demos.
+- Provides HTTP-facing controller behaviour for maintained framework flows and demos.
 */
 
 namespace Fnlla\Php\Controllers;
@@ -50,7 +50,7 @@ final class AuthController extends Controller
                 ],
                 [
                     "title" => "Good base for real portals",
-                    "text" => "Replace the demo users and views, keep the auth guard, middleware and authorization structure when the project grows into an account or service portal.",
+                    "text" => "Replace the demo users and views, keep the auth guard, middleware and authorisation structure when the project grows into an account or service portal.",
                 ],
             ],
         ]);

@@ -28,6 +28,18 @@ return [
             "username" => (string) env("DB_USERNAME", "root"),
             "password" => (string) env("DB_PASSWORD", ""),
             "charset" => (string) env("DB_CHARSET", "utf8mb4"),
+            "persistent" => (bool) env("DB_PERSISTENT", false),
+            "ssl" => [
+                "enabled" => (bool) env("DB_SSL_ENABLED", false),
+                "ca" => trim((string) env("DB_SSL_CA", "")),
+                "cert" => trim((string) env("DB_SSL_CERT", "")),
+                "key" => trim((string) env("DB_SSL_KEY", "")),
+                "verify_server_cert" => (bool) env("DB_SSL_VERIFY_SERVER_CERT", true),
+            ],
+            "read" => [
+                "host" => trim((string) env("DB_READ_HOST", "")),
+                "port" => trim((string) env("DB_READ_PORT", "")),
+            ],
         ],
     ],
     "migrations_table" => (string) env("DB_MIGRATIONS_TABLE", "migrations"),

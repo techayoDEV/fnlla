@@ -118,7 +118,7 @@ final class PageController extends Controller
                 ],
                 [
                     "title" => "Server-rendered product surfaces",
-                    "text" => "The exported application base remains useful when the project grows past simple marketing pages into richer application behavior.",
+                    "text" => "The exported application base remains useful when the project grows past simple marketing pages into richer application behaviour.",
                 ],
             ],
             "deliverySteps" => [

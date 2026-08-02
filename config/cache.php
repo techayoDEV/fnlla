@@ -20,6 +20,7 @@ Purpose:
 
 return [
     "default" => "file",
+    "serializer" => (string) env("CACHE_SERIALIZER", "json"),
     "stores" => [
         "file" => [
             "path" => storage_path("framework/cache"),

@@ -25,6 +25,7 @@ return [
             "CONTENT_SECURITY_POLICY",
             "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
         ),
+        "Strict-Transport-Security" => (string) env("STRICT_TRANSPORT_SECURITY", ""),
         "Cross-Origin-Opener-Policy" => "same-origin",
         "Cross-Origin-Resource-Policy" => "same-origin",
         "Permissions-Policy" => "camera=(), geolocation=(), microphone=()",

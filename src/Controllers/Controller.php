@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Provides HTTP-facing controller behavior for maintained framework flows and demos.
+- Provides HTTP-facing controller behaviour for maintained framework flows and demos.
 */
 
 namespace Fnlla\Php\Controllers;

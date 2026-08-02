@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates framework lock path behavior for exported downstream projects.
+- Validates framework lock path behaviour for exported downstream projects.
 */
 
 namespace Fnlla\Php\Tests;

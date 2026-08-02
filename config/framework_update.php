@@ -32,6 +32,7 @@ return [
     "github_timeout_seconds" => max(5, (int) env("FRAMEWORK_UPDATE_GITHUB_TIMEOUT_SECONDS", 20)),
     "download_cache_path" => trim((string) env("FRAMEWORK_UPDATE_DOWNLOAD_CACHE_PATH", "framework/updates/fnlla")),
     "source_path" => trim((string) env("FRAMEWORK_UPDATE_SOURCE_PATH", "")),
+    "post_install_checks" => (bool) env("FRAMEWORK_UPDATE_POST_INSTALL_CHECKS", true),
     "lock_file" => trim((string) env("FNLLA_FRAMEWORK_LOCK_FILE", ".fnlla/framework-lock.json")),
     "migration_lock_file" => trim((string) env("FNLLA_MIGRATION_LOCK_FILE", ".fnlla/legacy-framework-lock.json")),
 ];

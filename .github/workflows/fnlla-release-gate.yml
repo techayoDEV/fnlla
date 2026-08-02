@@ -13,6 +13,9 @@ jobs:
   release-gate:
     runs-on: windows-latest
     env:
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_URL: https://fnlla.example
       FNLLA_RUNTIME_AUTO_SYNC: false
       FNLLA_RUNTIME_ENFORCE: true
 
@@ -49,13 +52,25 @@ jobs:
         shell: pwsh
         run: php .\scripts\validate-release-metadata.php
 
-      - name: Run full test suite
+      - name: Run fast test suite
         shell: pwsh
-        run: php .\scripts\test.php
+        run: php .\scripts\test.php --suite fast
+
+      - name: Run runtime doctor
+        shell: pwsh
+        run: php .\fnlla doctor
+
+      - name: Run security audit
+        shell: pwsh
+        run: php .\fnlla security:audit
 
       - name: Run syntax lint
         shell: pwsh
         run: php .\scripts\lint.php
+
+      - name: Generate release supply-chain artifacts
+        shell: pwsh
+        run: php .\fnlla release:prepare --skip-tests
 
       - name: Publish runtime export
         shell: pwsh
@@ -71,3 +86,36 @@ jobs:
           name: fnlla-runtime-export
           path: dist/fnlla-runtime
           if-no-files-found: error
+
+      - name: Upload release supply-chain artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fnlla-release-supply-chain
+          path: dist/release
+          if-no-files-found: error
+
+  export-regression:
+    runs-on: windows-latest
+    env:
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_URL: https://fnlla.example
+      FNLLA_RUNTIME_AUTO_SYNC: false
+      FNLLA_RUNTIME_ENFORCE: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Run export and update regression tests
+        shell: pwsh
+        run: php .\scripts\test.php --suite slow

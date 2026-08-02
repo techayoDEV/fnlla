@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaRuntimeVersion = "1.1.0";
+  var fnllaRuntimeVersion = "2.0.0";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -77,7 +77,8 @@
     consentOpen: new WeakSet(),
     consentAccept: new WeakSet(),
     consentSave: new WeakSet(),
-    consentReset: new WeakSet()
+    consentReset: new WeakSet(),
+    busyForm: new WeakSet()
   };
   /*
     Global runtime bindings:
@@ -180,7 +181,8 @@
     consentAccept: "[data-fnlla-consent-accept]",
     consentSave: "[data-fnlla-consent-save]",
     consentReset: "[data-fnlla-consent-reset]",
-    consentCategory: "[data-fnlla-consent-category]"
+    consentCategory: "[data-fnlla-consent-category]",
+    busyForm: "[data-fnlla-busy-form]"
   };
   /* Shared ID prefixes used when markup does not provide explicit IDs. */
   var idPrefixes = {
@@ -4395,9 +4397,45 @@
     initSliders(scope);
     initScrollspy(scope);
     initConsent(scope);
+    initBusyForms(scope);
     syncNavigationMode(scope);
 
     return fnllaRuntimeApi;
+  }
+
+  function setBusyState(target, busy, label) {
+    var element = resolveElementReference(target);
+
+    if (!element) {
+      return fnllaRuntimeApi;
+    }
+
+    element.setAttribute("aria-busy", busy ? "true" : "false");
+    element.classList.toggle("is-busy", !!busy);
+
+    if (label) {
+      element.setAttribute("data-fnlla-busy-label", String(label));
+    }
+
+    return fnllaRuntimeApi;
+  }
+
+  function initBusyForms(root) {
+    queryAll(root, selectors.busyForm).forEach(function (form) {
+      if (initializationState.busyForm.has(form)) {
+        return;
+      }
+
+      form.addEventListener("submit", function (event) {
+        if (form.getAttribute("aria-busy") === "true") {
+          event.preventDefault();
+          return;
+        }
+
+        setBusyState(form, true, form.getAttribute("data-fnlla-busy-label") || "Working");
+      });
+      initializationState.busyForm.add(form);
+    });
   }
 
   /* Keep the public theme API intentionally narrow and forward-compatible. */
@@ -4462,6 +4500,9 @@
       }
 
       return fnllaRuntimeApi;
+    },
+    setBusy: function (target, busy, label) {
+      return setBusyState(target, busy, label);
     },
     showModal: function (target) {
       var modal = resolveElementReference(target, selectors.modal);

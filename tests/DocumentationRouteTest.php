@@ -102,6 +102,24 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString(".doc-wrapper", $response->body());
     }
 
+    public function testRuntimeBrandIconIsServedThroughApplicationRoute(): void
+    {
+        if ($this->skipWhenDocsWorkspaceMissing()) {
+            return;
+        }
+
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/docs/assets/brand/fnlla-runtime.svg",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertSame("image/svg+xml", $response->headers()["Content-Type"] ?? null);
+        self::assertStringContainsString("FNLLA Runtime logo", $response->body());
+    }
+
     public function testBuildingGuideReflectsCurrentProjectControllerAndLayoutRules(): void
     {
         if ($this->skipWhenDocsWorkspaceMissing()) {

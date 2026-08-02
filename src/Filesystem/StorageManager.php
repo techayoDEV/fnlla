@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements maintained file storage behavior for uploads and local runtime assets.
+- Implements maintained file storage behaviour for uploads and local runtime assets.
 */
 
 namespace Fnlla\Php\Filesystem;

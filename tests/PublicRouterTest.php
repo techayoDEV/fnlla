@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates maintained framework behavior inside the repository-local test harness.
+- Validates maintained framework behaviour inside the repository-local test harness.
 */
 
 namespace Fnlla\Php\Tests;
@@ -41,6 +41,32 @@ final class PublicRouterTest extends TestCase
     public function testRouterDoesNotServeDotfilesLocally(): void
     {
         $_SERVER["REQUEST_URI"] = "/.htaccess";
+
+        ob_start();
+        $result = require base_path("public/router.php");
+        $output = (string) ob_get_clean();
+
+        self::assertTrue($result);
+        self::assertSame(404, http_response_code());
+        self::assertSame("Not Found", $output);
+    }
+
+    public function testRouterRejectsEncodedNullBytes(): void
+    {
+        $_SERVER["REQUEST_URI"] = "/assets/app.css%00";
+
+        ob_start();
+        $result = require base_path("public/router.php");
+        $output = (string) ob_get_clean();
+
+        self::assertTrue($result);
+        self::assertSame(404, http_response_code());
+        self::assertSame("Not Found", $output);
+    }
+
+    public function testRouterRejectsWindowsAlternateDataStreamSyntax(): void
+    {
+        $_SERVER["REQUEST_URI"] = "/assets/app.css:stream";
 
         ob_start();
         $result = require base_path("public/router.php");

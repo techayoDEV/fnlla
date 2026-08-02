@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements maintained route registration, matching and URL generation behavior.
+- Implements maintained route registration, matching and URL generation behaviour.
 */
 
 namespace Fnlla\Php\Routing;

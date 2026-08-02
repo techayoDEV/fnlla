@@ -27,12 +27,20 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Http\Resources\JsonResource;
 use Fnlla\Php\Http\Resources\ResourceCollection;
 use Fnlla\Php\Middleware\Pipeline;
+use Fnlla\Php\Observability\RequestObserver;
 use Fnlla\Php\Routing\Router;
 use Throwable;
 
 final class Application
 {
-    /* Global middleware applies before route-level middleware and wraps the entire request lifecycle. */
+    /*
+    Global middleware is the outer ring of the HTTP lifecycle.
+
+    Route middleware is attached by the router after a route is matched, but
+    these global entries run before the router sees the request. That is why
+    CORS and maintenance mode live here: they shape the whole application edge,
+    not only individual controllers.
+    */
     private array $middleware = [];
 
     public function __construct(
@@ -53,15 +61,30 @@ final class Application
 
     public function run(): void
     {
-        $request = Request::capture();
-        $response = $this->handle($request);
+        try {
+            $request = Request::capture();
+            $response = $this->handle($request);
+        } catch (Throwable $exception) {
+            $request = Request::fromTrustedFallback($_SERVER ?? []);
+            $this->exceptionHandler->report($exception, $request);
+            $response = $this->finalizeResponse($request, $this->exceptionHandler->render($exception, $request));
+        }
+
         $response->send();
     }
 
     public function handle(Request $request): Response
     {
+        $startedAt = microtime(true);
+
         try {
-            /* Route dispatch is treated as the pipeline destination so framework middleware stays transport-agnostic. */
+            /*
+            The router is treated as the pipeline destination instead of being
+            called directly. This keeps middleware transport-agnostic: each
+            middleware only receives a Request and a "next" callable, while the
+            Application remains responsible for exception reporting and final
+            response shaping.
+            */
             $pipeline = new Pipeline($this->container);
             $result = $pipeline->process(
                 $request,
@@ -72,15 +95,20 @@ final class Application
             $this->exceptionHandler->report($exception, $request);
             $response = $this->exceptionHandler->render($exception, $request);
 
-            return $this->finalizeResponse($request, $response);
+            return $this->finalizeResponse($request, $response, $startedAt);
         }
 
-        return $this->finalizeResponse($request, $this->normalizeResponse($result));
+        return $this->finalizeResponse($request, $this->normalizeResponse($result), $startedAt);
     }
 
     private function normalizeResponse(mixed $result): Response
     {
-        /* Keep controller and route return types ergonomic while centralizing the final HTTP normalization rules. */
+        /*
+        Controllers may return framework Response objects, strings, arrays,
+        JSON resources or scalar values. Normalizing in one place keeps route
+        handlers pleasant to write while preventing every controller from
+        reimplementing content-type decisions.
+        */
         if ($result instanceof Response) {
             return $result;
         }
@@ -108,10 +136,19 @@ final class Application
         return Response::json($result);
     }
 
-    private function finalizeResponse(Request $request, Response $response): Response
+    private function finalizeResponse(Request $request, Response $response, ?float $startedAt = null): Response
     {
-        /* Request IDs are always attached at the edge so logs and client-visible responses stay correlated. */
+        /*
+        Request IDs are attached at the edge, after exception rendering and
+        response normalization. This guarantees successful responses and error
+        responses expose the same correlation handle that was used in logs.
+        */
         $final = $response->withHeader("X-Request-Id", $request->requestId());
+
+        if ($startedAt !== null) {
+            $durationMs = (microtime(true) - $startedAt) * 1000;
+            $final = $this->container->make(RequestObserver::class)->observe($request, $final, $durationMs);
+        }
 
         if ($request->method() === "HEAD") {
             return $final->withoutBody();

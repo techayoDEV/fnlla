@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements shared helpers, environment loading, metadata and framework support behavior.
+- Implements shared helpers, environment loading, metadata and framework support behaviour.
 */
 
 namespace Fnlla\Php\Support;
@@ -49,11 +49,13 @@ final class Logger
             mkdir($directory, 0777, true);
         }
 
+        self::rotateIfNeeded($logPath);
+
         $entry = [
             "timestamp" => gmdate(DATE_ATOM),
             "level" => strtoupper($level),
             "message" => $message,
-            "context" => $context,
+            "context" => self::redact($context),
         ];
 
         $encoded = json_encode($entry, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -84,5 +86,54 @@ final class Logger
             ],
             "trace" => $exception->getTraceAsString(),
         ]));
+    }
+
+    private static function redact(mixed $value, ?string $key = null): mixed
+    {
+        $redactKeys = (array) config("logging.redact_keys", []);
+        $normalizedKey = is_string($key) ? strtolower($key) : "";
+
+        foreach ($redactKeys as $redactKey) {
+            if (is_string($redactKey) && $redactKey !== "" && str_contains($normalizedKey, strtolower($redactKey))) {
+                return "[redacted]";
+            }
+        }
+
+        if (is_array($value)) {
+            $redacted = [];
+
+            foreach ($value as $childKey => $childValue) {
+                $redacted[$childKey] = self::redact($childValue, is_string($childKey) ? $childKey : null);
+            }
+
+            return $redacted;
+        }
+
+        return $value;
+    }
+
+    private static function rotateIfNeeded(string $logPath): void
+    {
+        $maxBytes = max(0, (int) config("logging.max_file_bytes", 5242880));
+        $maxFiles = max(0, (int) config("logging.max_rotated_files", 5));
+
+        if ($maxBytes <= 0 || $maxFiles <= 0 || !is_file($logPath) || filesize($logPath) < $maxBytes) {
+            return;
+        }
+
+        for ($index = $maxFiles; $index >= 1; $index--) {
+            $source = $index === 1 ? $logPath : $logPath . "." . ($index - 1);
+            $target = $logPath . "." . $index;
+
+            if (!is_file($source)) {
+                continue;
+            }
+
+            if ($index === $maxFiles && is_file($target)) {
+                @unlink($target);
+            }
+
+            @rename($source, $target);
+        }
     }
 }

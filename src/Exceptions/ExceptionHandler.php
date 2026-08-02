@@ -15,11 +15,12 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements framework-level exception reporting and rendering behavior.
+- Implements framework-level exception reporting and rendering behaviour.
 */
 
 namespace Fnlla\Php\Exceptions;
 
+use Fnlla\Php\Http\HttpException;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Support\Logger;
@@ -40,6 +41,10 @@ final class ExceptionHandler
 
     public function render(Throwable $exception, Request $request): Response
     {
+        if ($exception instanceof HttpException) {
+            return $this->renderHttpException($exception, $request);
+        }
+
         $debugMessage = app_debug()
             ? $exception->getMessage()
             : "The application hit an unexpected error while processing the request.";
@@ -58,5 +63,31 @@ final class ExceptionHandler
             "message" => $debugMessage,
             "requestReference" => $request->requestId(),
         ]), 500);
+    }
+
+    private function renderHttpException(HttpException $exception, Request $request): Response
+    {
+        $status = $exception->statusCode();
+        $message = $exception->getMessage();
+        $headline = match ($status) {
+            413 => "Request too large",
+            429 => "Too many requests",
+            default => "Request could not be completed",
+        };
+
+        if ($request->expectsJson() || str_starts_with($request->path(), "/api/")) {
+            return Response::json([
+                "error" => $headline,
+                "message" => $message,
+                "request_id" => $request->requestId(),
+            ], $status);
+        }
+
+        return Response::html(View::render("pages/error", [
+            "pageTitle" => $headline,
+            "headline" => $headline,
+            "message" => $message,
+            "requestReference" => $request->requestId(),
+        ]), $status);
     }
 }

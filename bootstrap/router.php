@@ -22,6 +22,7 @@ use Fnlla\Php\Auth\Middleware\Authorize;
 use Fnlla\Php\Auth\Middleware\Authenticate;
 use Fnlla\Php\Container\Container;
 use Fnlla\Php\Middleware\AuthorizeDeveloperOperations;
+use Fnlla\Php\Middleware\EnforceTrustedHosts;
 use Fnlla\Php\Middleware\EnforceMaintenanceAccess;
 use Fnlla\Php\Middleware\HandleCors;
 use Fnlla\Php\Middleware\RequireDeveloperSession;
@@ -42,11 +43,24 @@ $router->middleware("developer-operations", AuthorizeDeveloperOperations::class)
 $router->middleware("developer-session", RequireDeveloperSession::class);
 $router->middleware("maintenance", EnforceMaintenanceAccess::class);
 $router->middleware("throttle", ThrottleRequests::class);
+$router->middleware("trusted-hosts", EnforceTrustedHosts::class);
 
-if (is_file(APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php")) {
-    require APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php";
+$routeCachePath = framework_route_cache_path();
+
+if (is_file($routeCachePath)) {
+    $cachedRoutes = require $routeCachePath;
+
+    if (!is_array($cachedRoutes)) {
+        throw new RuntimeException("Cached route file must return an array.");
+    }
+
+    $router->loadCachedRoutes($cachedRoutes);
+} else {
+    if (is_file(APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php")) {
+        require APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php";
+    }
+
+    require APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "web.php";
 }
-
-require APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "web.php";
 
 return $router;

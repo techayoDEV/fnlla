@@ -15,13 +15,14 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Implements the maintained CLI surface and scheduler-oriented console behavior.
+- Implements the maintained CLI surface and scheduler-oriented console behaviour.
 */
 
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Console\Command;
 use Fnlla\Php\Support\FrameworkLock;
+use Fnlla\Php\Support\ProcessRunner;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -93,7 +94,8 @@ final class MakeProjectCommand extends Command
         $this->line("3. Copy .env.example to .env, or open /maintenance locally and let the project setup flow create .env while configuring the first maintenance password.");
         $this->line("4. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
         $this->line("5. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
-        $this->line("6. Initialize a separate Git repository for the new website or application.");
+        $this->line("6. Before production deployment, run php fnlla optimize:warm; before packaging a clean source release, run php fnlla optimize:clear.");
+        $this->line("7. Initialize a separate Git repository for the new website or application.");
 
         return 0;
     }
@@ -163,6 +165,7 @@ final class MakeProjectCommand extends Command
             "fnlla.cmd",
             "lang",
             "public",
+            "resources",
             "routes",
             "scripts",
             "src",
@@ -176,6 +179,12 @@ final class MakeProjectCommand extends Command
     private function copyPath(string $sourcePath, string $targetPath): void
     {
         if (is_dir($sourcePath)) {
+            $relativePath = $this->normalizeSeparators(substr($sourcePath, strlen(base_path()) + 1));
+
+            if ($this->copyDirectoryFastIfSupported($sourcePath, $targetPath, $relativePath)) {
+                return;
+            }
+
             if (!is_dir($targetPath) && !mkdir($targetPath, 0777, true) && !is_dir($targetPath)) {
                 throw new RuntimeException("Unable to create directory during export: " . $targetPath);
             }
@@ -201,6 +210,58 @@ final class MakeProjectCommand extends Command
         if (!copy($sourcePath, $targetPath)) {
             throw new RuntimeException("Unable to copy file during export: " . $sourcePath);
         }
+    }
+
+    private function copyDirectoryFastIfSupported(string $sourcePath, string $targetPath, string $relativePath): bool
+    {
+        if (!$this->canFastCopyDirectory($relativePath)) {
+            return false;
+        }
+
+        $robocopy = $this->findRobocopy();
+
+        if ($robocopy === null) {
+            return false;
+        }
+
+        if (!is_dir($targetPath) && !mkdir($targetPath, 0777, true) && !is_dir($targetPath)) {
+            throw new RuntimeException("Unable to create directory during export: " . $targetPath);
+        }
+
+        $result = ProcessRunner::run([
+            $robocopy,
+            $sourcePath,
+            $targetPath,
+            "/E",
+            "/NFL",
+            "/NDL",
+            "/NJH",
+            "/NJS",
+            "/NP",
+        ]);
+
+        if ($result["exit_code"] > 7) {
+            throw new RuntimeException("Fast directory copy failed for {$relativePath}: " . $result["output"]);
+        }
+
+        return true;
+    }
+
+    private function canFastCopyDirectory(string $relativePath): bool
+    {
+        return in_array($relativePath, [
+            "public",
+            "public/vendor/fnlla-runtime",
+        ], true);
+    }
+
+    private function findRobocopy(): ?string
+    {
+        if (DIRECTORY_SEPARATOR !== "\\" || !function_exists("proc_open")) {
+            return null;
+        }
+
+        return ProcessRunner::findExecutable("robocopy");
     }
 
     private function shouldSkipRelativeEntry(string $relativePath): bool
@@ -358,6 +419,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 
 - the FNLLA application core
 - the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
+- the integrated private runtime intelligence bundle under `resources/fnlla-ai-runtime/`
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
@@ -447,6 +509,20 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
 - `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
+- `php fnlla doctor` checks local PHP/runtime readiness before development, CI or release
+- `php fnlla security:audit` checks deploy-time security configuration posture
+- `php fnlla optimize` builds route and configuration caches for production-style deployments
+- `php fnlla optimize:warm` builds bootstrap caches, the asset manifest and optional OPcache preload file
+- `php fnlla app:map` generates a route/controller/view map for audits, onboarding and AI-assisted review
+- `php fnlla upgrade:check --target=2.0.0` checks major-release upgrade readiness
+- `php fnlla upgrade:plan --target=2.0.0` writes a machine-readable upgrade plan
+- `php fnlla perf:profile --iterations=5` records local CLI timings, repository footprint and peak memory
+- `php fnlla perf:baseline:update --iterations=7` captures a local performance baseline
+- `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
+- `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
+- `php fnlla ai:review-pack --target=2.0.0` combines context, app map and upgrade readiness into one local AI review artefact
+- `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
+- `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
 - `php fnlla framework:update --check --github` checks the latest published FNLLA release from GitHub and caches the release source locally before comparing drift
 - `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
 - `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
@@ -464,8 +540,20 @@ php fnlla list
 php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
+php fnlla doctor
+php fnlla security:audit
 php fnlla framework:update --check --github
 php fnlla framework:update --check --source ..\fnlla  # optional local override
+php fnlla optimize
+php fnlla optimize:warm
+php fnlla app:map
+php fnlla upgrade:check --target=2.0.0
+php fnlla perf:profile --iterations=5
+php fnlla perf:baseline:update --iterations=7
+php fnlla ai:context
+php fnlla ai:review-pack --target=2.0.0
+php fnlla optimize:clear
+php fnlla release:prepare
 php fnlla route:list
 php fnlla migrate
 php fnlla migrate:rollback
@@ -622,18 +710,40 @@ Purpose:
 ===============================================================================
 */
 
+use Fnlla\Php\Console\Commands\AiContextCommand;
+use Fnlla\Php\Console\Commands\AiRedactCommand;
+use Fnlla\Php\Console\Commands\AiReviewPackCommand;
+use Fnlla\Php\Console\Commands\AiUpgradeBriefCommand;
+use Fnlla\Php\Console\Commands\AppMapCommand;
 use Fnlla\Php\Console\Commands\CacheClearCommand;
+use Fnlla\Php\Console\Commands\ConfigCacheCommand;
+use Fnlla\Php\Console\Commands\DoctorCommand;
 use Fnlla\Php\Console\Commands\FnllaRuntimeSyncCommand;
 use Fnlla\Php\Console\Commands\FnllaRuntimeValidateCommand;
 use Fnlla\Php\Console\Commands\FrameworkUpdateCommand;
 use Fnlla\Php\Console\Commands\MigrateCommand;
 use Fnlla\Php\Console\Commands\MigrateRollbackCommand;
 use Fnlla\Php\Console\Commands\MigrateStatusCommand;
+use Fnlla\Php\Console\Commands\OptimizeClearCommand;
+use Fnlla\Php\Console\Commands\OptimizeCommand;
+use Fnlla\Php\Console\Commands\OptimizeWarmCommand;
+use Fnlla\Php\Console\Commands\PerfBaselineUpdateCommand;
+use Fnlla\Php\Console\Commands\PerfBudgetCommand;
+use Fnlla\Php\Console\Commands\PerfCompareCommand;
+use Fnlla\Php\Console\Commands\PerfProfileCommand;
 use Fnlla\Php\Console\Commands\ProjectClaimCommand;
 use Fnlla\Php\Console\Commands\QueueWorkCommand;
+use Fnlla\Php\Console\Commands\ReleaseChecksumsCommand;
+use Fnlla\Php\Console\Commands\ReleasePrepareCommand;
+use Fnlla\Php\Console\Commands\ReleaseSbomCommand;
+use Fnlla\Php\Console\Commands\RouteCacheCommand;
 use Fnlla\Php\Console\Commands\RouteListCommand;
 use Fnlla\Php\Console\Commands\ScheduleRunCommand;
+use Fnlla\Php\Console\Commands\SecurityAuditCommand;
 use Fnlla\Php\Console\Commands\SeedCommand;
+use Fnlla\Php\Console\Commands\UpgradeApplyCommand;
+use Fnlla\Php\Console\Commands\UpgradeCheckCommand;
+use Fnlla\Php\Console\Commands\UpgradePlanCommand;
 use Fnlla\Php\Console\Commands\VersionStatusCommand;
 use Fnlla\Php\Console\Commands\VersionSyncCommand;
 
@@ -644,7 +754,14 @@ if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:va
 $container = require __DIR__ . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEPARATOR . "console.php";
 
 $console = $container->make(\Fnlla\Php\Console\Application::class);
+$console->register(AiContextCommand::class);
+$console->register(AiRedactCommand::class);
+$console->register(AiReviewPackCommand::class);
+$console->register(AiUpgradeBriefCommand::class);
+$console->register(AppMapCommand::class);
 $console->register(CacheClearCommand::class);
+$console->register(ConfigCacheCommand::class);
+$console->register(DoctorCommand::class);
 $console->register(FnllaRuntimeSyncCommand::class);
 $console->register(FnllaRuntimeValidateCommand::class);
 $console->register(FrameworkUpdateCommand::class);
@@ -652,10 +769,25 @@ $console->register(SeedCommand::class);
 $console->register(MigrateRollbackCommand::class);
 $console->register(MigrateCommand::class);
 $console->register(MigrateStatusCommand::class);
+$console->register(OptimizeClearCommand::class);
+$console->register(OptimizeCommand::class);
+$console->register(OptimizeWarmCommand::class);
+$console->register(PerfBaselineUpdateCommand::class);
+$console->register(PerfBudgetCommand::class);
+$console->register(PerfCompareCommand::class);
+$console->register(PerfProfileCommand::class);
 $console->register(ProjectClaimCommand::class);
 $console->register(QueueWorkCommand::class);
+$console->register(ReleaseChecksumsCommand::class);
+$console->register(ReleasePrepareCommand::class);
+$console->register(ReleaseSbomCommand::class);
+$console->register(RouteCacheCommand::class);
 $console->register(RouteListCommand::class);
 $console->register(ScheduleRunCommand::class);
+$console->register(SecurityAuditCommand::class);
+$console->register(UpgradeApplyCommand::class);
+$console->register(UpgradeCheckCommand::class);
+$console->register(UpgradePlanCommand::class);
 $console->register(VersionStatusCommand::class);
 $console->register(VersionSyncCommand::class);
 

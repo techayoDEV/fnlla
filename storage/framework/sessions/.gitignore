@@ -1,0 +1,3 @@
+# Keep the sessions directory in the repository while ignoring runtime session files.
+*
+!.gitignore

@@ -1,0 +1,32 @@
+{
+    "schema_version": 1,
+    "product": {
+        "name": "FNLLA Runtime Intelligence",
+        "slug": "fnlla-ai-runtime",
+        "version": "2.0.0",
+        "owner": "TechAyo LTD (techayo.co.uk)",
+        "repository": "https://github.com/techayoDEV/fnlla.git",
+        "source_of_truth": "integrated"
+    },
+    "distribution": {
+        "name": "Integrated FNLLA runtime intelligence bundle",
+        "slug": "integrated-runtime-intelligence",
+        "distribution_root": ".",
+        "version_path": "VERSION",
+        "profile_path": "profile.json",
+        "intents_directory": "intents",
+        "knowledge_directory": "knowledge",
+        "release_files": [
+            "MANIFEST.json",
+            "README.md",
+            "VERSION",
+            "profile.json"
+        ]
+    },
+    "privacy": {
+        "public_asset": false,
+        "external_calls": false,
+        "stores_user_data": false,
+        "learned_records_path": "storage/framework/ai/runtime-knowledge.json"
+    }
+}

@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Validates maintained framework behavior inside the repository-local test harness.
+- Validates maintained framework behaviour inside the repository-local test harness.
 */
 
 namespace Fnlla\Php\Tests;

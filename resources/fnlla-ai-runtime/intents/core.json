@@ -1,0 +1,21 @@
+{
+    "schema": "fnlla.runtime_ai.records.v1",
+    "items": [
+        {
+            "id": "contact_support",
+            "title": "Contact support",
+            "utterances": ["contact", "support", "help", "email", "message"],
+            "answer": "Use the contact form or the configured support address for this project.",
+            "actions": ["route:contact"],
+            "tags": ["support", "contact"]
+        },
+        {
+            "id": "account_access",
+            "title": "Account access",
+            "utterances": ["login", "sign in", "account", "password", "access"],
+            "answer": "Use the sign-in page and follow the project account recovery flow if credentials are not accepted.",
+            "actions": ["route:login"],
+            "tags": ["account", "access"]
+        }
+    ]
+}

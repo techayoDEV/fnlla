@@ -20,6 +20,13 @@ $releaseTagValue = trim((string) old("release_tag", ""));
 $cachedReleaseTag = trim((string) ($cachedRelease["tag"] ?? ""));
 $cachedReleaseVersion = trim((string) ($cachedRelease["version"] ?? ""));
 $cachedReleaseNotes = trim((string) ($cachedRelease["notes"] ?? ""));
+$upgradeReport = is_array($frameworkUpgradeReport ?? null) ? $frameworkUpgradeReport : null;
+$upgradeApply = is_array($frameworkUpgradeApply ?? null) ? $frameworkUpgradeApply : null;
+$upgradeSummary = is_array($upgradeReport["summary"] ?? null) ? (array) $upgradeReport["summary"] : [];
+$upgradeChecks = is_array($upgradeReport["checks"] ?? null) ? (array) $upgradeReport["checks"] : [];
+$upgradePlanActions = is_array($upgradeReport["plan"]["actions"] ?? null) ? (array) $upgradeReport["plan"]["actions"] : [];
+$upgradeApplyActions = is_array($upgradeApply["actions"] ?? null) ? (array) $upgradeApply["actions"] : [];
+$upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? "2.0.0"));
 $reportMode = trim((string) ($report["mode"] ?? ""));
 $reportUsesGitHub = in_array($reportMode, ["github-check", "github-apply"], true);
 $reportIsApply = in_array($reportMode, ["apply", "github-apply"], true);
@@ -88,6 +95,97 @@ $updateActionLabel = static function (array $update): string {
 
 <section class="section">
   <div class="container">
+    <section class="feature-section" aria-label="Major upgrade readiness workflow">
+      <div class="section-header mb-0">
+        <p class="feature-kicker">Major upgrade safety</p>
+        <h2 class="section-title">FNLLA can check and apply the safe part of a 1.x to 2.0 upgrade from this browser page.</h2>
+        <p class="section-text">The GUI uses the same upgrade analyser as the CLI. It can write the upgrade plan and clear generated runtime residue automatically, while manual-review items remain explicit and blocked from automatic apply.</p>
+      </div>
+
+      <div class="grid grid-2 gap-md">
+        <article class="feature-card">
+          <h3 class="content-title">Run major readiness</h3>
+          <p class="content-text">Use this before touching a production update. The check covers required files, runtime residue, bootstrap caches, major-release docs, cache serialisation and assistant-vendor marker hygiene.</p>
+          <form class="form stack gap-md" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-fnlla-busy-form data-fnlla-busy-label="Checking major upgrade readiness">
+            <?= csrf_field() ?>
+            <div class="form-group">
+              <label class="label" for="framework-upgrade-target">Target version</label>
+              <input class="input" id="framework-upgrade-target" name="target_version" type="text" value="<?= h($upgradeTargetVersion !== "" ? $upgradeTargetVersion : "2.0.0") ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+            </div>
+            <div class="grid grid-2 gap-md framework-update-actions-grid">
+              <button class="btn btn-outline" type="submit" name="mode" value="upgrade-check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check major readiness</button>
+              <button class="btn btn-primary" type="submit" name="mode" value="upgrade-apply" <?= ($pageState["can_apply"] ?? false) ? "" : "disabled" ?>>Apply safe actions</button>
+            </div>
+            <p class="help-text mb-0">Safe apply never performs a manual migration review for you. It only executes actions marked safe by the upgrade plan.</p>
+          </form>
+        </article>
+
+        <article class="feature-card">
+          <h3 class="content-title">Last major readiness result</h3>
+          <?php if ($upgradeReport === null): ?>
+          <p class="content-text mb-0">No browser-based major readiness check has been run in this session yet.</p>
+          <?php else: ?>
+          <div class="grid grid-3 gap-sm framework-update-meta-grid">
+            <div>
+              <p class="feature-kicker">Passed</p>
+              <p class="content-title mb-0"><?= h((string) ($upgradeSummary["passed"] ?? 0)) ?></p>
+            </div>
+            <div>
+              <p class="feature-kicker">Warnings</p>
+              <p class="content-title mb-0"><?= h((string) ($upgradeSummary["warnings"] ?? 0)) ?></p>
+            </div>
+            <div>
+              <p class="feature-kicker">Failures</p>
+              <p class="content-title mb-0"><?= h((string) ($upgradeSummary["failures"] ?? 0)) ?></p>
+            </div>
+          </div>
+          <p class="content-text">Target <?= h((string) ($upgradeReport["target_version"] ?? "2.0.0")) ?> checked at <?= h((string) ($upgradeReport["executed_at_utc"] ?? $upgradeReport["generated_at_utc"] ?? "unknown")) ?>.</p>
+
+          <?php if ($upgradeChecks !== []): ?>
+          <ul class="contact-list">
+            <?php foreach ($upgradeChecks as $check): ?>
+            <?php if (!is_array($check)) { continue; } ?>
+            <li><strong><?= h(strtoupper((string) ($check["status"] ?? "info"))) ?></strong> <?= h((string) ($check["id"] ?? "check")) ?> - <?= h((string) ($check["detail"] ?? "")) ?></li>
+            <?php endforeach; ?>
+          </ul>
+          <?php endif; ?>
+          <?php endif; ?>
+        </article>
+      </div>
+
+      <?php if ($upgradePlanActions !== [] || $upgradeApplyActions !== []): ?>
+      <div class="grid grid-2 gap-md mt-4">
+        <?php if ($upgradePlanActions !== []): ?>
+        <article class="feature-card">
+          <h3 class="content-title">Upgrade plan actions</h3>
+          <ul class="contact-list">
+            <?php foreach ($upgradePlanActions as $action): ?>
+            <?php if (!is_array($action)) { continue; } ?>
+            <li><strong><?= h((string) ($action["title"] ?? $action["id"] ?? "Action")) ?></strong> - <?= ((bool) ($action["safe_to_apply"] ?? false)) ? "safe to apply" : "manual review" ?><br><?= h((string) ($action["detail"] ?? "")) ?></li>
+            <?php endforeach; ?>
+          </ul>
+        </article>
+        <?php endif; ?>
+
+        <?php if ($upgradeApplyActions !== []): ?>
+        <article class="feature-card">
+          <h3 class="content-title">Safe apply result</h3>
+          <ul class="contact-list">
+            <?php foreach ($upgradeApplyActions as $action): ?>
+            <?php if (!is_array($action)) { continue; } ?>
+            <li><strong><?= h(strtoupper((string) ($action["status"] ?? "unknown"))) ?></strong> <?= h((string) ($action["id"] ?? "action")) ?> - <?= h((string) ($action["detail"] ?? "")) ?></li>
+            <?php endforeach; ?>
+          </ul>
+        </article>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+    </section>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
     <div class="grid gap-md framework-update-control-stack">
       <aside class="contact-card contact-summary-card" aria-label="Framework update controls summary">
         <p class="contact-kicker">Update posture</p>
@@ -108,7 +206,7 @@ $updateActionLabel = static function (array $update): string {
       </aside>
 
       <article class="cta-card contact-form-card">
-        <form class="form contact-form" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-framework-update-form>
+        <form class="form contact-form" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-framework-update-form data-fnlla-busy-form data-fnlla-busy-label="Preparing framework update">
           <?= csrf_field() ?>
           <div class="grid grid-2 gap-md framework-update-channel-grid">
             <section class="feature-card framework-update-channel-card" aria-label="GitHub release channel controls">
