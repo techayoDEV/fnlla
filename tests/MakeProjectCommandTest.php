@@ -99,7 +99,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "platform.php"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php");
-        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php"));
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php");
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "login.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "app.log"));
@@ -150,7 +150,15 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
+            "DEVELOPER_ACCESS_PASSWORD_HASH=",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringNotContainsString(
             "DEVELOPER_ACCESS_PATH=",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "ASSET_URL=",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
         );
         self::assertStringContainsString(
@@ -351,6 +359,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("GET     /", $routeListOutput);
         self::assertStringContainsString("GET     /about", $routeListOutput);
         self::assertStringContainsString("GET     /services", $routeListOutput);
+        self::assertStringContainsString("GET     /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/health", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/framework-update", $routeListOutput);
@@ -363,7 +372,6 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(str_contains($routeListOutput, "/project/launch"));
         self::assertFalse(str_contains($routeListOutput, "/login"));
         self::assertFalse(str_contains($routeListOutput, "/dashboard"));
-        self::assertFalse(str_contains($routeListOutput, "/contact"));
     }
 
     private function runPhpScript(string $scriptPath, array $arguments = []): array

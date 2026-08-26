@@ -21,17 +21,18 @@ Purpose:
 
 return [
     "enabled" => (bool) env("DEVELOPER_ACCESS_ENABLED", true),
-    "path" => trim((string) env("DEVELOPER_ACCESS_PATH", "")),
     "password" => (string) env("DEVELOPER_ACCESS_PASSWORD", ""),
+    "password_hash" => (string) env("DEVELOPER_ACCESS_PASSWORD_HASH", ""),
     "setup_ui_enabled" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_ENABLED", framework_detect_environment() !== "production"),
     "setup_ui_local_only" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_LOCAL_ONLY", true),
     "operations_nav_mode" => trim((string) env("DEVELOPER_OPERATIONS_NAV_MODE", "hidden")),
     "unlock_ttl_minutes" => max(1, (int) env("DEVELOPER_ACCESS_TTL_MINUTES", 120)),
+    "absolute_ttl_minutes" => max(1, (int) env("DEVELOPER_ACCESS_ABSOLUTE_TTL_MINUTES", 480)),
     "max_attempts" => max(1, (int) env("DEVELOPER_ACCESS_MAX_ATTEMPTS", 5)),
     "attempt_window_minutes" => max(1, (int) env("DEVELOPER_ACCESS_WINDOW_MINUTES", 15)),
     "lockout_minutes" => max(1, (int) env("DEVELOPER_ACCESS_LOCKOUT_MINUTES", 15)),
-    "path_prefix" => trim((string) env("DEVELOPER_ACCESS_PATH_PREFIX", "/_dev-")),
     "session_key" => "developer.access_unlocked",
     "unlocked_at_key" => "developer.access_unlocked_at",
     "expires_at_key" => "developer.access_expires_at",
+    "credential_fingerprint_key" => "developer.access_credential_fingerprint",
 ];

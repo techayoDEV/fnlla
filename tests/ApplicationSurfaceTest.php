@@ -56,6 +56,7 @@ final class ApplicationSurfaceTest extends TestCase
             "enabled" => true,
             "path" => "",
             "password" => "",
+            "password_hash" => "",
             "operations_nav_mode" => "visible",
         ]));
         config_set("client_preview", array_merge((array) config("client_preview", []), [
@@ -103,7 +104,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("Project-first development", $response->body());
+        self::assertStringContainsString("A server-rendered project base", $response->body());
         self::assertStringContainsString("Services", $response->body());
         self::assertStringContainsString("About", $response->body());
         self::assertStringNotContainsString("DEV OPERATIONS", $response->body());
@@ -161,9 +162,10 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $aboutResponse->status());
         self::assertSame(200, $servicesResponse->status());
-        self::assertSame(404, $contactResponse->status());
-        self::assertStringContainsString("Who this project base is for", $aboutResponse->body());
-        self::assertStringContainsString("Service websites", $servicesResponse->body());
+        self::assertSame(200, $contactResponse->status());
+        self::assertStringContainsString("Built for ownership", $aboutResponse->body());
+        self::assertStringContainsString("Business websites", $servicesResponse->body());
+        self::assertStringContainsString("Replace this page with the project enquiry", $contactResponse->body());
     }
 
     public function testHealthRouteRedirectsToMaintenanceSurface(): void
@@ -345,7 +347,7 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $response->status());
         self::assertSame("application/json; charset=UTF-8", $response->headers()["Content-Type"] ?? null);
-        self::assertStringContainsString('"name": "' . (string) config("app.name") . '"', $response->body());
+        self::assertStringContainsString('"name": "' . $this->expectedProjectName() . '"', $response->body());
         self::assertStringContainsString('"api_health": "/api/health"', $response->body());
     }
 
@@ -470,7 +472,25 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("Project-first development", $homeResponse->body());
+        self::assertStringContainsString("A server-rendered project base", $homeResponse->body());
+    }
+
+    private function expectedProjectName(): string
+    {
+        $manifestPath = base_path("MANIFEST.json");
+        $manifest = is_file($manifestPath)
+            ? json_decode((string) file_get_contents($manifestPath), true)
+            : null;
+
+        if (is_array($manifest)) {
+            $productName = (string) ($manifest["product"]["name"] ?? "");
+
+            if ($productName !== "") {
+                return $productName;
+            }
+        }
+
+        return (string) config("app.name");
     }
 
     public function testMaintenanceScreenRendersBrandedClientPreviewWhenEnabled(): void
@@ -589,8 +609,8 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "",
             "password" => "",
+            "password_hash" => "",
             "operations_nav_mode" => "visible",
         ]));
 
@@ -603,7 +623,7 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $pageResponse->status());
         self::assertStringContainsString("Create developer access", $pageResponse->body());
-        self::assertStringContainsString("Generate the first private developer path and password", $pageResponse->body());
+        self::assertStringContainsString("Create the first developer password", $pageResponse->body());
         self::assertStringNotContainsString("Configure maintenance access", $pageResponse->body());
 
         $token = csrf_token();
@@ -618,34 +638,31 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $setupResponse->status());
-        $developerPanelPath = (string) ($setupResponse->headers()["Location"] ?? "");
-        self::assertTrue(str_starts_with($developerPanelPath, "/_dev-"));
-        self::assertTrue(str_ends_with($developerPanelPath, "/panel"));
-        $developerPath = substr($developerPanelPath, 0, -strlen("/panel"));
+        self::assertSame("/developer/panel", $setupResponse->headers()["Location"] ?? null);
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertFileExists($envPath);
-        self::assertStringContainsString("DEVELOPER_ACCESS_PATH=" . $developerPath, (string) file_get_contents($envPath));
-        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=developer-secret", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD_HASH=", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD=developer-secret", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("MAINTENANCE_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
-            "path" => $developerPath,
-            "password" => "developer-secret",
+            "password" => "",
+            "password_hash" => (string) config("developer_access.password_hash", ""),
             "operations_nav_mode" => "visible",
         ]));
         $developerApplication = $this->makeApplication();
         $developerResponse = $developerApplication->handle(Request::capture("", [
-            "REQUEST_URI" => $developerPanelPath,
+            "REQUEST_URI" => "/developer/panel",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
 
         self::assertSame(200, $developerResponse->status());
         self::assertStringContainsString("Developer Panel", $developerResponse->body());
-        self::assertStringContainsString($developerPath, $developerResponse->body());
-        self::assertStringContainsString("Regenerate private developer path", $developerResponse->body());
+        self::assertStringContainsString("Use the standard developer address", $developerResponse->body());
         self::assertStringContainsString("Save maintenance settings", $developerResponse->body());
         self::assertStringContainsString("Maintenance mode is currently off.", $developerResponse->body());
 
@@ -656,7 +673,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("Project-first development", $homeResponse->body());
+        self::assertStringContainsString("A server-rendered project base", $homeResponse->body());
     }
 
     public function testExistingProjectCanActivateDeveloperPanelAfterFrameworkUpdate(): void
@@ -686,8 +703,8 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "",
             "password" => "",
+            "password_hash" => "",
             "operations_nav_mode" => "visible",
             "setup_ui_enabled" => true,
             "setup_ui_local_only" => true,
@@ -731,24 +748,22 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $activationResponse->status());
-        $developerPanelPath = (string) ($activationResponse->headers()["Location"] ?? "");
-        self::assertTrue(str_starts_with($developerPanelPath, "/_dev-"));
-        self::assertTrue(str_ends_with($developerPanelPath, "/panel"));
-        $developerPath = substr($developerPanelPath, 0, -strlen("/panel"));
+        self::assertSame("/developer/panel", $activationResponse->headers()["Location"] ?? null);
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertStringContainsString("DEVELOPER_ACCESS_ENABLED=true", (string) file_get_contents($envPath));
-        self::assertStringContainsString("DEVELOPER_ACCESS_PATH=" . $developerPath, (string) file_get_contents($envPath));
-        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=developer-secret", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD_HASH=", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD=developer-secret", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_OPERATIONS_NAV_MODE=hidden", (string) file_get_contents($envPath));
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
-            "path" => $developerPath,
-            "password" => "developer-secret",
+            "password" => "",
+            "password_hash" => (string) config("developer_access.password_hash", ""),
             "operations_nav_mode" => "hidden",
         ]));
         $developerApplication = $this->makeApplication();
         $developerResponse = $developerApplication->handle(Request::capture("", [
-            "REQUEST_URI" => $developerPanelPath,
+            "REQUEST_URI" => "/developer/panel",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
@@ -807,11 +822,13 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $setupResponse->status());
-        self::assertTrue(str_starts_with((string) ($setupResponse->headers()["Location"] ?? ""), "/_dev-"));
+        self::assertSame("/developer/panel", $setupResponse->headers()["Location"] ?? null);
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertStringContainsString("MAINTENANCE_ACCESS_PASSWORD=preview-lock", (string) file_get_contents($envPath));
-        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=preview-lock", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
+        self::assertStringContainsString("DEVELOPER_ACCESS_PASSWORD_HASH=", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD=preview-lock", (string) file_get_contents($envPath));
 
         $homeResponse = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/",
@@ -826,7 +843,6 @@ final class ApplicationSurfaceTest extends TestCase
     {
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "/_dev-service",
             "password" => "operator-pass",
             "operations_nav_mode" => "hidden",
         ]));
@@ -838,12 +854,12 @@ final class ApplicationSurfaceTest extends TestCase
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
         $developerLoginResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/_dev-service",
+            "REQUEST_URI" => "/developer",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
         $developerPanelResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/_dev-service/panel",
+            "REQUEST_URI" => "/developer/panel",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
@@ -865,7 +881,6 @@ final class ApplicationSurfaceTest extends TestCase
     {
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "/_dev-service",
             "password" => "operator-pass",
             "operations_nav_mode" => "hidden",
         ]));
@@ -881,10 +896,11 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $response->status());
         self::assertStringContainsString("DEV OPERATIONS", $response->body());
-        self::assertStringContainsString("href=\"/_dev-service/panel\"", $response->body());
+        self::assertStringContainsString("href=\"/developer/panel\"", $response->body());
         self::assertStringContainsString(">Home<", $response->body());
         self::assertStringContainsString(">About<", $response->body());
         self::assertStringContainsString(">Services<", $response->body());
+        self::assertStringContainsString(">Contact<", $response->body());
         self::assertStringNotContainsString(">Operations<", $response->body());
         self::assertStringNotContainsString("Maintenance Dashboard", $response->body());
         self::assertStringNotContainsString("Maintenance access required", $response->body());
@@ -894,7 +910,6 @@ final class ApplicationSurfaceTest extends TestCase
     {
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "/_dev-service",
             "password" => "operator-pass",
             "operations_nav_mode" => "hidden",
         ]));
@@ -903,7 +918,7 @@ final class ApplicationSurfaceTest extends TestCase
         developer_access()->grantAccess();
 
         $response = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/_dev-service/panel",
+            "REQUEST_URI" => "/developer/panel",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
@@ -934,7 +949,6 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => "/_dev-service",
             "password" => "operator-pass",
             "operations_nav_mode" => "hidden",
         ]));
@@ -944,7 +958,7 @@ final class ApplicationSurfaceTest extends TestCase
         $token = csrf_token();
 
         $response = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/_dev-service/panel/settings/maintenance",
+            "REQUEST_URI" => "/developer/panel/settings/maintenance",
             "REQUEST_METHOD" => "POST",
             "REMOTE_ADDR" => "127.0.0.1",
         ], [], [
@@ -956,7 +970,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $response->status());
-        self::assertSame("/_dev-service/panel#developer-maintenance-settings", $response->headers()["Location"] ?? null);
+        self::assertSame("/developer/panel#developer-maintenance-settings", $response->headers()["Location"] ?? null);
         self::assertStringContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("MAINTENANCE_ACCESS_PASSWORD=new-preview-pass", (string) file_get_contents($envPath));
         self::assertFalse($_SESSION["maintenance.access_unlocked"] ?? false);

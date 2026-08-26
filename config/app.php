@@ -28,6 +28,7 @@ return [
     "environment" => $environment,
     "debug" => (bool) env("APP_DEBUG", $isDevelopment),
     "base_url" => rtrim((string) env("APP_URL", ""), "/"),
+    "asset_url" => rtrim((string) env("ASSET_URL", ""), "/"),
     "timezone" => (string) env("APP_TIMEZONE", "UTC"),
     "locale" => (string) env("APP_LOCALE", "en"),
     "fallback_locale" => (string) env("APP_FALLBACK_LOCALE", "en"),

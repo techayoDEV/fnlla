@@ -916,6 +916,7 @@ php -S 127.0.0.1:8080 -t public public/router.php</code></pre>
           <ul class="doc-checklist">
             <li>Copy <code>.env.example</code> to <code>.env</code>.</li>
             <li>Set <code>APP_URL</code>.</li>
+            <li>Leave <code>ASSET_URL</code> empty unless browser assets are served from a separate asset domain or CDN.</li>
             <li>Set <code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_DATABASE</code>, <code>DB_USERNAME</code> and <code>DB_PASSWORD</code>.</li>
             <li>Set <code>CONTACT_NOTIFICATION_EMAIL</code> when using the contact flow.</li>
             <li>The template starts with <code>APP_ENV=development</code>, <code>APP_DEBUG=true</code> and <code>SESSION_SECURE=false</code> so local HTTP on <code>127.0.0.1</code> works without session-cookie surprises.</li>

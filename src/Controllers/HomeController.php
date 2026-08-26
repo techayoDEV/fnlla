@@ -29,6 +29,7 @@ use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
+use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Support\VersionManifest;
 use Fnlla\Php\Validation\ValidationException;
 
@@ -131,17 +132,18 @@ final class HomeController extends Controller
             "MAINTENANCE_ACCESS_USERNAME" => "",
             "MAINTENANCE_ACCESS_PASSWORD" => $payload["maintenance_setup_password"],
         ];
-        $generatedDeveloperPath = "";
+        $developerAccessCreated = false;
 
         if (!$developerAccess->configured()) {
-            $generatedDeveloperPath = $developerAccess->generatePanelPath();
             $developerPassword = $payload["developer_setup_password"] !== ""
                 ? $payload["developer_setup_password"]
                 : $payload["maintenance_setup_password"];
+            $developerPasswordHash = password_hash($developerPassword, PASSWORD_DEFAULT);
             $environmentValues["DEVELOPER_ACCESS_ENABLED"] = "true";
-            $environmentValues["DEVELOPER_ACCESS_PATH"] = $generatedDeveloperPath;
-            $environmentValues["DEVELOPER_ACCESS_PASSWORD"] = $developerPassword;
+            $environmentValues["DEVELOPER_ACCESS_PASSWORD"] = "";
+            $environmentValues["DEVELOPER_ACCESS_PASSWORD_HASH"] = $developerPasswordHash;
             $environmentValues["DEVELOPER_OPERATIONS_NAV_MODE"] = "hidden";
+            $developerAccessCreated = true;
         }
 
         try {
@@ -166,13 +168,16 @@ final class HomeController extends Controller
             "password" => $environmentValues["MAINTENANCE_ACCESS_PASSWORD"],
         ]));
 
-        if ($generatedDeveloperPath !== "") {
+        if ($developerAccessCreated) {
             config_set("developer_access", array_merge((array) config("developer_access", []), [
                 "enabled" => true,
-                "path" => $generatedDeveloperPath,
-                "password" => $environmentValues["DEVELOPER_ACCESS_PASSWORD"],
+                "password" => "",
+                "password_hash" => $environmentValues["DEVELOPER_ACCESS_PASSWORD_HASH"],
                 "operations_nav_mode" => "hidden",
             ]));
+            Logger::write("notice", "Developer access created during maintenance setup", [
+                "event" => "developer_access_created",
+            ]);
         }
 
         $maintenanceAccess->unlock(
@@ -180,28 +185,27 @@ final class HomeController extends Controller
             $payload["maintenance_setup_password"]
         );
 
-        if ($generatedDeveloperPath !== "") {
+        if ($developerAccessCreated) {
             $developerAccess->grantAccess();
             $maintenanceAccess->lock();
             flash_set("developer_access_notice", [
-                "path" => $generatedDeveloperPath,
                 "title" => "Private developer panel created",
-            "text" => "Save this hidden address. It is the private developer entry point that keeps the public project header clean for the client.",
-        ]);
+                "text" => "The developer session is ready at the standard /developer address.",
+            ]);
         }
 
         flash_set("status", [
             "variant" => "success",
             "title" => "Maintenance access configured",
-            "text" => $generatedDeveloperPath !== ""
-                ? "The project setup flow saved the maintenance credentials, generated a private developer panel path and kept this browser session unlocked for follow-up work."
+            "text" => $developerAccessCreated
+                ? "The project setup flow saved the maintenance credentials, enabled the developer session and kept this browser session unlocked for follow-up work."
                 : "The project setup flow saved the maintenance credentials to .env, enabled preview protection and kept this browser session unlocked for setup work.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
 
-        if ($generatedDeveloperPath !== "") {
-            return $this->redirect($generatedDeveloperPath . "/panel");
+        if ($developerAccessCreated) {
+            return $this->redirect(route("developer.panel"));
         }
 
         return $this->redirect($redirectTarget !== "" ? $redirectTarget : route("maintenance.home"));
@@ -220,7 +224,7 @@ final class HomeController extends Controller
                 "variant" => "warning",
                 "title" => "Developer panel setup is unavailable here",
                 "text" => $developerAccess->configured()
-                    ? "The hidden developer panel is already configured for this project."
+                    ? "The developer panel is already configured for this project."
                     : (string) $setupState["message"],
                 "toast" => false,
             ]);
@@ -251,11 +255,11 @@ final class HomeController extends Controller
             return $this->redirect(route("maintenance.home") . "#developer-panel-setup");
         }
 
-        $generatedDeveloperPath = $developerAccess->generatePanelPath();
+        $developerPasswordHash = password_hash($payload["developer_setup_password"], PASSWORD_DEFAULT);
         $environmentValues = [
             "DEVELOPER_ACCESS_ENABLED" => "true",
-            "DEVELOPER_ACCESS_PATH" => $generatedDeveloperPath,
-            "DEVELOPER_ACCESS_PASSWORD" => $payload["developer_setup_password"],
+            "DEVELOPER_ACCESS_PASSWORD" => "",
+            "DEVELOPER_ACCESS_PASSWORD_HASH" => $developerPasswordHash,
             "DEVELOPER_OPERATIONS_NAV_MODE" => "hidden",
         ];
 
@@ -276,26 +280,28 @@ final class HomeController extends Controller
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
             "enabled" => true,
-            "path" => $generatedDeveloperPath,
-            "password" => $payload["developer_setup_password"],
+            "password" => "",
+            "password_hash" => $developerPasswordHash,
             "operations_nav_mode" => "hidden",
         ]));
         $developerAccess->grantAccess();
+        Logger::write("notice", "Developer access created", [
+            "event" => "developer_access_created",
+        ]);
         $maintenanceAccess->lock();
         flash_set("developer_access_notice", [
-            "path" => $generatedDeveloperPath,
             "title" => "Private developer panel created",
-            "text" => "Save this hidden address. It is now the developer-only entry point for this project, and maintenance can be enabled later from inside the panel.",
+            "text" => "The developer session is ready at the standard /developer address.",
         ]);
         flash_set("status", [
             "variant" => "success",
             "title" => "Developer panel activated",
-            "text" => "The hidden developer panel was added to this project and the current browser session can use it immediately. Maintenance stays optional until you enable it from the panel.",
+            "text" => "The developer panel was added to this project and the current browser session can use it immediately. Maintenance stays optional until you enable it from the panel.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect($generatedDeveloperPath . "/panel");
+        return $this->redirect(route("developer.panel"));
     }
 
     public function unlockMaintenance(Request $request, MaintenanceAccessManager $maintenanceAccess): Response
@@ -323,7 +329,7 @@ final class HomeController extends Controller
         flash_set("status", [
             "variant" => "success",
             "title" => "Maintenance unlocked",
-            "text" => "The application is unlocked for this session for the next " . (string) max(1, (int) config("maintenance.unlock_ttl_minutes", 10)) . " minutes.",
+            "text" => "The application is unlocked for this session for the next " . (string) max(1, (int) ($maintenanceAccess->viewState()["unlock_ttl_minutes"] ?? 10)) . " minutes.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
@@ -577,6 +583,7 @@ final class HomeController extends Controller
                 "home" => route("home"),
                 "about" => route("about"),
                 "services" => route("services"),
+                "contact" => route("contact"),
                 "maintenance" => route("maintenance.home"),
                 "health" => route("health"),
                 "api_health" => route("api.health"),
@@ -686,7 +693,7 @@ final class HomeController extends Controller
             $setupEnabled !== true => "Browser-based developer panel setup is disabled in this environment.",
             $isLocalContext !== true => "Browser-based developer panel setup is local-only. Open this page from the same machine as the project runtime.",
             $envWritable !== true => "The project .env file is not writable. Make .env or the project directory writable before activating the developer panel here.",
-            default => "This project can generate its hidden developer panel directly from the maintenance surface.",
+            default => "This project can create developer access directly from the maintenance surface.",
         };
 
         return [

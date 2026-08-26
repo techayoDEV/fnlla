@@ -21,22 +21,21 @@ $maintenanceAccess ??= [
 $developerLinks ??= [];
 $developerNotice ??= null;
 ?>
-<section class="section pt-1">
+<section class="section pt-1 developer-surface developer-panel-surface">
   <div class="container site-page-stack">
-    <?php if (is_array($developerNotice) && isset($developerNotice["path"], $developerNotice["title"], $developerNotice["text"])): ?>
+    <?php if (is_array($developerNotice) && isset($developerNotice["title"], $developerNotice["text"])): ?>
     <section class="feature-section" aria-label="Developer path notice">
       <article class="feature-card">
-        <p class="feature-kicker">Private developer path</p>
+        <p class="feature-kicker">Developer session</p>
         <h2 class="section-title mb-0"><?= h((string) $developerNotice["title"]) ?></h2>
         <p class="content-text"><?= h((string) $developerNotice["text"]) ?></p>
-        <p class="developer-secret-path"><code><?= h((string) $developerNotice["path"]) ?></code></p>
       </article>
     </section>
     <?php endif; ?>
 
     <section class="feature-section" aria-label="Developer panel overview">
       <div class="grid gap-md developer-overview-grid">
-        <article class="feature-card">
+        <article class="feature-card developer-session-card">
           <p class="feature-kicker">Developer session</p>
           <h1 class="section-title mb-0">This browser session can currently reach the hidden operator surfaces for the project.</h1>
           <p class="content-text">
@@ -53,28 +52,14 @@ $developerNotice ??= null;
           </div>
         </article>
         <article class="feature-card">
-          <p class="feature-kicker">Private route</p>
-          <h2 class="content-title mb-0">Current hidden developer path</h2>
-          <p class="developer-secret-path"><code><?= h((string) ($developerAccess["path"] ?? "")) ?></code></p>
-          <p class="content-text">Keep this private address inside the developer team. If it leaks, regenerate it below and the previous path stops working immediately.</p>
-          <div class="stack gap-md mt-3">
-            <div class="stack gap-sm">
-              <p class="feature-kicker">Rotate developer path</p>
-              <h3 class="content-title">Generate a new private address now</h3>
-              <p class="content-text">Use this like an emergency brake when the current link may have leaked. The previous hidden path stops working immediately, while the current unlocked session is preserved and redirected to the new address.</p>
-            </div>
-            <form class="form stack gap-md" action="<?= h(route("developer.settings.rotate_path")) ?>" method="post">
-              <?= csrf_field() ?>
-              <div class="d-flex flex-wrap gap-md">
-                <button class="btn btn-outline" type="submit">Regenerate private developer path</button>
-              </div>
-            </form>
-          </div>
+          <p class="feature-kicker">Standard access</p>
+          <h2 class="content-title mb-0">Use the standard developer address</h2>
+          <p class="content-text">This project uses <code>/developer</code> for sign-in and <code>/developer/panel</code> for the protected operator surface. No secret URL needs to be distributed or rotated.</p>
         </article>
         <article class="feature-card">
           <p class="feature-kicker">Navigation mode</p>
           <h2 class="content-title mb-0">DEV OPERATIONS only appears for unlocked developer sessions.</h2>
-          <p class="content-text">The public project shell stays plain for the client. After a developer unlocks this hidden panel, the header surfaces a direct DEV OPERATIONS button for quick return to the panel.</p>
+          <p class="content-text">The public project shell stays plain for the client. After a developer unlocks the panel, the header surfaces a direct DEV OPERATIONS menu for quick access to operator tools.</p>
         </article>
       </div>
     </section>
@@ -127,8 +112,8 @@ $developerNotice ??= null;
       <div class="grid gap-md site-login-grid">
         <article class="feature-card">
           <p class="feature-kicker">Developer access controls</p>
-          <h2 class="section-title mb-0">Change the hidden password and treat path rotation like an emergency brake when needed.</h2>
-          <p class="content-text">The password protects the panel itself. Regenerating the private path immediately invalidates the previous address if a link escaped to the wrong place.</p>
+          <h2 class="section-title mb-0">Change the developer password when access needs to be rotated.</h2>
+          <p class="content-text">The password protects the panel itself. Existing sessions are invalidated automatically after the password changes.</p>
         </article>
         <article class="feature-card">
           <p class="feature-kicker">Update developer access</p>

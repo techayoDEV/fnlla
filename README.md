@@ -174,6 +174,8 @@ There is intentionally no top-level `.htaccess` because `public/` is the only su
 Copy `.env.example` to `.env` when you want explicit local configuration.
 
 The template ships with local-development defaults that are safe for plain HTTP on `127.0.0.1`.
+Leave `ASSET_URL` empty for normal local and production installs so browser assets load from the current host with root-relative paths such as `/assets/app.css`.
+Set `ASSET_URL` only when CSS, JavaScript and images are served from a separate asset domain or CDN.
 Before production deployment, switch the environment values back to production-safe settings and serve the app over HTTPS.
 If the application sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarded client IP and HTTPS headers are only honored from explicitly trusted proxy addresses.
 

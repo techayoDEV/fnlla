@@ -26,13 +26,14 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Support\EnvironmentFileManager;
+use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Validation\ValidationException;
 
 final class DeveloperAccessController extends Controller
 {
     public function entry(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        if (!$developerAccess->configured()) {
+        if (!$developerAccess->enabled() || !$developerAccess->configured()) {
             return $this->view("pages/not-found", [
                 "pageTitle" => "Not Found",
             ], 404);
@@ -56,14 +57,14 @@ final class DeveloperAccessController extends Controller
 
     public function show(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        if (!$developerAccess->configured()) {
+        if (!$developerAccess->enabled() || !$developerAccess->configured()) {
             return $this->view("pages/not-found", [
                 "pageTitle" => "Not Found",
             ], 404);
         }
 
         if (!$developerAccess->isUnlocked()) {
-            return $this->redirect(route("developer.entry"));
+            return $this->redirect(route("developer.login"));
         }
 
         $maintenanceAccess->lock();
@@ -82,7 +83,7 @@ final class DeveloperAccessController extends Controller
 
     public function unlock(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        if (!$developerAccess->configured()) {
+        if (!$developerAccess->enabled() || !$developerAccess->configured()) {
             return $this->view("pages/not-found", [
                 "pageTitle" => "Not Found",
             ], 404);
@@ -106,7 +107,7 @@ final class DeveloperAccessController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.entry"));
+            return $this->redirect(route("developer.login"));
         }
 
         $result = $developerAccess->unlock($request, $password);
@@ -120,7 +121,7 @@ final class DeveloperAccessController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.entry"));
+            return $this->redirect(route("developer.login"));
         }
 
         flash_set("status", [
@@ -138,6 +139,10 @@ final class DeveloperAccessController extends Controller
     public function lock(Request $request, DeveloperAccessManager $developerAccess): Response
     {
         $developerAccess->lock();
+        Logger::write("notice", "Developer session closed", [
+            "event" => "developer_session_closed",
+            "ip" => $request->ip(),
+        ]);
         flash_set("status", [
             "variant" => "info",
             "title" => "Developer session closed",
@@ -146,7 +151,7 @@ final class DeveloperAccessController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.entry"));
+        return $this->redirect(route("developer.login"));
     }
 
     public function updateMaintenanceCredentials(
@@ -247,12 +252,16 @@ final class DeveloperAccessController extends Controller
             return $this->redirect(route("developer.panel") . "#developer-access-settings");
         }
 
+        $passwordHash = password_hash($payload["developer_access_password"], PASSWORD_DEFAULT);
+
         try {
             $environmentFileManager->write([
-                "DEVELOPER_ACCESS_PASSWORD" => $payload["developer_access_password"],
+                "DEVELOPER_ACCESS_PASSWORD" => "",
+                "DEVELOPER_ACCESS_PASSWORD_HASH" => $passwordHash,
             ]);
             $environmentFileManager->apply([
-                "DEVELOPER_ACCESS_PASSWORD" => $payload["developer_access_password"],
+                "DEVELOPER_ACCESS_PASSWORD" => "",
+                "DEVELOPER_ACCESS_PASSWORD_HASH" => $passwordHash,
             ]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
@@ -267,9 +276,13 @@ final class DeveloperAccessController extends Controller
         }
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
-            "password" => $payload["developer_access_password"],
+            "password" => "",
+            "password_hash" => $passwordHash,
         ]));
         $developerAccess->grantAccess();
+        Logger::write("notice", "Developer password updated", [
+            "event" => "developer_password_updated",
+        ]);
 
         flash_set("status", [
             "variant" => "success",
@@ -322,49 +335,4 @@ final class DeveloperAccessController extends Controller
         return $this->redirect(route("developer.panel"));
     }
 
-    public function rotatePath(
-        Request $request,
-        DeveloperAccessManager $developerAccess,
-        EnvironmentFileManager $environmentFileManager
-    ): Response {
-        $nextPath = $developerAccess->generatePanelPath();
-
-        try {
-            $environmentFileManager->write([
-                "DEVELOPER_ACCESS_PATH" => $nextPath,
-            ]);
-            $environmentFileManager->apply([
-                "DEVELOPER_ACCESS_PATH" => $nextPath,
-            ]);
-        } catch (\RuntimeException $exception) {
-            flash_set("status", [
-                "variant" => "danger",
-                "title" => "Developer path could not be rotated",
-                "text" => $exception->getMessage(),
-                "toast" => false,
-            ]);
-            regenerate_csrf_token();
-
-            return $this->redirect(route("developer.panel") . "#developer-access-settings");
-        }
-
-        config_set("developer_access", array_merge((array) config("developer_access", []), [
-            "path" => $nextPath,
-        ]));
-        $developerAccess->grantAccess();
-        flash_set("status", [
-            "variant" => "success",
-            "title" => "Developer path rotated",
-            "text" => "Use the new private address from now on. The previous hidden path is no longer valid.",
-            "toast" => true,
-        ]);
-        flash_set("developer_access_notice", [
-            "path" => $nextPath,
-            "title" => "New hidden developer path",
-            "text" => "Save this private address. It will continue to open the developer panel for this project.",
-        ]);
-        regenerate_csrf_token();
-
-        return $this->redirect($nextPath . "/panel#developer-access-settings");
-    }
 }

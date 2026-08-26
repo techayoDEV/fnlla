@@ -161,7 +161,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(0, $checkExitCode, $checkOutput);
         self::assertStringContainsString("[Automatic update ready] views/pages/home.php", $checkOutput);
-        self::assertStringContainsString("[Automatic removal ready] views/pages/contact.php", $checkOutput);
+        self::assertStringContainsString("[Automatic update ready] views/pages/contact.php", $checkOutput);
 
         [$applyExitCode, $applyOutput] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
@@ -172,7 +172,7 @@ final class FrameworkUpdateCommandTest extends TestCase
         self::assertStringContainsString("How teams work on it", (string) file_get_contents(
             $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php"
         ));
-        self::assertFalse(is_file($projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php"));
+        self::assertFileExists($projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php");
     }
 
     public function testFrameworkUpdateReportsConflictsWhenManagedFilesChangedLocallyAndUpstream(): void

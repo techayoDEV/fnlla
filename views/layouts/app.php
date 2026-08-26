@@ -28,6 +28,8 @@ $maintenanceAccess = maintenance_access();
 $developerAccess = developer_access();
 $isMaintenanceLocked = $maintenanceAccess->enabled() && !$maintenanceAccess->isUnlocked();
 $hasDeveloperPanelRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("developer.panel") !== null;
+$hasDeveloperHealthRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("health") !== null;
+$hasFrameworkUpdateRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("maintenance.framework_update") !== null;
 $developerSessionActive = $developerAccess->isUnlocked() && $hasDeveloperPanelRoute;
 $publicNavigationAvailable = !$isMaintenanceLocked || $developerSessionActive;
 $pageMeta = page_meta([
@@ -62,6 +64,7 @@ $pageMeta = page_meta([
       <div class="container">
         <nav class="navbar" aria-label="Primary navigation">
           <a class="navbar-brand project-brand" href="<?= h(route("home")) ?>">
+            <span class="project-brand-mark" aria-hidden="true">FN</span>
             <span class="project-brand-name"><?= h((string) config("app.name")) ?></span>
           </a>
           <button class="btn btn-outline btn-sm navbar-toggle" type="button" data-fnlla-nav-toggle aria-controls="primary-navigation-panel" aria-expanded="false" aria-label="Toggle navigation menu">Menu</button>
@@ -71,16 +74,34 @@ $pageMeta = page_meta([
               <li><a class="project-nav-link" href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
               <li><a class="project-nav-link" href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
               <li><a class="project-nav-link" href="<?= h(route("services")) ?>" <?= $currentPath === "/services" ? 'aria-current="page"' : "" ?>>Services</a></li>
+              <li><a class="project-nav-link" href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
               <?php else: ?>
               <li><span class="project-nav-link" aria-current="page">Maintenance access required</span></li>
               <?php endif; ?>
             </ul>
             <div class="navbar-actions project-navbar-actions">
               <?php if ($developerSessionActive): ?>
-              <a class="btn btn-outline btn-sm project-dropdown-toggle" href="<?= h(route("developer.panel")) ?>" <?= $currentPath === $developerAccess->path() . "/panel" ? 'aria-current="page"' : "" ?>>
-                DEV OPERATIONS
-                <span class="project-ops-badge">Active</span>
-              </a>
+              <div class="dropdown project-operations-dropdown">
+                <button class="btn btn-outline btn-sm project-dropdown-toggle" type="button" data-fnlla-dropdown-toggle aria-label="Open developer operations menu">
+                  DEV OPERATIONS
+                  <span class="project-ops-badge">Active</span>
+                </button>
+                <div class="dropdown-menu project-dropdown-menu" role="menu">
+                  <p class="project-dropdown-heading">Developer session</p>
+                  <p class="project-dropdown-meta">Expires <?= h((string) date("H:i T", $developerAccess->expiresAt())) ?></p>
+                  <a class="dropdown-item" role="menuitem" href="<?= h(route("developer.panel")) ?>" <?= $currentPath === "/developer/panel" ? 'aria-current="page"' : "" ?>>Panel overview</a>
+                  <?php if ($hasDeveloperHealthRoute): ?>
+                  <a class="dropdown-item" role="menuitem" href="<?= h(route("health")) ?>" <?= $currentPath === "/maintenance/health" ? 'aria-current="page"' : "" ?>>Health status</a>
+                  <?php endif; ?>
+                  <?php if ($hasFrameworkUpdateRoute): ?>
+                  <a class="dropdown-item" role="menuitem" href="<?= h(route("maintenance.framework_update")) ?>" <?= $currentPath === "/maintenance/framework-update" ? 'aria-current="page"' : "" ?>>Framework updates</a>
+                  <?php endif; ?>
+                  <form class="project-dropdown-form" action="<?= h(route("developer.lock")) ?>" method="post">
+                    <?= csrf_field() ?>
+                    <button class="dropdown-item project-dropdown-danger" role="menuitem" type="submit">Lock developer session</button>
+                  </form>
+                </div>
+              </div>
               <?php endif; ?>
               <?php if ($hasDocumentationWorkspace && $publicNavigationAvailable): ?>
               <a class="btn btn-ghost btn-sm project-nav-link" href="<?= h(route("docs.home")) ?>" <?= $isDocsPath ? 'aria-current="page"' : "" ?>>Docs</a>
@@ -119,6 +140,7 @@ $pageMeta = page_meta([
           <a href="<?= h(route("home")) ?>">Home</a>
           <a href="<?= h(route("about")) ?>">About</a>
           <a href="<?= h(route("services")) ?>">Services</a>
+          <a href="<?= h(route("contact")) ?>">Contact</a>
         </p>
         <?php else: ?>
         <p><a class="project-footer-locked-link" href="<?= h(route("maintenance.home")) ?>">Return to maintenance access</a></p>

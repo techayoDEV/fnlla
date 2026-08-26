@@ -92,10 +92,11 @@ final class MakeProjectCommand extends Command
         $this->line("1. Open the new project directory.");
         $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner LTD\" --developer \"Developer LTD\".");
         $this->line("3. Copy .env.example to .env, or open /maintenance locally and let the project setup flow create .env while configuring the first maintenance password.");
-        $this->line("4. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
-        $this->line("5. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
-        $this->line("6. Before production deployment, run php fnlla optimize:warm; before packaging a clean source release, run php fnlla optimize:clear.");
-        $this->line("7. Initialize a separate Git repository for the new website or application.");
+        $this->line("4. Leave ASSET_URL empty unless browser assets are served from a separate asset domain or CDN.");
+        $this->line("5. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
+        $this->line("6. Run php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
+        $this->line("7. Before production deployment, run php fnlla optimize:warm; before packaging a clean source release, run php fnlla optimize:clear.");
+        $this->line("8. Initialize a separate Git repository for the new website or application.");
 
         return 0;
     }

@@ -369,8 +369,9 @@ function url(string $path = ""): string
 
 function asset(string $path = ""): string
 {
-    $assetUrl = url($path);
     $normalizedPath = ltrim(str_replace("\\", "/", $path), "/");
+    $assetBaseUrl = (string) config("app.asset_url", "");
+    $assetUrl = ($assetBaseUrl !== "" ? $assetBaseUrl : "") . "/" . $normalizedPath;
     $manifestPath = framework_asset_manifest_path();
 
     if (is_file($manifestPath)) {

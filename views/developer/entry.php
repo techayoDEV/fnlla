@@ -11,7 +11,7 @@ $developerAccess ??= [
 
 $developerNotice ??= null;
 ?>
-<section class="section pt-1">
+<section class="section pt-1 developer-surface developer-entry-surface">
   <div class="container site-page-stack">
     <?php if (is_array($developerNotice) && isset($developerNotice["path"], $developerNotice["title"], $developerNotice["text"])): ?>
     <section class="feature-section" aria-label="Developer path notice">
@@ -27,7 +27,7 @@ $developerNotice ??= null;
     <section class="feature-section" aria-label="Developer access unlock">
       <div class="grid gap-md site-login-grid">
         <article class="feature-card">
-          <p class="feature-kicker">Private developer entry</p>
+          <p class="feature-kicker">Developer session</p>
           <h1 class="section-title mb-0">Developer tools stay locked until this browser session is explicitly unlocked.</h1>
           <p class="content-text">This private address is only the login entry. The actual developer panel remains unavailable until the correct password opens a developer session for <?= h((string) ($developerAccess["unlock_ttl_minutes"] ?? 120)) ?> minutes.</p>
           <ul class="project-note-list">
@@ -36,10 +36,10 @@ $developerNotice ??= null;
             <li>The private path and password can still be rotated later from inside the panel.</li>
           </ul>
         </article>
-        <article class="feature-card">
+        <article class="feature-card developer-login-card">
           <p class="feature-kicker">Developer login</p>
           <h2 class="content-title">Unlock developer session</h2>
-          <form class="form stack gap-md" action="<?= h(route("developer.unlock")) ?>" method="post" novalidate>
+          <form class="form stack gap-md" action="<?= h(route("developer.login.unlock")) ?>" method="post" novalidate>
             <?= csrf_field() ?>
             <div class="form-group">
               <label class="label" for="developer-access-password">Password</label>

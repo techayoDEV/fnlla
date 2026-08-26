@@ -144,11 +144,12 @@ Inside the new project directory:
 1. Run `php fnlla project:claim --product "..." --owner "..." --developer "..."`.
 2. Copy `.env.example` to `.env`.
 3. Set `APP_URL`.
-4. Set MySQL credentials.
-5. Review `config/app.php`.
-6. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
-7. Replace the demo routes and pages with the real application flow.
-8. Run:
+4. Leave `ASSET_URL` empty unless the project serves CSS, JavaScript and images from a separate asset domain or CDN.
+5. Set MySQL credentials.
+6. Review `config/app.php`.
+7. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
+8. Replace the demo routes and pages with the real application flow.
+9. Run:
 
 ```bash
 php fnlla fnlla-runtime:validate
@@ -158,17 +159,17 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-9. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
+10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
 
-10. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
+11. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 
-11. Start the local server:
+12. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-12. Open `http://127.0.0.1:8080` in your browser.
+13. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.

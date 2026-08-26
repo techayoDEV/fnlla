@@ -83,7 +83,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
             <?php if (!($maintenanceAccess["configured"] ?? false) && ($maintenanceSetup["show_setup"] ?? false)): ?>
             <p class="feature-kicker">Configure maintenance</p>
             <h2 class="content-title">Set the first maintenance password from the project itself</h2>
-            <p class="content-text">This local setup flow can create <code>.env</code> when it is still missing, enable maintenance mode, generate a private developer panel path and keep your current browser session unlocked for follow-up work.</p>
+            <p class="content-text">This local setup flow can create <code>.env</code> when it is still missing, enable maintenance mode, save a hashed developer password and keep your current browser session unlocked for follow-up work.</p>
             <form class="form stack gap-md maintenance-lock-form" id="maintenance-setup" action="<?= h(route("maintenance.setup_access")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
               <input type="hidden" name="maintenance_redirect" value="<?= h((string) $maintenanceRedirectTarget) ?>">
@@ -107,7 +107,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                   <input class="input" id="developer-setup-password" name="developer_setup_password" type="password" autocomplete="new-password">
                   <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#developer-setup-password" aria-label="Toggle password visibility">Show</button>
                 </div>
-                <p class="help-text">Leave this blank to reuse the maintenance password for the hidden developer panel.</p>
+                <p class="help-text">Leave this blank to reuse the maintenance password for the developer panel.</p>
               </div>
               <div class="form-group">
                 <label class="label" for="developer-setup-password-confirmation">Confirm developer panel password</label>
@@ -247,11 +247,11 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
         <article class="feature-card">
           <p class="feature-kicker">Client preview setup</p>
           <h2 class="section-title mb-0">Enable maintenance protection directly from the project before you share work in progress.</h2>
-          <p class="content-text">This local setup flow writes the maintenance credentials into the project <code>.env</code>, turns the protection on, generates a hidden developer panel path and keeps this browser session unlocked so the developer can continue working.</p>
+          <p class="content-text">This local setup flow writes the maintenance credentials into the project <code>.env</code>, turns the protection on, saves a hashed developer password and keeps this browser session unlocked so the developer can continue working.</p>
           <ul class="project-note-list">
             <li>Use it on a fresh project export when you want a private preview link for the client.</li>
             <li>Password is required and immediately activates maintenance mode.</li>
-            <li>The project setup flow can reuse the maintenance password for the hidden developer panel or accept a separate password here.</li>
+            <li>The project setup flow can reuse the maintenance password for the developer panel or accept a separate password here.</li>
             <li>If <code>.env</code> does not exist yet, the project setup flow can create it from <code>.env.example</code>.</li>
           </ul>
         </article>
@@ -280,7 +280,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                 <input class="input" id="developer-setup-password-unlocked" name="developer_setup_password" type="password" autocomplete="new-password">
                 <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#developer-setup-password-unlocked" aria-label="Toggle password visibility">Show</button>
               </div>
-              <p class="help-text">Leave this blank to reuse the maintenance password for the hidden developer panel.</p>
+              <p class="help-text">Leave this blank to reuse the maintenance password for the developer panel.</p>
             </div>
             <div class="form-group">
               <label class="label" for="developer-setup-password-confirmation-unlocked">Confirm developer panel password</label>
@@ -337,28 +337,28 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
         <article class="feature-card">
           <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Developer onboarding" : "Framework update fallback" ?></p>
           <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
-              ? "Create the hidden developer access path before you decide whether maintenance should be active."
-              : "Activate the hidden developer panel for an existing project that predates this feature." ?></h2>
+              ? "Create developer access before you decide whether maintenance should be active."
+              : "Activate the developer panel for an existing project that predates this feature." ?></h2>
           <p class="content-text"><?= $freshDeveloperOnboarding
-              ? "This first local setup step creates the private developer path, saves the developer password and opens the panel in the current browser session. Once inside the panel, you can decide whether maintenance should stay off or be enabled for client preview."
-              : "Use this once after updating an older FNLLA project. The framework will generate a private path, save a developer password and keep the public project shell clean for the client." ?></p>
+              ? "This first local setup step saves a hashed developer password and opens the panel in the current browser session. Once inside the panel, you can decide whether maintenance should stay off or be enabled for client preview."
+              : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
           <ul class="project-note-list">
             <?php if ($freshDeveloperOnboarding): ?>
-            <li>The generated path becomes the private entry point for the developer team.</li>
+            <li>The standard <code>/developer</code> route becomes the private entry point for the developer team.</li>
             <li>The public site stays open until you explicitly enable maintenance later from the developer panel.</li>
             <li>The first unlocked developer session opens immediately after setup so onboarding can continue without another login step.</li>
-            <li>You can rotate both the password and the hidden path later if the link ever leaks.</li>
+            <li>You can rotate the password later, and existing sessions are invalidated after the credential changes.</li>
             <?php else: ?>
-            <li>The generated path becomes the long-term service entry after client handoff.</li>
-            <li>The public header stays plain. Developer tools appear only after a developer unlocks the hidden path.</li>
+            <li>The standard <code>/developer</code> route becomes the long-term service entry after client handoff.</li>
+            <li>The public header stays plain. Developer tools appear only after a developer unlocks the panel.</li>
             <li>An active developer session can still surface a private tools dropdown for easier navigation.</li>
-            <li>The new panel will let you rotate both its password and the hidden path later.</li>
+            <li>The new panel will let you rotate its password later.</li>
             <?php endif; ?>
           </ul>
         </article>
         <article class="feature-card">
           <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Create developer access" : "Activate developer panel" ?></p>
-          <h2 class="content-title"><?= $freshDeveloperOnboarding ? "Generate the first private developer path and password" : "Generate the hidden service surface" ?></h2>
+          <h2 class="content-title"><?= $freshDeveloperOnboarding ? "Create the first developer password" : "Activate the developer surface" ?></h2>
           <form class="form stack gap-md" action="<?= h(route("maintenance.setup_developer_access")) ?>" method="post" novalidate>
             <?= csrf_field() ?>
             <div class="form-group">

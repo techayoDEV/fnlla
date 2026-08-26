@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 ?>
+<section class="section starter-page-hero">
+  <div class="container">
+    <div class="starter-page-heading">
+      <p class="starter-kicker">About</p>
+      <h1>Use this page to explain the real organisation, product or service behind the project.</h1>
+      <p>
+        The starter copy is intentionally replaceable. Keep the section rhythm, then swap in the real narrative and trust markers.
+      </p>
+    </div>
+  </div>
+</section>
+
 <section class="section">
   <div class="container">
     <div class="grid grid-3 gap-md">

@@ -24,6 +24,7 @@ namespace Fnlla\Php\Maintenance;
 use Fnlla\Php\Cache\RateLimiter;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Session\SessionStore;
+use Fnlla\Php\Support\Logger;
 
 final class DeveloperAccessManager
 {
@@ -40,12 +41,12 @@ final class DeveloperAccessManager
 
     public function configured(): bool
     {
-        return $this->path() !== "" && trim($this->configuredPassword()) !== "";
+        return $this->configuredPassword() !== "";
     }
 
     public function path(): string
     {
-        return $this->normalizePath((string) config("developer_access.path", ""));
+        return "/developer";
     }
 
     public function operationsNavMode(): string
@@ -82,8 +83,14 @@ final class DeveloperAccessManager
         }
 
         $expiresAt = (int) $this->session->get($this->expiresAtKey(), 0);
+        $unlockedAt = (int) $this->session->get($this->unlockedAtKey(), 0);
 
-        if ($expiresAt <= time()) {
+        if (
+            $expiresAt <= time()
+            || $unlockedAt <= 0
+            || $unlockedAt + $this->absoluteTtlSeconds() <= time()
+            || !hash_equals($this->credentialFingerprint(), (string) $this->session->get($this->credentialFingerprintKey(), ""))
+        ) {
             $this->lock();
 
             return false;
@@ -138,6 +145,10 @@ final class DeveloperAccessManager
             if ($attempts >= $maxAttempts) {
                 cache()->put($this->blockKey($rateLimitKey), time() + $lockoutSeconds, $lockoutSeconds);
                 $this->limiter->clear($rateLimitKey);
+                Logger::write("warning", "Developer access locked out", [
+                    "event" => "developer_access_lockout",
+                    "ip" => $request->ip(),
+                ]);
 
                 return [
                     "success" => false,
@@ -145,6 +156,11 @@ final class DeveloperAccessManager
                     "retry_after" => $lockoutSeconds,
                 ];
             }
+
+            Logger::write("warning", "Developer access denied", [
+                "event" => "developer_access_denied",
+                "ip" => $request->ip(),
+            ]);
 
             return [
                 "success" => false,
@@ -156,6 +172,10 @@ final class DeveloperAccessManager
         $this->limiter->clear($rateLimitKey);
         cache()->forget($this->blockKey($rateLimitKey));
         $this->grantAccess();
+        Logger::write("notice", "Developer session unlocked", [
+            "event" => "developer_session_unlocked",
+            "ip" => $request->ip(),
+        ]);
 
         return [
             "success" => true,
@@ -172,8 +192,13 @@ final class DeveloperAccessManager
 
         $this->session->regenerate();
         $this->session->put($this->sessionKey(), true);
-        $this->session->put($this->unlockedAtKey(), time());
-        $this->session->put($this->expiresAtKey(), time() + $this->unlockTtlSeconds());
+        $unlockedAt = time();
+        $this->session->put($this->unlockedAtKey(), $unlockedAt);
+        $this->session->put($this->expiresAtKey(), min(
+            $unlockedAt + $this->unlockTtlSeconds(),
+            $unlockedAt + $this->absoluteTtlSeconds()
+        ));
+        $this->session->put($this->credentialFingerprintKey(), $this->credentialFingerprint());
     }
 
     public function lock(): void
@@ -181,6 +206,7 @@ final class DeveloperAccessManager
         $this->session->forget($this->sessionKey());
         $this->session->forget($this->unlockedAtKey());
         $this->session->forget($this->expiresAtKey());
+        $this->session->forget($this->credentialFingerprintKey());
         $this->session->regenerate();
     }
 
@@ -194,57 +220,30 @@ final class DeveloperAccessManager
             "expires_at" => $this->expiresAt(),
             "seconds_remaining" => $this->secondsRemaining(),
             "unlock_ttl_minutes" => max(1, (int) config("developer_access.unlock_ttl_minutes", 120)),
+            "absolute_ttl_minutes" => max(1, (int) config("developer_access.absolute_ttl_minutes", 480)),
             "operations_nav_mode" => $this->operationsNavMode(),
             "operations_nav_visible" => $this->operationsNavVisible(),
         ];
     }
 
-    public function generatePanelPath(): string
-    {
-        $prefix = trim((string) config("developer_access.path_prefix", "/_dev-"));
-        $prefix = $this->normalizePath($prefix);
-
-        if ($prefix === "" || $prefix === "/") {
-            $prefix = "/_dev-";
-        }
-
-        if (!str_ends_with($prefix, "-")) {
-            $prefix .= "-";
-        }
-
-        return $prefix . strtolower(bin2hex(random_bytes(6)));
-    }
-
-    private function normalizePath(string $path): string
-    {
-        $path = trim($path);
-
-        if ($path === "" || !str_starts_with($path, "/") || str_starts_with($path, "//") || str_contains($path, "\\") || str_contains($path, "?") || str_contains($path, "#")) {
-            return "";
-        }
-
-        $parts = parse_url($path);
-
-        if ($parts === false || isset($parts["scheme"]) || isset($parts["host"])) {
-            return "";
-        }
-
-        $resolvedPath = "/" . trim((string) ($parts["path"] ?? ""), "/");
-        $resolvedPath = $resolvedPath === "/" ? "" : rtrim($resolvedPath, "/");
-
-        return $resolvedPath !== "" ? $resolvedPath : "";
-    }
-
     private function configuredPassword(): string
     {
-        return trim((string) config("developer_access.password", ""));
+        return trim((string) config("developer_access.password_hash", "")) !== ""
+            ? trim((string) config("developer_access.password_hash", ""))
+            : trim((string) config("developer_access.password", ""));
     }
 
     private function safeEquals(string $knownValue, string $providedValue): bool
     {
-        return $knownValue !== ""
-            && $providedValue !== ""
-            && hash_equals($knownValue, $providedValue);
+        if ($knownValue === "" || $providedValue === "") {
+            return false;
+        }
+
+        if ((int) (password_get_info($knownValue)["algo"] ?? 0) > 0) {
+            return password_verify($providedValue, $knownValue);
+        }
+
+        return hash_equals($knownValue, $providedValue);
     }
 
     private function rateLimitKey(Request $request): string
@@ -272,9 +271,24 @@ final class DeveloperAccessManager
         return (string) config("developer_access.expires_at_key", "developer.access_expires_at");
     }
 
+    private function credentialFingerprintKey(): string
+    {
+        return (string) config("developer_access.credential_fingerprint_key", "developer.access_credential_fingerprint");
+    }
+
+    private function credentialFingerprint(): string
+    {
+        return hash("sha256", $this->configuredPassword());
+    }
+
     private function unlockTtlSeconds(): int
     {
         return max(1, (int) config("developer_access.unlock_ttl_minutes", 120)) * 60;
+    }
+
+    private function absoluteTtlSeconds(): int
+    {
+        return max(1, (int) config("developer_access.absolute_ttl_minutes", 480)) * 60;
     }
 
     private function formatRetryAfter(int $retryAfter): string

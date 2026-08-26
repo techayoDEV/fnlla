@@ -31,35 +31,49 @@ final class PageController extends Controller
         return $this->view("pages/home", [
             "pageTitle" => "Home",
             "pageTitleHome" => true,
-            "projectPrinciples" => [
+            "heroStats" => [
                 [
-                    "title" => "Project-first development",
-                    "text" => "The shipped skeleton is the application base itself, so teams extend it instead of building a second front-end beside it.",
+                    "value" => "PHP",
+                    "label" => "server-rendered delivery",
                 ],
                 [
-                    "title" => "Section-based composition",
-                    "text" => "Most page work should happen through repeated section and container blocks, which keeps views clear and predictable.",
+                    "value" => "FNLLA",
+                    "label" => "application foundation",
                 ],
                 [
-                    "title" => "One integrated UI surface",
-                    "text" => "FNLLA already ships the UI surface used by the project base, so layout and page work can stay inside one supported contract.",
+                    "value" => "OPS",
+                    "label" => "maintenance-ready",
                 ],
             ],
-            "growthSteps" => [
+            "proofPoints" => [
                 [
-                    "number" => "1",
-                    "title" => "Reshape the public page map",
-                    "text" => "Adjust the exported routes, labels and navigation until they match the real information architecture of the project.",
+                    "number" => "01",
+                    "title" => "Start from a real application",
+                    "text" => "The starter surface is meant to become the project itself, not a throwaway demo beside the production code.",
                 ],
                 [
-                    "number" => "2",
-                    "title" => "Replace section content deliberately",
-                    "text" => "Swap placeholder headlines, copy and cards with actual product sections while keeping the page structure readable.",
+                    "number" => "02",
+                    "title" => "Keep routes and views explicit",
+                    "text" => "Public pages, forms and operator flows stay readable through direct controllers, named routes and server-rendered templates.",
                 ],
                 [
-                    "number" => "3",
-                    "title" => "Attach real workflows",
-                    "text" => "Expand the project base with forms, auth, data capture, dashboards or integrations only where the project actually needs them.",
+                    "number" => "03",
+                    "title" => "Leave operational paths in place",
+                    "text" => "Health checks, maintenance access, developer login and framework update screens are part of the baseline from day one.",
+                ],
+            ],
+            "serviceTracks" => [
+                [
+                    "title" => "Public websites",
+                    "text" => "Service pages, contact journeys and content structures that can be reshaped into the real project offer.",
+                ],
+                [
+                    "title" => "Private tools",
+                    "text" => "Authenticated portals, admin panels and internal workflows can grow from the same server-rendered base.",
+                ],
+                [
+                    "title" => "Long-lived delivery",
+                    "text" => "The framework keeps update checks, release metadata and validation scripts close to the application.",
                 ],
             ],
         ]);
@@ -71,33 +85,33 @@ final class PageController extends Controller
             "pageTitle" => "About",
             "aboutPillars" => [
                 [
-                    "title" => "Who this project base is for",
-                    "text" => "Teams that want the first version of the site or application to already feel like project code rather than framework decoration.",
+                    "title" => "Built for ownership",
+                    "text" => "FNLLA favours code and configuration that project teams can inspect, change and maintain without a hidden build maze.",
                 ],
                 [
-                    "title" => "How this page should evolve",
-                    "text" => "Replace the placeholder narrative with the real company, product or service story without changing the project model itself.",
+                    "title" => "Small enough to understand",
+                    "text" => "The stack stays intentionally direct: routes, controllers, templates, storage, tests and deployment checks remain easy to follow.",
                 ],
                 [
-                    "title" => "What stays shared",
-                    "text" => "The runtime, routing model, controller seam and validation flow stay stable while the visible product story changes.",
+                    "title" => "Ready to reshape",
+                    "text" => "The public copy and page map are placeholders. The routing model, runtime and maintenance surfaces are the reusable foundation.",
                 ],
             ],
             "aboutSteps" => [
                 [
                     "number" => "1",
-                    "title" => "Start with the real narrative",
-                    "text" => "Define the organization, offer, audience and trust markers that belong in the first public version of the project.",
+                    "title" => "Define the audience",
+                    "text" => "Replace the starter narrative with the company, product, service and trust signals that belong to the project.",
                 ],
                 [
                     "number" => "2",
-                    "title" => "Grow the page through sections",
-                    "text" => "Add or remove whole sections as the page grows instead of stuffing every new message into one oversized block.",
+                    "title" => "Ship the useful surface",
+                    "text" => "Keep the first release focused on routes, pages and forms that help visitors or operators complete a real task.",
                 ],
                 [
                     "number" => "3",
-                    "title" => "Keep the structure reusable",
-                    "text" => "Use the same section and container rhythm the other project-base pages follow so the application stays coherent.",
+                    "title" => "Improve with checks",
+                    "text" => "Use tests, linting, runtime validation and framework update reports to keep later changes deliberate.",
                 ],
             ],
         ]);
@@ -109,33 +123,58 @@ final class PageController extends Controller
             "pageTitle" => "Services",
             "serviceCards" => [
                 [
-                    "title" => "Service websites",
-                    "text" => "Use this project base as the basis for a clear service page map, enquiry flow and structured presentation of what is offered.",
+                    "title" => "Business websites",
+                    "text" => "Service pages, landing pages, contact journeys and public content structures for clear project launches.",
                 ],
                 [
-                    "title" => "Portals and internal tools",
-                    "text" => "Start from the same shell, then attach auth, dashboards, queues and data workflows where the project needs them.",
+                    "title" => "Web applications",
+                    "text" => "Authenticated portals, admin panels, job flows and team tools built with explicit server-rendered behaviour.",
                 ],
                 [
-                    "title" => "Server-rendered product surfaces",
-                    "text" => "The exported application base remains useful when the project grows past simple marketing pages into richer application behaviour.",
+                    "title" => "FNLLA delivery",
+                    "text" => "Project exports, runtime validation, framework updates and application surfaces built on the maintained stack.",
+                ],
+                [
+                    "title" => "Handover and recovery",
+                    "text" => "Environment notes, validation reports and operator documentation that keep launches and updates safer.",
                 ],
             ],
             "deliverySteps" => [
                 [
                     "number" => "1",
-                    "title" => "Map the real offer",
-                    "text" => "Replace placeholder cards with the actual services, modules or delivery tracks the project needs to communicate.",
+                    "title" => "Define the useful first release",
+                    "text" => "Pick the smallest complete surface that can be launched, understood and improved.",
                 ],
                 [
                     "number" => "2",
-                    "title" => "Connect the right CTA",
-                    "text" => "Decide whether this page should drive visitors into sign-up, booking or an authenticated workflow.",
+                    "title" => "Build with operational checks",
+                    "text" => "Keep linting, runtime validation, health routes and maintenance surfaces active as the project grows.",
                 ],
                 [
                     "number" => "3",
-                    "title" => "Keep the page extendable",
-                    "text" => "Leave room for future sections such as pricing, proof, FAQs or case studies without breaking the project rhythm.",
+                    "title" => "Prepare the next iteration",
+                    "text" => "Keep routes, content and components readable so the next improvement is not a rebuild.",
+                ],
+            ],
+        ]);
+    }
+
+    public function contact(Request $request): Response
+    {
+        return $this->view("pages/contact", [
+            "pageTitle" => "Contact",
+            "contactChannels" => [
+                [
+                    "title" => "Project enquiry",
+                    "text" => "Replace this card with the route, form or mailbox your project should use for new enquiries.",
+                    "href" => "mailto:hello@example.test?subject=New%20project",
+                    "label" => "hello@example.test",
+                ],
+                [
+                    "title" => "Support route",
+                    "text" => "Use this for maintenance, handover or operator support once the real application workflow is defined.",
+                    "href" => "mailto:support@example.test?subject=Project%20support",
+                    "label" => "support@example.test",
                 ],
             ],
         ]);
