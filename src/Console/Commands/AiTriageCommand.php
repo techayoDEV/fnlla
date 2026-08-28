@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fnlla\Php\Console\Commands;
 
-use Fnlla\Php\Ai\LocalRuntimeAssistant;
 use Fnlla\Php\Console\Command;
 use Fnlla\Php\Support\AiContextBuilder;
 use Fnlla\Php\Support\AppMapBuilder;
@@ -63,7 +62,7 @@ final class AiTriageCommand extends Command
                 "source_files_included" => false,
             ],
             "input" => $input,
-            "answer" => $this->container->make(LocalRuntimeAssistant::class)->answer($input, [
+            "answer" => \framework_runtime_ai_provider($this->container)->answer($input, [
                 "command" => "ai:triage",
                 "environment" => app_environment(),
             ]),
@@ -71,7 +70,7 @@ final class AiTriageCommand extends Command
             "app_map_summary" => [
                 "routes" => (int) ($this->container->make(AppMapBuilder::class)->build()["routes"]["count"] ?? 0),
             ],
-            "upgrade_summary" => $this->container->make(UpgradeAnalyzer::class)->report("2.0.1")["summary"] ?? [],
+            "upgrade_summary" => $this->container->make(UpgradeAnalyzer::class)->report("2.1.1")["summary"] ?? [],
             "next_steps" => [
                 "Run composer test -- --filter when the affected area is known.",
                 "Run php fnlla app:map --json before changing routes or controllers.",

@@ -1,6 +1,6 @@
 {
     "schema": "fnlla.business_reference.v1",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "purpose": "Reference blueprint for professional FNLLA business applications.",
     "generated_from": "php fnlla make:project <target> \"FNLLA Business Reference\"",
     "capabilities": [

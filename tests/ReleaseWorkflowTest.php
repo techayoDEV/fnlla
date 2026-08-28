@@ -79,7 +79,7 @@ final class ReleaseWorkflowTest extends TestCase
         $readme = (string) file_get_contents(base_path("resources/business-reference/2.1/README.md"));
 
         self::assertSame("fnlla.business_reference.v1", $manifest["schema"] ?? null);
-        self::assertSame("2.1.0", $manifest["version"] ?? null);
+        self::assertSame("2.1.1", $manifest["version"] ?? null);
 
         foreach (["login", "roles", "crud", "dashboard", "business_form", "log_mailer", "migrations", "seeders", "queue", "health", "maintenance_preview", "backup_restore", "production_security"] as $capability) {
             self::assertTrue(in_array($capability, (array) ($manifest["capabilities"] ?? []), true), $capability);
@@ -100,7 +100,7 @@ final class ReleaseWorkflowTest extends TestCase
         $policy = json_decode((string) file_get_contents(base_path("resources/performance-baselines/2.1-policy.json")), true);
 
         self::assertStringContainsString("v2.0.3", $workflow);
-        self::assertStringContainsString("upgrade:check --target=2.1.0", $workflow);
+        self::assertStringContainsString("upgrade:check --target=2.1.1", $workflow);
         self::assertStringContainsString("project:acceptance --json", $workflow);
         self::assertSame("fnlla.performance_baseline_policy.v1", $policy["schema"] ?? null);
 

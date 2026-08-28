@@ -39,6 +39,7 @@ $requiredContains = [
         'public/vendor/fnlla-runtime/',
         'docs/BUSINESS-APP-REFERENCE.md',
         'docs/PRODUCTION-CHECKLIST.md',
+        'docs/ENVIRONMENT.md',
         'resources/business-reference/2.1/',
     ],
     'CHANGELOG.md' => [
@@ -67,6 +68,12 @@ $requiredContains = [
         'project:acceptance --json',
         'APP_DEBUG=false',
     ],
+    'docs/ENVIRONMENT.md' => [
+        '.env.full.example',
+        'CLIENT_PREVIEW_ENABLED',
+        'Fionn Bridge',
+        'AI_FIONN_ENDPOINT',
+    ],
     'docs/UPGRADE-2.1.1.md' => [
         '2.1.0 to 2.1.1',
         'project:acceptance --json',
@@ -79,7 +86,7 @@ $requiredContains = [
     ],
     'resources/business-reference/2.1/MANIFEST.json' => [
         '"schema": "fnlla.business_reference.v1"',
-        '"version": "2.1.0"',
+        '"version": "2.1.1"',
         '"maintenance_preview"',
     ],
     'resources/business-reference/2.1/blueprint.json' => [

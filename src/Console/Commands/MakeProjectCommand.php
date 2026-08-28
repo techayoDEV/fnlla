@@ -33,6 +33,7 @@ final class MakeProjectCommand extends Command
     private const EXPORT_ROOT_ENTRIES = [
         ".editorconfig",
         ".env.example",
+        ".env.full.example",
         ".gitattributes",
         ".gitignore",
         "LICENSE.md",
@@ -173,7 +174,7 @@ final class MakeProjectCommand extends Command
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
         $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner LTD\" --developer \"Developer LTD\".");
-        $this->line("3. Copy .env.example to .env, or open /maintenance locally and let the project setup flow create .env while configuring the first maintenance password.");
+        $this->line("3. Copy .env.example to .env. Use .env.full.example only as the advanced environment reference.");
         $this->line("4. Leave ASSET_URL empty unless browser assets are served from a separate asset domain or CDN.");
         $this->line("5. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
         $this->line("6. Run php fnlla project:acceptance --json, php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");

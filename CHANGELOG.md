@@ -11,12 +11,27 @@ release tags are cut.
   `make:project` export and before commercial product work begins.
 - In-process HTTP performance probes for `/` and `/api/health`.
 - `ops:backup-plan --verify` readiness checks and an explicit restore command.
+- `.env.full.example` as the complete environment reference beside the shorter
+  `.env.example` starter.
+- `docs/ENVIRONMENT.md` and generated `docs/environment.html` for environment
+  layers, client preview and the Fionn bridge boundary.
 
 ### Changed
 
 - Release gate now runs project acceptance and verified backup-plan generation.
 - Project export smoke coverage now proves the generated project can run the
   acceptance command.
+- README is now a concise project front door with version badges, governance
+  links and a framework cover image.
+- Documentation now has a dedicated map in `docs/README.md` and clearer links
+  from README into build, public API, production, environment, operations,
+  business-reference, performance and AI-context guides.
+- Markdown documentation has been expanded around downstream project start,
+  commercial release evidence, security review and framework/product
+  boundaries.
+- Runtime AI now has an opt-in Fionn HTTP bridge contract with endpoint policy
+  checks, redacted context forwarding, provider selection through
+  `runtime_ai()` and strict security-audit coverage.
 
 ## 2.1.0 - 2026-08-28
 

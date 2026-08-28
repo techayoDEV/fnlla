@@ -49,7 +49,7 @@ final class AiReviewPackCommand extends Command
             ],
             "context" => $contextBuilder->build(),
             "app_map" => $this->container->make(AppMapBuilder::class)->build(),
-            "upgrade" => $this->container->make(UpgradeAnalyzer::class)->report($this->optionValue($arguments, "--target") ?? "2.0.0"),
+            "upgrade" => $this->container->make(UpgradeAnalyzer::class)->report($this->optionValue($arguments, "--target") ?? "2.1.1"),
             "review_prompts" => [
                 "Find release blockers and missing tests for this FNLLA change set.",
                 "Review route, middleware and config posture for security regressions.",

@@ -184,8 +184,8 @@ final class FrameworkUpdateController extends Controller
 
     private function runUpgradeWorkflow(Request $request, string $mode, array $pageState): Response
     {
-        $target = trim((string) $request->input("target_version", "2.0.0"));
-        $target = $target !== "" ? $target : "2.0.0";
+        $target = trim((string) $request->input("target_version", "2.1.1"));
+        $target = $target !== "" ? $target : "2.1.1";
 
         if ($mode === "upgrade-apply" && $pageState["can_apply"] !== true) {
             flash_set("status", [

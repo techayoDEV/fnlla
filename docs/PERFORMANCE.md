@@ -46,6 +46,21 @@ The profiler records:
 - source footprint for the main framework directories
 - PHP version, environment and peak memory
 
+## HTTP Probe Semantics
+
+The HTTP probes boot the local application in-process. They do not require a web
+server and they do not claim to represent public internet latency.
+
+The `/` probe confirms that the public surface responds or redirects into the
+expected maintenance/setup flow. The `/api/health` probe confirms that the
+machine-facing health route is reachable and returns a deliberate status. A
+`503` from `/api/health` can be valid when maintenance mode is actively
+restricting API access; it is still useful performance data because the route,
+middleware and JSON response path executed correctly.
+
+For real production monitoring, add external probes from your hosting or uptime
+platform after deployment.
+
 Use more iterations for release decisions. Use fewer iterations while iterating
 locally.
 
@@ -78,6 +93,16 @@ targets for command listing, route listing, homepage health, API health and
 project export. The built-in profiler measures the CLI/export targets locally;
 deployment pipelines should add HTTP probes for `/` and `/api/health` against
 the same thresholds.
+
+## Downstream Product Usage
+
+For a commercial application, keep two baselines:
+
+- a framework baseline immediately after `make:project` and `project:claim`;
+- an application baseline after the first real product flows exist.
+
+Compare later changes against the application baseline. That separates framework
+startup cost from real business code, queries and templates.
 
 ## What To Optimize First
 

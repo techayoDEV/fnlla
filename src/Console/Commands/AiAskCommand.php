@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fnlla\Php\Console\Commands;
 
-use Fnlla\Php\Ai\LocalRuntimeAssistant;
 use Fnlla\Php\Console\Command;
 
 final class AiAskCommand extends Command
@@ -29,7 +28,7 @@ final class AiAskCommand extends Command
             return 1;
         }
 
-        $answer = $this->container->make(LocalRuntimeAssistant::class)->answer($question, [
+        $answer = \framework_runtime_ai_provider($this->container)->answer($question, [
             "command" => "ai:ask",
             "environment" => app_environment(),
         ]);

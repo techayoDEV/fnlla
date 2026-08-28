@@ -79,6 +79,34 @@ That means the normal flow is:
 4. Initialize a new Git repository there.
 5. Build the real project in that new directory.
 
+Think about the exported project as three layers:
+
+- FNLLA underneath: bootstrap, framework source, public runtime, default config,
+  CLI and update machinery.
+- Your product above it: routes, controllers, views, migrations, jobs, business
+  roles, forms, tests and user-facing content.
+- The environment around it: `.env`, secrets, uploads, logs, queue state,
+  backups and hosting configuration.
+
+Framework updates are allowed to refresh the lower layer. They should not
+silently replace product work or environment data.
+
+## Definition Of Ready
+
+A freshly exported project is ready for commercial product work when:
+
+- `php fnlla project:claim` has written the real product identity;
+- `.env` exists locally and contains environment-specific values;
+- `php fnlla project:acceptance --json` passes;
+- `php scripts/test.php` and `php scripts/lint.php` pass;
+- the team understands which files are framework-managed through
+  `.fnlla/framework-lock.json`;
+- the first product backlog has identified routes, tables, roles, forms,
+  uploads and external integrations.
+
+Do not start by deleting the framework's health, maintenance or runtime
+surfaces. Keep them working while product code grows around them.
+
 ## Claim the project identity
 
 After export, the directory is no longer just a generic base. Before real
@@ -94,7 +122,8 @@ php fnlla project:claim \
 ```
 
 The command writes project-owned metadata into `MANIFEST.json`, `.env.example`,
-`README.md` and `config/app.php`.
+`README.md` and `config/app.php`. `.env.full.example` remains the full
+operator reference for optional advanced keys.
 
 Claimed metadata records:
 
@@ -143,7 +172,8 @@ and leaves the framework repository untouched.
 Inside the new project directory:
 
 1. Run `php fnlla project:claim --product "..." --owner "..." --developer "..."`.
-2. Copy `.env.example` to `.env`.
+2. Copy `.env.example` to `.env`; use `.env.full.example` only as a reference
+   for advanced keys.
 3. Set `APP_URL`.
 4. Leave `ASSET_URL` empty unless the project serves CSS, JavaScript and images from a separate asset domain or CDN.
 5. Set MySQL credentials.
@@ -165,7 +195,10 @@ php scripts/validate-version-manifest.php
 
 11. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
 
-12. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
+12. When client preview should stay private, either open `/maintenance` locally
+    and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true`,
+    `CLIENT_PREVIEW_ENABLED=true` and
+    `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 
 13. Start the local server:
 
@@ -178,8 +211,25 @@ php -S 127.0.0.1:8080 -t public public/router.php
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.
 
-The exported `.env.example` starts in local-development mode so sessions and flash flows work over plain HTTP on `127.0.0.1`.
-Before production deployment, switch the environment back to production-safe values and enable HTTPS.
+The exported `.env.example` is intentionally short and starts in
+local-development mode so sessions and flash flows work over plain HTTP on
+`127.0.0.1`. `.env.full.example` documents every supported environment key.
+Before production deployment, copy only required advanced values into the real
+environment, switch back to production-safe values and enable HTTPS.
+
+## First Product Commit
+
+The first commit in a downstream product repository should normally contain:
+
+- the exported FNLLA base;
+- claimed product metadata;
+- local `.env.example` defaults without secrets;
+- a passing `project:acceptance` report in CI output, not committed as a file;
+- the first product-specific route/controller/view or migration;
+- no generated cache, session, queue, log, backup or upload artefacts.
+
+That keeps the product repository clean while still proving the framework base
+was not damaged before real implementation started.
 
 ## Which files you normally edit first
 

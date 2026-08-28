@@ -47,6 +47,24 @@ The private or maintainer-specific helper also stays out of the export:
 
 - `scripts/apply-techayo-metadata.ps1`
 
+## Decision Table
+
+Use this table when choosing the right command during daily work:
+
+| Need | Command |
+| --- | --- |
+| Confirm the exported project base is intact | `php fnlla project:acceptance --json` |
+| Check local runtime and environment posture | `php fnlla doctor` |
+| Check deploy security posture | `php fnlla security:audit --strict` |
+| Build a backup and restore runbook | `php fnlla ops:backup-plan --verify` |
+| Check syntax quickly | `php scripts/lint.php` |
+| Run project tests | `php scripts/test.php` |
+| Validate UI runtime contract | `php scripts/validate-fnlla-runtime.php` |
+| Check version metadata drift | `php scripts/validate-version-manifest.php` |
+| Compare performance against baseline | `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` |
+| Review upstream framework drift | `php fnlla framework:update --dry-run` |
+| Prepare upstream FNLLA release evidence | `php fnlla release:prepare --major --target=2.1.1` |
+
 ## What each exported script does
 
 ### `scripts/test.php`
@@ -335,7 +353,7 @@ Purpose:
 Typical example:
 
 ```bash
-php fnlla version:set 2.1.0
+php fnlla version:set 2.1.1
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php

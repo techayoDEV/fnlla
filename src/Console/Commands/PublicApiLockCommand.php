@@ -29,6 +29,10 @@ final class PublicApiLockCommand extends Command
                 "database.transaction",
                 "query_builder.offset",
                 "query_builder.paginate",
+                "runtime_ai.answer",
+                "runtime_ai.providers",
+                "runtime_ai.provider_status",
+                "runtime_ai.provider.fionn",
             ],
         ];
 

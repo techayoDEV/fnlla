@@ -40,6 +40,17 @@ Without such an agreement, the public repository, issues and documentation shoul
 - Repository conduct concerns: `CODE_OF_CONDUCT.md`
 - Business, partnership or commercial implementation requests: `https://techayo.co.uk`
 
+## Runtime-specific report checklist
+
+When reporting an integrated UI surface issue, include:
+
+- FNLLA version and runtime `VERSION`
+- affected asset path, selector, component or page state
+- browser and viewport where the issue was observed
+- whether `php scripts/validate-fnlla-runtime.php` passes
+- a minimal downstream view snippet only when it is necessary to reproduce the
+  issue
+
 ## Release cadence
 
 FNLLA and its integrated UI surface are updated when TechAyo LTD decides that an update is appropriate.

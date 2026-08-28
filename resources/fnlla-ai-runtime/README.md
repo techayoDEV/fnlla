@@ -1,12 +1,12 @@
 # FNLLA Runtime Intelligence Bundle
 
-`resources/fnlla-ai-runtime` is the integrated private runtime intelligence
+`resources/fnlla-ai-runtime` is the integrated server-side runtime intelligence
 bundle for FNLLA.
 
 It is intentionally separate from `public/vendor/fnlla-runtime/`:
 
 - the UI runtime is a public browser asset
-- this runtime is server-side project knowledge and must not be served directly
+- this runtime is generic server-side framework knowledge and must not be served directly
 - approved learning records stay under `storage/`, not inside this bundle
 
 ## Included files
@@ -33,4 +33,37 @@ runtime files.
 
 ## Version
 
-2.0.0
+2.1.1
+
+## Security boundary
+
+This bundle is safe to commit because it contains generic framework-owned
+defaults, fixtures and local review prompts. It must not contain:
+
+- real user conversations
+- customer records
+- provider API keys
+- secrets copied from `.env`
+- production logs or exception traces
+- downstream business strategy that should remain private
+
+Projects that enable local learning should store reviewed records under
+`storage/` and decide separately whether those records can be backed up,
+exported or reviewed by humans. The integrated bundle remains read-only
+framework material.
+
+Fionn-specific memory, private knowledge, model packages, evals, learning queue
+state and service implementation do not belong in this repository. FNLLA keeps
+only a small opt-in HTTP bridge contract in `FionnRuntimeBridge`; the Fionn
+system itself is reached through an explicit API/service boundary with endpoint
+policy checks, redaction and accounting fields.
+
+## Maintainer checklist
+
+When changing this bundle:
+
+- keep `MANIFEST.json`, `VERSION` and command output in sync
+- update `docs/AI-CONTEXT.md` when public behavior changes
+- keep eval fixtures deterministic and small
+- avoid provider-specific prompts unless a stable provider contract exists
+- run `php scripts/test.php` and `php scripts/lint.php`

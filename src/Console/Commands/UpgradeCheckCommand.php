@@ -33,7 +33,7 @@ final class UpgradeCheckCommand extends Command
     public function handle(array $arguments): int
     {
         $json = in_array("--json", $arguments, true);
-        $target = $this->optionValue($arguments, "--target") ?? "2.0.0";
+        $target = $this->optionValue($arguments, "--target") ?? "2.1.1";
         $report = $this->container->make(UpgradeAnalyzer::class)->report($target);
         $summary = (array) ($report["summary"] ?? []);
         $ok = (int) ($summary["failures"] ?? 0) === 0;

@@ -746,9 +746,33 @@ function mailer(): \Fnlla\Php\Mail\Mailer
     return app(\Fnlla\Php\Mail\Mailer::class);
 }
 
-function runtime_ai(): \Fnlla\Php\Ai\LocalRuntimeAssistant
+function framework_runtime_ai_provider(?Container $container = null): \Fnlla\Php\Ai\RuntimeAiProviderInterface
 {
-    return app(\Fnlla\Php\Ai\LocalRuntimeAssistant::class);
+    $driver = trim((string) config("ai.runtime.driver", "local")) ?: "local";
+    $providers = (array) config("ai.runtime.providers", []);
+    $provider = (array) ($providers[$driver] ?? []);
+    $class = (string) ($provider["class"] ?? \Fnlla\Php\Ai\LocalRuntimeAssistant::class);
+
+    if ($class === "" || !class_exists($class) || !is_subclass_of($class, \Fnlla\Php\Ai\RuntimeAiProviderInterface::class)) {
+        throw new RuntimeException("Runtime AI provider is not configured for driver: " . $driver);
+    }
+
+    if ($container instanceof Container && $container->has($class)) {
+        return $container->make($class);
+    }
+
+    return new $class();
+}
+
+function runtime_ai(): \Fnlla\Php\Ai\RuntimeAiProviderInterface
+{
+    $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
+
+    if ($container instanceof Container && $container->has(\Fnlla\Php\Ai\RuntimeAiProviderInterface::class)) {
+        return $container->make(\Fnlla\Php\Ai\RuntimeAiProviderInterface::class);
+    }
+
+    return framework_runtime_ai_provider($container instanceof Container ? $container : null);
 }
 
 function queue(): \Fnlla\Php\Queue\QueueManager

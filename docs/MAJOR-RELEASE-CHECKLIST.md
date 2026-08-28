@@ -23,10 +23,12 @@ php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
 php scripts/static-analysis.php
-php fnlla upgrade:check --target=2.1.0
+php fnlla project:acceptance --json
+php fnlla ops:backup-plan --verify
+php fnlla upgrade:check --target=2.1.1
 php fnlla app:map
-php fnlla ai:review-pack --target=2.1.0
-php fnlla release:prepare --major --target=2.1.0
+php fnlla ai:review-pack --target=2.1.1
+php fnlla release:prepare --major --target=2.1.1
 ```
 
 ## Performance
@@ -34,6 +36,16 @@ php fnlla release:prepare --major --target=2.1.0
 - Capture a stable local baseline with `php fnlla perf:baseline:update`.
 - Compare after major-release changes with `php fnlla perf:compare`.
 - Record representative benchmark numbers in release notes.
+- Confirm HTTP probes for `/` and `/api/health` are included in the profile.
+
+## Export And Upgrade Path
+
+- Export a current project with `php fnlla make:project` and run
+  `php fnlla project:acceptance --json` inside it.
+- Keep at least one previous supported release tag in the CI update-path test.
+- Verify that project-owned files are protected by `.fnlla/framework-lock.json`.
+- Confirm the browser maintenance update flow and CLI update flow tell the same
+  story for check, dry-run and safe apply.
 
 ## Security And Privacy
 
@@ -52,3 +64,5 @@ php fnlla release:prepare --major --target=2.1.0
 - `CHANGELOG.md` and `docs/MIGRATION.md` match the final tag.
 - SBOM and SHA-256 checksum artefacts are generated.
 - Runtime surface validation passes after any final asset sync.
+- GitHub release notes explain what changed, which validation passed and which
+  assets are attached.

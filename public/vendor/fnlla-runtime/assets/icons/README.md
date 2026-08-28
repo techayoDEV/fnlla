@@ -29,3 +29,14 @@ Integration rule for the integrated FNLLA UI surface:
 - use runtime paths such as `assets/icons/search.svg` or `assets/icons/sprite.svg#settings-2` in project markup
 - do not replace these references with `cdn`, `unpkg`, `jsdelivr` or other external hosts
 - if the package is updated, keep the original Lucide license file and the FNLLA notice in place
+
+## Maintainer workflow
+
+When the icon bundle changes:
+
+- keep `LICENSE` and `NOTICE.md` with the copied assets
+- verify icons render from local runtime paths
+- run `php scripts/validate-fnlla-runtime.php`
+- do not add remote font, script or CDN dependencies
+- keep icon usage accessible with text labels, `aria-label` or adjacent visible
+  text where the icon alone is ambiguous

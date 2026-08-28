@@ -72,6 +72,15 @@ $rootPages = [
 
 $guidePages = [
     [
+        "label" => "Documentation Map",
+        "href" => "readme.html",
+        "source" => "docs/README.md",
+        "source_name" => "README.md",
+        "title" => "Documentation Map",
+        "document_title" => "Documentation Map - FNLLA Documentation",
+        "lead" => "The recommended reading order and ownership map for the FNLLA documentation set.",
+    ],
+    [
         "label" => "Starting a New Project",
         "href" => "starting-a-new-project.html",
         "source" => "docs/STARTING-A-NEW-PROJECT.md",
@@ -99,6 +108,15 @@ $guidePages = [
         "lead" => "Reference blueprint for a professional FNLLA business application with auth, CRUD, forms, queues and operations.",
     ],
     [
+        "label" => "Public API",
+        "href" => "public-api.html",
+        "source" => "docs/PUBLIC-API.md",
+        "source_name" => "PUBLIC-API.md",
+        "title" => "Public API",
+        "document_title" => "Public API - FNLLA Documentation",
+        "lead" => "Stable public framework surfaces, compatibility rules and internal boundaries.",
+    ],
+    [
         "label" => "Project Scripts Reference",
         "href" => "project-scripts-reference.html",
         "source" => "docs/PROJECT-SCRIPTS-REFERENCE.md",
@@ -124,6 +142,15 @@ $guidePages = [
         "title" => "Production Checklist",
         "document_title" => "Production Checklist - FNLLA Documentation",
         "lead" => "Security, backup, performance and deployment gate for production FNLLA applications.",
+    ],
+    [
+        "label" => "Environment",
+        "href" => "environment.html",
+        "source" => "docs/ENVIRONMENT.md",
+        "source_name" => "ENVIRONMENT.md",
+        "title" => "Environment",
+        "document_title" => "Environment - FNLLA Documentation",
+        "lead" => "Short starter env, full environment reference, client-preview mode and the Fionn bridge boundary.",
     ],
     [
         "label" => "Performance",
@@ -179,21 +206,44 @@ $guidePages = [
         "document_title" => "Major Release Checklist - FNLLA Documentation",
         "lead" => "Release-owner checklist for contract, validation, performance, privacy and publication readiness.",
     ],
+    [
+        "label" => "Tech Debt",
+        "href" => "tech-debt-and-future-proofing.html",
+        "source" => "docs/TECH-DEBT-AND-FUTURE-PROOFING.md",
+        "source_name" => "TECH-DEBT-AND-FUTURE-PROOFING.md",
+        "title" => "Tech Debt And Future Proofing",
+        "document_title" => "Tech Debt And Future Proofing - FNLLA Documentation",
+        "lead" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
+    ],
+    [
+        "label" => "TechAyo Ecosystem",
+        "href" => "techayo-ecosystem.html",
+        "source" => "docs/TECHAYO-ECOSYSTEM.md",
+        "source_name" => "TECHAYO-ECOSYSTEM.md",
+        "title" => "TechAyo Ecosystem",
+        "document_title" => "TechAyo Ecosystem - FNLLA Documentation",
+        "lead" => "Repository boundaries and ownership context for the TechAyo-managed FNLLA ecosystem.",
+    ],
 ];
 
 $guideLinkMap = [
+    "./README.md" => "./readme.html",
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
     "./BUSINESS-APP-REFERENCE.md" => "./business-app-reference.html",
+    "./PUBLIC-API.md" => "./public-api.html",
     "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
     "./RELEASE-AND-OPERATIONS.md" => "./release-and-operations.html",
     "./PRODUCTION-CHECKLIST.md" => "./production-checklist.html",
+    "./ENVIRONMENT.md" => "./environment.html",
     "./PERFORMANCE.md" => "./performance.html",
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
     "./UPGRADE-2.1.md" => "./upgrade-2-1.html",
     "./UPGRADE-2.1.1.md" => "./upgrade-2-1-1.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
+    "./TECH-DEBT-AND-FUTURE-PROOFING.md" => "./tech-debt-and-future-proofing.html",
+    "./TECHAYO-ECOSYSTEM.md" => "./techayo-ecosystem.html",
 ];
 
 $pagesToWrite = [
@@ -1251,7 +1301,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --apply</code> for conflict-free official GitHub updates</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla ai:providers</code> for runtime AI provider readiness</li>
-            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.0</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.1</code></li>
           </ul>
         </article>
         <article class="card">
@@ -1450,6 +1500,12 @@ function render_markdown_document(string $markdown, array $linkMap): array
         if (trim($line) === "") {
             $flushParagraph();
             $flushList();
+            continue;
+        }
+
+        if ($listType !== null && preg_match('/^\s{2,}(.+)$/', $line, $matches) === 1 && $listItems !== []) {
+            $lastIndex = count($listItems) - 1;
+            $listItems[$lastIndex] .= " " . render_inline_markdown(trim($matches[1]), $linkMap);
             continue;
         }
 

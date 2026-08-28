@@ -32,3 +32,10 @@ Without prior written permission from TechAyo LTD, do not:
 ## Contact
 
 Trademark, branding and partnership questions should be directed through `https://techayo.co.uk`.
+
+## Related files
+
+- `README.md` describes the integrated UI surface export.
+- `LICENSE.md` covers the runtime software license.
+- `SUPPORT.md` explains support boundaries for runtime users.
+- root `TRADEMARKS.md` covers the framework-level brand notice.

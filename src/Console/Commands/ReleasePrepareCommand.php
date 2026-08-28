@@ -150,7 +150,7 @@ final class ReleasePrepareCommand extends Command
         $contents = is_file(base_path("VERSION")) ? (string) file_get_contents(base_path("VERSION")) : "";
         $version = trim(strtok($contents, "\r\n") ?: "");
 
-        return $version !== "" ? $version : "2.1.0";
+        return $version !== "" ? $version : "2.1.1";
     }
 
     private function printArtifacts(array $artifacts, string $prefix = ""): void

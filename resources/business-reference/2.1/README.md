@@ -45,9 +45,31 @@ small enough to read in one pass.
 A 2.1-ready business application should pass:
 
 ```bash
+php fnlla project:acceptance --json
 php scripts/test.php
 php scripts/lint.php
 php fnlla security:audit --strict
-php fnlla ops:backup-plan --json
+php fnlla ops:backup-plan --verify
+php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
 php fnlla optimize:warm
 ```
+
+## How To Use This Blueprint
+
+This directory is not a generated application. It is a framework-owned
+reference contract that downstream teams can use as a checklist while building
+a real project created by `make:project`.
+
+Recommended use:
+
+- generate and claim a clean project
+- implement one complete business flow at a time
+- keep repositories and service classes small and explicit
+- write product E2E tests after real roles and screens exist
+- compare the finished product against `blueprint.json`
+- keep release evidence in the downstream project, not in this framework
+  blueprint directory
+
+Do not copy this README as product documentation. A downstream product README
+should describe the client, owner, deployment, environment variables, support
+route and operational runbook for that specific application.

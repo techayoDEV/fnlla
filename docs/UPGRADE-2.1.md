@@ -52,6 +52,8 @@ Never run the update from the maintainer framework source repository.
 Run:
 
 ```bash
+php fnlla version:status
+php fnlla project:acceptance --json
 php scripts/test.php
 php scripts/lint.php
 php fnlla migrate
@@ -70,6 +72,30 @@ Then verify the application manually:
 - mail/log output;
 - `/api/health`;
 - client preview and maintenance screens.
+
+## Project Boundary Check
+
+After the framework update, confirm that product-owned files still represent the
+product and not the upstream framework skeleton:
+
+- root `README.md` describes the downstream project, owner and maintainer
+- `.fnlla/framework-lock.json` exists and records the previous framework base
+- `routes/`, `views/`, `database/` and application controllers contain project
+  code rather than only placeholder pages
+- secrets remain in `.env` or the hosting secret store, never in Git
+- generated files under `storage/` and `dist/` were not committed
+
+If a project still looks generic after updating to 2.1.0, run
+`project:claim`, rebuild the first application-specific screen and add product
+E2E tests before treating the update as release-ready.
+
+## Documentation To Read Next
+
+- `docs/README.md` for the full documentation map.
+- `docs/BUILDING-WITH-FNLLA.md` for the application build path.
+- `docs/BUSINESS-APP-REFERENCE.md` for reference app acceptance criteria.
+- `docs/PRODUCTION-CHECKLIST.md` for the deployment gate.
+- `docs/PUBLIC-API.md` for surfaces covered by the minor-release contract.
 
 ## Notes For Maintainers
 

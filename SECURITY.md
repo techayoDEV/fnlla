@@ -20,6 +20,23 @@ Use one of these routes:
 - impact assessment
 - any temporary mitigation already identified
 
+## Immediate operator checks
+
+If you operate a downstream project and suspect a security issue, collect local
+evidence before making changes:
+
+```bash
+php fnlla security:audit --strict
+php fnlla project:acceptance --json
+php fnlla ops:backup-plan --verify
+php scripts/test.php
+php scripts/lint.php
+```
+
+Do not paste `.env`, database dumps, access tokens, session cookies or raw
+customer data into public issues. Redact hostnames, private route names and
+business identifiers when they are not needed to reproduce the framework issue.
+
 ## Response expectations
 
 TechAyo LTD will aim to:

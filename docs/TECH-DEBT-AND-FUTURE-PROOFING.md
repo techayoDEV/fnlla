@@ -82,6 +82,20 @@ There are no known release-blocking technical-debt items in this snapshot.
 Future work should be opened as explicit issues with owner, scope and acceptance
 criteria instead of staying as vague backlog text inside the repository.
 
+## Documentation Debt Policy
+
+README is intentionally short. Detailed explanation belongs in `docs/*.md`,
+where it can be linked, generated to HTML and validated with
+`php scripts/build-docs.php --check`.
+
+Future documentation debt should be treated like code debt:
+
+- name the affected document;
+- describe the missing decision or workflow;
+- add the command or test that proves the document is still accurate;
+- avoid duplicating the same long procedure across several files;
+- keep generated HTML in sync with Markdown sources.
+
 ## Current Hardening Notes
 
 - Process execution in framework update, release download, runtime sync and

@@ -13,7 +13,8 @@ It is intended to be the beginning of a new server-rendered website or web appli
 
 - the FNLLA application core
 - the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
-- the integrated private runtime intelligence bundle under `resources/fnlla-ai-runtime/`
+- the integrated server-side runtime intelligence bundle under `resources/fnlla-ai-runtime/`
+- the opt-in Fionn runtime AI bridge contract, disabled by default
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
@@ -33,8 +34,10 @@ It is intended to be the beginning of a new server-rendered website or web appli
 php fnlla project:claim --product "{{APP_NAME}}" --owner "Owner LTD" --developer "Developer LTD" --maintainer "Developer LTD"
 ```
 
-2. Copy `.env.example` to `.env`.
-3. Set `APP_URL` and your MySQL credentials.
+2. Copy `.env.example` to `.env`. Use `.env.full.example` only as the complete
+   operator reference when you need advanced keys.
+3. Set `APP_URL`, your MySQL credentials and the client-preview password if the
+   site should be reviewed privately before launch.
 4. Run:
 
 ```bash
@@ -58,13 +61,33 @@ php -S 127.0.0.1:8080 -t public public/router.php
    - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh project export, or
    - set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`
 
-The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
+The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `MAINTENANCE_MODE_ENABLED`, `CLIENT_PREVIEW_ENABLED`, `CLIENT_PREVIEW_*`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
 
 For Apache environments, use `public/` as the document root.
 The exported project already includes `public/.htaccess`.
 
-The exported `.env.example` starts with local-development defaults so sessions work over plain HTTP on `127.0.0.1`.
-Before production deployment, switch the environment back to production-safe values and enable HTTPS.
+The exported `.env.example` is the short starter for local development and
+client-preview setup. `.env.full.example` is the full framework environment
+reference for operators. Before production deployment, move real secrets into
+the host secret store where possible, switch the environment back to
+production-safe values and enable HTTPS.
+
+## Commercial baseline
+
+Before writing the first product feature, make one clean baseline commit in the
+exported project containing:
+
+- claimed project identity
+- reviewed `.env.example` and any advanced values copied from `.env.full.example`
+- passing `project:acceptance`
+- passing runtime validation, tests and lint
+- no generated files from `storage/`, `dist/` or local caches
+- a short project README update describing the real owner, support route and
+  deployment target
+
+Then build business code in small product commits: schema, migration,
+repository, route, controller, view, validation, auth/role test and deployment
+note.
 
 ## What the export intentionally leaves behind
 
@@ -112,13 +135,13 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla optimize` builds route and configuration caches for production-style deployments
 - `php fnlla optimize:warm` builds bootstrap caches, the asset manifest and optional OPcache preload file
 - `php fnlla app:map` generates a route/controller/view map for audits, onboarding and AI-assisted review
-- `php fnlla upgrade:check --target=2.0.0` checks major-release upgrade readiness
-- `php fnlla upgrade:plan --target=2.0.0` writes a machine-readable upgrade plan
+- `php fnlla upgrade:check --target=2.1.1` checks current-release upgrade readiness
+- `php fnlla upgrade:plan --target=2.1.1` writes a machine-readable upgrade plan
 - `php fnlla perf:profile --iterations=5` records local CLI timings, repository footprint and peak memory
 - `php fnlla perf:baseline:update --iterations=7` captures a local performance baseline
 - `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
 - `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
-- `php fnlla ai:review-pack --target=2.0.0` combines context, app map and upgrade readiness into one local AI review artefact
+- `php fnlla ai:review-pack --target=2.1.1` combines context, app map and upgrade readiness into one local AI review artefact
 - `php fnlla ai:providers --json` reports local runtime AI provider readiness without contacting external providers
 - `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
 - `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
@@ -132,6 +155,14 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
 
 The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
+Start with `docs/README.md`, `docs/STARTING-A-NEW-PROJECT.md`,
+`docs/BUILDING-WITH-FNLLA.md`, `docs/PUBLIC-API.md` and
+`docs/PRODUCTION-CHECKLIST.md` there when you need deeper framework guidance.
+
+Fionn integration is a controlled API bridge, not a copied model or knowledge
+bundle. Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly enables a
+separate Fionn service through `AI_FIONN_ENDPOINT`, `AI_FIONN_ALLOWED_HOSTS` and
+the production security checklist.
 
 The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
 
@@ -148,11 +179,11 @@ php fnlla framework:update --dry-run
 php fnlla optimize
 php fnlla optimize:warm
 php fnlla app:map
-php fnlla upgrade:check --target=2.0.0
+php fnlla upgrade:check --target=2.1.1
 php fnlla perf:profile --iterations=5
 php fnlla perf:baseline:update --iterations=7
 php fnlla ai:context
-php fnlla ai:review-pack --target=2.0.0
+php fnlla ai:review-pack --target=2.1.1
 php fnlla ai:providers --json
 php fnlla optimize:clear
 php fnlla release:prepare

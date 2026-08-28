@@ -294,7 +294,7 @@ final class ApplicationSurfaceTest extends TestCase
             "ui_apply_enabled" => true,
         ]));
         $_SESSION["_flash_old"]["framework_upgrade_report"] = [
-            "target_version" => "2.0.0",
+            "target_version" => "2.1.1",
             "executed_at_utc" => "2026-07-13T10:00:00+00:00",
             "summary" => [
                 "passed" => 6,

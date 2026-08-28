@@ -64,3 +64,16 @@ A concise description is:
 Within TechAyo, FNLLA is less about competing on framework size and more about providing a dependable application foundation the company can understand, maintain and evolve itself.
 
 For implementation details, supported runtime contracts and current capabilities, the repository `README.md` and versioned documentation remain the source of truth.
+
+## Repository Boundary
+
+The ecosystem only compounds when the boundary is respected:
+
+- FNLLA owns reusable framework capability.
+- Exported projects own product behaviour.
+- Customer repositories own customer data, branding and private operations.
+- Release notes own public change communication.
+- `docs/` owns long-form technical explanation.
+
+When a product discovers a reusable improvement, rebuild it upstream with
+generic naming, tests and docs. Do not copy customer-specific code into FNLLA.

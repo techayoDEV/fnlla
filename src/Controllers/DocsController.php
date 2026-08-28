@@ -26,6 +26,12 @@ final class DocsController extends Controller
 {
     private const DOCUMENTS = [
         [
+            "file" => "readme.html",
+            "title" => "Documentation Map",
+            "summary" => "Recommended reading order and ownership map for the FNLLA documentation set.",
+            "kind" => "Guide",
+        ],
+        [
             "file" => "index.html",
             "title" => "Overview",
             "summary" => "Repository contract, supported stack and the shortest path to understanding what FNLLA is.",
@@ -86,6 +92,12 @@ final class DocsController extends Controller
             "kind" => "Guide",
         ],
         [
+            "file" => "public-api.html",
+            "title" => "Public API",
+            "summary" => "Stable public framework surfaces, compatibility rules and internal boundaries.",
+            "kind" => "Guide",
+        ],
+        [
             "file" => "project-scripts-reference.html",
             "title" => "Project Scripts Reference",
             "summary" => "What the project-facing scripts are responsible for and which ones belong only in the maintainer workspace.",
@@ -101,6 +113,12 @@ final class DocsController extends Controller
             "file" => "production-checklist.html",
             "title" => "Production Checklist",
             "summary" => "The production security, backup, performance and deployment gate for FNLLA applications.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "environment.html",
+            "title" => "Environment",
+            "summary" => "Short starter env, full environment reference, client-preview mode and the Fionn bridge boundary.",
             "kind" => "Guide",
         ],
         [
@@ -137,6 +155,18 @@ final class DocsController extends Controller
             "file" => "major-release-checklist.html",
             "title" => "Major Release Checklist",
             "summary" => "Release-owner checklist for validation, performance, privacy and publication readiness.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "tech-debt-and-future-proofing.html",
+            "title" => "Tech Debt And Future Proofing",
+            "summary" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "techayo-ecosystem.html",
+            "title" => "TechAyo Ecosystem",
+            "summary" => "Repository boundaries and ownership context for the TechAyo-managed FNLLA ecosystem.",
             "kind" => "Guide",
         ],
     ];

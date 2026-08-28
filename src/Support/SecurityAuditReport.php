@@ -15,6 +15,8 @@ Purpose:
 
 namespace Fnlla\Php\Support;
 
+use Fnlla\Php\Ai\FionnRuntimeBridge;
+
 final class SecurityAuditReport
 {
     public function build(): array
@@ -58,8 +60,8 @@ final class SecurityAuditReport
             $this->check("native_mail_explicit", $mailDriver !== "native" || $nativeMailEnabled, "fail", "Native PHP mail must be explicitly enabled after the server transport is configured."),
             $this->check("http_mail_transport", $mailDriver !== "http" || ($mailHttpEndpoint !== "" && $mailHttpRequiresHttps), "fail", "HTTP mail transport must have an endpoint and require HTTPS outside localhost."),
             $this->check("http_mail_host_allowlist", !$isProduction || $mailDriver !== "http" || $mailHttpAllowedHosts !== [], "warning", "Production HTTP mail transport should pin allowed provider or relay hosts."),
-            $this->check("runtime_ai_bundle", !$runtimeAiEnabled || $this->runtimeAiBundleIsPresent(), "fail", "Runtime AI requires the integrated private runtime intelligence bundle."),
-            $this->check("runtime_ai_local_driver", !$runtimeAiEnabled || $runtimeAiDriver === "local", "fail", "Runtime AI must use the local driver unless a project explicitly adds and audits another provider."),
+            $this->check("runtime_ai_bundle", !$runtimeAiEnabled || $runtimeAiDriver === "fionn" || $this->runtimeAiBundleIsPresent(), "fail", "Local runtime AI requires the integrated framework runtime intelligence bundle."),
+            $this->check("runtime_ai_local_driver", !$runtimeAiEnabled || $this->runtimeAiDriverIsAllowed($runtimeAiDriver), "fail", "Runtime AI must use the local driver or the audited opt-in Fionn bridge policy."),
             $this->check("runtime_ai_learning_path", !$runtimeAiEnabled || $this->runtimeAiLearningPathIsSafe(), "fail", "Runtime AI learning data must stay inside storage."),
         ];
 
@@ -110,6 +112,24 @@ final class SecurityAuditReport
         $targetDirectory = realpath(dirname($path)) ?: dirname($path);
 
         return str_starts_with($targetDirectory, $storageRoot);
+    }
+
+    private function runtimeAiDriverIsAllowed(string $driver): bool
+    {
+        if ($driver === "local") {
+            return true;
+        }
+
+        if ($driver !== "fionn") {
+            return false;
+        }
+
+        $status = (new FionnRuntimeBridge())->status();
+
+        return ($status["enabled"] ?? false) === true
+            && ($status["provider_ready"] ?? false) === true
+            && ($status["external_calls"] ?? false) === true
+            && ($status["endpoint_allowed"] ?? false) === true;
     }
 
     private function runtimeAiBundleIsPresent(): bool

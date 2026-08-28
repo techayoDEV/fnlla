@@ -26,7 +26,7 @@ $upgradeSummary = is_array($upgradeReport["summary"] ?? null) ? (array) $upgrade
 $upgradeChecks = is_array($upgradeReport["checks"] ?? null) ? (array) $upgradeReport["checks"] : [];
 $upgradePlanActions = is_array($upgradeReport["plan"]["actions"] ?? null) ? (array) $upgradeReport["plan"]["actions"] : [];
 $upgradeApplyActions = is_array($upgradeApply["actions"] ?? null) ? (array) $upgradeApply["actions"] : [];
-$upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? "2.0.0"));
+$upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? "2.1.1"));
 $reportMode = trim((string) ($report["mode"] ?? ""));
 $reportUsesGitHub = in_array($reportMode, ["github-check", "github-dry-run", "github-apply"], true);
 $reportIsApply = in_array($reportMode, ["apply", "github-apply"], true);
@@ -111,7 +111,7 @@ $updateActionLabel = static function (array $update): string {
             <?= csrf_field() ?>
             <div class="form-group">
               <label class="label" for="framework-upgrade-target">Target version</label>
-              <input class="input" id="framework-upgrade-target" name="target_version" type="text" value="<?= h($upgradeTargetVersion !== "" ? $upgradeTargetVersion : "2.0.0") ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+              <input class="input" id="framework-upgrade-target" name="target_version" type="text" value="<?= h($upgradeTargetVersion !== "" ? $upgradeTargetVersion : "2.1.1") ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
             </div>
             <div class="grid grid-2 gap-md framework-update-actions-grid">
               <button class="btn btn-outline" type="submit" name="mode" value="upgrade-check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check major readiness</button>
@@ -140,7 +140,7 @@ $updateActionLabel = static function (array $update): string {
               <p class="content-title mb-0"><?= h((string) ($upgradeSummary["failures"] ?? 0)) ?></p>
             </div>
           </div>
-          <p class="content-text">Target <?= h((string) ($upgradeReport["target_version"] ?? "2.0.0")) ?> checked at <?= h((string) ($upgradeReport["executed_at_utc"] ?? $upgradeReport["generated_at_utc"] ?? "unknown")) ?>.</p>
+          <p class="content-text">Target <?= h((string) ($upgradeReport["target_version"] ?? "2.1.1")) ?> checked at <?= h((string) ($upgradeReport["executed_at_utc"] ?? $upgradeReport["generated_at_utc"] ?? "unknown")) ?>.</p>
 
           <?php if ($upgradeChecks !== []): ?>
           <ul class="contact-list">

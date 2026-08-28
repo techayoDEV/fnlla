@@ -33,7 +33,7 @@ final class UpgradeApplyCommand extends Command
     public function handle(array $arguments): int
     {
         $json = in_array("--json", $arguments, true);
-        $target = $this->optionValue($arguments, "--target") ?? "2.0.0";
+        $target = $this->optionValue($arguments, "--target") ?? "2.1.1";
         $dryRun = !in_array("--yes", $arguments, true);
         $analyzer = $this->container->make(UpgradeAnalyzer::class);
         $report = $analyzer->report($target);

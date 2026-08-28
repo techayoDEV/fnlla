@@ -176,7 +176,7 @@ jobs:
           php (Join-Path $work "app-current" "fnlla") project:acceptance --json
           git worktree add (Join-Path $work "source-2.0.3") v2.0.3
           php (Join-Path $work "source-2.0.3" "fnlla") make:project (Join-Path $work "app-2.0.3") "FNLLA Update Path"
-          php ./fnlla upgrade:check --target=2.1.0
+          php ./fnlla upgrade:check --target=2.1.1
 
   release-assets:
     name: Attach release assets

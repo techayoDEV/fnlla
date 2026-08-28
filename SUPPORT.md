@@ -40,6 +40,21 @@ Without such an agreement, the public repository, issues and documentation shoul
 - Repository conduct concerns: `CODE_OF_CONDUCT.md`
 - Business, partnership or commercial implementation requests: `https://techayo.co.uk`
 
+## Self-service resources
+
+Before opening a public issue, check:
+
+- `README.md` for the short project overview and current stable line
+- `docs/README.md` for the complete documentation map
+- `docs/STARTING-A-NEW-PROJECT.md` for the supported export workflow
+- `docs/PRODUCTION-CHECKLIST.md` for production deployment responsibility
+- `docs/UPGRADE-2.1.1.md` for the current patch-line upgrade sequence
+- `BUGLOG.md` for known framework-level defects, if any are currently tracked
+
+When reporting a confirmed bug, include the FNLLA version, PHP version, command
+or route affected, reproduction steps and the smallest relevant output from
+`php fnlla doctor` or `php fnlla project:acceptance --json`.
+
 ## Release cadence
 
 FNLLA is updated when TechAyo LTD decides that an update is appropriate.

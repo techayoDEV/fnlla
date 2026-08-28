@@ -40,3 +40,10 @@ This code of conduct applies to:
 ## Reporting
 
 If you need to report unacceptable behavior, use TechAyo LTD's contact route at `https://techayo.co.uk` and clearly label the message `FNLLA Code of Conduct`.
+
+## Related policies
+
+- `SECURITY.md` covers private vulnerability reporting.
+- `SUPPORT.md` defines the public support boundary.
+- `TRADEMARKS.md` defines branding and endorsement boundaries.
+- `LICENSE.md` defines the open-source software license.

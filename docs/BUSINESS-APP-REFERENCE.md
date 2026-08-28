@@ -41,6 +41,24 @@ A release-quality reference application should demonstrate:
 - `ops:backup-plan`, `security:audit --strict` and `optimize:warm` before
   deployment.
 
+## What FNLLA Does Not Generate
+
+FNLLA intentionally does not generate the finished business product. The
+reference blueprint is a checklist, not a product template. A real commercial
+application still needs project-owned decisions for:
+
+- domain language and customer workflows;
+- user onboarding and password reset policy;
+- exact roles and permission matrix;
+- database ownership rules;
+- reporting needs;
+- integration contracts;
+- retention and audit requirements;
+- legal copy, privacy notices and cookie choices.
+
+Those choices should live in the exported product repository, with tests that
+match the real business rules.
+
 ## Suggested Schema
 
 Use four tables for the first version:
@@ -102,6 +120,23 @@ Recommended gate names:
 Every protected route should have one positive test and one unauthorized-flow
 test. Unauthorized users should receive a redirect to login or a 403 response;
 the behavior must be deliberate and covered.
+
+## Acceptance Criteria For A Reference Product
+
+A reference product is useful evidence only when a fresh developer can:
+
+- export the project from FNLLA;
+- run `project:claim`;
+- run `project:acceptance`;
+- run migrations and seeders;
+- log in with seeded users;
+- exercise each role;
+- create, edit and delete a business record;
+- submit a validated business form;
+- see queued or logged mail output;
+- enable maintenance/client preview mode;
+- run backup-plan verification;
+- pass production security audit with production-like env values.
 
 ## Form Workflow
 

@@ -18,6 +18,18 @@ unless a release note promotes it.
   `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`,
   `ai:explain-log`, `ai:brief` and `ai:providers`.
 
+## Compatibility Policy
+
+Within the same major version, FNLLA treats this document as the compatibility
+contract for downstream projects. Patch and minor releases may add public
+surface area, improve validation and tighten unsafe behaviour, but they should
+not remove documented helpers, route entrypoints or command names without an
+explicit security note.
+
+Documented JSON schemas are intended for CI and release automation. A schema may
+gain new fields, but existing stable keys should remain readable unless the
+release notes say otherwise.
+
 ## Stable Helper Surface
 
 - `config()`, `config_set()`, `env()`.
@@ -29,6 +41,11 @@ unless a release note promotes it.
 - `stream_request_body_to_file()` for endpoints that intentionally stream a raw
   request body to storage with a hard byte limit.
 
+`runtime_ai()` returns `RuntimeAiProviderInterface` for the configured runtime
+AI driver. The default driver is `local`. The maintained external boundary is
+`fionn`, which is available only through the audited opt-in bridge policy in
+`config/ai.php`.
+
 ## Stable Data Surface
 
 - `DatabaseManager::table(string $table)` for creating a query builder.
@@ -39,6 +56,28 @@ unless a release note promotes it.
   `count()`, `exists()` and `paginate()`.
 - `QueryBuilder::paginate()` returns an array with `data` and `meta`. The meta
   keys are `current_page`, `per_page`, `total`, `last_page`, `from` and `to`.
+
+## Stable Operational Schemas
+
+The following machine-readable schemas are considered project-facing:
+
+- `fnlla.doctor.v1`
+- `fnlla.security_audit.v1`
+- `fnlla.project_acceptance.v1`
+- `fnlla.backup_plan.v1`
+- `fnlla.backup_plan_verification.v1`
+- `fnlla.performance_profile.v1`
+- `fnlla.performance_budget.v1`
+- `fnlla.app_map.v1`
+- `fnlla.upgrade_report.v1`
+- `fnlla.runtime_ai.answer.v1`
+- `fnlla.runtime_ai.providers.v1`
+- `fnlla.runtime_ai.provider_status.v1`
+- `fnlla.runtime_ai.provider.fionn.v1`
+- `fnlla.public_api_lock.v1`
+
+Automation should tolerate additional keys and should key decisions off
+documented status fields such as `ok`, `status`, `failures` and `warnings`.
 
 ## Stable Extension Points
 
@@ -58,6 +97,10 @@ Refresh it with `php fnlla api:lock` after intentional public API changes.
 Classes under `src/Support/`, release scripts, generated docs, generated cache
 files, tests, blueprint fixtures and the internal shape of runtime guard state
 may change between releases.
+
+The fact that a class exists in the repository does not make it public. Prefer
+helpers, controllers, routes, middleware aliases and documented CLI commands
+over depending directly on internal support classes.
 
 Public API changes require `docs/PUBLIC-API.md`,
 `docs/PUBLIC-API.lock.json`, `CHANGELOG.md` and relevant upgrade notes to be

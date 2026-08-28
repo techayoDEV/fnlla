@@ -21,7 +21,7 @@ use Fnlla\Php\Observability\MetricsRecorder;
 
 final class UpgradeAnalyzer
 {
-    public function report(string $targetVersion = "2.0.0"): array
+    public function report(string $targetVersion = "2.1.1"): array
     {
         $checks = [
             $this->checkRequiredFiles(),
@@ -317,7 +317,7 @@ final class UpgradeAnalyzer
             $manifest = json_decode((string) file_get_contents($manifestPath), true);
             $blueprint = json_decode((string) file_get_contents($blueprintPath), true);
             $valid = ($manifest["schema"] ?? null) === "fnlla.business_reference.v1"
-                && ($manifest["version"] ?? null) === "2.1.0"
+                && ($manifest["version"] ?? null) === "2.1.1"
                 && ($blueprint["schema"] ?? null) === "fnlla.business_app_blueprint.v1";
         }
 

@@ -24,7 +24,9 @@ use Fnlla\Php\Auth\AuthManager;
 use Fnlla\Php\Auth\Authorization\Gate;
 use Fnlla\Php\Auth\DatabaseUserProvider;
 use Fnlla\Php\Auth\UserProviderInterface;
+use Fnlla\Php\Ai\FionnRuntimeBridge;
 use Fnlla\Php\Ai\LocalRuntimeAssistant;
+use Fnlla\Php\Ai\RuntimeAiProviderInterface;
 use Fnlla\Php\Ai\RuntimeAiProviderRegistry;
 use Fnlla\Php\Cache\CacheStoreInterface;
 use Fnlla\Php\Cache\FileCacheStore;
@@ -93,6 +95,10 @@ final class FrameworkServiceProvider extends ServiceProvider
         $this->container->singleton(DeveloperAccessManager::class);
         $this->container->singleton(EnvironmentFileManager::class);
         $this->container->singleton(LocalRuntimeAssistant::class);
+        $this->container->singleton(FionnRuntimeBridge::class);
+        $this->container->bind(RuntimeAiProviderInterface::class, static function (Container $container): RuntimeAiProviderInterface {
+            return \framework_runtime_ai_provider($container);
+        });
         $this->container->singleton(RuntimeAiProviderRegistry::class);
         $this->container->singleton(Mailer::class);
         $this->container->singleton(MetricsRecorder::class);

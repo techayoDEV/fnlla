@@ -47,16 +47,51 @@ The framework already enforces parts of that runtime contract during bootstrap a
 
 When starting a new delivery on top of FNLLA, the safest sequence is:
 
-1. Set local environment values in `.env`.
-2. Confirm the vendored runtime is synced and valid.
-3. Define the pages and flows you need.
-4. Add routes.
-5. Add or extend controllers.
-6. Add views.
-7. Add forms, validation and flash feedback where needed.
-8. Add database tables and migrations when persistence is required.
-9. Add auth or authorisation boundaries when a page is protected.
-10. Run tests, lint and runtime validation before shipping.
+1. Export the project with `php fnlla make:project`.
+2. Claim the real product identity with `php fnlla project:claim`.
+3. Set local environment values in `.env`.
+4. Run `php fnlla project:acceptance --json`.
+5. Confirm the vendored runtime is synced and valid.
+6. Define the pages and flows you need.
+7. Add routes.
+8. Add or extend controllers.
+9. Add views.
+10. Add forms, validation and flash feedback where needed.
+11. Add database tables and migrations when persistence is required.
+12. Add auth or authorisation boundaries when a page is protected.
+13. Add product-specific tests.
+14. Run tests, lint, acceptance, security and runtime validation before shipping.
+
+## Commercial Project Baseline
+
+Before writing product-specific code, a new exported application should pass:
+
+```bash
+php fnlla project:acceptance --json
+php fnlla fnlla-runtime:validate
+php scripts/test.php
+php scripts/lint.php
+php scripts/validate-version-manifest.php
+```
+
+That baseline proves the framework base is intact. It does not prove the
+finished product is correct. Once real business flows exist, add application
+tests for login, roles, CRUD, forms, uploads, mail, queues and unauthorized
+access.
+
+## Request Lifecycle Checklist
+
+For each new feature, keep the lifecycle explicit:
+
+- route: is the path named, grouped and protected deliberately?
+- request: are input values normalized before validation?
+- authorization: does the route require identity or a gate?
+- validation: does invalid input return errors and old input?
+- transaction: are multi-table writes wrapped in `db()->transaction()`?
+- side effects: are mail, logs and queue jobs run after validation?
+- response: does the controller return HTML, JSON or redirect predictably?
+- test: are the success path and unauthorized path covered?
+- operations: does the feature show up in health, logs or app-map when relevant?
 
 ## Local setup for a new project
 
@@ -89,6 +124,7 @@ If the deployment sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarde
 Recommended first checks:
 
 ```bash
+php fnlla project:acceptance --json
 php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
 php scripts/test.php

@@ -61,9 +61,12 @@ final class DocumentationRouteTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertStringContainsString("Documentation hub", $response->body());
         self::assertStringContainsString("/docs/index.html", $response->body());
+        self::assertStringContainsString("/docs/readme.html", $response->body());
         self::assertStringContainsString("/docs/starting-a-new-project.html", $response->body());
         self::assertStringContainsString("/docs/business-app-reference.html", $response->body());
+        self::assertStringContainsString("/docs/public-api.html", $response->body());
         self::assertStringContainsString("/docs/production-checklist.html", $response->body());
+        self::assertStringContainsString("/docs/environment.html", $response->body());
         self::assertStringContainsString("/docs/upgrade-2-1.html", $response->body());
         self::assertStringNotContainsString("/docs/enterprise-todo.html", $response->body());
     }
@@ -198,6 +201,26 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("Business App Reference", $response->body());
         self::assertStringContainsString("security:audit --strict", $response->body());
         self::assertStringContainsString("db()-&gt;transaction", $response->body());
+    }
+
+    public function testEnvironmentGuideIsServedThroughApplicationRoute(): void
+    {
+        if ($this->skipWhenDocsWorkspaceMissing()) {
+            return;
+        }
+
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/docs/environment.html",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("FNLLA 2.1.1 uses two environment templates", $response->body());
+        self::assertStringContainsString(".env.full.example", $response->body());
+        self::assertStringContainsString("Fionn Bridge", $response->body());
+        self::assertStringContainsString("CLIENT_PREVIEW_ENABLED", $response->body());
     }
 
     private function makeApplication(): Application

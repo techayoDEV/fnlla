@@ -1,548 +1,132 @@
 # FNLLA
 
+![FNLLA framework cover](./docs/assets/brand/fnlla-cover.jpg)
+
+[![Version](https://img.shields.io/badge/version-2.1.1-0f766e?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
-[![UI Contract](https://img.shields.io/badge/ui-integrated%20runtime-0f766e?style=flat-square)](./public/vendor/fnlla-runtime/README.md)
-[![Runtime](https://img.shields.io/badge/runtime-php%208.3%20%2B%20mysql-2f65eb?style=flat-square)](./VERSION)
-[![Development](https://img.shields.io/badge/source-github%20only-c26d00?style=flat-square)](./scripts/sync-fnlla-runtime.ps1)
+[![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/PERFORMANCE.md)
+[![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
+[![Release Gate](https://img.shields.io/badge/release%20gate-Ubuntu%20%7C%20macOS%20%7C%20Windows-0f766e?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md)
+[![UI Runtime](https://img.shields.io/badge/UI-integrated%20FNLLA%20runtime-18352f?style=flat-square)](./public/vendor/fnlla-runtime/README.md)
 
-## What FNLLA is
+FNLLA is a compact PHP framework for server-rendered commercial websites and
+web applications. It is meant to stay small, traceable and practical: export a
+new project with `make:project`, then build the real product in that separate
+application repository.
 
-FNLLA is a compact open-source PHP framework for server-rendered websites and application surfaces that ship with the official built-in FNLLA UI runtime.
+FNLLA is produced, maintained and distributed by TechAyo LTD
+([techayo.co.uk](https://techayo.co.uk)). It is released under the MIT License.
 
-It intentionally stays small enough that one maintainer or one delivery team can trace the whole request lifecycle without hidden framework magic, while still shipping the practical foundations needed for production work.
+## What Matters
 
-The supported application contract includes:
+- **Framework, not product:** this repository is the framework source and
+  project-export base. Product code belongs in the exported project.
+- **Server-rendered PHP:** routes, controllers and plain PHP views are the
+  normal development path.
+- **Integrated UI runtime:** `public/vendor/fnlla-runtime/` is part of the
+  official stack and should stay the shared UI foundation.
+- **Commercial readiness:** FNLLA includes routing, middleware, auth
+  foundations, CSRF, sessions, MySQL access, migrations, queue primitives,
+  health checks, maintenance preview, security audit, performance budget and
+  release operations.
+- **Verified exports:** from 2.1.1, `project:acceptance` checks a generated
+  project base before business-specific code is added.
 
-- `public/index.php` and `public/router.php` as the public HTTP entrypoints
-- `bootstrap/` for application bootstrapping and environment wiring
-- `src/` for framework source code
-- `views/` for plain PHP templates
-- `routes/` for HTTP and console route definitions
-- `public/vendor/fnlla-runtime/` for the built-in authoritative UI runtime
-
-FNLLA is produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
-
-Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
-
-## Platform support
-
-FNLLA targets PHP 8.3+ on Windows, macOS and Linux. Repository maintenance scripts are PowerShell scripts and are expected to run through PowerShell Core (`pwsh`) outside Windows.
-
-GitHub Actions validates the release gate and export/update regression suite on `ubuntu-latest`, `macos-latest` and `windows-latest`.
-
-## Name origin
-
-The name `FNLLA` comes from Finella, and more specifically from Finella Gardens in Dundee, UK. That location is the origin point of the `FNLLA` framework line.
-
-## Ownership and license
-
-FNLLA is open-source software released under the MIT License by TechAyo LTD (techayo.co.uk).
-
-Use of the source code is governed by `LICENSE.md`.
-
-Support, maintenance and release-cadence expectations are documented in `SUPPORT.md`.
-
-Trademark and branding boundaries for the FNLLA product names and marks are documented in `TRADEMARKS.md`.
-
-The current repository identity is defined by state files that should stay aligned:
-
-- `MANIFEST.json`
-- `README.md`
-- `VERSION`
-- `LICENSE.md`
-- `SUPPORT.md`
-- `TRADEMARKS.md`
-
-Repository participation and disclosure rules also rely on:
-
-- `CODE_OF_CONDUCT.md`
-- `SECURITY.md`
-
-## What it includes
-
-FNLLA currently ships with:
-
-- an HTTP application kernel and front controller flow
-- routing with route groups, route names and URL generation
-- request and response abstractions
-- middleware aliases including `auth`, `authorize`, `csrf`, `cors` and `throttle`
-- a lightweight DI container
-- plain PHP controllers and views
-- configuration loading and `.env` support
-- structured logging and exception handling
-- MySQL-only PDO database access and a query builder
-- migrations, rollback, seeders and factories
-- sessions, cookies, CSRF protection and session-backed authentication
-- authorisation gates
-- file cache and file-backed queue primitives
-- a simple scheduler and CLI command surface
-- localization helpers
-- a built-in cookie consent banner and settings modal powered by the built-in runtime
-- a server-side page-title contract that feeds professional browser-tab titles into the shared layout
-- an optional password-protected maintenance access flow for client preview and staged review sessions
-- built-in runtime enforcement and TechAyo-maintained runtime synchronization
-
-## Support and release expectations
-
-Anyone may use FNLLA under the MIT License, including for self-service and commercial work.
-
-TechAyo LTD does not promise support, maintenance, SLA coverage or a fixed release cadence for third-party projects built on FNLLA.
-
-Public updates are shipped when TechAyo LTD decides they are appropriate.
-
-Third-party deployments remain responsible for their own hosting, integrations, cookie usage, security controls, monitoring, backups, patching and incident response.
-
-Use `SUPPORT.md` for the exact support boundary and `TRADEMARKS.md` for branding rules.
-
-## Repository structure
-
-- `bootstrap/` contains application bootstrap stages and shared environment setup
-- `config/` contains framework and delivery configuration
-- `database/migrations/` contains schema changes
-- `database/seeders/` contains seeders
-- `database/factories/` contains factories
-- `docs/` contains maintainer and delivery guides for building on top of the framework
-- `docs/TECH-DEBT-AND-FUTURE-PROOFING.md` tracks known future-facing maintenance work
-- `lang/` contains translation lines
-- `public/` contains the public entrypoints, static assets and the built-in runtime
-- `routes/` contains HTTP and console route definitions
-- `scripts/` contains maintainer and validation scripts
-- `src/` contains the framework source code
-- `storage/` contains runtime state such as logs, sessions, cache and queue files
-- `tests/` contains the local repository test harness and framework test coverage
-- `views/` contains the server-rendered PHP templates
-
-## Built-in runtime boundary
-
-FNLLA is not a UI-agnostic framework in the official stack.
-
-The built-in runtime under `public/vendor/fnlla-runtime/` is part of FNLLA itself and the only supported UI layer for this repository and for downstream development based on this framework.
-
-Important operational rules:
-
-- do not replace the built-in runtime with another CSS framework
-- do not introduce Tailwind, Bootstrap, Bulma, Foundation, UIkit, Materialize or Semantic UI into the official FNLLA stack
-- do not load runtime assets from third-party CDNs
-- keep the built-in runtime under `public/vendor/fnlla-runtime/`
-- use the runtime workflow maintained inside `techayoDEV/fnlla` when syncing UI runtime updates
-
-When writing views, treat that runtime as the shared view toolkit already built into FNLLA:
-
-- keep full document structure in `views/layouts/app.php`
-- keep page-level markup in `views/pages/`
-- compose pages with the shipped `section`, `container`, `card`, `grid`, `stack`, `btn`, `alert` and form primitives first
-- reach for project CSS in `public/assets/app.css` only when the built-in runtime does not already express the layout or token you need
-
-## CSS variables and tokens
-
-The built-in runtime is the source of truth for shared CSS variables in the official stack.
-
-That means:
-
-- shared colors, spacing, typography, sizing, radii, transitions and theme tokens come from `public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css`
-- downstream FNLLA styles should consume those `--fnlla-*` variables instead of rebuilding a second global token system
-- FNLLA may define a small project-local layer of aliases such as `--fnlla-shell-*` in `public/assets/app.css` when the application shell needs its own composed values
-
-Practical rule:
-
-- use `--fnlla-color-*`, `--fnlla-space-*`, `--fnlla-font-*`, `--fnlla-radius-*` and related runtime tokens first
-- add `--fnlla-shell-*` only for delivery-shell specifics that do not belong back in the shared UI runtime
-- avoid scattering new hardcoded colors through `public/assets/app.css` when an existing runtime token already expresses the same design intent
-
-## Strict development contract
-
-FNLLA enforces the built-in runtime contract during development.
-
-That enforcement currently includes:
-
-- validating that the built-in UI runtime exists locally
-- validating that the shared layout keeps the expected runtime shell structure
-- validating that page templates keep the section and container conventions
-- rejecting markers that suggest unsupported alternate CSS frameworks
-- refreshing local built-in runtime guard state on a timed interval during development bootstraps
-- auto-repairing a missing built-in runtime through the sync script and dedicated `fnlla-runtime:*` commands
-
-If the built-in runtime contract is broken, the application and CLI fail fast until the repository is brought back into compliance.
-
-## How to run it locally
+## Start A Real Project
 
 ```bash
-cd <path-to-fnlla>
-php -S 127.0.0.1:8080 -t public public/router.php
+php fnlla make:project ../my-product "My Product"
+cd ../my-product
+php fnlla project:claim --product "My Product" --owner "Owner LTD" --developer "Developer LTD"
+php fnlla project:acceptance --json
+php scripts/test.php
+php scripts/lint.php
 ```
 
-Then open `http://127.0.0.1:8080`.
+Then initialize a separate Git repository in the exported project and build the
+real website or application there. Do not build commercial product code inside
+`techayoDEV/fnlla`.
 
-For Apache-based local or production hosting, point the document root at `public/`.
-The repository already includes the rewrite file at `public/.htaccess`.
-There is intentionally no top-level `.htaccess` because `public/` is the only supported web root.
+Read the full workflow in
+[`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md).
 
-Copy `.env.example` to `.env` when you want explicit local configuration.
-
-The template ships with local-development defaults that are safe for plain HTTP on `127.0.0.1`.
-Leave `ASSET_URL` empty for normal local and production installs so browser assets load from the current host with root-relative paths such as `/assets/app.css`.
-Set `ASSET_URL` only when CSS, JavaScript and images are served from a separate asset domain or CDN.
-Before production deployment, switch the environment values back to production-safe settings and serve the app over HTTPS.
-If the application sits behind a reverse proxy, set `TRUSTED_PROXIES` so forwarded client IP and HTTPS headers are only honored from explicitly trusted proxy addresses.
-
-When you want to share in-progress work with a client without exposing the whole public route set, enable:
-
-- `MAINTENANCE_MODE_ENABLED=true`
-- `MAINTENANCE_ACCESS_PASSWORD=<your-password>`
-
-Optionally also set `MAINTENANCE_ACCESS_USERNAME` when the preview should require both a username and a password.
-
-If a project needs a more branded private client preview surface instead of the default maintenance access page, FNLLA also supports an optional client preview mode on top of the same maintenance gate.
-
-Typical example:
-
-```text
-MAINTENANCE_MODE_ENABLED=true
-MAINTENANCE_ACCESS_PASSWORD=<your-password>
-CLIENT_PREVIEW_ENABLED=true
-CLIENT_PREVIEW_TITLE=Private client preview is active
-CLIENT_PREVIEW_STATUS_TITLE=Password-protected preview mode is enabled
-CLIENT_PREVIEW_STATUS_BODY=This project is online for client review, but public access is locked until the preview password is entered.
-CLIENT_PREVIEW_SUPPORT_EMAIL=team@example.com
-CLIENT_PREVIEW_RESTORE_AT=2026-07-14T18:00:00+01:00
-CLIENT_PREVIEW_STARTED_AT=2026-07-13T13:00:00+01:00
-```
-
-Useful options:
-
-- `CLIENT_PREVIEW_LOGIN_DISABLED=true` keeps the branded preview surface visible while temporarily disabling unlocks
-- `CLIENT_PREVIEW_LAST_UPDATED_VALUE=13 July 2026 at 15:20` shows a client-friendly update timestamp
-- `CLIENT_PREVIEW_PROGRESS_ENABLED=true` shows preview-window progress when both `CLIENT_PREVIEW_STARTED_AT` and `CLIENT_PREVIEW_RESTORE_AT` are configured
-
-On a fresh project export, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
-
-No Packagist download step is required for the framework itself.
-
-## Operations and release gate
-
-FNLLA ships local-first operational checks for development, CI and public
-release preparation:
+## Essential Commands
 
 ```bash
+php fnlla list
 php fnlla doctor
-php fnlla security:audit
-php fnlla optimize
-php fnlla optimize:warm
-php fnlla app:map
-php fnlla upgrade:check --target=2.1.0
 php fnlla project:acceptance --json
-php fnlla perf:profile --iterations=5
-php fnlla perf:baseline:update --iterations=7
-php fnlla ai:context
-php fnlla ai:review-pack --target=2.1.0
-php fnlla release:prepare
-```
-
-- `doctor` checks PHP/runtime readiness, writable storage, manifests and the vendored FNLLA runtime.
-- `security:audit` checks deploy-time security posture and supports `--strict` for production pipelines.
-- `optimize` builds configuration and route caches for production-style deployments.
-- `optimize:warm` also builds the asset manifest and optional OPcache preload file.
-- `app:map` generates a route/controller/view map for onboarding, audits and AI-assisted review.
-- `upgrade:check`, `upgrade:plan` and `upgrade:apply` provide a local major-release upgrade workflow; `/maintenance/framework-update` exposes the same major readiness and safe-action flow through the browser maintenance GUI.
-- `project:acceptance` runs project-base smoke checks for runtime files, writable storage, health routes and maintenance preview readiness.
-- `perf:profile` records local CLI timings, in-process HTTP probes, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
-- `perf:baseline:update` and `perf:compare` make performance baselines explicit for release work.
-- `ops:backup-plan` generates a redacted backup and restore runbook for production operations.
-- `ai:context`, `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` write local redacted artefacts for tool-assisted review without raw `.env`, credentials or source-file contents.
-- `release:prepare` runs the release gate, clears runtime residue and generates CycloneDX SBOM, SHA-256 checksum and release-manifest artefacts under `dist/release/`.
-- tag pushes attach `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json` to the GitHub Release after the release gate passes
-- `release:prepare --major --target=2.1.0` adds major-release readiness checks and emits app-map, upgrade-plan and review artefacts.
-
-Mail is intentionally transport-light but production-ready. FNLLA ships a `log`
-mail driver for development, an `http` driver for a transactional provider or
-internal mail relay, and a guarded `native` driver that calls PHP's `mail()`
-function only when `MAIL_NATIVE_ENABLED=true`. The native driver does not
-implement SMTP or IMAP inside the application; production delivery still
-depends on the hosting environment having a working mail transfer agent or
-equivalent platform mail transport.
-
-Runtime AI is local by default. `runtime_ai()` resolves a deterministic,
-project-owned assistant from `config/ai.php`, so applications can build guided
-FAQ, onboarding, form triage, support routing and policy-helper features without
-calling external model providers. Its integrated private bundle lives under
-`resources/fnlla-ai-runtime/`, with approved learned records kept under
-`storage/`.
-
-Runtime observability is enabled through structured access logs, local JSON
-metrics and the optional `X-Response-Time` header. See
-[`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for the
-full operator workflow.
-See [`docs/PERFORMANCE.md`](./docs/PERFORMANCE.md) and
-[`docs/AI-CONTEXT.md`](./docs/AI-CONTEXT.md) for performance and AI-assisted
-review workflows.
-
-## How to start a real new project
-
-For an actual new website or web application, the recommended workflow is not to clone `techayoDEV/fnlla` and build the downstream project directly inside the framework repository.
-
-Instead:
-
-1. keep `techayoDEV/fnlla` as the maintained framework source
-2. export a clean project base into a separate project directory
-3. build the real website or application in that exported directory
-
-Use:
-
-```bash
-php fnlla make:project ..\my-new-project "My New Project"
-```
-
-Then open the exported directory, claim the real product identity, initialize its own Git repository and build the real project there by modifying the shipped project base itself.
-
-```bash
-php fnlla project:claim --product "My New Project" --owner "Owner LTD" --developer "Developer LTD"
-```
-
-The intended model is:
-
-- the exported project base is the public application shell
-- downstream teams replace and extend that shell directly
-- client preview can stay behind the built-in maintenance access screen until the public release is ready, including browser-based first-password setup on a fresh project export
-- maintenance, health and CLI remain linked framework capabilities around the app
-- the framework repo stays the public source of truth for the shared built-in runtime, docs and update rules
-
-Use [`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md) for the exact workflow and rationale.
-
-For FNLLA 2.1 business application evidence, use
-[`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) together
-with the versioned blueprint under `resources/business-reference/2.1/`. It
-covers login, roles, CRUD, dashboard, business forms, mail/log mailer,
-migrations, seeders, queues, health, client preview and production operations.
-
-## Database boundary
-
-FNLLA currently targets MySQL only.
-
-Required PHP/runtime expectations:
-
-- PHP 8.3
-- `pdo_mysql` enabled
-- a reachable MySQL server
-
-Database work is exposed through:
-
-- `src/Database/DatabaseManager.php`
-- `src/Database/QueryBuilder.php`
-- `src/Database/Migrations/`
-- `database/migrations/`
-- `database/seeders/`
-- `database/factories/`
-
-Use `db()` to resolve the database manager, `db()->transaction()` for atomic
-writes and `QueryBuilder::paginate()` for list screens.
-
-## Local quality checks
-
-Use the repository-local commands:
-
-```bash
-php scripts/test.php
-php scripts/lint.php
-php scripts/validate-fnlla-runtime.php
-php scripts/validate-version-manifest.php
-php scripts/build-docs.php --check
-```
-
-Windows launchers are also included:
-
-```cmd
-test-fnlla.cmd
-lint-fnlla.cmd
-update-fnlla-runtime.cmd
-```
-
-If Composer is present locally, `composer test` and `composer lint` still work as wrappers, but the framework no longer depends on Packagist for its day-to-day test or lint workflow.
-
-## Building new websites and apps
-
-Use [`docs/BUILDING-WITH-FNLLA.md`](./docs/BUILDING-WITH-FNLLA.md) as the primary guide for building new websites and web applications on top of FNLLA.
-
-That guide covers:
-
-- the recommended project build sequence
-- how to add routes, controllers and views
-- how to structure forms, validation and flash feedback
-- how to use MySQL, migrations and the query builder
-- how to protect pages with auth and authorisation
-- how to use the built-in runtime while composing and extending views
-- how to follow the 2.1 business reference blueprint for login, roles, CRUD,
-  forms, queues and production checks
-
-## Documentation set
-
-The repository also ships a browsable docs set under [`docs/index.html`](./docs/index.html), styled on top of the built-in runtime.
-
-Primary pages:
-
-- `docs/index.html`
-- `docs/distribution.html`
-- `docs/getting-started.html`
-- `docs/building.html`
-- `docs/api.html`
-- `docs/guides.html`
-
-The long-form guide pages are generated from:
-
-- `docs/STARTING-A-NEW-PROJECT.md`
-- `docs/BUILDING-WITH-FNLLA.md`
-- `docs/BUSINESS-APP-REFERENCE.md`
-- `docs/PRODUCTION-CHECKLIST.md`
-- `docs/UPGRADE-2.1.md`
-- `docs/AI-CONTEXT.md`
-- `docs/MAJOR-RELEASE-CHECKLIST.md`
-- `docs/MIGRATION.md`
-- `docs/PERFORMANCE.md`
-- `docs/RELEASE-AND-OPERATIONS.md`
-
-When docs content or the shared docs shell changes, rebuild or verify the HTML with:
-
-```bash
-php scripts/build-docs.php
-php scripts/build-docs.php --check
-```
-
-## CLI surface
-
-Use `php fnlla list` to see the currently registered commands.
-
-Important commands:
-
-- `php fnlla fnlla-runtime:sync`
-- `php fnlla fnlla-runtime:validate`
-- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
-- `php fnlla framework:update --check`
-- `php fnlla framework:update --dry-run`
-- `php fnlla framework:update --apply`
-- `php fnlla migrate`
-- `php fnlla migrate:rollback`
-- `php fnlla migrate:status`
-- `php fnlla db:seed`
-- `php fnlla cache:clear`
-- `php fnlla optimize`
-- `php fnlla optimize:warm`
-- `php fnlla app:map`
-- `php fnlla ops:backup-plan`
-- `php fnlla project:acceptance --json`
-- `php fnlla upgrade:check --target=2.1.0`
-- `php fnlla upgrade:plan --target=2.1.0`
-- `php fnlla upgrade:apply --target=2.1.0`
-- `php fnlla perf:profile --iterations=5`
-- `php fnlla perf:baseline:update --iterations=7`
-- `php fnlla perf:compare --iterations=5`
-- `php fnlla perf:budget --iterations=5`
-- `php fnlla ai:context`
-- `php fnlla ai:review-pack --target=2.1.0`
-- `php fnlla ai:upgrade-brief --target=2.1.0`
-- `php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json`
-- `php fnlla queue:work`
-- `php fnlla schedule:run`
-- `php fnlla route:list`
-- `php fnlla version:status`
-- `php fnlla version:set 2.1.0`
-- `php fnlla version:sync`
-
-## Public source of truth
-
-FNLLA is the public source of truth for the official FNLLA framework stack maintained by TechAyo LTD.
-
-The built-in runtime remains part of the same TechAyo-controlled maintainer workflow, and the public entry point for both the framework and the integrated runtime is this repository.
-
-Packagist, npm-style registry distribution and third-party mirrors are intentionally out of scope for the official maintainer workflow.
-
-## Maintainer workflow
-
-The repository root is the maintainer workspace.
-
-Generated runtime state, local queue files, session files and logs should not be treated as hand-authored sources.
-
-Authoritative maintainer scripts and checkpoints:
-
-- `scripts/publish-fnlla-runtime.ps1` publishes the integrated built-in runtime from `public/vendor/fnlla-runtime/` into `dist/fnlla-runtime/`
-- `scripts/sync-fnlla-runtime.ps1` syncs the built-in runtime from that published export workflow
-- `scripts/sync-version-manifest.php` regenerates the repository MANIFEST.json from current version state
-- `scripts/build-docs.php` rebuilds the shared HTML documentation set from the maintained docs sources
-- `scripts/validate-fnlla-runtime.php` validates the enforced UI runtime contract
-- `scripts/validate-version-manifest.php` validates unified FNLLA version metadata across the repository and integrated UI surface
-- `scripts/validate-release-metadata.php` audits release-facing links, ownership markers and repository references before publication work
-- `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
-- exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock
-- exported projects keep `php fnlla framework:update` as the public downstream update command
-- exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check, dry-run report and safe apply flows
-- the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release project builds
-- framework update dry-run reports are written under `storage/framework/updates/fnlla/dry-run-report.json`
-- framework update audit events are written under `storage/logs/framework-update.log`
-- `scripts/test.php` runs the repository-local framework tests
-- `scripts/lint.php` runs PHP syntax checks across the maintained source tree
-- `bootstrap/common.php` enforces the shared integrated UI surface guard during bootstrap
-
-Important boundary:
-
-- `php fnlla framework:update` is a downstream project command and expects `.fnlla/framework-lock.json`
-- use it from an exported application repository, not from the maintainer `techayoDEV/fnlla` repository root itself
-
-Recommended maintainer sequence:
-
-```bash
-php fnlla version:set 2.1.0
-php scripts/build-docs.php
-php scripts/test.php
-php scripts/lint.php
-php scripts/validate-fnlla-runtime.php
-php scripts/validate-version-manifest.php
-php scripts/validate-release-metadata.php
-php scripts/build-docs.php --check
-php fnlla upgrade:check --target=2.1.0
-php fnlla app:map
-php fnlla project:acceptance --json
-php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
 php fnlla security:audit --strict
-php fnlla ai:review-pack --target=2.1.0
-php fnlla perf:profile --iterations=5 --write-baseline
+php fnlla ops:backup-plan --verify
+php fnlla perf:profile --iterations=5
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
-php fnlla release:prepare --major --target=2.1.0
-powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
-php fnlla fnlla-runtime:sync
-php fnlla version:status
+php fnlla release:prepare --major --target=2.1.1
 ```
 
-## Runtime and repository boundary
+Command responsibilities and downstream boundaries are documented in
+[`docs/PROJECT-SCRIPTS-REFERENCE.md`](./docs/PROJECT-SCRIPTS-REFERENCE.md).
 
-Treat these as the public and supported downstream runtime surface:
+## Documentation
 
-- `public/index.php`
-- `public/router.php`
-- `public/assets/`
-- `public/vendor/fnlla-runtime/`
+Start with [`docs/README.md`](./docs/README.md). It links the full
+documentation set:
 
-Treat these as maintainer-owned framework internals:
+- [`docs/BUILDING-WITH-FNLLA.md`](./docs/BUILDING-WITH-FNLLA.md) for the
+  practical build guide.
+- [`docs/PUBLIC-API.md`](./docs/PUBLIC-API.md) for the stable public contract.
+- [`docs/PRODUCTION-CHECKLIST.md`](./docs/PRODUCTION-CHECKLIST.md) for
+  deployment and security gates.
+- [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
+  `.env.full.example`, client preview and the Fionn bridge boundary.
+- [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for
+  releases, backups, restore flow, SBOM and GitHub Actions.
+- [`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) for the
+  reference business-application checklist.
+- [`resources/business-reference/2.1/`](./resources/business-reference/2.1/) for
+  the machine-readable blueprint behind the reference checklist.
+- [`docs/PERFORMANCE.md`](./docs/PERFORMANCE.md) for baselines and HTTP probes.
+- [`docs/AI-CONTEXT.md`](./docs/AI-CONTEXT.md) for local, redacted AI review
+  packs and the opt-in Fionn bridge contract.
 
-- `bootstrap/`
-- `config/`
-- `database/`
-- `routes/`
-- `scripts/`
-- `src/`
-- `tests/`
+The generated HTML documentation lives in `docs/*.html` and is rebuilt from the
+Markdown sources with:
 
-Treat these as delivery-layer templates that still belong to the framework repository:
+```bash
+php scripts/build-docs.php
+php scripts/build-docs.php --check
+```
 
-- `views/layouts/`
-- `views/pages/`
+## Repository Shape
 
-## Product identity
+- `bootstrap/` - application bootstrap and runtime wiring.
+- `config/` - environment-driven framework configuration.
+- `database/` - migrations, seeders and factories.
+- `docs/` - source and generated documentation.
+- `public/` - HTTP entrypoints, project assets and integrated UI runtime.
+- `resources/` - local runtime bundles, reference manifests and export
+  templates.
+- `routes/` - web, maintenance and console route definitions.
+- `scripts/` - validation, release and maintainer scripts.
+- `src/` - framework source code.
+- `storage/` - runtime state; only placeholder `.gitignore` files belong in Git.
+- `tests/` - framework and export regression tests.
+- `views/` - server-rendered PHP templates.
 
-FNLLA is the public framework identity in the FNLLA line.
+## Release State
 
-The integrated runtime and the framework repository still share:
+Current stable line: **2.1.1**.
 
-- the `FNLLA` naming origin
-- TechAyo LTD ownership
-- the same delivery direction and support boundary
-- the same expectation that repository metadata should clearly identify the maintainer and ownership boundary
+The `v2.1.1` GitHub release passed the FNLLA release gate on Ubuntu, macOS and
+Windows, including strict security audit, project acceptance, verified backup
+plan generation, performance budget and export/update regression.
 
-Treat the vendored runtime as part of the FNLLA stack, not as a separate first-stop public product.
+See [`CHANGELOG.md`](./CHANGELOG.md) and
+[`docs/UPGRADE-2.1.1.md`](./docs/UPGRADE-2.1.1.md) for release notes.
+
+## Governance
+
+- License: [`LICENSE.md`](./LICENSE.md)
+- Support boundary: [`SUPPORT.md`](./SUPPORT.md)
+- Security policy: [`SECURITY.md`](./SECURITY.md)
+- Code of conduct: [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
+- Trademark notice: [`TRADEMARKS.md`](./TRADEMARKS.md)

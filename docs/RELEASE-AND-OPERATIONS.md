@@ -13,7 +13,7 @@ php fnlla config:doctor
 php fnlla security:audit
 php fnlla ops:backup-plan
 php fnlla app:map
-php fnlla upgrade:check --target=2.1.0
+php fnlla upgrade:check --target=2.1.1
 php fnlla perf:profile --iterations=5
 ```
 
@@ -60,13 +60,30 @@ microbenchmark false positives.
 `app:map` and `upgrade:check` are especially useful before a major release. They
 make route/controller/view topology and migration readiness machine-readable.
 
+## Commercial Product Handover Evidence
+
+For a downstream commercial product, keep release evidence outside Git unless it
+is intentionally part of a public release. A normal handover pack should include
+summaries of:
+
+- `php fnlla project:acceptance --json`;
+- `php scripts/test.php`;
+- `php scripts/lint.php`;
+- `php fnlla security:audit --strict`;
+- `php fnlla ops:backup-plan --verify`;
+- `php fnlla perf:budget`;
+- `/api/health` after deployment.
+
+Do not commit generated evidence files unless the project has a deliberate
+compliance reason to version them.
+
 ## Release Preparation
 
 Run the full local release gate:
 
 ```bash
 php fnlla release:prepare
-php fnlla release:prepare --major --target=2.1.0
+php fnlla release:prepare --major --target=2.1.1
 ```
 
 The command runs:
@@ -109,6 +126,22 @@ With `--major`, FNLLA also writes:
 `dist/` is ignored by Git so source releases stay clean unless a maintainer
 explicitly attaches generated artefacts to a GitHub release.
 
+## Source Tree Cleanliness
+
+Before commit, the maintained source tree should not contain:
+
+- `dist/`;
+- cache files under `storage/framework/cache/`;
+- queue payloads under `storage/framework/queue/`;
+- session files under `storage/framework/sessions/`;
+- logs under `storage/logs/`;
+- generated backup plans under `storage/framework/`;
+- local `.env` files;
+- database dumps, uploaded client files or staging artefacts.
+
+Only placeholder `.gitignore` files should remain in persistent storage
+directories.
+
 Individual artefact commands are also available:
 
 ```bash
@@ -134,7 +167,8 @@ tests, `doctor`, strict `security:audit`, verified backup-plan generation,
 `project:acceptance`, performance budget, lint, release artefacts, runtime
 publish and ecosystem audit. A second matrix job runs the slower export/update
 regression suite across the same operating systems and keeps the 2.0.3 export
-path visible before 2.1.0 publication.
+path visible as historical upgrade evidence while the current target moves
+forward.
 
 ## Branch Protection
 

@@ -13,6 +13,20 @@ blockers unless the release owner records an explicit exception.
 - `APP_KEY` is unique per environment.
 - File permissions allow the web process to write only required storage paths.
 
+## Production Readiness Levels
+
+Use these labels during handover:
+
+- `not-ready`: any required command below fails.
+- `staging-ready`: the project passes acceptance, tests, lint and strict
+  security audit on a staging-like environment.
+- `release-ready`: staging-ready plus verified backup restore, current
+  performance budget and tagged source state.
+- `production-ready`: release-ready plus live HTTPS, host/proxy configuration,
+  monitoring, backup retention and rollback access.
+
+Do not call a deployment production-ready only because the homepage renders.
+
 ## HTTP Security
 
 - HTTPS is enforced at the reverse proxy or web server.
@@ -64,6 +78,16 @@ Before deployment, verify the latest backup by restoring it to a non-production
 environment, then run `php fnlla project:acceptance --json` on the restored
 copy.
 
+Restore evidence should record:
+
+- source tag or commit;
+- dump timestamp;
+- storage archive timestamp;
+- restore operator;
+- target environment;
+- post-restore command output summaries;
+- known exceptions and follow-up actions.
+
 ## Runtime And Performance
 
 - `php fnlla optimize:warm` completes successfully.
@@ -75,6 +99,22 @@ copy.
 - Baseline coverage includes command listing, route listing, `/`, `/api/health`
   and project export timing where the application deployment pipeline can run
   those probes.
+
+## Runtime AI And Fionn
+
+- Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly needs Fionn.
+- If `AI_RUNTIME_DRIVER=fionn`, keep `AI_FIONN_BRIDGE_ENABLED=true` only on
+  environments where a reviewed Fionn service is available.
+- Pin `AI_FIONN_ALLOWED_HOSTS` to the exact Fionn service host.
+- Use HTTPS and `AI_FIONN_API_TOKEN` for every non-local Fionn endpoint.
+- Use plain HTTP only for `localhost` or `127.0.0.1` development and staging
+  drills where `AI_FIONN_ALLOW_INSECURE_LOCALHOST=true` is deliberate.
+- Keep Fionn learning, training, admin and queue endpoints outside FNLLA
+  application calls.
+- Verify `php fnlla ai:providers --json` before release; the Fionn provider must
+  report `provider_ready=true` and `endpoint_allowed=true` when selected.
+- Run `php fnlla security:audit --strict`; it fails selected Fionn unless the
+  endpoint policy passes.
 
 ## Release Gate
 
@@ -90,7 +130,7 @@ php scripts/build-docs.php --check
 php fnlla doctor
 php fnlla security:audit --strict
 php fnlla project:acceptance --json
-php fnlla release:prepare --major --target=2.1.0
+php fnlla release:prepare --major --target=2.1.1
 ```
 
 Strict security audit is a production blocker. If it fails, fix the
@@ -105,3 +145,16 @@ configuration or document why the release is not production-ready.
 - Warm caches after deploy.
 - Check `/api/health` after deploy.
 - Keep a rollback tag, database backup and storage backup available.
+
+## Post-Deploy Verification
+
+After deployment, verify:
+
+- `APP_URL` resolves over HTTPS;
+- `/api/health` returns JSON and the expected readiness state;
+- protected pages reject guests;
+- maintenance/client preview mode can be enabled and unlocked with the current
+  credentials;
+- logs are writable and do not expose secrets;
+- form notifications use the intended mail transport;
+- backup jobs can read the expected include paths.

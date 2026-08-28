@@ -22,3 +22,8 @@ Licensing, provenance and rebrand rules for maintainers:
 Branding rule for the integrated FNLLA UI surface:
 - public framework documentation may refer to this bundle as `FNLLA Icons`
 - legal attribution and provenance must continue to identify Lucide as the upstream icon source
+
+Operational rule:
+- downstream projects should keep this bundle local, versioned and distributed
+  with the integrated UI runtime so pages do not depend on a third-party icon
+  CDN during production requests

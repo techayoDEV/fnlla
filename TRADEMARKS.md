@@ -32,3 +32,11 @@ Without prior written permission from TechAyo LTD, do not:
 ## Contact
 
 Trademark, branding and partnership questions should be directed through `https://techayo.co.uk`.
+
+## Related files
+
+- `README.md` describes the official FNLLA framework distribution.
+- `LICENSE.md` covers software license rights.
+- `SUPPORT.md` explains support boundaries for downstream projects.
+- `public/vendor/fnlla-runtime/TRADEMARKS.md` covers the integrated UI surface
+  copy of this notice.
