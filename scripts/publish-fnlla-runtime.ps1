@@ -45,7 +45,27 @@ function Sync-Directory {
         [Parameter(Mandatory = $true)][string]$DestinationPath
     )
 
-    $robocopyPath = Assert-CommandExists -Name "robocopy"
+    $isWindowsPlatform = [System.IO.Path]::DirectorySeparatorChar -eq "\"
+
+    if ($isWindowsPlatform) {
+        $robocopyCommand = Get-Command -Name "robocopy" -ErrorAction SilentlyContinue
+        if ($null -ne $robocopyCommand) {
+            if (Test-Path -LiteralPath $DestinationPath) {
+                Remove-Item -LiteralPath $DestinationPath -Recurse -Force
+            }
+
+            New-Item -ItemType Directory -Path $DestinationPath | Out-Null
+
+            & $robocopyCommand.Source $SourcePath $DestinationPath /MIR /NFL /NDL /NJH /NJS /NP
+            $exitCode = $LASTEXITCODE
+
+            if ($exitCode -gt 7) {
+                throw "robocopy failed with exit code $exitCode."
+            }
+
+            return
+        }
+    }
 
     if (Test-Path -LiteralPath $DestinationPath) {
         Remove-Item -LiteralPath $DestinationPath -Recurse -Force
@@ -53,20 +73,17 @@ function Sync-Directory {
 
     New-Item -ItemType Directory -Path $DestinationPath | Out-Null
 
-    & $robocopyPath $SourcePath $DestinationPath /MIR /NFL /NDL /NJH /NJS /NP
-    $exitCode = $LASTEXITCODE
-
-    if ($exitCode -gt 7) {
-        throw "robocopy failed with exit code $exitCode."
+    foreach ($item in Get-ChildItem -LiteralPath $SourcePath -Force) {
+        Copy-Item -LiteralPath $item.FullName -Destination $DestinationPath -Recurse -Force
     }
 }
 
 $projectRoot = Resolve-AbsolutePath -Path (Join-Path $PSScriptRoot "..")
-$sourceRuntimePath = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public\vendor\fnlla-runtime")
+$sourceRuntimePath = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public/vendor/fnlla-runtime")
 $distRoot = if ($OutputPath) {
     Resolve-AbsolutePath -Path $OutputPath
 } else {
-    Resolve-AbsolutePath -Path (Join-Path $projectRoot "dist\fnlla-runtime")
+    Resolve-AbsolutePath -Path (Join-Path $projectRoot "dist/fnlla-runtime")
 }
 $distParent = Split-Path -Path $distRoot -Parent
 

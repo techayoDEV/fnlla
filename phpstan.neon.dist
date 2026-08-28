@@ -1,0 +1,16 @@
+parameters:
+    level: 5
+    paths:
+        - bootstrap
+        - config
+        - database
+        - public
+        - routes
+        - scripts
+        - src
+        - tests
+    excludePaths:
+        - public/vendor
+        - storage
+        - dist
+    checkMissingIterableValueType: false

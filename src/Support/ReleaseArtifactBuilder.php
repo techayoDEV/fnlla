@@ -113,9 +113,21 @@ final class ReleaseArtifactBuilder
         $signingKey = (string) env("RELEASE_SIGNING_KEY", "");
 
         if ($signingKey !== "") {
+            $signaturePayload = [
+                "schema" => $payload["schema"],
+                "product" => $payload["product"],
+                "version" => $payload["version"],
+                "artifacts" => $artifacts,
+            ];
+
             $payload["signature"] = [
                 "algorithm" => "hmac-sha256",
-                "value" => hash_hmac("sha256", json_encode($artifacts, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), $signingKey),
+                "key_id" => trim((string) env("RELEASE_SIGNING_KEY_ID", "")) !== ""
+                    ? trim((string) env("RELEASE_SIGNING_KEY_ID", ""))
+                    : "local",
+                "signed_at_utc" => gmdate(DATE_ATOM),
+                "payload_sha256" => hash("sha256", json_encode($signaturePayload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES)),
+                "value" => hash_hmac("sha256", json_encode($signaturePayload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), $signingKey),
             ];
         }
 

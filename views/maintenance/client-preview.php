@@ -17,7 +17,7 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
 
         <header class="client-preview-header">
           <div class="client-preview-header-copy">
-            <h1 class="content-title client-preview-title"><?= h((string) ($clientPreview["title"] ?? "Your project is being restored")) ?></h1>
+            <h1 class="content-title client-preview-title"><?= h((string) ($clientPreview["title"] ?? "Private client preview is active")) ?></h1>
             <?php if (($clientPreview["show_last_updated"] ?? false) === true && trim((string) ($clientPreview["last_updated_value"] ?? "")) !== ""): ?>
             <p class="client-preview-meta">
               <span class="client-preview-meta-label"><?= h((string) ($clientPreview["last_updated_label"] ?? "Last updated")) ?>:</span>
@@ -34,7 +34,7 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
         </div>
         <?php endif; ?>
 
-        <div class="client-preview-status-list" aria-label="Project restoration status">
+        <div class="client-preview-status-list" aria-label="Client preview status">
           <div class="client-preview-status-item">
             <span class="client-preview-status-dot" aria-hidden="true"></span>
             <div class="client-preview-status-copy">
@@ -47,7 +47,7 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
         <?php if (($clientPreview["countdown_enabled"] ?? false) === true): ?>
         <div class="client-preview-countdown-card" aria-live="polite">
           <div class="client-preview-countdown-heading">
-            <span class="client-preview-countdown-label"><?= h((string) ($clientPreview["countdown_label"] ?? "Full Access Restoration in")) ?>:</span>
+            <span class="client-preview-countdown-label"><?= h((string) ($clientPreview["countdown_label"] ?? "Preview window closes in")) ?>:</span>
           </div>
           <div class="client-preview-countdown-grid">
             <div class="client-preview-countdown-part">
@@ -69,10 +69,10 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
           <?php if (($clientPreview["progress_enabled"] ?? false) === true): ?>
           <div class="client-preview-progress">
             <div class="client-preview-progress-heading">
-              <span class="client-preview-progress-label"><?= h((string) ($clientPreview["progress_label"] ?? "Restoration progress")) ?></span>
+              <span class="client-preview-progress-label"><?= h((string) ($clientPreview["progress_label"] ?? "Preview window progress")) ?></span>
               <strong class="client-preview-progress-value" id="client-preview-progress-value"><?= h((string) ($clientPreview["progress_percent"] ?? 0)) ?>%</strong>
             </div>
-            <div class="client-preview-progress-bar" id="client-preview-progress-bar" role="progressbar" aria-label="<?= h((string) ($clientPreview["progress_label"] ?? "Restoration progress")) ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= h((string) ($clientPreview["progress_percent"] ?? 0)) ?>">
+            <div class="client-preview-progress-bar" id="client-preview-progress-bar" role="progressbar" aria-label="<?= h((string) ($clientPreview["progress_label"] ?? "Preview window progress")) ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= h((string) ($clientPreview["progress_percent"] ?? 0)) ?>">
               <span class="client-preview-progress-fill" id="client-preview-progress-fill" style="width: <?= h((string) ($clientPreview["progress_percent"] ?? 0)) ?>%;"></span>
             </div>
           </div>

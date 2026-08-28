@@ -153,13 +153,14 @@ Inside the new project directory:
 
 ```bash
 php fnlla fnlla-runtime:validate
-php fnlla framework:update --check --github
+php fnlla framework:update --check
+php fnlla framework:update --dry-run
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel.
+10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
 
 11. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 

@@ -3,7 +3,38 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
-## 2.0.0 - Planned Major Release
+## 2.0.3 - 2026-08-28
+
+### Added
+
+- Versioned project-export templates under `resources/project-templates/`.
+- Local AI prompt registry and eval fixtures for release and upgrade workflows.
+- Optional strict static-analysis configuration for maintainers.
+
+### Changed
+
+- Client preview copy now clearly describes password-protected client review mode.
+- Local static analysis now catches named functions with declared return types
+  that neither return nor intentionally throw.
+- The `/api/profile` endpoint now returns its declared capability payload.
+- Release operations now document GitHub release assets, keyed manifest signing,
+  branch protection and maintainer recovery runbooks.
+- Framework update checks now reject custom update sources and keep the GitHub
+  release channel explicit.
+
+### Removed
+
+- Retired the temporary enterprise todo document and generated docs route.
+
+## 2.0.2 - 2026-08-28
+
+- Stable public FNLLA framework release.
+
+## 2.0.1 - 2026-08-26
+
+- Stable FNLLA framework maintenance release.
+
+## 2.0.0 - 2026-08-02
 
 ### Added
 

@@ -85,11 +85,13 @@ final class FrameworkUpdateController extends Controller
 
         if ($mode === "check") {
             $mode = "github-check";
+        } elseif ($mode === "dry-run") {
+            $mode = "github-dry-run";
         } elseif ($mode === "apply") {
             $mode = "github-apply";
         }
 
-        if (!in_array($mode, ["github-check", "github-apply"], true)) {
+        if (!in_array($mode, ["github-check", "github-dry-run", "github-apply"], true)) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Unknown framework update action",
@@ -128,6 +130,7 @@ final class FrameworkUpdateController extends Controller
         try {
             $report = match ($mode) {
                 "github-check" => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
+                "github-dry-run" => FrameworkUpdater::dryRunLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
                 "github-apply" => FrameworkUpdater::applyLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
                 default => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
             };
@@ -337,7 +340,7 @@ final class FrameworkUpdateController extends Controller
         $updates = count((array) ($report["updates"] ?? []));
         $conflicts = count((array) ($report["conflicts"] ?? []));
         $localOnly = count((array) ($report["local_only_changes"] ?? []));
-        $usesGitHub = in_array($mode, ["github-check", "github-apply"], true);
+        $usesGitHub = in_array($mode, ["github-check", "github-dry-run", "github-apply"], true);
         $versionsDiffer = $this->versionsDiffer(
             (string) ($report["current_framework_version"] ?? ""),
             (string) ($report["source_framework_version"] ?? "")
@@ -353,7 +356,7 @@ final class FrameworkUpdateController extends Controller
         $requiresManualReview = !$isApplyMode && $conflicts > 0;
         $updateReady = !$isApplyMode && $updates > 0 && $conflicts === 0;
         $recommendedApplyMode = match ($mode) {
-            "github-check" => "github-apply",
+            "github-check", "github-dry-run" => "github-apply",
             default => "",
         };
         $applyActionAvailable = $updateReady && (($pageState["can_apply"] ?? false) === true) && $recommendedApplyMode !== "";

@@ -24,6 +24,12 @@ FNLLA is produced, maintained and distributed by TechAyo LTD (techayo.co.uk).
 
 Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 
+## Platform support
+
+FNLLA targets PHP 8.3+ on Windows, macOS and Linux. Repository maintenance scripts are PowerShell scripts and are expected to run through PowerShell Core (`pwsh`) outside Windows.
+
+GitHub Actions validates the release gate and export/update regression suite on `ubuntu-latest`, `macos-latest` and `windows-latest`.
+
 ## Name origin
 
 The name `FNLLA` comes from Finella, and more specifically from Finella Gardens in Dundee, UK. That location is the origin point of the `FNLLA` framework line.
@@ -194,8 +200,9 @@ Typical example:
 MAINTENANCE_MODE_ENABLED=true
 MAINTENANCE_ACCESS_PASSWORD=<your-password>
 CLIENT_PREVIEW_ENABLED=true
-CLIENT_PREVIEW_TITLE=Your completed website is being restored
-CLIENT_PREVIEW_STATUS_TITLE=Infrastructure operational, restoration in progress
+CLIENT_PREVIEW_TITLE=Private client preview is active
+CLIENT_PREVIEW_STATUS_TITLE=Password-protected preview mode is enabled
+CLIENT_PREVIEW_STATUS_BODY=This project is online for client review, but public access is locked until the preview password is entered.
 CLIENT_PREVIEW_SUPPORT_EMAIL=team@example.com
 CLIENT_PREVIEW_RESTORE_AT=2026-07-14T18:00:00+01:00
 CLIENT_PREVIEW_STARTED_AT=2026-07-13T13:00:00+01:00
@@ -205,7 +212,7 @@ Useful options:
 
 - `CLIENT_PREVIEW_LOGIN_DISABLED=true` keeps the branded preview surface visible while temporarily disabling unlocks
 - `CLIENT_PREVIEW_LAST_UPDATED_VALUE=13 July 2026 at 15:20` shows a client-friendly update timestamp
-- `CLIENT_PREVIEW_PROGRESS_ENABLED=true` shows a progress bar when both `CLIENT_PREVIEW_STARTED_AT` and `CLIENT_PREVIEW_RESTORE_AT` are configured
+- `CLIENT_PREVIEW_PROGRESS_ENABLED=true` shows preview-window progress when both `CLIENT_PREVIEW_STARTED_AT` and `CLIENT_PREVIEW_RESTORE_AT` are configured
 
 On a fresh project export, you can also open `/maintenance` locally and use the built-in setup form to create `.env` if needed, save the first maintenance password and immediately enable the lock without editing files by hand.
 
@@ -239,7 +246,8 @@ php fnlla release:prepare
 - `perf:profile` records local CLI timings, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
 - `perf:baseline:update` and `perf:compare` make performance baselines explicit for release work.
 - `ai:context`, `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` write local redacted artefacts for tool-assisted review without raw `.env`, credentials or source-file contents.
-- `release:prepare` runs the release gate, clears runtime residue and generates CycloneDX SBOM plus SHA-256 checksum artefacts under `dist/release/`.
+- `release:prepare` runs the release gate, clears runtime residue and generates CycloneDX SBOM, SHA-256 checksum and release-manifest artefacts under `dist/release/`.
+- tag pushes attach `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json` to the GitHub Release after the release gate passes
 - `release:prepare --major --target=2.0.0` adds major-release readiness checks and emits app-map, upgrade-plan and review artefacts.
 
 Mail is intentionally transport-light but production-ready. FNLLA ships a `log`
@@ -390,8 +398,9 @@ Important commands:
 - `php fnlla fnlla-runtime:sync`
 - `php fnlla fnlla-runtime:validate`
 - `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
-- `php fnlla framework:update --check --github`
-- `php fnlla framework:update --check [--source <path-to-fnlla>]`
+- `php fnlla framework:update --check`
+- `php fnlla framework:update --dry-run`
+- `php fnlla framework:update --apply`
 - `php fnlla migrate`
 - `php fnlla migrate:rollback`
 - `php fnlla migrate:status`
@@ -444,8 +453,10 @@ Authoritative maintainer scripts and checkpoints:
 - `scripts/audit-fnlla-ecosystem.ps1` audits the local framework workspace, integrated runtime metadata and shared TechAyo defaults before release work
 - exported projects keep `.fnlla/framework-lock.json` as the authoritative framework-base lock
 - exported projects keep `php fnlla framework:update` as the public downstream update command
-- exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check and safe apply flows
+- exported projects also keep a local-first `/maintenance/framework-update` page with buttons for browser-based check, dry-run report and safe apply flows
 - the GitHub-backed framework-update flow only prepares diffs or apply runs when the published release is newer than the current locked framework base, so it does not suggest downgrades over equal or ahead-of-release project builds
+- framework update dry-run reports are written under `storage/framework/updates/fnlla/dry-run-report.json`
+- framework update audit events are written under `storage/logs/framework-update.log`
 - `scripts/test.php` runs the repository-local framework tests
 - `scripts/lint.php` runs PHP syntax checks across the maintained source tree
 - `bootstrap/common.php` enforces the shared integrated UI surface guard during bootstrap

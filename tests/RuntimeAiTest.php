@@ -65,6 +65,9 @@ final class RuntimeAiTest extends TestCase
         self::assertSame("pricing", $answer["intent"]);
         self::assertSame("Pricing is shown on the project pricing page.", $answer["answer"]);
         self::assertTrue(in_array("route:pricing", (array) $answer["actions"], true));
+        self::assertArrayHasKey("usage", $answer);
+        self::assertSame(0.0, $answer["estimated_cost_gbp"]);
+        self::assertArrayHasKey("latency_ms", $answer);
     }
 
     public function testLocalRuntimeAiExposesProviderStatus(): void
@@ -80,6 +83,7 @@ final class RuntimeAiTest extends TestCase
         self::assertSame("local", $status["driver"]);
         self::assertSame(true, $status["provider_ready"]);
         self::assertSame(false, $status["external_calls"]);
+        self::assertSame("estimated_cost_gbp", $status["accounting"]["cost_field"] ?? null);
     }
 
     public function testFionnBridgeIsReservedButNotIntegrated(): void
@@ -110,6 +114,35 @@ final class RuntimeAiTest extends TestCase
         self::assertSame(true, $report["providers"]["local"]["provider_ready"] ?? null);
         self::assertSame("reserved", $report["providers"]["fionn"]["integration_state"] ?? null);
         self::assertSame(false, $report["providers"]["fionn"]["provider_ready"] ?? null);
+        self::assertSame(["input_tokens", "output_tokens", "total_tokens"], $report["providers"]["fionn"]["accounting"]["token_fields"] ?? null);
+    }
+
+    public function testRuntimeAiProviderRegistryBlocksUnapprovedProviders(): void
+    {
+        config_set("ai.runtime.providers.remote_vendor", [
+            "class" => LocalRuntimeAssistant::class,
+            "external_calls" => true,
+        ]);
+
+        $status = (new RuntimeAiProviderRegistry(new Container()))->status("remote_vendor");
+
+        self::assertSame("blocked", $status["integration_state"] ?? null);
+        self::assertSame(false, $status["provider_ready"] ?? null);
+        self::assertStringContainsString("reserved Fionn", (string) ($status["reason"] ?? ""));
+        self::assertSame("latency_ms", $status["accounting"]["latency_field"] ?? null);
+    }
+
+    public function testRuntimeAiPromptRegistryAndEvalFixturesAreVersionedLocalData(): void
+    {
+        $registry = json_decode((string) file_get_contents(base_path("resources/fnlla-ai-runtime/prompts/registry.json")), true);
+        $evals = json_decode((string) file_get_contents(base_path("resources/fnlla-ai-runtime/evals/runtime-commands.json")), true);
+
+        self::assertSame("fnlla.ai_prompt_registry.v1", $registry["schema"] ?? null);
+        self::assertSame("fnlla.ai_eval_fixture.v1", $evals["schema"] ?? null);
+        self::assertTrue(in_array("review.release-risk", array_column((array) ($registry["prompts"] ?? []), "id"), true));
+        self::assertTrue(in_array("ai-ask-release-readiness", array_column((array) ($evals["fixtures"] ?? []), "id"), true));
+        self::assertStringContainsString("prompts/registry.json", (string) file_get_contents(base_path("resources/fnlla-ai-runtime/MANIFEST.json")));
+        self::assertStringContainsString("evals/runtime-commands.json", (string) file_get_contents(base_path("resources/fnlla-ai-runtime/MANIFEST.json")));
     }
 
     public function testRuntimeAiLoadsIntegratedRuntimeBundle(): void

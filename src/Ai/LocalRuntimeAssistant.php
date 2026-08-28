@@ -22,10 +22,11 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
 {
     public function answer(string $input, array $context = []): array
     {
+        $startedAt = microtime(true);
         $config = $this->runtimeConfig();
 
         if (($config["enabled"] ?? false) !== true) {
-            return $this->fallback("", "runtime_disabled", 0, $context);
+            return $this->fallback("", "runtime_disabled", 0, $context, $startedAt);
         }
 
         if ((string) ($config["driver"] ?? "local") !== "local") {
@@ -36,7 +37,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         $tokens = $this->tokens($input);
 
         if ($tokens === []) {
-            return $this->fallback($input, "empty_input", 0, $context);
+            return $this->fallback($input, "empty_input", 0, $context, $startedAt);
         }
 
         $best = null;
@@ -55,7 +56,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         $threshold = (int) ($config["confidence_threshold"] ?? 35);
 
         if ($best === null || (int) $best["score"] < $threshold) {
-            return $this->fallback($input, "low_confidence", $best !== null ? (int) $best["score"] : 0, $context);
+            return $this->fallback($input, "low_confidence", $best !== null ? (int) $best["score"] : 0, $context, $startedAt);
         }
 
         $item = (array) $best["item"];
@@ -71,6 +72,9 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
             "actions" => array_values(array_filter((array) ($item["actions"] ?? []), "is_string")),
             "sources" => [(string) ($item["source"] ?? $item["id"] ?? "local")],
             "context" => $this->safeContext($context),
+            "usage" => $this->usage($input, (string) ($item["answer"] ?? "")),
+            "estimated_cost_gbp" => 0.0,
+            "latency_ms" => $this->latencyMs($startedAt),
         ];
     }
 
@@ -127,6 +131,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
             "provider_ready" => true,
             "external_calls" => false,
             "configured_runtime_path" => (string) ($config["runtime_path"] ?? "resources/fnlla-ai-runtime"),
+            "accounting" => $this->accountingPolicy(),
         ];
     }
 
@@ -285,7 +290,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         return (int) round((count($matches) / max(1, count($tokens))) * 100);
     }
 
-    private function fallback(string $input, string $reason, int $confidence, array $context): array
+    private function fallback(string $input, string $reason, int $confidence, array $context, float $startedAt): array
     {
         $config = $this->runtimeConfig();
         $profile = array_merge(
@@ -305,6 +310,37 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
             "sources" => [],
             "reason" => $reason,
             "context" => $this->safeContext($context),
+            "usage" => $this->usage($input, (string) ($profile["fallback"] ?? "")),
+            "estimated_cost_gbp" => 0.0,
+            "latency_ms" => $this->latencyMs($startedAt),
+        ];
+    }
+
+    private function usage(string $input, string $output): array
+    {
+        $inputTokens = count($this->tokens($input));
+        $outputTokens = count($this->tokens($output));
+
+        return [
+            "input_tokens" => $inputTokens,
+            "output_tokens" => $outputTokens,
+            "total_tokens" => $inputTokens + $outputTokens,
+            "metering" => "local-estimate",
+        ];
+    }
+
+    private function latencyMs(float $startedAt): int
+    {
+        return max(0, (int) round((microtime(true) - $startedAt) * 1000));
+    }
+
+    private function accountingPolicy(): array
+    {
+        return [
+            "token_fields" => ["input_tokens", "output_tokens", "total_tokens"],
+            "cost_field" => "estimated_cost_gbp",
+            "latency_field" => "latency_ms",
+            "remote_provider_required" => true,
         ];
     }
 

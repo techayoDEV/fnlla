@@ -1,0 +1,30 @@
+{
+    "schema": "fnlla.ai_prompt_registry.v1",
+    "version": "1.0.0",
+    "prompts": [
+        {
+            "id": "review.release-risk",
+            "purpose": "Review a FNLLA change set for release blockers, missing tests and downstream upgrade notes.",
+            "applies_to": ["ai:review-pack", "release:prepare"],
+            "prompt": "Review this FNLLA context for release blockers, migration risks, missing tests and documentation gaps. Prioritize concrete findings with file or command evidence."
+        },
+        {
+            "id": "triage.change-request",
+            "purpose": "Map a bug report or change request to likely routes, controllers, config and tests.",
+            "applies_to": ["ai:triage"],
+            "prompt": "Triage this FNLLA issue. Identify likely framework areas, affected public surfaces, recommended focused tests and release risk."
+        },
+        {
+            "id": "release.owner-check",
+            "purpose": "Guide the release owner through validation and publication readiness.",
+            "applies_to": ["release:prepare", "release:manifest"],
+            "prompt": "Check the release evidence. Confirm tests, lint, docs, metadata, SBOM, checksums, manifest signature policy and GitHub release assets."
+        },
+        {
+            "id": "migration.major",
+            "purpose": "Review a major-version upgrade plan before applying project-safe actions.",
+            "applies_to": ["upgrade:check", "upgrade:plan", "ai:upgrade-brief"],
+            "prompt": "Review this FNLLA major upgrade plan for backward-compatibility risks, manual migration steps, rollback notes and required downstream communication."
+        }
+    ]
+}

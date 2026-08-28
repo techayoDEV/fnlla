@@ -16,6 +16,13 @@ It is intentionally separate from `public/vendor/fnlla-runtime/`:
 - `profile.json`
 - `intents/`
 - `knowledge/`
+- `prompts/registry.json`
+- `evals/`
+
+The prompt registry stores reusable review, triage, release and migration
+prompts as versioned local data. Eval fixtures define the minimum shape expected
+from `ai:ask`, `ai:triage`, `ai:explain-log`, `ai:brief` and future provider
+adapters before any remote runtime is considered.
 
 ## How it is loaded
 

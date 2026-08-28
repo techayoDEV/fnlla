@@ -2,8 +2,13 @@ name: FNLLA Release Gate
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,7 +16,15 @@ permissions:
 
 jobs:
   release-gate:
-    runs-on: windows-latest
+    name: Release gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     env:
       APP_ENV: production
       APP_DEBUG: false
@@ -38,64 +51,72 @@ jobs:
 
       - name: Validate docs sync
         shell: pwsh
-        run: php .\scripts\build-docs.php --check
+        run: php ./scripts/build-docs.php --check
 
       - name: Validate runtime contract
         shell: pwsh
-        run: php .\scripts\validate-fnlla-runtime.php
+        run: php ./scripts/validate-fnlla-runtime.php
 
       - name: Validate version manifest
         shell: pwsh
-        run: php .\scripts\validate-version-manifest.php
+        run: php ./scripts/validate-version-manifest.php
 
       - name: Validate release metadata
         shell: pwsh
-        run: php .\scripts\validate-release-metadata.php
+        run: php ./scripts/validate-release-metadata.php
 
-      - name: Run fast test suite
+      - name: Run Composer test script
         shell: pwsh
-        run: php .\scripts\test.php --suite fast
+        run: composer run test -- --suite fast
 
       - name: Run runtime doctor
         shell: pwsh
-        run: php .\fnlla doctor
+        run: php ./fnlla doctor
 
       - name: Run security audit
         shell: pwsh
-        run: php .\fnlla security:audit
+        run: php ./fnlla security:audit
 
-      - name: Run syntax lint
+      - name: Run Composer lint script
         shell: pwsh
-        run: php .\scripts\lint.php
+        run: composer run lint
 
       - name: Generate release supply-chain artifacts
         shell: pwsh
-        run: php .\fnlla release:prepare --skip-tests
+        run: php ./fnlla release:prepare --skip-tests
 
       - name: Publish runtime export
         shell: pwsh
-        run: .\scripts\publish-fnlla-runtime.ps1
+        run: ./scripts/publish-fnlla-runtime.ps1
 
       - name: Audit ecosystem contract
         shell: pwsh
-        run: .\scripts\audit-fnlla-ecosystem.ps1 -SkipLocalChecks
+        run: ./scripts/audit-fnlla-ecosystem.ps1 -SkipLocalChecks
 
       - name: Upload published runtime export
         uses: actions/upload-artifact@v4
         with:
-          name: fnlla-runtime-export
+          name: fnlla-runtime-export-${{ matrix.os }}
           path: dist/fnlla-runtime
           if-no-files-found: error
 
       - name: Upload release supply-chain artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fnlla-release-supply-chain
+          name: fnlla-release-supply-chain-${{ matrix.os }}
           path: dist/release
           if-no-files-found: error
 
   export-regression:
-    runs-on: windows-latest
+    name: Export regression (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     env:
       APP_ENV: production
       APP_DEBUG: false
@@ -118,4 +139,52 @@ jobs:
 
       - name: Run export and update regression tests
         shell: pwsh
-        run: php .\scripts\test.php --suite slow
+        run: php ./scripts/test.php --suite slow
+
+  release-assets:
+    name: Attach release assets
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - release-gate
+      - export-regression
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_URL: https://fnlla.example
+      FNLLA_RUNTIME_AUTO_SYNC: false
+      FNLLA_RUNTIME_ENFORCE: true
+      RELEASE_SIGNING_KEY: ${{ secrets.FNLLA_RELEASE_SIGNING_KEY }}
+      RELEASE_SIGNING_KEY_ID: ${{ vars.FNLLA_RELEASE_SIGNING_KEY_ID }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Generate release supply-chain assets
+        shell: pwsh
+        run: php ./fnlla release:prepare --skip-tests
+
+      - name: Attach supply-chain assets to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release view "${tag}" >/dev/null 2>&1 || gh release create "${tag}" --title "${tag}" --notes "FNLLA ${tag} release assets."
+          gh release upload "${tag}" \
+            dist/release/fnlla-sbom.cdx.json \
+            dist/release/SHA256SUMS \
+            dist/release/fnlla-release-manifest.json \
+            --clobber

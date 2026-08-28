@@ -76,8 +76,17 @@ Artefacts are written under `dist/release/`:
 - `SHA256SUMS`
 - `fnlla-release-manifest.json`
 
-Set `RELEASE_SIGNING_KEY` to add a lightweight HMAC signature to the release
-manifest. Leave it empty for local unsigned manifests.
+Tag pushes attach those three files to the GitHub Release after the full release
+gate and export regression jobs pass.
+
+Release manifest signing is enabled only when the release owner has approved a
+signing key policy and configured both values:
+
+- `RELEASE_SIGNING_KEY`
+- `RELEASE_SIGNING_KEY_ID`
+
+The manifest then records the HMAC algorithm, key id, signing timestamp and
+payload hash. Leave the key empty for local unsigned manifests.
 
 With `--major`, FNLLA also writes:
 
@@ -101,6 +110,49 @@ php fnlla release:checksums --output /path/to/SHA256SUMS
 `release:prepare` also reports a small risk label: `low`, `medium` or `high`.
 It is intentionally blunt: failed validation is high risk, larger major-release
 plans are medium risk, and clean validated releases are low risk.
+
+## GitHub Actions Gate
+
+The repository ships a GitHub Actions release gate at `.github/workflows/fnlla-release-gate.yml`.
+
+It runs on pushes to `main`, pull requests to `main`, version tags and manual dispatch. The matrix covers `ubuntu-latest`, `macos-latest` and `windows-latest`, with PowerShell Core as the shared shell for repository scripts.
+
+The gate checks docs, runtime contract, version manifest, release metadata, fast tests, `doctor`, `security:audit`, lint, release artefacts, runtime publish and ecosystem audit. A second matrix job runs the slower export/update regression suite across the same operating systems.
+
+## Branch Protection
+
+Protect `main` in GitHub before publishing production releases.
+
+Required checks:
+
+- `Release gate (ubuntu-latest)`
+- `Release gate (macos-latest)`
+- `Release gate (windows-latest)`
+- `Export regression (ubuntu-latest)`
+- `Export regression (macos-latest)`
+- `Export regression (windows-latest)`
+
+Require pull requests before merging into `main`, require the branch to be up to
+date before merge, block force pushes and deletions, and require at least one
+release-owner approval for changes touching release scripts, GitHub workflows,
+manifest/version metadata, update code, security controls or runtime bundles.
+
+## Framework Update Audit
+
+Downstream framework updates use only the official `techayoDEV/fnlla` GitHub release channel.
+
+Useful commands:
+
+```bash
+php fnlla framework:update --check
+php fnlla framework:update --dry-run
+php fnlla framework:update --apply
+php fnlla framework:update --dry-run --json
+```
+
+`--dry-run` writes a machine-readable file-change report before apply. By default it is stored at `storage/framework/updates/fnlla/dry-run-report.json`.
+
+Framework update audit events are JSON lines stored at `storage/logs/framework-update.log` by default. The log records check, dry-run, apply, conflict, rejected-source and failed update events without storing raw secrets.
 
 ## Observability
 
@@ -170,3 +222,41 @@ php fnlla cache:clear
 The source tree should keep only `.gitignore` placeholders under `storage/`.
 Runtime files such as sessions, cache entries, queue jobs, metrics and logs
 should not be committed.
+
+## Maintainer Runbook
+
+Release:
+
+1. Confirm `CHANGELOG.md`, `VERSION`, `MANIFEST.json` and runtime metadata are aligned.
+2. Run `php scripts/build-docs.php --check`.
+3. Run `php fnlla release:prepare`.
+4. Review `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json`.
+5. Push the commit and signed tag only after local validation is green.
+
+Rollback:
+
+1. Keep the previous tag and release artefacts available.
+2. Re-deploy the previous validated source package.
+3. Clear generated bootstrap caches with `php fnlla optimize:clear`.
+4. Re-run `php fnlla doctor` and `php fnlla security:audit`.
+
+Update recovery:
+
+1. Read `storage/framework/updates/fnlla/dry-run-report.json`.
+2. Read `storage/logs/framework-update.log`.
+3. Restore project-owned files from Git when an apply was interrupted.
+4. Re-run `php fnlla framework:update --dry-run` before any second apply.
+
+Backup and restore:
+
+1. Back up `.env`, `storage/`, uploaded project files and the application database before deployment.
+2. Do not back up generated cache, queue, session or log residue as release state.
+3. Restore database and uploaded files before warming caches.
+4. Run `php fnlla migrate:status` after restore.
+
+Common production failures:
+
+- 500 after deploy: run `php fnlla doctor`, check PHP version/extensions and inspect `storage/logs/app.log`.
+- Broken assets: confirm `ASSET_URL` and `public/vendor/fnlla-runtime/` match the deployed host.
+- Login/session loops: confirm HTTPS, `SESSION_SECURE`, cookie domain and trusted proxy settings.
+- Framework update blocked: use the dry-run report and resolve conflicts manually before apply.

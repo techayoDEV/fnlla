@@ -32,32 +32,82 @@ final class FrameworkUpdater
     public static function checkLatestRelease(string $projectRoot, ?string $appName = null, ?string $releaseTag = null): array
     {
         self::extendExecutionTime();
-        $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
+        FrameworkUpdateAuditLogger::write("framework_update.check_started", self::baseAuditContext($projectRoot, $releaseTag));
 
-        if (self::githubReleaseIsNotNewer($releaseSource)) {
-            return self::enrichReportFromReleaseSource(
-                self::buildGitHubReleaseNoOpReport($projectRoot, $releaseSource),
-                $releaseSource
-            );
+        try {
+            $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
+
+            if (self::githubReleaseIsNotNewer($releaseSource)) {
+                $report = self::enrichReportFromReleaseSource(
+                    self::buildGitHubReleaseNoOpReport($projectRoot, $releaseSource),
+                    $releaseSource
+                );
+                $report = self::attachDryRunReport($projectRoot, $report);
+                FrameworkUpdateAuditLogger::write("framework_update.check_completed", self::reportAuditContext($projectRoot, $report));
+
+                return $report;
+            }
+
+            $report = self::check($projectRoot, (string) $releaseSource["source_root"], $appName);
+            $report = self::attachDryRunReport($projectRoot, self::enrichReportFromReleaseSource($report, $releaseSource));
+            FrameworkUpdateAuditLogger::write("framework_update.check_completed", self::reportAuditContext($projectRoot, $report));
+
+            return $report;
+        } catch (RuntimeException $exception) {
+            FrameworkUpdateAuditLogger::write(self::failureAuditEvent("check", $exception), array_merge(
+                self::baseAuditContext($projectRoot, $releaseTag),
+                ["error" => $exception->getMessage()]
+            ));
+
+            throw $exception;
         }
+    }
 
-        $report = self::check($projectRoot, (string) $releaseSource["source_root"], $appName);
+    public static function dryRunLatestRelease(string $projectRoot, ?string $appName = null, ?string $releaseTag = null): array
+    {
+        FrameworkUpdateAuditLogger::write("framework_update.dry_run_started", self::baseAuditContext($projectRoot, $releaseTag));
 
-        return self::enrichReportFromReleaseSource($report, $releaseSource);
+        try {
+            $report = self::checkLatestRelease($projectRoot, $appName, $releaseTag);
+            $report["dry_run_mode"] = true;
+            FrameworkUpdateAuditLogger::write("framework_update.dry_run_completed", self::reportAuditContext($projectRoot, $report));
+
+            return $report;
+        } catch (RuntimeException $exception) {
+            FrameworkUpdateAuditLogger::write(self::failureAuditEvent("dry_run", $exception), array_merge(
+                self::baseAuditContext($projectRoot, $releaseTag),
+                ["error" => $exception->getMessage()]
+            ));
+
+            throw $exception;
+        }
     }
 
     public static function applyLatestRelease(string $projectRoot, ?string $appName = null, ?string $releaseTag = null): array
     {
         self::extendExecutionTime();
-        $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
+        FrameworkUpdateAuditLogger::write("framework_update.apply_started", self::baseAuditContext($projectRoot, $releaseTag));
 
-        if (self::githubReleaseIsNotNewer($releaseSource)) {
-            throw new RuntimeException(self::githubReleaseNoOpReason($releaseSource));
+        try {
+            $releaseSource = FrameworkReleaseChannel::prepareReleaseSource($projectRoot, $releaseTag);
+
+            if (self::githubReleaseIsNotNewer($releaseSource)) {
+                throw new RuntimeException(self::githubReleaseNoOpReason($releaseSource));
+            }
+
+            $report = self::attachDryRunReport($projectRoot, self::apply($projectRoot, (string) $releaseSource["source_root"], $appName));
+            $report = self::enrichReportFromReleaseSource($report, $releaseSource);
+            FrameworkUpdateAuditLogger::write("framework_update.apply_completed", self::reportAuditContext($projectRoot, $report));
+
+            return $report;
+        } catch (RuntimeException $exception) {
+            FrameworkUpdateAuditLogger::write(self::failureAuditEvent("apply", $exception), array_merge(
+                self::baseAuditContext($projectRoot, $releaseTag),
+                ["error" => $exception->getMessage()]
+            ));
+
+            throw $exception;
         }
-
-        $report = self::apply($projectRoot, (string) $releaseSource["source_root"], $appName);
-
-        return self::enrichReportFromReleaseSource($report, $releaseSource);
     }
 
     public static function detectSourceRoot(string $projectRoot, string $preferredSource = ""): array
@@ -350,6 +400,98 @@ final class FrameworkUpdater
         return $changes;
     }
 
+    public static function buildDryRunReport(array $report): array
+    {
+        $files = [];
+
+        foreach ((array) ($report["updates"] ?? []) as $path => $update) {
+            if (!is_array($update)) {
+                continue;
+            }
+
+            $files[] = [
+                "path" => (string) $path,
+                "action" => (string) ($update["action"] ?? "update"),
+                "label" => (string) ($update["label"] ?? "Automatic update ready"),
+                "base_hash" => $update["base_hash"] ?? null,
+                "current_hash" => $update["current_hash"] ?? null,
+                "source_hash" => $update["source_hash"] ?? null,
+                "reason" => (string) ($update["reason"] ?? ""),
+            ];
+        }
+
+        return [
+            "schema" => "fnlla.framework_update.dry_run.v1",
+            "generated_at_utc" => gmdate(DATE_ATOM),
+            "current_framework_version" => (string) ($report["current_framework_version"] ?? "unknown"),
+            "source_framework_version" => (string) ($report["source_framework_version"] ?? "unknown"),
+            "can_apply_safely" => $files !== [] && (array) ($report["conflicts"] ?? []) === [],
+            "summary" => [
+                "will_change" => count($files),
+                "conflicts" => count((array) ($report["conflicts"] ?? [])),
+                "local_only_changes" => count((array) ($report["local_only_changes"] ?? [])),
+            ],
+            "files" => $files,
+            "conflicts" => self::pathList((array) ($report["conflicts"] ?? [])),
+            "local_only_changes" => self::pathList((array) ($report["local_only_changes"] ?? [])),
+        ];
+    }
+
+    private static function attachDryRunReport(string $projectRoot, array $report): array
+    {
+        $dryRun = self::buildDryRunReport($report);
+        $report["dry_run"] = $dryRun;
+        $report["dry_run_report_path"] = self::writeDryRunReport($projectRoot, $dryRun);
+
+        return $report;
+    }
+
+    private static function writeDryRunReport(string $projectRoot, array $dryRun): ?string
+    {
+        if ((bool) config("framework_update.dry_run_report_enabled", true) !== true) {
+            return null;
+        }
+
+        $relativePath = trim((string) config("framework_update.dry_run_report_path", "framework/updates/fnlla/dry-run-report.json"));
+
+        if ($relativePath === "" || self::isAbsolutePath($relativePath)) {
+            throw new RuntimeException("Framework update dry-run report path must stay inside storage.");
+        }
+
+        $relativePath = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $relativePath);
+        $relativePath = ltrim($relativePath, DIRECTORY_SEPARATOR);
+
+        if (in_array("..", explode(DIRECTORY_SEPARATOR, $relativePath), true)) {
+            throw new RuntimeException("Framework update dry-run report path must stay inside storage.");
+        }
+
+        $path = rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . $relativePath;
+        $directory = dirname($path);
+
+        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new RuntimeException("Unable to create framework update dry-run report directory: " . $directory);
+        }
+
+        file_put_contents($path, json_encode($dryRun, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL, LOCK_EX);
+
+        return $path;
+    }
+
+    private static function pathList(array $items): array
+    {
+        $paths = [];
+
+        foreach ($items as $path => $item) {
+            $paths[] = [
+                "path" => (string) $path,
+                "reason" => is_array($item) ? (string) ($item["reason"] ?? "") : "",
+                "next_step" => is_array($item) ? (string) ($item["next_step"] ?? "") : "",
+            ];
+        }
+
+        return $paths;
+    }
+
     private static function runPostInstallChecks(string $projectRoot): array
     {
         self::extendExecutionTime();
@@ -445,6 +587,67 @@ final class FrameworkUpdater
         }
 
         return true;
+    }
+
+    private static function baseAuditContext(string $projectRoot, ?string $releaseTag): array
+    {
+        return [
+            "project_root" => $projectRoot,
+            "requested_tag" => $releaseTag,
+            "current_version" => self::currentFrameworkVersion($projectRoot),
+        ];
+    }
+
+    private static function reportAuditContext(string $projectRoot, array $report): array
+    {
+        $githubRelease = is_array($report["github_release"] ?? null) ? (array) $report["github_release"] : [];
+
+        return [
+            "project_root" => $projectRoot,
+            "current_framework_version" => (string) ($report["current_framework_version"] ?? "unknown"),
+            "source_framework_version" => (string) ($report["source_framework_version"] ?? "unknown"),
+            "github_release_tag" => (string) ($githubRelease["tag"] ?? ""),
+            "updates" => count((array) ($report["updates"] ?? [])),
+            "conflicts" => count((array) ($report["conflicts"] ?? [])),
+            "local_only_changes" => count((array) ($report["local_only_changes"] ?? [])),
+            "applied_changes" => (int) ($report["applied_changes"] ?? 0),
+            "post_install_ok" => $report["post_install_ok"] ?? null,
+            "dry_run_report_path" => $report["dry_run_report_path"] ?? null,
+        ];
+    }
+
+    private static function failureAuditEvent(string $mode, RuntimeException $exception): string
+    {
+        if ($exception->getMessage() === self::APPLY_CONFLICT_MESSAGE) {
+            return "framework_update.apply_conflict";
+        }
+
+        $message = strtolower($exception->getMessage());
+
+        if (str_contains($message, "non-official")
+            || str_contains($message, "local fnlla update sources are disabled")
+            || str_contains($message, "local source updates are disabled")
+            || str_contains($message, "repository overrides are disabled")
+            || str_contains($message, "only the validated official github release cache")
+        ) {
+            return "framework_update.rejected_source";
+        }
+
+        return "framework_update." . $mode . "_failed";
+    }
+
+    private static function currentFrameworkVersion(string $projectRoot): ?string
+    {
+        $versionPath = rtrim($projectRoot, "\\/") . DIRECTORY_SEPARATOR . "VERSION";
+
+        if (!is_file($versionPath)) {
+            return null;
+        }
+
+        $lines = file($versionPath, FILE_IGNORE_NEW_LINES);
+        $version = is_array($lines) ? trim((string) ($lines[0] ?? "")) : "";
+
+        return $version !== "" ? $version : null;
     }
 
     private static function hashIfFileExists(string $path): ?string

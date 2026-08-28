@@ -152,4 +152,55 @@ final class OperationsTest extends TestCase
         @unlink($manifestPath);
         @rmdir($directory);
     }
+
+    public function testReleaseManifestIncludesKeyedSignatureWhenSigningKeyIsConfigured(): void
+    {
+        $previousEnv = [$_ENV["RELEASE_SIGNING_KEY"] ?? null, $_ENV["RELEASE_SIGNING_KEY_ID"] ?? null];
+        $_ENV["RELEASE_SIGNING_KEY"] = "test-signing-key";
+        $_ENV["RELEASE_SIGNING_KEY_ID"] = "fnlla-test-key";
+        putenv("RELEASE_SIGNING_KEY=test-signing-key");
+        putenv("RELEASE_SIGNING_KEY_ID=fnlla-test-key");
+
+        $builder = new ReleaseArtifactBuilder();
+        $directory = storage_path("framework/cache/release-signature-" . bin2hex(random_bytes(4)));
+        $sbomPath = $directory . DIRECTORY_SEPARATOR . "sbom.json";
+        $checksumsPath = $directory . DIRECTORY_SEPARATOR . "SHA256SUMS";
+        $manifestPath = $directory . DIRECTORY_SEPARATOR . "release-manifest.json";
+
+        try {
+            $builder->buildSbom($sbomPath);
+            $builder->buildChecksums($checksumsPath);
+            $result = $builder->buildManifest($manifestPath, [
+                "sbom" => $sbomPath,
+                "checksums" => $checksumsPath,
+            ]);
+            $payload = json_decode((string) file_get_contents($manifestPath), true);
+
+            self::assertTrue($result["signed"]);
+            self::assertSame("hmac-sha256", $payload["signature"]["algorithm"] ?? null);
+            self::assertSame("fnlla-test-key", $payload["signature"]["key_id"] ?? null);
+            self::assertArrayHasKey("payload_sha256", (array) ($payload["signature"] ?? []));
+        } finally {
+            if ($previousEnv[0] === null) {
+                unset($_ENV["RELEASE_SIGNING_KEY"], $_SERVER["RELEASE_SIGNING_KEY"]);
+                putenv("RELEASE_SIGNING_KEY");
+            } else {
+                $_ENV["RELEASE_SIGNING_KEY"] = $previousEnv[0];
+                putenv("RELEASE_SIGNING_KEY=" . $previousEnv[0]);
+            }
+
+            if ($previousEnv[1] === null) {
+                unset($_ENV["RELEASE_SIGNING_KEY_ID"], $_SERVER["RELEASE_SIGNING_KEY_ID"]);
+                putenv("RELEASE_SIGNING_KEY_ID");
+            } else {
+                $_ENV["RELEASE_SIGNING_KEY_ID"] = $previousEnv[1];
+                putenv("RELEASE_SIGNING_KEY_ID=" . $previousEnv[1]);
+            }
+
+            @unlink($sbomPath);
+            @unlink($checksumsPath);
+            @unlink($manifestPath);
+            @rmdir($directory);
+        }
+    }
 }

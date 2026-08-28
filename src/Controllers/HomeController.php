@@ -41,9 +41,10 @@ final class HomeController extends Controller
         DeveloperAccessManager $developerAccess
     ): Response
     {
+        $environmentFileManager = app(EnvironmentFileManager::class);
         $accessState = $maintenanceAccess->viewState();
-        $setupState = $this->maintenanceSetupState($request, app(EnvironmentFileManager::class), $maintenanceAccess, $developerAccess);
-        $developerSetupState = $this->developerAccessSetupState($request, app(EnvironmentFileManager::class), $developerAccess);
+        $setupState = $this->maintenanceSetupState($request, $environmentFileManager, $maintenanceAccess, $developerAccess);
+        $developerSetupState = $this->developerAccessSetupState($request, $environmentFileManager, $developerAccess);
         $developerAccessState = $developerAccess->viewState();
         $clientPreviewState = $this->clientPreviewState();
 
@@ -388,7 +389,7 @@ final class HomeController extends Controller
 
     public function profileApi(): array
     {
-        $payload = [
+        return [
             "meta" => [
                 "name" => config("app.name"),
                 "version" => "1.0",
@@ -464,6 +465,11 @@ final class HomeController extends Controller
         $releaseChannelEnabled = (bool) config("framework_update.github_enabled", true);
         $frameworkStoragePath = storage_path("framework");
         $updatesStoragePath = storage_path("framework/updates");
+        $cachePath = (string) config("cache.stores.file.path", storage_path("framework/cache"));
+        $queuePath = storage_path((string) config("queue.connections.file.path", "framework/queue"));
+        $maintenanceAccess = maintenance_access();
+        $maintenanceEnabled = $maintenanceAccess->enabled();
+        $secureRequest = app_request_is_secure();
         $storageReady = $this->isWritableDirectory($frameworkStoragePath) && $this->isWritableDirectory($updatesStoragePath);
         $releaseCacheReady = trim((string) ($cachedRelease["tag"] ?? "")) !== "";
         $vendoredRuntimeReady = $uiVersion !== null
@@ -503,14 +509,14 @@ final class HomeController extends Controller
             "runtime" => [
                 "php_version" => PHP_VERSION,
                 "sapi" => PHP_SAPI,
-                "secure_request" => app_request_is_secure(),
+                "secure_request" => $secureRequest,
                 "timezone" => (string) date_default_timezone_get(),
             ],
             "request" => [
                 "id" => "",
                 "method" => "",
                 "path" => "",
-                "secure" => app_request_is_secure(),
+                "secure" => $secureRequest,
                 "ip" => "",
             ],
             "checks" => [
@@ -518,8 +524,8 @@ final class HomeController extends Controller
                 "vendored_fnlla_runtime" => $vendoredRuntimeReady ? "ok" : "missing",
                 "framework_update_ui" => config("framework_update.ui_enabled", false) ? "enabled" : "disabled",
                 "auto_detected_source" => $sourceAvailable ? "available" : "not_detected",
-                "maintenance_mode" => maintenance_access()->enabled()
-                    ? (maintenance_access()->isUnlocked() ? "unlocked" : "locked")
+                "maintenance_mode" => $maintenanceEnabled
+                    ? ($maintenanceAccess->isUnlocked() ? "unlocked" : "locked")
                     : "disabled",
             ],
             "readiness" => [
@@ -527,7 +533,7 @@ final class HomeController extends Controller
                 "vendored_runtime" => $vendoredRuntimeReady ? "ready" : "attention",
                 "storage" => $storageReady ? "ready" : "attention",
                 "release_channel" => $releaseReadiness,
-                "maintenance_mode" => maintenance_access()->enabled() ? "restricted" : "open",
+                "maintenance_mode" => $maintenanceEnabled ? "restricted" : "open",
             ],
             "dependencies" => [
                 [
@@ -578,8 +584,8 @@ final class HomeController extends Controller
             "cache" => [
                 "default_store" => (string) config("cache.default", "file"),
                 "serializer" => (string) config("cache.serializer", "json"),
-                "path" => (string) config("cache.stores.file.path", storage_path("framework/cache")),
-                "writable" => $this->isWritableDirectory((string) config("cache.stores.file.path", storage_path("framework/cache"))),
+                "path" => $cachePath,
+                "writable" => $this->isWritableDirectory($cachePath),
             ],
             "observability" => [
                 "access_log_enabled" => (bool) config("observability.access_log.enabled", true),
@@ -589,9 +595,9 @@ final class HomeController extends Controller
             ],
             "queue" => [
                 "default_connection" => (string) config("queue.default", "file"),
-                "path" => storage_path((string) config("queue.connections.file.path", "framework/queue")),
-                "pending_jobs" => $this->countFiles(storage_path((string) config("queue.connections.file.path", "framework/queue")), "*.job"),
-                "failed_jobs" => $this->countFiles(storage_path((string) config("queue.connections.file.path", "framework/queue")) . DIRECTORY_SEPARATOR . "failed", "*.failed.job"),
+                "path" => $queuePath,
+                "pending_jobs" => $this->countFiles($queuePath, "*.job"),
+                "failed_jobs" => $this->countFiles($queuePath . DIRECTORY_SEPARATOR . "failed", "*.failed.job"),
             ],
             "migrations" => [
                 "table" => (string) config("database.migrations_table", "migrations"),
@@ -818,19 +824,19 @@ final class HomeController extends Controller
             "active" => $enabled,
             "login_disabled" => (bool) config("client_preview.login_disabled", false),
             "kicker" => (string) config("client_preview.kicker", "Private Client Preview"),
-            "title" => (string) config("client_preview.title", "Your project is being restored"),
+            "title" => (string) config("client_preview.title", "Private client preview is active"),
             "show_last_updated" => (bool) config("client_preview.show_last_updated", true),
             "last_updated_label" => (string) config("client_preview.last_updated_label", "Last updated"),
             "last_updated_value" => $lastUpdatedValue,
             "status_title" => (string) config("client_preview.status_title", ""),
             "status_body" => (string) config("client_preview.status_body", ""),
-            "countdown_label" => (string) config("client_preview.countdown_label", "Full Access Restoration in"),
+            "countdown_label" => (string) config("client_preview.countdown_label", "Preview window closes in"),
             "countdown_enabled" => $countdownEnabled,
             "countdown" => $this->formatClientPreviewCountdown($secondsRemaining),
             "restore_at_timestamp" => $restoreAt?->getTimestamp() ?? 0,
             "started_at_timestamp" => $startedAt?->getTimestamp() ?? 0,
             "progress_enabled" => $progressEnabled,
-            "progress_label" => (string) config("client_preview.progress_label", "Restoration progress"),
+            "progress_label" => (string) config("client_preview.progress_label", "Preview window progress"),
             "progress_percent" => $progressPercent,
             "message" => (string) config("client_preview.message", ""),
             "support_heading" => (string) config("client_preview.support_heading", "Need assistance?"),

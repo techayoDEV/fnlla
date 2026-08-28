@@ -47,6 +47,10 @@ keys from any local JSON artefact before a developer chooses to share it.
 - `ai:brief` gives a short project summary for review handoff.
 - `ai:providers` reports configured runtime AI providers, readiness state and whether any provider is allowed to make external calls.
 
+Runtime AI responses and provider status reports include accounting fields for
+token estimates, cost and latency. The local driver reports zero cost, but the
+fields are still present so future remote adapters cannot skip metering.
+
 ## What It Excludes
 
 The context pack intentionally excludes:
@@ -109,6 +113,10 @@ resources/fnlla-ai-runtime/
     core.json
   knowledge/
     base.json
+  prompts/
+    registry.json
+  evals/
+    runtime-commands.json
 ```
 
 This mirrors the discipline of the UI runtime, but it is not a public browser
@@ -122,6 +130,8 @@ Use this split:
 - integrated bundle: stable framework-owned defaults
 - `config/ai.php`: project-owned additions and overrides
 - `storage/framework/ai/runtime-knowledge.json`: approved learned records
+- `resources/fnlla-ai-runtime/prompts/registry.json`: reusable review, triage, release and migration prompts
+- `resources/fnlla-ai-runtime/evals/`: shape fixtures for runtime commands and future provider adapters
 - public assets: never store runtime intelligence data here
 
 Useful end-user features built on this local runtime include:
@@ -150,6 +160,8 @@ its server until a stable service contract is reviewed.
 The reserved bridge is `Fnlla\Php\Ai\FionnRuntimeBridge`. Its current status is `reserved`, `provider_ready=false` and `external_calls=false`. It exists so future work can integrate Fionn deliberately behind the same small runtime AI shape instead of scattering Fionn-specific calls through controllers.
 
 `Fnlla\Php\Ai\RuntimeAiProviderRegistry` and `php fnlla ai:providers --json` expose this status for operators and CI. The bridge can be configured with `AI_FIONN_BRIDGE_ENABLED`, `AI_FIONN_ENDPOINT` and `AI_FIONN_TIMEOUT_SECONDS`, but those values do not enable network calls while the integration state remains `reserved`.
+
+Fionn is the only reserved external AI provider boundary for FNLLA. The built-in `local` driver remains a deterministic project-knowledge runtime, while arbitrary third-party provider adapters are blocked by policy.
 
 Before enabling a real Fionn adapter, complete:
 

@@ -44,6 +44,8 @@ final class AiContextBuilder
             "routes" => $this->routes(),
             "configuration_posture" => $this->configurationPosture(),
             "runtime_artifacts" => $this->runtimeArtifacts(),
+            "prompt_registry" => $this->promptRegistry(),
+            "eval_fixtures" => $this->evalFixtures(),
             "documentation" => $this->documentation(),
             "repository_footprint" => $this->repositoryFootprint(),
             "recommended_ai_workflows" => [
@@ -157,6 +159,48 @@ final class AiContextBuilder
             "asset_manifest" => $this->artifact(framework_asset_manifest_path()),
             "opcache_preload" => $this->artifact(framework_preload_path()),
             "performance_baseline" => $this->artifact(framework_performance_baseline_path()),
+        ];
+    }
+
+    private function promptRegistry(): array
+    {
+        $path = base_path(trim((string) config("ai.runtime.prompt_registry_path", "resources/fnlla-ai-runtime/prompts/registry.json")));
+        $payload = $this->readJson($path);
+        $prompts = is_array($payload["prompts"] ?? null) ? (array) $payload["prompts"] : [];
+
+        return [
+            "schema" => (string) ($payload["schema"] ?? ""),
+            "path" => str_replace("\\", "/", substr($path, strlen(base_path()) + 1)),
+            "count" => count($prompts),
+            "ids" => array_values(array_filter(array_map(
+                static fn (mixed $prompt): string => is_array($prompt) ? (string) ($prompt["id"] ?? "") : "",
+                $prompts
+            ))),
+        ];
+    }
+
+    private function evalFixtures(): array
+    {
+        $directory = base_path(trim((string) config("ai.runtime.evals_path", "resources/fnlla-ai-runtime/evals")));
+        $fixtures = [];
+
+        foreach (glob($directory . DIRECTORY_SEPARATOR . "*.json") ?: [] as $path) {
+            $payload = $this->readJson($path);
+
+            foreach ((array) ($payload["fixtures"] ?? []) as $fixture) {
+                if (is_array($fixture) && is_string($fixture["id"] ?? null)) {
+                    $fixtures[] = [
+                        "id" => (string) $fixture["id"],
+                        "command" => (string) ($fixture["command"] ?? ""),
+                    ];
+                }
+            }
+        }
+
+        return [
+            "path" => str_replace("\\", "/", substr($directory, strlen(base_path()) + 1)),
+            "count" => count($fixtures),
+            "items" => $fixtures,
         ];
     }
 
@@ -293,6 +337,17 @@ final class AiContextBuilder
         $contents = trim(strtok((string) file_get_contents($path), "\r\n") ?: "");
 
         return $contents !== "" ? $contents : null;
+    }
+
+    private function readJson(string $path): array
+    {
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $payload = json_decode((string) file_get_contents($path), true);
+
+        return is_array($payload) ? $payload : [];
     }
 
     private function redact(mixed $value, string $key = ""): mixed

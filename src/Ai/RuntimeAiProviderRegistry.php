@@ -21,6 +21,8 @@ use Throwable;
 
 final class RuntimeAiProviderRegistry
 {
+    private const ALLOWED_DRIVERS = ["fionn", "local"];
+
     public function __construct(private ?Container $container = null)
     {
     }
@@ -92,7 +94,15 @@ final class RuntimeAiProviderRegistry
             "provider_ready" => false,
             "external_calls" => false,
             "integration_state" => (string) ($providerConfig["integration_state"] ?? "configured"),
+            "accounting" => $this->accountingPolicy(),
         ];
+
+        if (!in_array($driver, self::ALLOWED_DRIVERS, true)) {
+            return array_merge($base, [
+                "integration_state" => "blocked",
+                "reason" => "FNLLA allows only the local runtime assistant and the reserved Fionn AI provider boundary.",
+            ]);
+        }
 
         if ($class === "" || !class_exists($class)) {
             return array_merge($base, [
@@ -138,5 +148,15 @@ final class RuntimeAiProviderRegistry
         }
 
         return false;
+    }
+
+    private function accountingPolicy(): array
+    {
+        return [
+            "token_fields" => ["input_tokens", "output_tokens", "total_tokens"],
+            "cost_field" => "estimated_cost_gbp",
+            "latency_field" => "latency_ms",
+            "remote_provider_required" => true,
+        ];
     }
 }

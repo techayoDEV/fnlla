@@ -134,15 +134,15 @@ function Test-OrganizationBranding {
     )
 
     $requiredTargets = @(
-        "profile\README.md"
+        "profile/README.md"
     )
     $optionalTargets = @(
         "README.md",
         "CONTRIBUTING.md",
         "CODE_OF_CONDUCT.md",
-        ".github\ISSUE_TEMPLATE\config.yml",
-        ".github\ISSUE_TEMPLATE\bug-report.yml",
-        ".github\ISSUE_TEMPLATE\feature-request.yml"
+        ".github/ISSUE_TEMPLATE/config.yml",
+        ".github/ISSUE_TEMPLATE/bug-report.yml",
+        ".github/ISSUE_TEMPLATE/feature-request.yml"
     )
     $legacyPattern = "FNLLA Runtime|techayoDEV/fnlla-runtime|fnlla-ui"
 
@@ -185,7 +185,7 @@ $errors = New-Object System.Collections.Generic.List[string]
 
 try {
     $frameworkVersion = Read-VersionFile -Path (Join-Path $projectRoot "VERSION")
-    $vendoredWebVersion = Read-VersionFile -Path (Join-Path $projectRoot "public\vendor\fnlla-runtime\VERSION")
+    $vendoredWebVersion = Read-VersionFile -Path (Join-Path $projectRoot "public/vendor/fnlla-runtime/VERSION")
     $projectManifest = Read-JsonFile -Path (Join-Path $projectRoot "MANIFEST.json")
 
     if ($projectManifest.product.version -ne $frameworkVersion) {

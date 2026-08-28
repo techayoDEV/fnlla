@@ -22,6 +22,7 @@ Purpose:
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Console\Command;
+use Fnlla\Php\Support\FrameworkUpdateAuditLogger;
 use Fnlla\Php\Support\FrameworkLock;
 use Fnlla\Php\Support\FrameworkUpdater;
 use RuntimeException;
@@ -52,9 +53,13 @@ final class FrameworkUpdateCommand extends Command
         $currentLock = FrameworkLock::load($projectRoot);
         $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA Project"));
 
-        $report = $options["apply"] === true
-            ? FrameworkUpdater::applyLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
-            : FrameworkUpdater::checkLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""));
+        if ($options["dry_run"] === true) {
+            $report = FrameworkUpdater::dryRunLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""));
+        } elseif ($options["apply"] === true) {
+            $report = FrameworkUpdater::applyLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""));
+        } else {
+            $report = FrameworkUpdater::checkLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""));
+        }
 
         if ($options["json"] === true) {
             $this->line($this->encodeJson($report));
@@ -62,7 +67,7 @@ final class FrameworkUpdateCommand extends Command
             $this->renderReport($report);
         }
 
-        if ($options["apply"] === true) {
+        if ($options["apply"] === true && $options["dry_run"] !== true) {
             if ($options["json"] !== true) {
                 $this->line("");
                 $this->line("Applied framework update changes: " . (int) ($report["applied_changes"] ?? 0));
@@ -79,6 +84,7 @@ final class FrameworkUpdateCommand extends Command
     {
         $options = [
             "apply" => false,
+            "dry_run" => false,
             "help" => false,
             "json" => false,
             "release_tag" => null,
@@ -98,6 +104,11 @@ final class FrameworkUpdateCommand extends Command
 
             if ($argument === "--check") {
                 $options["apply"] = false;
+                continue;
+            }
+
+            if ($argument === "--dry-run") {
+                $options["dry_run"] = true;
                 continue;
             }
 
@@ -127,15 +138,28 @@ final class FrameworkUpdateCommand extends Command
             }
 
             if (str_starts_with($argument, "--source=")) {
+                $this->auditRejectedOption($argument);
                 throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
             }
 
             if ($argument === "--source") {
+                $this->auditRejectedOption($argument);
                 throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
             }
 
-            if (str_starts_with($argument, "--repository=") || $argument === "--repository" || str_starts_with($argument, "--repo-url=") || $argument === "--repo-url") {
+            if (str_starts_with($argument, "--repository=") || $argument === "--repository") {
+                $this->auditRejectedOption($argument);
                 throw new RuntimeException("Repository overrides are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
+            }
+
+            if (str_starts_with($argument, "--api-base-url=") || $argument === "--api-base-url") {
+                $this->auditRejectedOption($argument);
+                throw new RuntimeException("GitHub API base URL overrides are disabled. FNLLA updates can only use https://api.github.com for the official techayoDEV/fnlla release channel.");
+            }
+
+            if (str_starts_with($argument, "--clone-url=") || $argument === "--clone-url" || str_starts_with($argument, "--repo-url=") || $argument === "--repo-url") {
+                $this->auditRejectedOption($argument);
+                throw new RuntimeException("GitHub clone URL overrides are disabled. FNLLA updates can only clone the official techayoDEV/fnlla release source.");
             }
 
             throw new RuntimeException("Unknown option for framework:update: " . $argument);
@@ -147,6 +171,7 @@ final class FrameworkUpdateCommand extends Command
     private function printUsage(): void
     {
         $this->line("Usage: php fnlla framework:update --check [--release-tag v1.0.x] [--json]");
+        $this->line("   or: php fnlla framework:update --dry-run [--release-tag v1.0.x] [--json]");
         $this->line("   or: php fnlla framework:update --apply [--release-tag v1.0.x] [--json]");
         $this->line("Updates are downloaded only from the official techayoDEV/fnlla GitHub release channel.");
         $this->line("Use --json to emit the framework update report as machine-readable JSON.");
@@ -175,6 +200,9 @@ final class FrameworkUpdateCommand extends Command
         $this->line("Safe framework changes available: " . count($report["updates"]));
         $this->line("Conflicts: " . count($report["conflicts"]));
         $this->line("Local-only managed changes preserved: " . count($report["local_only_changes"]));
+        if (is_string($report["dry_run_report_path"] ?? null) && $report["dry_run_report_path"] !== "") {
+            $this->line("Dry-run report: " . $report["dry_run_report_path"]);
+        }
 
         if ($report["updates"] === [] && $report["conflicts"] === []) {
             $this->line("");
@@ -264,5 +292,14 @@ final class FrameworkUpdateCommand extends Command
         }
 
         return $encoded;
+    }
+
+    private function auditRejectedOption(string $argument): void
+    {
+        FrameworkUpdateAuditLogger::write("framework_update.rejected_source", [
+            "command" => $this->name(),
+            "argument" => $argument,
+            "project_root" => base_path(),
+        ]);
     }
 }

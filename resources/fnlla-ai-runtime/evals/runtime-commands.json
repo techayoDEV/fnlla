@@ -1,0 +1,41 @@
+{
+    "schema": "fnlla.ai_eval_fixture.v1",
+    "version": "1.0.0",
+    "fixtures": [
+        {
+            "id": "ai-ask-release-readiness",
+            "command": "ai:ask",
+            "input": "How do I check release readiness?",
+            "expected_schema": "fnlla.runtime_ai.answer.v1",
+            "must_include_fields": ["usage", "latency_ms", "estimated_cost_gbp"]
+        },
+        {
+            "id": "ai-triage-route-404",
+            "command": "ai:triage",
+            "input": "route 404 on controller",
+            "expected_schema": "fnlla.ai_triage.v1",
+            "must_include_fields": ["answer", "likely_areas", "next_steps"]
+        },
+        {
+            "id": "ai-explain-log-sqlstate",
+            "command": "ai:explain-log",
+            "input": "SQLSTATE[HY000] [1045] Access denied",
+            "expected_schema": "fnlla.ai_log_explainer.v1",
+            "must_include_fields": ["probable_cause", "likely_area", "recommended_test_filter"]
+        },
+        {
+            "id": "ai-brief-upgrade",
+            "command": "ai:brief",
+            "input": "2.0.0",
+            "expected_schema": "fnlla.ai_brief.v1",
+            "must_include_fields": ["project", "routes", "upgrade_summary"]
+        },
+        {
+            "id": "future-provider-adapter",
+            "command": "future-provider-adapter",
+            "input": "provider status",
+            "expected_schema": "fnlla.runtime_ai.provider_status.v1",
+            "must_include_fields": ["accounting", "provider_ready", "external_calls"]
+        }
+    ]
+}

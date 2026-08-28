@@ -143,15 +143,6 @@ $guidePages = [
         "document_title" => "Major Release Checklist - FNLLA Documentation",
         "lead" => "Release-owner checklist for contract, validation, performance, privacy and publication readiness.",
     ],
-    [
-        "label" => "Enterprise To-Do",
-        "href" => "enterprise-todo.html",
-        "source" => "docs/ENTERPRISE-TODO.md",
-        "source_name" => "ENTERPRISE-TODO.md",
-        "title" => "Enterprise To-Do",
-        "document_title" => "Enterprise To-Do - FNLLA Documentation",
-        "lead" => "Concrete enterprise-readiness tasks for governance, update hardening, AI readiness and developer experience.",
-    ],
 ];
 
 $guideLinkMap = [
@@ -163,7 +154,6 @@ $guideLinkMap = [
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
-    "./ENTERPRISE-TODO.md" => "./enterprise-todo.html",
 ];
 
 $pagesToWrite = [

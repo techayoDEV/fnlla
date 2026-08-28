@@ -241,6 +241,8 @@ final class UpgradeAnalyzer
             "resources/fnlla-ai-runtime/profile.json",
             "resources/fnlla-ai-runtime/intents/core.json",
             "resources/fnlla-ai-runtime/knowledge/base.json",
+            "resources/fnlla-ai-runtime/prompts/registry.json",
+            "resources/fnlla-ai-runtime/evals/runtime-commands.json",
         ] as $file) {
             if (!is_file(base_path($file))) {
                 $missing[] = $file;

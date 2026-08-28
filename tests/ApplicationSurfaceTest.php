@@ -351,6 +351,24 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString('"api_health": "/api/health"', $response->body());
     }
 
+    public function testApiProfileReturnsFrameworkCapabilityPayload(): void
+    {
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/api/profile",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+            "HTTP_ACCEPT" => "application/json",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertSame("application/json; charset=UTF-8", $response->headers()["Content-Type"] ?? null);
+        self::assertStringContainsString('"name": "' . $this->expectedProjectName() . '"', $response->body());
+        self::assertStringContainsString('"supports": [', $response->body());
+        self::assertStringContainsString('"queues"', $response->body());
+    }
+
     public function testApiHealthRendersBrowserFriendlyViewByDefault(): void
     {
         $application = $this->makeApplication();

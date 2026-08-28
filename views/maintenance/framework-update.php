@@ -28,7 +28,7 @@ $upgradePlanActions = is_array($upgradeReport["plan"]["actions"] ?? null) ? (arr
 $upgradeApplyActions = is_array($upgradeApply["actions"] ?? null) ? (array) $upgradeApply["actions"] : [];
 $upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? "2.0.0"));
 $reportMode = trim((string) ($report["mode"] ?? ""));
-$reportUsesGitHub = in_array($reportMode, ["github-check", "github-apply"], true);
+$reportUsesGitHub = in_array($reportMode, ["github-check", "github-dry-run", "github-apply"], true);
 $reportIsApply = in_array($reportMode, ["apply", "github-apply"], true);
 $reportUpdates = (array) ($report["updates"] ?? []);
 $reportConflicts = (array) ($report["conflicts"] ?? []);
@@ -43,6 +43,7 @@ $reportUpdateReady = ($report["update_ready"] ?? false) === true;
 $reportRequiresManualReview = ($report["requires_manual_review"] ?? false) === true;
 $reportSourcePath = trim((string) ($report["source_root"] ?? $report["source_path"] ?? $sourcePathValue));
 $reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report["release_tag"] ?? ""))));
+$reportDryRunPath = trim((string) ($report["dry_run_report_path"] ?? ""));
 $updateActionLabel = static function (array $update): string {
     $label = trim((string) ($update["label"] ?? ""));
 
@@ -237,8 +238,9 @@ $updateActionLabel = static function (array $update): string {
                 <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA version.</p>
               </div>
 
-              <div class="grid grid-2 gap-md framework-update-actions-grid">
+              <div class="grid grid-3 gap-md framework-update-actions-grid">
                 <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Check GitHub update</button>
+                <button class="btn btn-outline" type="submit" name="mode" value="github-dry-run" data-framework-update-progress-mode="github-dry-run" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Dry-run report</button>
                 <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Apply GitHub update</button>
               </div>
             </section>
@@ -259,7 +261,7 @@ $updateActionLabel = static function (array $update): string {
             <h3 class="form-message-title">Recommended sequence</h3>
             <ol class="framework-update-sequence mb-0">
               <li>Check the latest GitHub release and let FNLLA cache it locally.</li>
-              <li>Review safe changes, conflicts and release notes before touching apply.</li>
+              <li>Review the dry-run report, safe changes, conflicts and release notes before touching apply.</li>
               <li>Apply only when the report and post-install checks stay healthy.</li>
             </ol>
           </div>
@@ -331,6 +333,13 @@ $updateActionLabel = static function (array $update): string {
           <p class="content-text mb-0">Local-only managed changes preserved: <?= h((string) count((array) ($report["local_only_changes"] ?? []))) ?></p>
         </article>
       </div>
+
+      <?php if ($reportDryRunPath !== ""): ?>
+      <div class="form-message mb-lg" role="status">
+        <h3 class="form-message-title">Dry-run artefact</h3>
+        <p class="form-message-text mb-0">The exact file-change report was written to <code><?= h($reportDryRunPath) ?></code>.</p>
+      </div>
+      <?php endif; ?>
 
       <?php if ($reportHeadlineTitle !== "" || $reportHeadlineText !== ""): ?>
       <article class="feature-card mb-lg">
@@ -553,6 +562,27 @@ $updateActionLabel = static function (array $update): string {
           }
         ]
       },
+      "github-dry-run": {
+        copy: "FNLLA is preparing a dry-run file-change report from the official GitHub release cache without applying changes.",
+        steps: [
+          {
+            label: "Checking the latest published GitHub release metadata.",
+            meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
+          },
+          {
+            label: "Downloading or reusing the cached FNLLA release source.",
+            meta: "Prepares a local release snapshot so the dry-run compares against a validated source."
+          },
+          {
+            label: "Exporting a fresh project baseline from the cached release.",
+            meta: "Creates a clean framework reference that matches the published project contract."
+          },
+          {
+            label: "Writing the dry-run artefact with exact file actions.",
+            meta: "Records safe changes, conflicts and local-only changes without modifying framework-managed files."
+          }
+        ]
+      },
       "github-apply": {
         copy: "FNLLA is applying the cached GitHub-backed update and then running post-install validation checks.",
         steps: [
@@ -575,6 +605,7 @@ $updateActionLabel = static function (array $update): string {
         ]
       },
       "check": "github-check",
+      "dry-run": "github-dry-run",
       "apply": "github-apply"
     };
 

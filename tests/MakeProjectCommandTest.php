@@ -86,6 +86,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "framework-update.php");
         self::assertFalse(is_dir($this->targetPath . DIRECTORY_SEPARATOR . "docs"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "build-docs.php"));
+        self::assertFalse(is_dir($this->targetPath . DIRECTORY_SEPARATOR . "resources" . DIRECTORY_SEPARATOR . "project-templates"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "factories" . DIRECTORY_SEPARATOR . "UserFactory.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "migrations" . DIRECTORY_SEPARATOR . "20260627180000_create_users_table.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "migrations" . DIRECTORY_SEPARATOR . "20260627200000_add_role_to_users_table.php"));
@@ -192,6 +193,10 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertStringContainsString(
             "The export intentionally leaves `make:*`, `make:project`",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
+        );
+        self::assertStringContainsString(
+            "versioned project-export templates under `resources/project-templates/`",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
@@ -369,6 +374,23 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(str_contains($routeListOutput, "/project/launch"));
         self::assertFalse(str_contains($routeListOutput, "/login"));
         self::assertFalse(str_contains($routeListOutput, "/dashboard"));
+    }
+
+    public function testProjectExportTemplatesAreVersionedFilesOutsideTheCommandBody(): void
+    {
+        foreach ([
+            "README.md",
+            "fnlla",
+            "fnlla.cmd",
+            "test-project.cmd",
+            "lint-project.cmd",
+            "database/seeders/DatabaseSeeder.php",
+            "tests/BootstrapAutoloadTest.php",
+        ] as $relativePath) {
+            self::assertFileExists(base_path("resources/project-templates/v1/" . $relativePath));
+        }
+
+        self::assertStringNotContainsString("<<<", (string) file_get_contents(base_path("src/Console/Commands/MakeProjectCommand.php")));
     }
 
     private function runPhpScript(string $scriptPath, array $arguments = []): array

@@ -24,10 +24,13 @@ For a normal exported project, the important script set is:
 - `scripts/sync-version-manifest.php`
 - `scripts/sync-fnlla-runtime.ps1`
 
+PowerShell scripts are maintained for PowerShell Core (`pwsh`) so the same workflow can run on Windows, macOS and Linux.
+
 The exported application also keeps one framework-update command on purpose:
 
 - `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
 - `php fnlla framework:update --check`
+- `php fnlla framework:update --dry-run`
 
 And the application now keeps one browser-facing maintenance page on purpose:
 
@@ -225,15 +228,16 @@ Use it when:
 Typical examples:
 
 ```bash
-php fnlla framework:update --check --github
-php fnlla framework:update --apply --github
 php fnlla framework:update --check
+php fnlla framework:update --dry-run
 php fnlla framework:update --apply
 ```
 
 Important boundary:
 
 - by default, the GitHub-backed workflow checks the latest published FNLLA release and caches that release source locally under `storage/framework/updates/`
+- `--dry-run` writes the exact safe-change, conflict and local-only file report before apply
+- update audit events are written to `storage/logs/framework-update.log` by default
 - the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base
 - local `--source`, repository override and fork update paths are rejected
 - the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
@@ -341,6 +345,7 @@ After export, a healthy first pass is:
 php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
 php fnlla framework:update --check
+php fnlla framework:update --dry-run
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php

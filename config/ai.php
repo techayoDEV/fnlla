@@ -22,6 +22,8 @@ return [
         "load_integrated_runtime" => (bool) env("AI_RUNTIME_LOAD_INTEGRATED", true),
         "learning_enabled" => (bool) env("AI_RUNTIME_LEARNING_ENABLED", false),
         "learning_path" => (string) env("AI_RUNTIME_LEARNING_PATH", "framework/ai/runtime-knowledge.json"),
+        "prompt_registry_path" => (string) env("AI_RUNTIME_PROMPT_REGISTRY_PATH", "resources/fnlla-ai-runtime/prompts/registry.json"),
+        "evals_path" => (string) env("AI_RUNTIME_EVALS_PATH", "resources/fnlla-ai-runtime/evals"),
         "max_input_chars" => max(32, (int) env("AI_RUNTIME_MAX_INPUT_CHARS", 2000)),
         "confidence_threshold" => max(0, min(100, (int) env("AI_RUNTIME_CONFIDENCE_THRESHOLD", 35))),
         "profile" => [

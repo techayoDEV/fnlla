@@ -16,11 +16,15 @@
         "profile_path": "profile.json",
         "intents_directory": "intents",
         "knowledge_directory": "knowledge",
+        "prompt_registry_path": "prompts/registry.json",
+        "evals_directory": "evals",
         "release_files": [
             "MANIFEST.json",
             "README.md",
             "VERSION",
-            "profile.json"
+            "profile.json",
+            "prompts/registry.json",
+            "evals/runtime-commands.json"
         ]
     },
     "privacy": {

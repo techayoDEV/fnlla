@@ -61,6 +61,15 @@ function Assert-CommandExists {
     return $command.Source
 }
 
+function Resolve-PowerShellRuntime {
+    $pwsh = Get-Command -Name "pwsh" -ErrorAction SilentlyContinue
+    if ($null -ne $pwsh) {
+        return $pwsh.Source
+    }
+
+    return Assert-CommandExists -Name "powershell"
+}
+
 function Invoke-CheckedCommand {
     param(
         [Parameter(Mandatory = $true)]
@@ -84,7 +93,7 @@ function Resolve-PublishScriptPath {
         [string]$BasePath
     )
 
-    $preferredPath = Join-Path $BasePath "scripts\publish-fnlla-runtime.mjs"
+    $preferredPath = Join-Path $BasePath "scripts/publish-fnlla-runtime.mjs"
     if (Test-Path -LiteralPath $preferredPath -PathType Leaf) {
         return $preferredPath
     }
@@ -167,8 +176,8 @@ function Resolve-RuntimeExportPath {
     )
 
     $base = Resolve-AbsolutePath -Path $BasePath
-    $distPath = Join-Path $base "dist\fnlla-runtime"
-    $integratedVendoredPath = Join-Path $base "public\vendor\fnlla-runtime"
+    $distPath = Join-Path $base "dist/fnlla-runtime"
+    $integratedVendoredPath = Join-Path $base "public/vendor/fnlla-runtime"
     $assetsPath = Join-Path $base "assets"
     $versionPath = Join-Path $base "VERSION"
     $sourceRepoMarkers = @(
@@ -193,21 +202,21 @@ function Resolve-RuntimeExportPath {
             return $integratedVendoredPath
         }
 
-        $integratedPublishScript = Join-Path $base "scripts\publish-fnlla-runtime.ps1"
+        $integratedPublishScript = Join-Path $base "scripts/publish-fnlla-runtime.ps1"
         if (Test-Path -LiteralPath $integratedPublishScript -PathType Leaf) {
-            $powershellPath = Assert-CommandExists -Name "powershell"
-            Invoke-CheckedCommand -FilePath $powershellPath -Arguments @("-ExecutionPolicy", "Bypass", "-File", $integratedPublishScript) -Label "powershell"
+            $powershellPath = Resolve-PowerShellRuntime
+            Invoke-CheckedCommand -FilePath $powershellPath -Arguments @("-NoProfile", "-File", $integratedPublishScript) -Label "pwsh"
 
             if ((Test-Path -LiteralPath $distPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $distPath "VERSION") -PathType Leaf)) {
                 return $distPath
             }
 
-            throw "Integrated FNLLA UI surface publish completed, but dist\\fnlla-runtime was not created under: $base"
+            throw "Integrated FNLLA UI surface publish completed, but dist/fnlla-runtime was not created under: $base"
         }
 
         $publishScriptPath = Resolve-PublishScriptPath -BasePath $base
         if ($null -eq $publishScriptPath) {
-            throw "The provided path looks like a source repository checkout, but no integrated UI surface export was found. Publish the maintained UI surface first and sync from dist\\fnlla-runtime."
+            throw "The provided path looks like a source repository checkout, but no integrated UI surface export was found. Publish the maintained UI surface first and sync from dist/fnlla-runtime."
         }
 
         $nodePath = Assert-CommandExists -Name "node"
@@ -217,7 +226,7 @@ function Resolve-RuntimeExportPath {
             return $distPath
         }
 
-        throw "FNLLA integrated UI surface publish completed, but dist\\fnlla-runtime was not created under: $base"
+        throw "FNLLA integrated UI surface publish completed, but dist/fnlla-runtime was not created under: $base"
     }
 
     if ((Test-Path -LiteralPath $distPath -PathType Container) -and (Test-Path -LiteralPath (Join-Path $distPath "VERSION") -PathType Leaf)) {
@@ -283,27 +292,57 @@ function Sync-RuntimeExport {
         [string]$DestinationRuntimePath
     )
 
-    $robocopyPath = Assert-CommandExists -Name "robocopy"
+    $isWindowsPlatform = [System.IO.Path]::DirectorySeparatorChar -eq "\"
+
+    if ($isWindowsPlatform) {
+        $robocopyCommand = Get-Command -Name "robocopy" -ErrorAction SilentlyContinue
+        if ($null -ne $robocopyCommand) {
+            if (Test-Path -LiteralPath $DestinationRuntimePath) {
+                Remove-Item -LiteralPath $DestinationRuntimePath -Recurse -Force
+            }
+
+            New-Item -ItemType Directory -Path $DestinationRuntimePath | Out-Null
+
+            & $robocopyCommand.Source $SourceRuntimePath $DestinationRuntimePath /MIR /NFL /NDL /NJH /NJS /NP
+            $exitCode = $LASTEXITCODE
+
+            if ($exitCode -gt 7) {
+                throw "robocopy failed with exit code $exitCode."
+            }
+
+            return
+        }
+    }
+
     if (Test-Path -LiteralPath $DestinationRuntimePath) {
         Remove-Item -LiteralPath $DestinationRuntimePath -Recurse -Force
     }
 
     New-Item -ItemType Directory -Path $DestinationRuntimePath | Out-Null
 
-    & $robocopyPath $SourceRuntimePath $DestinationRuntimePath /MIR /NFL /NDL /NJH /NJS /NP
-    $exitCode = $LASTEXITCODE
-
-    if ($exitCode -gt 7) {
-        throw "robocopy failed with exit code $exitCode."
+    foreach ($item in Get-ChildItem -LiteralPath $SourceRuntimePath -Force) {
+        Copy-Item -LiteralPath $item.FullName -Destination $DestinationRuntimePath -Recurse -Force
     }
 }
 
 $projectRoot = Resolve-AbsolutePath -Path (Join-Path $PSScriptRoot "..")
-$targetRuntimePath = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public\vendor\fnlla-runtime")
+$targetRuntimePath = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public/vendor/fnlla-runtime")
 $publicRoot = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public")
 
 Assert-DirectoryExists -Path $projectRoot -Description "Project root"
 Assert-DirectoryExists -Path $publicRoot -Description "Public directory"
+
+if ($SourcePath) {
+    throw "Local runtime source sync is disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+}
+
+if ($RepoUrl) {
+    throw "Runtime repository URL overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+}
+
+if ($Repository -ne "techayoDEV/fnlla") {
+    throw "Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+}
 
 if (-not $targetRuntimePath.StartsWith($publicRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Refusing to sync outside the public directory: $targetRuntimePath"
@@ -360,7 +399,7 @@ try {
     }
 
     $phpPath = Assert-CommandExists -Name "php"
-    $versionSyncScriptPath = Join-Path $projectRoot "scripts\sync-version-manifest.php"
+    $versionSyncScriptPath = Join-Path $projectRoot "scripts/sync-version-manifest.php"
     Invoke-CheckedCommand -FilePath $phpPath -Arguments @($versionSyncScriptPath) -Label "php"
 }
 finally {

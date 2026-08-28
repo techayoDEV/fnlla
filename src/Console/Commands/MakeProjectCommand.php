@@ -30,6 +30,88 @@ use RuntimeException;
 
 final class MakeProjectCommand extends Command
 {
+    private const EXPORT_ROOT_ENTRIES = [
+        ".editorconfig",
+        ".env.example",
+        ".gitattributes",
+        ".gitignore",
+        "LICENSE.md",
+        "MANIFEST.json",
+        "SUPPORT.md",
+        "TRADEMARKS.md",
+        "VERSION",
+        "bootstrap",
+        "composer.json",
+        "config",
+        "database",
+        "fnlla",
+        "fnlla.cmd",
+        "lang",
+        "public",
+        "resources",
+        "routes",
+        "scripts",
+        "src",
+        "storage",
+        "tests",
+        "update-fnlla-runtime.cmd",
+        "views",
+    ];
+
+    private const FAST_COPY_DIRECTORIES = [
+        "public",
+        "public/vendor/fnlla-runtime",
+    ];
+
+    private const SKIP_PREFIXES = [
+        "docs/",
+        "resources/project-templates/",
+        "storage/database/",
+        "storage/logs/",
+        "storage/framework/cache/",
+        "storage/framework/queue/",
+        "storage/framework/sessions/",
+    ];
+
+    private const SKIP_EXACT_PATHS = [
+        "docs",
+        "database/factories/UserFactory.php",
+        "database/migrations/20260627180000_create_users_table.php",
+        "database/migrations/20260627200000_add_role_to_users_table.php",
+        "resources/project-templates",
+        "scripts/apply-techayo-metadata.ps1",
+        "scripts/build-docs.php",
+        "src/Console/Commands/MakeCommandCommand.php",
+        "src/Console/Commands/MakeControllerCommand.php",
+        "src/Console/Commands/MakeFactoryCommand.php",
+        "src/Console/Commands/MakeMiddlewareCommand.php",
+        "src/Console/Commands/MakeMigrationCommand.php",
+        "src/Console/Commands/MakeProjectCommand.php",
+        "src/Console/Commands/MakeSeederCommand.php",
+        "src/Console/Commands/VersionSetCommand.php",
+        "src/Controllers/AuthController.php",
+        "storage/framework/fnlla-runtime-guard.json",
+        "test-fnlla.cmd",
+        "lint-fnlla.cmd",
+        "tests/ApplicationTest.php",
+        "tests/AuthTest.php",
+        "tests/EnvironmentConfigTest.php",
+        "tests/FnllaRuntimeGuardTest.php",
+        "tests/FnllaRuntimeSyncCommandTest.php",
+        "tests/FrameworkExtensionsTest.php",
+        "tests/FrameworkUpdateCommandTest.php",
+        "tests/MakeProjectCommandTest.php",
+        "tests/PageMetaTest.php",
+        "tests/ReleaseWorkflowTest.php",
+        "tests/RequestTest.php",
+        "tests/RouterTest.php",
+        "tests/ValidationTest.php",
+        "views/pages/admin.php",
+        "views/pages/dashboard.php",
+        "views/pages/login.php",
+        "views/pages/platform.php",
+    ];
+
     public function name(): string
     {
         return "make:project";
@@ -148,33 +230,7 @@ final class MakeProjectCommand extends Command
 
     private function shouldExportRootEntry(string $name): bool
     {
-        return in_array($name, [
-            ".editorconfig",
-            ".env.example",
-            ".gitattributes",
-            ".gitignore",
-            "LICENSE.md",
-            "MANIFEST.json",
-            "SUPPORT.md",
-            "TRADEMARKS.md",
-            "VERSION",
-            "bootstrap",
-            "composer.json",
-            "config",
-            "database",
-            "fnlla",
-            "fnlla.cmd",
-            "lang",
-            "public",
-            "resources",
-            "routes",
-            "scripts",
-            "src",
-            "storage",
-            "tests",
-            "update-fnlla-runtime.cmd",
-            "views",
-        ], true);
+        return in_array($name, self::EXPORT_ROOT_ENTRIES, true);
     }
 
     private function copyPath(string $sourcePath, string $targetPath): void
@@ -250,10 +306,7 @@ final class MakeProjectCommand extends Command
 
     private function canFastCopyDirectory(string $relativePath): bool
     {
-        return in_array($relativePath, [
-            "public",
-            "public/vendor/fnlla-runtime",
-        ], true);
+        return in_array($relativePath, self::FAST_COPY_DIRECTORIES, true);
     }
 
     private function findRobocopy(): ?string
@@ -267,65 +320,11 @@ final class MakeProjectCommand extends Command
 
     private function shouldSkipRelativeEntry(string $relativePath): bool
     {
-        if ($relativePath === "docs" || str_starts_with($relativePath, "docs/")) {
+        if (in_array($relativePath, self::SKIP_EXACT_PATHS, true)) {
             return true;
         }
 
-        if ($this->isRuntimeStatePath($relativePath)) {
-            return true;
-        }
-
-        return in_array($relativePath, [
-            "database/factories/UserFactory.php",
-            "database/migrations/20260627180000_create_users_table.php",
-            "database/migrations/20260627200000_add_role_to_users_table.php",
-            "scripts/apply-techayo-metadata.ps1",
-            "scripts/build-docs.php",
-            "src/Console/Commands/MakeCommandCommand.php",
-            "src/Console/Commands/MakeControllerCommand.php",
-            "src/Console/Commands/MakeFactoryCommand.php",
-            "src/Console/Commands/MakeMiddlewareCommand.php",
-            "src/Console/Commands/MakeMigrationCommand.php",
-            "src/Console/Commands/MakeProjectCommand.php",
-            "src/Console/Commands/MakeSeederCommand.php",
-            "src/Console/Commands/VersionSetCommand.php",
-            "src/Controllers/AuthController.php",
-            "tests/ApplicationTest.php",
-            "tests/AuthTest.php",
-            "tests/EnvironmentConfigTest.php",
-            "tests/FnllaRuntimeGuardTest.php",
-            "tests/FnllaRuntimeSyncCommandTest.php",
-            "tests/FrameworkExtensionsTest.php",
-            "tests/MakeProjectCommandTest.php",
-            "tests/PageMetaTest.php",
-            "tests/RequestTest.php",
-            "tests/RouterTest.php",
-            "tests/FrameworkUpdateCommandTest.php",
-            "tests/ReleaseWorkflowTest.php",
-            "tests/ValidationTest.php",
-            "test-fnlla.cmd",
-            "lint-fnlla.cmd",
-            "views/pages/about.php",
-            "views/pages/admin.php",
-            "views/pages/dashboard.php",
-            "views/pages/login.php",
-            "views/pages/platform.php",
-        ], true);
-    }
-
-    private function isRuntimeStatePath(string $relativePath): bool
-    {
-        if ($relativePath === "storage/framework/fnlla-runtime-guard.json") {
-            return true;
-        }
-
-        foreach ([
-            "storage/database/",
-            "storage/logs/",
-            "storage/framework/cache/",
-            "storage/framework/queue/",
-            "storage/framework/sessions/",
-        ] as $prefix) {
+        foreach (self::SKIP_PREFIXES as $prefix) {
             if (str_starts_with($relativePath, $prefix)) {
                 return basename($relativePath) !== ".gitignore";
             }
@@ -404,179 +403,9 @@ final class MakeProjectCommand extends Command
 
     private function rewriteProjectReadme(string $targetRoot, string $appName): void
     {
-        $readme = <<<MD
-# {$appName}
-
-This repository is a working application export generated from `techayoDEV/fnlla`.
-
-It is intended to be the beginning of a new server-rendered website or web application built on:
-
-- FNLLA
-- the integrated FNLLA UI surface
-- PHP 8.3
-- MySQL
-
-## What is already included
-
-- the FNLLA application core
-- the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
-- the integrated private runtime intelligence bundle under `resources/fnlla-ai-runtime/`
-- machine-readable release metadata in `MANIFEST.json`
-- framework update baseline metadata in `.fnlla/framework-lock.json`
-- root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
-- an application base with public pages for home, about and services
-- an optional password-protected maintenance access screen for client preview or staged review sessions
-- sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
-- database directories ready for project-specific migrations and seeders
-- local lint, test, version metadata and integrated UI surface validation scripts
-- a local-first framework maintenance page at `/maintenance/framework-update`
-
-## How to start working
-
-1. Claim the project identity:
-
-```bash
-php fnlla project:claim --product "{$appName}" --owner "Owner LTD" --developer "Developer LTD" --maintainer "Developer LTD"
-```
-
-2. Copy `.env.example` to `.env`.
-3. Set `APP_URL` and your MySQL credentials.
-4. Run:
-
-```bash
-php fnlla fnlla-runtime:validate
-php scripts/test.php
-php scripts/lint.php
-php scripts/validate-version-manifest.php
-```
-
-5. Start the local server:
-
-```bash
-php -S 127.0.0.1:8080 -t public public/router.php
-```
-
-6. Open `http://127.0.0.1:8080` in your browser and review the exported pages at `/`, `/about` and `/services`.
-7. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
-8. When client preview should stay private, either:
-
-   - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh project export, or
-   - set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`
-
-The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
-
-For Apache environments, use `public/` as the document root.
-The exported project already includes `public/.htaccess`.
-
-The exported `.env.example` starts with local-development defaults so sessions work over plain HTTP on `127.0.0.1`.
-Before production deployment, switch the environment back to production-safe values and enable HTTPS.
-
-## What the export intentionally leaves behind
-
-This exported application does not copy the full maintainer workspace from `techayoDEV/fnlla`.
-
-It intentionally leaves behind:
-
-- framework-only browser docs under `docs/`
-- the maintainer docs builder `scripts/build-docs.php`
-- repository governance and contribution files such as `.git/`, `.github/`, `CODE_OF_CONDUCT.md` and `SECURITY.md`
-- local runtime residue such as logs, cache entries, queue files, session files and integrated UI surface guard state
-
-That keeps the downstream project focused on application delivery rather than framework maintenance.
-
-## First files to replace or review
-
-- `routes/web.php`
-- `src/Controllers/PageController.php`
-- `views/pages/`
-- `public/assets/app.css`
-- `database/migrations/`
-- `config/app.php`
-
-## Important note
-
-The exported project still contains a working application surface so the application runs immediately.
-
-That surface is a starting point, not the final product. Replace the placeholder pages, routes and content with the real website or application flow for this project.
-
-Use `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` to understand the upstream FNLLA code license, support boundary and branding rules that came with this application base.
-
-## Useful commands
-
-The application base keeps only the project-facing scripts, smoke tests and commands:
-
-- `php scripts/test.php` runs the project-local smoke test harness kept under `tests/`
-- `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
-- `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
-- `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
-- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
-- `php fnlla doctor` checks local PHP/runtime readiness before development, CI or release
-- `php fnlla security:audit` checks deploy-time security configuration posture
-- `php fnlla optimize` builds route and configuration caches for production-style deployments
-- `php fnlla optimize:warm` builds bootstrap caches, the asset manifest and optional OPcache preload file
-- `php fnlla app:map` generates a route/controller/view map for audits, onboarding and AI-assisted review
-- `php fnlla upgrade:check --target=2.0.0` checks major-release upgrade readiness
-- `php fnlla upgrade:plan --target=2.0.0` writes a machine-readable upgrade plan
-- `php fnlla perf:profile --iterations=5` records local CLI timings, repository footprint and peak memory
-- `php fnlla perf:baseline:update --iterations=7` captures a local performance baseline
-- `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
-- `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
-- `php fnlla ai:review-pack --target=2.0.0` combines context, app map and upgrade readiness into one local AI review artefact
-- `php fnlla ai:providers --json` reports local runtime AI provider readiness without contacting external providers
-- `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
-- `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
-- `php fnlla framework:update --check` checks the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel and caches the release source locally before comparing drift
-- `php fnlla framework:update --apply` applies the safe portion of a newer official GitHub-backed update after the report has no conflicts
-- `/maintenance/framework-update` provides the same official GitHub-backed workflow through a local-first maintenance page
-- `php fnlla version:sync` regenerates `MANIFEST.json` and re-syncs integrated UI surface metadata after an intentional FNLLA version change
-- `php fnlla fnlla-runtime:sync` refreshes the integrated FNLLA UI surface from the official `techayoDEV/fnlla` GitHub repository through the publish -> sync workflow
-
-The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
-
-The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
-
-The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
-
-```bash
-php fnlla list
-php fnlla fnlla-runtime:sync
-php fnlla fnlla-runtime:validate
-php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
-php fnlla doctor
-php fnlla security:audit
-php fnlla framework:update --check
-php fnlla optimize
-php fnlla optimize:warm
-php fnlla app:map
-php fnlla upgrade:check --target=2.0.0
-php fnlla perf:profile --iterations=5
-php fnlla perf:baseline:update --iterations=7
-php fnlla ai:context
-php fnlla ai:review-pack --target=2.0.0
-php fnlla ai:providers --json
-php fnlla optimize:clear
-php fnlla release:prepare
-php fnlla route:list
-php fnlla migrate
-php fnlla migrate:rollback
-php fnlla migrate:status
-php fnlla version:status
-php fnlla version:sync
-php scripts/test.php
-php scripts/lint.php
-php scripts/validate-version-manifest.php
-```
-
-On Windows, the application export also includes:
-
-```cmd
-test-project.cmd
-lint-project.cmd
-update-fnlla-runtime.cmd
-```
-MD;
-
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "README.md", $readme . PHP_EOL);
+        $this->writeProjectTemplate($targetRoot, "README.md", [
+            "{{APP_NAME}}" => $appName,
+        ]);
     }
 
     private function rewriteApplicationSurface(string $targetRoot, string $appName): void
@@ -631,186 +460,18 @@ MD;
 
     private function rewriteDatabaseSurface(string $targetRoot): void
     {
-        $seeder = <<<'PHP'
-<?php
-
-declare(strict_types=1);
-
-/*
-===============================================================================
-PROJECT DATABASE SEEDER
-File: database\seeders\DatabaseSeeder.php
-Purpose:
-- Keeps the exported project ready for project-specific seed data without shipping demo users by default.
-===============================================================================
-*/
-
-namespace Database\Seeders;
-
-use Fnlla\Php\Database\Seeders\Seeder;
-
-final class DatabaseSeeder extends Seeder
-{
-    public function run(): void
-    {
-        // Add project-specific seed data here when the application needs it.
-    }
-}
-PHP;
-
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "seeders" . DIRECTORY_SEPARATOR . "DatabaseSeeder.php", $seeder . PHP_EOL);
+        $this->writeProjectTemplate($targetRoot, "database/seeders/DatabaseSeeder.php");
     }
 
     private function rewriteProjectTests(string $targetRoot): void
     {
-        $bootstrapAutoloadTest = <<<'PHP'
-<?php
-
-declare(strict_types=1);
-
-/*
-===============================================================================
-PROJECT TEST CASE
-File: tests\BootstrapAutoloadTest.php
-Purpose:
-- Confirms the exported project can autoload the PSR-4 namespaces it actually ships.
-===============================================================================
-*/
-
-namespace Fnlla\Php\Tests;
-
-use PHPUnit\Framework\TestCase;
-
-final class BootstrapAutoloadTest extends TestCase
-{
-    public function testFallbackAutoloaderResolvesExportedProjectNamespacesWithoutVendorAutoload(): void
-    {
-        self::assertFalse(is_file(base_path("vendor/autoload.php")));
-        self::assertTrue(class_exists("Database\\Seeders\\DatabaseSeeder"));
-        self::assertFalse(class_exists("Database\\Factories\\UserFactory"));
-    }
-}
-PHP;
-
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "BootstrapAutoloadTest.php", $bootstrapAutoloadTest . PHP_EOL);
+        $this->writeProjectTemplate($targetRoot, "tests/BootstrapAutoloadTest.php");
     }
 
     private function rewriteConsoleLaunchers(string $targetRoot): void
     {
-        $launcher = <<<'PHP'
-#!/usr/bin/env php
-<?php
-
-declare(strict_types=1);
-
-/*
-===============================================================================
-FNLLA PROJECT LAUNCHER
-File: fnlla
-Purpose:
-- Boots the exported FNLLA project console and exposes downstream-safe commands.
-===============================================================================
-*/
-
-use Fnlla\Php\Console\Commands\AiContextCommand;
-use Fnlla\Php\Console\Commands\AiProvidersCommand;
-use Fnlla\Php\Console\Commands\AiRedactCommand;
-use Fnlla\Php\Console\Commands\AiReviewPackCommand;
-use Fnlla\Php\Console\Commands\AiUpgradeBriefCommand;
-use Fnlla\Php\Console\Commands\AppMapCommand;
-use Fnlla\Php\Console\Commands\CacheClearCommand;
-use Fnlla\Php\Console\Commands\ConfigCacheCommand;
-use Fnlla\Php\Console\Commands\DoctorCommand;
-use Fnlla\Php\Console\Commands\FnllaRuntimeSyncCommand;
-use Fnlla\Php\Console\Commands\FnllaRuntimeValidateCommand;
-use Fnlla\Php\Console\Commands\FrameworkUpdateCommand;
-use Fnlla\Php\Console\Commands\MigrateCommand;
-use Fnlla\Php\Console\Commands\MigrateRollbackCommand;
-use Fnlla\Php\Console\Commands\MigrateStatusCommand;
-use Fnlla\Php\Console\Commands\OptimizeClearCommand;
-use Fnlla\Php\Console\Commands\OptimizeCommand;
-use Fnlla\Php\Console\Commands\OptimizeWarmCommand;
-use Fnlla\Php\Console\Commands\PerfBaselineUpdateCommand;
-use Fnlla\Php\Console\Commands\PerfBudgetCommand;
-use Fnlla\Php\Console\Commands\PerfCompareCommand;
-use Fnlla\Php\Console\Commands\PerfProfileCommand;
-use Fnlla\Php\Console\Commands\ProjectClaimCommand;
-use Fnlla\Php\Console\Commands\QueueWorkCommand;
-use Fnlla\Php\Console\Commands\ReleaseChecksumsCommand;
-use Fnlla\Php\Console\Commands\ReleasePrepareCommand;
-use Fnlla\Php\Console\Commands\ReleaseSbomCommand;
-use Fnlla\Php\Console\Commands\RouteCacheCommand;
-use Fnlla\Php\Console\Commands\RouteListCommand;
-use Fnlla\Php\Console\Commands\ScheduleRunCommand;
-use Fnlla\Php\Console\Commands\SecurityAuditCommand;
-use Fnlla\Php\Console\Commands\SeedCommand;
-use Fnlla\Php\Console\Commands\UpgradeApplyCommand;
-use Fnlla\Php\Console\Commands\UpgradeCheckCommand;
-use Fnlla\Php\Console\Commands\UpgradePlanCommand;
-use Fnlla\Php\Console\Commands\VersionStatusCommand;
-use Fnlla\Php\Console\Commands\VersionSyncCommand;
-
-if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:validate", "framework:update", "version:status", "version:sync"], true) && !defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
-    define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true);
-}
-
-$container = require __DIR__ . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEPARATOR . "console.php";
-
-$console = $container->make(\Fnlla\Php\Console\Application::class);
-$console->register(AiContextCommand::class);
-$console->register(AiProvidersCommand::class);
-$console->register(AiRedactCommand::class);
-$console->register(AiReviewPackCommand::class);
-$console->register(AiUpgradeBriefCommand::class);
-$console->register(AppMapCommand::class);
-$console->register(CacheClearCommand::class);
-$console->register(ConfigCacheCommand::class);
-$console->register(DoctorCommand::class);
-$console->register(FnllaRuntimeSyncCommand::class);
-$console->register(FnllaRuntimeValidateCommand::class);
-$console->register(FrameworkUpdateCommand::class);
-$console->register(SeedCommand::class);
-$console->register(MigrateRollbackCommand::class);
-$console->register(MigrateCommand::class);
-$console->register(MigrateStatusCommand::class);
-$console->register(OptimizeClearCommand::class);
-$console->register(OptimizeCommand::class);
-$console->register(OptimizeWarmCommand::class);
-$console->register(PerfBaselineUpdateCommand::class);
-$console->register(PerfBudgetCommand::class);
-$console->register(PerfCompareCommand::class);
-$console->register(PerfProfileCommand::class);
-$console->register(ProjectClaimCommand::class);
-$console->register(QueueWorkCommand::class);
-$console->register(ReleaseChecksumsCommand::class);
-$console->register(ReleasePrepareCommand::class);
-$console->register(ReleaseSbomCommand::class);
-$console->register(RouteCacheCommand::class);
-$console->register(RouteListCommand::class);
-$console->register(ScheduleRunCommand::class);
-$console->register(SecurityAuditCommand::class);
-$console->register(UpgradeApplyCommand::class);
-$console->register(UpgradeCheckCommand::class);
-$console->register(UpgradePlanCommand::class);
-$console->register(VersionStatusCommand::class);
-$console->register(VersionSyncCommand::class);
-
-exit($console->run($_SERVER["argv"] ?? []));
-PHP;
-
-        $windowsLauncher = <<<'CMD'
-@echo off
-REM ============================================================================
-REM FNLLA PROJECT LAUNCHER
-REM File: fnlla.cmd
-REM Purpose: Provides a Windows launcher for downstream-safe FNLLA project commands.
-REM ============================================================================
-setlocal
-php "%~dp0fnlla" %*
-CMD;
-
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "fnlla", $launcher . PHP_EOL);
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "fnlla.cmd", $windowsLauncher . PHP_EOL);
+        $this->writeProjectTemplate($targetRoot, "fnlla");
+        $this->writeProjectTemplate($targetRoot, "fnlla.cmd");
     }
 
     private function rewriteProjectLaunchers(string $targetRoot): void
@@ -826,32 +487,32 @@ CMD;
             }
         }
 
-        $testLauncher = <<<'CMD'
-@echo off
-REM ============================================================================
-REM FNLLA PROJECT LAUNCHER
-REM File: test-project.cmd
-REM Purpose: Runs the local FNLLA project test suite for this application.
-REM ============================================================================
-setlocal
-php "%~dp0scripts\test.php" %*
-CMD;
+        $this->writeProjectTemplate($targetRoot, "test-project.cmd");
+        $this->writeProjectTemplate($targetRoot, "lint-project.cmd");
+    }
 
-        $lintLauncher = <<<'CMD'
-@echo off
-REM ============================================================================
-REM FNLLA PROJECT LAUNCHER
-REM File: lint-project.cmd
-REM Purpose: Runs syntax lint and integrated UI surface validation for this project.
-REM ============================================================================
-setlocal
-php "%~dp0scripts\lint.php" || exit /b %ERRORLEVEL%
-php "%~dp0scripts\validate-fnlla-runtime.php" || exit /b %ERRORLEVEL%
-php "%~dp0scripts\validate-version-manifest.php" || exit /b %ERRORLEVEL%
-CMD;
+    private function writeProjectTemplate(string $targetRoot, string $relativePath, array $tokens = []): void
+    {
+        $templatePath = base_path("resources/project-templates/v1/" . $relativePath);
 
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "test-project.cmd", $testLauncher . PHP_EOL);
-        file_put_contents($targetRoot . DIRECTORY_SEPARATOR . "lint-project.cmd", $lintLauncher . PHP_EOL);
+        if (!is_file($templatePath)) {
+            throw new RuntimeException("Project export template is missing: " . $relativePath);
+        }
+
+        $targetPath = $targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
+        $targetDirectory = dirname($targetPath);
+
+        if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0777, true) && !is_dir($targetDirectory)) {
+            throw new RuntimeException("Unable to create project template target directory: " . $targetDirectory);
+        }
+
+        $contents = file_get_contents($templatePath);
+
+        if (!is_string($contents)) {
+            throw new RuntimeException("Unable to read project export template: " . $relativePath);
+        }
+
+        file_put_contents($targetPath, strtr($contents, $tokens) . PHP_EOL);
     }
 
     private function resolveTargetPath(string $targetArgument): string
