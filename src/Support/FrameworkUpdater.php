@@ -62,47 +62,10 @@ final class FrameworkUpdater
 
     public static function detectSourceRoot(string $projectRoot, string $preferredSource = ""): array
     {
-        $projectRoot = rtrim($projectRoot, "\\/");
-        $workspaceRoot = dirname($projectRoot);
-        $candidates = [];
-
-        if (trim($preferredSource) !== "") {
-            $candidates[] = self::buildSourceCandidate($preferredSource, $projectRoot, "configured source path");
-        }
-
-        foreach ([
-            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla" => "auto-detected sibling repository",
-            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla-php" => "auto-detected legacy sibling repository",
-            $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla" . DIRECTORY_SEPARATOR . "php" => "auto-detected nested sibling repository",
-        ] as $candidatePath => $origin) {
-            $candidate = self::buildSourceCandidate($candidatePath, $projectRoot, $origin);
-
-            $alreadyTracked = array_filter(
-                $candidates,
-                static fn (array $tracked): bool => ($tracked["resolved_path"] ?? null) === $candidate["resolved_path"]
-            ) !== [];
-
-            if ($alreadyTracked) {
-                continue;
-            }
-
-            $candidates[] = $candidate;
-        }
-
-        foreach ($candidates as $candidate) {
-            if (($candidate["valid"] ?? false) === true) {
-                return [
-                    "resolved_path" => (string) $candidate["resolved_path"],
-                    "origin" => (string) $candidate["origin"],
-                    "candidates" => $candidates,
-                ];
-            }
-        }
-
         return [
             "resolved_path" => null,
-            "origin" => "manual input required",
-            "candidates" => $candidates,
+            "origin" => "official GitHub release channel only",
+            "candidates" => [],
         ];
     }
 
@@ -180,15 +143,8 @@ final class FrameworkUpdater
         $source = trim($source);
 
         if ($source === "") {
-            $detected = self::detectSourceRoot($projectRoot);
-
-            if (is_string($detected["resolved_path"] ?? null) && $detected["resolved_path"] !== "") {
-                return [(string) $detected["resolved_path"], (string) ($detected["origin"] ?? "auto-detected source path")];
-            }
-
             throw new RuntimeException(
-                "framework:update could not auto-detect a maintained techayoDEV/fnlla repository. "
-                . "Set FRAMEWORK_UPDATE_SOURCE_PATH, use the browser maintenance page, or pass --source <path-to-fnlla>."
+                "Local FNLLA update sources are disabled. Use the official techayoDEV/fnlla GitHub release channel."
             );
         }
 
@@ -196,15 +152,15 @@ final class FrameworkUpdater
             ? self::normalizePath($source)
             : self::normalizePath($projectRoot . DIRECTORY_SEPARATOR . $source);
 
+        if (!self::isOfficialReleaseCacheSource($resolved, $projectRoot)) {
+            throw new RuntimeException("Local FNLLA update sources are disabled. Only the validated official GitHub release cache can be used.");
+        }
+
         if (!is_dir($resolved)) {
             throw new RuntimeException("framework:update source directory does not exist: " . $resolved);
         }
 
-        if (!self::isMaintainedSourceRoot($resolved)) {
-            throw new RuntimeException("framework:update source must be a maintained techayoDEV/fnlla repository: " . $resolved);
-        }
-
-        return [$resolved, "manual source path"];
+        return [$resolved, "official GitHub release cache"];
     }
 
     private static function createTempWorkspace(): string
@@ -539,23 +495,15 @@ final class FrameworkUpdater
         @ini_set("max_execution_time", "0");
     }
 
-    private static function buildSourceCandidate(string $source, string $projectRoot, string $origin): array
+    private static function isOfficialReleaseCacheSource(string $sourceRoot, string $projectRoot): bool
     {
-        $source = trim($source);
-        $resolved = $source === ""
-            ? null
-            : (
-                self::isAbsolutePath($source)
-                    ? self::normalizePath($source)
-                    : self::normalizePath($projectRoot . DIRECTORY_SEPARATOR . $source)
-            );
+        $cacheRoot = self::normalizePath(storage_path((string) config("framework_update.download_cache_path", "framework/updates/fnlla")));
+        $sourceRoot = self::normalizePath($sourceRoot);
+        $expectedSuffix = DIRECTORY_SEPARATOR . "source";
 
-        return [
-            "input" => $source,
-            "resolved_path" => $resolved,
-            "origin" => $origin,
-            "valid" => is_string($resolved) && is_dir($resolved) && self::isMaintainedSourceRoot($resolved),
-        ];
+        return str_starts_with($sourceRoot . DIRECTORY_SEPARATOR, rtrim($cacheRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR)
+            && str_ends_with($sourceRoot, $expectedSuffix)
+            && self::isMaintainedSourceRoot($sourceRoot);
     }
 
     private static function enrichReportFromReleaseSource(array $report, array $releaseSource): array

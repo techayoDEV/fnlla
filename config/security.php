@@ -36,4 +36,8 @@ return [
     "csrf" => [
         "rotate_after_minutes" => max(1, (int) env("CSRF_ROTATE_AFTER_MINUTES", 120)),
     ],
+    "events" => [
+        "enabled" => (bool) env("SECURITY_EVENT_LOG_ENABLED", true),
+        "path" => (string) env("SECURITY_EVENT_LOG_PATH", "logs/security.log"),
+    ],
 ];

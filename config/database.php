@@ -43,4 +43,6 @@ return [
         ],
     ],
     "migrations_table" => (string) env("DB_MIGRATIONS_TABLE", "migrations"),
+    "transactional_migrations" => env("DB_TRANSACTIONAL_MIGRATIONS", null),
+    "mysql_transactional_migrations" => (bool) env("DB_MYSQL_TRANSACTIONAL_MIGRATIONS", false),
 ];

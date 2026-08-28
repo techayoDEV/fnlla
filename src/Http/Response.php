@@ -170,13 +170,21 @@ final class Response
             $defaultHeaders = [];
         }
 
-        return array_merge(
+        $headers = array_merge(
             array_filter(
                 self::normalizeHeaders($defaultHeaders),
                 static fn (string|array $value): bool => is_array($value) || trim($value) !== ""
             ),
             $this->headers
         );
+
+        foreach ($headers as $name => $value) {
+            if (is_string($value) && str_contains($value, "{nonce}")) {
+                $headers[$name] = str_replace("{nonce}", csp_nonce(), $value);
+            }
+        }
+
+        return $headers;
     }
 
     private static function normalizeHeaders(array $headers): array

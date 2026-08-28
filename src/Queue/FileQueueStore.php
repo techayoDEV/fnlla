@@ -38,6 +38,9 @@ final class FileQueueStore implements QueueStoreInterface
         $contents = json_encode([
             "job" => $jobClass,
             "payload" => $payload,
+            "attempts" => 0,
+            "max_attempts" => (int) config("queue.max_attempts", 3),
+            "available_at" => time(),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($path, $contents, LOCK_EX);
@@ -54,13 +57,30 @@ final class FileQueueStore implements QueueStoreInterface
         }
 
         sort($files);
-        $file = $files[0];
-        $payload = $this->readPayload($file);
+        $file = null;
+        $payload = [];
+
+        foreach ($files as $candidate) {
+            $candidatePayload = $this->readPayload($candidate);
+            if ((int) ($candidatePayload["available_at"] ?? 0) > time()) {
+                continue;
+            }
+
+            $file = $candidate;
+            $payload = $candidatePayload;
+            break;
+        }
+
+        if ($file === null) {
+            return null;
+        }
 
         return [
             "id" => pathinfo($file, PATHINFO_FILENAME),
             "job" => (string) ($payload["job"] ?? ""),
             "payload" => is_array($payload["payload"] ?? null) ? $payload["payload"] : [],
+            "attempts" => (int) ($payload["attempts"] ?? 0),
+            "max_attempts" => (int) ($payload["max_attempts"] ?? config("queue.max_attempts", 3)),
             "source" => $file,
         ];
     }
@@ -77,6 +97,21 @@ final class FileQueueStore implements QueueStoreInterface
     public function fail(array $job): string
     {
         $file = $this->sourcePath($job);
+        $payload = is_file($file) ? $this->readPayload($file) : [
+            "job" => (string) ($job["job"] ?? ""),
+            "payload" => (array) ($job["payload"] ?? []),
+        ];
+        $payload["attempts"] = ((int) ($payload["attempts"] ?? $job["attempts"] ?? 0)) + 1;
+        $payload["max_attempts"] = (int) ($payload["max_attempts"] ?? $job["max_attempts"] ?? config("queue.max_attempts", 3));
+        $payload["last_error"] = (string) ($job["last_error"] ?? "Job failed.");
+
+        if ($payload["attempts"] < $payload["max_attempts"]) {
+            $payload["available_at"] = time() + max(1, (int) config("queue.retry_backoff_seconds", 30));
+            file_put_contents($file, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), LOCK_EX);
+
+            return $file;
+        }
+
         $failedDirectory = dirname($file) . DIRECTORY_SEPARATOR . "failed";
 
         if (!is_dir($failedDirectory)) {
@@ -99,6 +134,8 @@ final class FileQueueStore implements QueueStoreInterface
                 throw new RuntimeException("Unable to quarantine failed queued job: " . $file);
             }
         }
+
+        file_put_contents($destination, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), LOCK_EX);
 
         return $destination;
     }

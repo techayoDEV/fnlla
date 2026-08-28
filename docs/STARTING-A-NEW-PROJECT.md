@@ -159,7 +159,7 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from GitHub or against a local maintainer checkout.
+10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel.
 
 11. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 

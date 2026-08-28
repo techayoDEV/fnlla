@@ -16,7 +16,7 @@ Purpose:
 
 return [
     "runtime" => [
-        "enabled" => (bool) env("AI_RUNTIME_ENABLED", false),
+        "enabled" => (bool) env("AI_RUNTIME_ENABLED", true),
         "driver" => (string) env("AI_RUNTIME_DRIVER", "local"),
         "runtime_path" => (string) env("AI_RUNTIME_PATH", "resources/fnlla-ai-runtime"),
         "load_integrated_runtime" => (bool) env("AI_RUNTIME_LOAD_INTEGRATED", true),
@@ -28,6 +28,23 @@ return [
             "name" => (string) env("AI_RUNTIME_NAME", "FNLLA Assistant"),
             "direction" => (string) env("AI_RUNTIME_DIRECTION", "Answer from the configured local project knowledge only."),
             "fallback" => (string) env("AI_RUNTIME_FALLBACK", "I do not know that from the local project knowledge yet."),
+        ],
+        "providers" => [
+            "local" => [
+                "class" => \Fnlla\Php\Ai\LocalRuntimeAssistant::class,
+                "external_calls" => false,
+            ],
+            "fionn" => [
+                "class" => \Fnlla\Php\Ai\FionnRuntimeBridge::class,
+                "external_calls" => false,
+                "enabled" => (bool) env("AI_FIONN_BRIDGE_ENABLED", false),
+                "integration_state" => "reserved",
+            ],
+        ],
+        "fionn" => [
+            "enabled" => (bool) env("AI_FIONN_BRIDGE_ENABLED", false),
+            "endpoint" => (string) env("AI_FIONN_ENDPOINT", ""),
+            "timeout_seconds" => max(1, (int) env("AI_FIONN_TIMEOUT_SECONDS", 10)),
         ],
         "intents" => [],
         "knowledge" => [],

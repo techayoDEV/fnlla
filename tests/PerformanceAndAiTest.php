@@ -16,11 +16,17 @@ Purpose:
 
 namespace Fnlla\Php\Tests;
 
+use Fnlla\Php\Console\Commands\AiAskCommand;
+use Fnlla\Php\Console\Commands\AiBriefCommand;
 use Fnlla\Php\Console\Commands\AiContextCommand;
+use Fnlla\Php\Console\Commands\AiExplainLogCommand;
+use Fnlla\Php\Console\Commands\AiProvidersCommand;
 use Fnlla\Php\Console\Commands\AiRedactCommand;
 use Fnlla\Php\Console\Commands\AiReviewPackCommand;
+use Fnlla\Php\Console\Commands\AiTriageCommand;
 use Fnlla\Php\Console\Commands\AiUpgradeBriefCommand;
 use Fnlla\Php\Console\Commands\AppMapCommand;
+use Fnlla\Php\Console\Commands\ConfigDoctorCommand;
 use Fnlla\Php\Console\Commands\PerfBaselineUpdateCommand;
 use Fnlla\Php\Console\Commands\PerfBudgetCommand;
 use Fnlla\Php\Console\Commands\PerfCompareCommand;
@@ -176,8 +182,39 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame("upgrade:plan", (new UpgradePlanCommand($container))->name());
         self::assertSame("upgrade:apply", (new UpgradeApplyCommand($container))->name());
         self::assertSame("ai:review-pack", (new AiReviewPackCommand($container))->name());
+        self::assertSame("ai:ask", (new AiAskCommand($container))->name());
+        self::assertSame("ai:triage", (new AiTriageCommand($container))->name());
         self::assertSame("ai:upgrade-brief", (new AiUpgradeBriefCommand($container))->name());
         self::assertSame("ai:redact", (new AiRedactCommand($container))->name());
+        self::assertSame("ai:brief", (new AiBriefCommand($container))->name());
+        self::assertSame("ai:explain-log", (new AiExplainLogCommand($container))->name());
+        self::assertSame("ai:providers", (new AiProvidersCommand($container))->name());
+    }
+
+    public function testConfigDoctorCommandIsNamedForCli(): void
+    {
+        self::assertSame("config:doctor", (new ConfigDoctorCommand(new Container()))->name());
+    }
+
+    public function testUpgradeAnalyzerReportsPublicApiAndDistributedAdapterPosture(): void
+    {
+        $report = (new UpgradeAnalyzer())->report("2.0.1");
+        $ids = array_map(static fn (array $check): string => (string) ($check["id"] ?? ""), (array) ($report["checks"] ?? []));
+
+        self::assertTrue(in_array("public-api-contract", $ids, true));
+        self::assertTrue(in_array("distributed-adapters", $ids, true));
+    }
+
+    public function testAiTriageBuildsLocalOnlyReport(): void
+    {
+        $container = new Container();
+        $command = new AiTriageCommand($container);
+
+        $payload = $command->buildReport("route 404 on controller");
+
+        self::assertSame("fnlla.ai_triage.v1", $payload["schema"] ?? null);
+        self::assertFalse((bool) ($payload["privacy"]["external_calls"] ?? true));
+        self::assertTrue(in_array("routing", (array) ($payload["likely_areas"] ?? []), true));
     }
 
     public function testAiRedactionKeepsNeutralKeyLabelsButMasksSecrets(): void

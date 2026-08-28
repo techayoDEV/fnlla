@@ -23,6 +23,7 @@ namespace Fnlla\Php\Middleware;
 use Fnlla\Php\Cache\RateLimiter;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Support\SecurityEventLogger;
 
 final class ThrottleRequests implements MiddlewareInterface
 {
@@ -40,6 +41,12 @@ final class ThrottleRequests implements MiddlewareInterface
 
         if ($this->limiter->tooManyAttempts($key, $maxAttempts)) {
             $retryAfter = $this->limiter->availableIn($key);
+            SecurityEventLogger::write("throttle_blocked", [
+                "method" => $request->method(),
+                "path" => $request->path(),
+                "ip" => $request->ip(),
+                "retry_after" => $retryAfter,
+            ]);
 
             return Response::json([
                 "error" => "Too Many Requests",

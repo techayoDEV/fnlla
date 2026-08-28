@@ -17,6 +17,10 @@ Purpose:
 namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Ai\LocalRuntimeAssistant;
+use Fnlla\Php\Ai\FionnRuntimeBridge;
+use Fnlla\Php\Ai\RuntimeAiProviderInterface;
+use Fnlla\Php\Ai\RuntimeAiProviderRegistry;
+use Fnlla\Php\Container\Container;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -61,6 +65,51 @@ final class RuntimeAiTest extends TestCase
         self::assertSame("pricing", $answer["intent"]);
         self::assertSame("Pricing is shown on the project pricing page.", $answer["answer"]);
         self::assertTrue(in_array("route:pricing", (array) $answer["actions"], true));
+    }
+
+    public function testLocalRuntimeAiExposesProviderStatus(): void
+    {
+        config_set("ai.runtime.enabled", true);
+
+        $assistant = new LocalRuntimeAssistant();
+
+        self::assertInstanceOf(RuntimeAiProviderInterface::class, $assistant);
+
+        $status = $assistant->status();
+
+        self::assertSame("local", $status["driver"]);
+        self::assertSame(true, $status["provider_ready"]);
+        self::assertSame(false, $status["external_calls"]);
+    }
+
+    public function testFionnBridgeIsReservedButNotIntegrated(): void
+    {
+        $bridge = new FionnRuntimeBridge();
+        $status = $bridge->status();
+
+        self::assertSame("fionn", $status["driver"]);
+        self::assertSame("reserved", $status["integration_state"]);
+        self::assertSame(false, $status["provider_ready"]);
+        self::assertSame(false, $status["external_calls"]);
+
+        $this->expectException(RuntimeException::class);
+        $bridge->answer("hello");
+    }
+
+    public function testRuntimeAiProviderRegistryReportsLocalAndReservedFionn(): void
+    {
+        config_set("ai.runtime.driver", "local");
+
+        $report = (new RuntimeAiProviderRegistry(new Container()))->report();
+
+        self::assertSame("fnlla.runtime_ai.providers.v1", $report["schema"] ?? null);
+        self::assertSame("local", $report["selected_driver"] ?? null);
+        self::assertFalse((bool) ($report["external_calls"] ?? true));
+        self::assertArrayHasKey("local", $report["providers"]);
+        self::assertArrayHasKey("fionn", $report["providers"]);
+        self::assertSame(true, $report["providers"]["local"]["provider_ready"] ?? null);
+        self::assertSame("reserved", $report["providers"]["fionn"]["integration_state"] ?? null);
+        self::assertSame(false, $report["providers"]["fionn"]["provider_ready"] ?? null);
     }
 
     public function testRuntimeAiLoadsIntegratedRuntimeBundle(): void

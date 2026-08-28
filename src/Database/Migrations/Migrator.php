@@ -49,7 +49,7 @@ final class Migrator
                 throw new RuntimeException("Migration file must return a Migration instance: " . $file);
             }
 
-            $this->database->transaction(function () use ($migration, $migrationName, $batch): void {
+            $this->runMigrationStep($migration, function () use ($migration, $migrationName, $batch): void {
                 $migration->up();
                 $this->database->table((string) config("database.migrations_table", "migrations"))->insert([
                     "migration" => $migrationName,
@@ -102,7 +102,7 @@ final class Migrator
                     throw new RuntimeException("Migration file must return a Migration instance: " . $file);
                 }
 
-                $this->database->transaction(function () use ($migration, $migrationName): void {
+                $this->runMigrationStep($migration, function () use ($migration, $migrationName): void {
                     $migration->down();
                     $this->database->table((string) config("database.migrations_table", "migrations"))
                         ->where("migration", $migrationName)
@@ -114,6 +114,16 @@ final class Migrator
         }
 
         return $rolledBack;
+    }
+
+    private function runMigrationStep(Migration $migration, callable $callback): void
+    {
+        if ($migration->withinTransaction && $this->database->supportsTransactionalMigrations()) {
+            $this->database->transaction($callback);
+            return;
+        }
+
+        $callback();
     }
 
     private function ensureRepository(): void

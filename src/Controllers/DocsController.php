@@ -115,6 +115,12 @@ final class DocsController extends Controller
             "summary" => "Release-owner checklist for validation, performance, privacy and publication readiness.",
             "kind" => "Guide",
         ],
+        [
+            "file" => "enterprise-todo.html",
+            "title" => "Enterprise To-Do",
+            "summary" => "Concrete enterprise-readiness tasks for governance, update hardening, AI readiness and developer experience.",
+            "kind" => "Guide",
+        ],
     ];
 
     public function index(): Response

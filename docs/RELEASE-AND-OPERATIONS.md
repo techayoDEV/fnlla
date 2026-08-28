@@ -9,6 +9,7 @@ Run:
 
 ```bash
 php fnlla doctor
+php fnlla config:doctor
 php fnlla security:audit
 php fnlla app:map
 php fnlla upgrade:check --target=2.0.0
@@ -23,10 +24,15 @@ runtime surface.
 secure/session cookie settings, request and upload limits, credentialed CORS,
 Content Security Policy and cache serializer policy.
 
-Both commands support JSON output for CI:
+`config:doctor` is the shorter environment sanity check. It catches the mistakes
+that usually waste deployment time: bad `APP_URL`, invalid `ASSET_URL`, Redis
+enabled without `ext-redis`, production debug and missing trusted hosts.
+
+These commands support JSON output for CI:
 
 ```bash
 php fnlla doctor --json
+php fnlla config:doctor --json
 php fnlla security:audit --json
 php fnlla security:audit --strict
 ```
@@ -68,6 +74,10 @@ Artefacts are written under `dist/release/`:
 
 - `fnlla-sbom.cdx.json`
 - `SHA256SUMS`
+- `fnlla-release-manifest.json`
+
+Set `RELEASE_SIGNING_KEY` to add a lightweight HMAC signature to the release
+manifest. Leave it empty for local unsigned manifests.
 
 With `--major`, FNLLA also writes:
 
@@ -83,9 +93,14 @@ Individual artefact commands are also available:
 ```bash
 php fnlla release:sbom
 php fnlla release:checksums
+php fnlla release:manifest
 php fnlla release:sbom --output /path/to/fnlla-sbom.cdx.json
 php fnlla release:checksums --output /path/to/SHA256SUMS
 ```
+
+`release:prepare` also reports a small risk label: `low`, `medium` or `high`.
+It is intentionally blunt: failed validation is high risk, larger major-release
+plans are medium risk, and clean validated releases are low risk.
 
 ## Observability
 
@@ -108,6 +123,35 @@ OBSERVABILITY_METRICS_PATH=framework/metrics.json
 
 Access logs include request ID, method, path, route name, status, duration, IP
 and user agent. Sensitive fields still pass through the logger redaction policy.
+
+Security events are written separately to `storage/logs/security.log` when
+`SECURITY_EVENT_LOG_ENABLED=true`. The first small event set covers CSRF
+failures, throttling blocks and trusted-host rejections.
+
+## Health Levels
+
+The health endpoint supports three simple depths:
+
+```bash
+curl /api/health?level=live
+curl /api/health?level=ready
+curl /api/health?level=deep
+```
+
+`live` is the smallest ping. `ready` is the normal default. `deep` includes
+dependency, storage, cache, queue and migration detail for operator review.
+
+## Public API Lock
+
+FNLLA keeps a tiny public API lock at `docs/PUBLIC-API.lock.json`. Refresh it
+after intentional API changes:
+
+```bash
+php fnlla api:lock
+```
+
+The lock is deliberately small. It protects documented helpers and core CLI
+commands without turning every internal class into public contract.
 
 The local metrics file is intentionally small and dependency-free. It is useful
 for single-node and staging deployments. Larger multi-node deployments should

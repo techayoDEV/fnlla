@@ -143,6 +143,15 @@ $guidePages = [
         "document_title" => "Major Release Checklist - FNLLA Documentation",
         "lead" => "Release-owner checklist for contract, validation, performance, privacy and publication readiness.",
     ],
+    [
+        "label" => "Enterprise To-Do",
+        "href" => "enterprise-todo.html",
+        "source" => "docs/ENTERPRISE-TODO.md",
+        "source_name" => "ENTERPRISE-TODO.md",
+        "title" => "Enterprise To-Do",
+        "document_title" => "Enterprise To-Do - FNLLA Documentation",
+        "lead" => "Concrete enterprise-readiness tasks for governance, update hardening, AI readiness and developer experience.",
+    ],
 ];
 
 $guideLinkMap = [
@@ -154,6 +163,7 @@ $guideLinkMap = [
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
+    "./ENTERPRISE-TODO.md" => "./enterprise-todo.html",
 ];
 
 $pagesToWrite = [
@@ -946,7 +956,7 @@ php fnlla project:claim --product "My New Project" --owner "Owner LTD" --develop
           <pre><code>php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
-php fnlla framework:update --check --github
+php fnlla framework:update --check
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php</code></pre>
@@ -1206,9 +1216,10 @@ throttle</code></pre>
             <li><code>php fnlla project:claim</code></li>
             <li><code>php fnlla fnlla-runtime:sync</code></li>
             <li><code>php fnlla fnlla-runtime:validate</code></li>
-            <li><code>php fnlla framework:update --check --github</code></li>
-            <li><code>php fnlla framework:update --check --source &lt;path-to-fnlla&gt;</code> when a local maintainer checkout is preferred</li>
+            <li><code>php fnlla framework:update --check</code></li>
+            <li><code>php fnlla framework:update --apply</code> for conflict-free official GitHub updates</li>
             <li><code>php fnlla route:list</code></li>
+            <li><code>php fnlla ai:providers</code> for runtime AI provider readiness</li>
             <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.0.0</code></li>
           </ul>
         </article>

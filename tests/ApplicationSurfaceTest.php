@@ -205,7 +205,7 @@ final class ApplicationSurfaceTest extends TestCase
             "github_enabled" => true,
         ]));
         $_SESSION["_flash_old"]["framework_update_report"] = [
-            "mode" => "check",
+            "mode" => "github-check",
             "executed_at_utc" => "2026-07-13T10:00:00+00:00",
             "current_framework_version" => "1.0.0",
             "source_framework_version" => "1.1.0",
@@ -226,7 +226,7 @@ final class ApplicationSurfaceTest extends TestCase
             "requires_manual_review" => false,
             "apply_action_available" => true,
             "can_apply_from_ui" => true,
-            "recommended_apply_mode" => "apply",
+            "recommended_apply_mode" => "github-apply",
         ];
 
         $application = $this->makeApplication();
@@ -238,7 +238,7 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $response->status());
         self::assertStringContainsString("Update is ready to apply", $response->body());
-        self::assertStringContainsString("Apply this audited local update", $response->body());
+        self::assertStringContainsString("Apply this audited GitHub update", $response->body());
         self::assertStringContainsString("Detected version shift:", $response->body());
         self::assertStringContainsString("FNLLA 1.0.0 -&gt; 1.1.0", $response->body());
     }
@@ -383,6 +383,35 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertSame("application/json; charset=UTF-8", $response->headers()["Content-Type"] ?? null);
         self::assertStringContainsString('"status": "ok"', $response->body());
+    }
+
+    public function testApiHealthSupportsLiveAndDeepLevels(): void
+    {
+        $application = $this->makeApplication();
+
+        $live = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/api/health?format=json&level=live",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+            "HTTP_ACCEPT" => "text/html",
+        ], [
+            "format" => "json",
+            "level" => "live",
+        ]));
+        $deep = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/api/health?format=json&level=deep",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+            "HTTP_ACCEPT" => "text/html",
+        ], [
+            "format" => "json",
+            "level" => "deep",
+        ]));
+
+        self::assertStringContainsString('"level": "live"', $live->body());
+        self::assertStringNotContainsString('"dependencies"', $live->body());
+        self::assertStringContainsString('"level": "deep"', $deep->body());
+        self::assertStringContainsString('"dependencies"', $deep->body());
     }
 
     public function testMaintenanceHealthPageDropsReadinessSection(): void

@@ -63,60 +63,17 @@ for keeping the framework small while reducing long-term operational risk.
   release supply-chain workflows.
 - Request observability now includes structured access logs, local JSON metrics
   and an optional response-time header.
+- CSP nonce support is available through `csp_nonce()` and the `{nonce}` header
+  placeholder.
+- `config:doctor`, `ai:explain-log`, `ai:brief`, queue retry metadata, health
+  levels, release risk labels and a small public API lock are available as
+  simple operational guardrails.
 
-## Priority 1: Runtime Safety
+## Current Backlog
 
-- Add more upload examples to starter docs and exported project tests.
-- Add request body streaming support for endpoints that intentionally accept
-  large files without loading them into memory.
-- Add optional trusted-host enforcement for deployments that terminate TLS or
-  route multiple domains through the same PHP entrypoint.
-
-## Priority 2: Production Scalability
-
-- Add a Redis cache store adapter when FNLLA is ready to support optional
-  extension-backed infrastructure. The cache contract is ready, but no Redis
-  dependency is bundled.
-- Add a distributed queue store adapter with visibility timeouts and retry
-  metadata. `QueueStoreInterface` is ready; only the local file adapter ships by
-  default.
-- Add migration transaction capability detection so migrations can opt into safe
-  transactional execution where the storage engine supports it.
-- Add Redis or Memcached cache drivers for horizontally scaled deployments. The
-  current JSON file cache is secure and simple, but not a multi-node cache.
-- Add an external session store adapter for multi-worker or multi-node hosting.
-  The lazy session boundary is ready, but storage is still local by default.
-- Add generated build fingerprints when FNLLA grows a first-class asset bundling
-  pipeline. The current production manifest removes hot-path `filemtime()`
-  checks for files already present under `public/`.
-
-## Priority 3: Update And Distribution Workflow
-
-- Add signed release metadata when the release process has a signing key and
-  verification policy.
-- Separate maintainer-only scripts from exported project scripts more visibly in
-  docs and command output.
-- Publish generated SBOM and checksum artefacts alongside public GitHub
-  releases after the maintainer release process decides where artefacts should
-  be attached.
-- Add signed release metadata when the signing key and verification policy are
-  finalized.
-
-## Priority 4: Observability
-
-- Add a stable event naming convention for framework events emitted by auth,
-  maintenance unlocks, update checks and queue failures.
-- Add OpenTelemetry-compatible hooks once FNLLA has a supported adapter policy.
-
-## Priority 5: Developer Experience
-
-- Expand the local test harness with data providers and richer assertions while
-  keeping the no-Packagist development path.
-- Add generated API documentation for public framework classes and helpers.
-- Add examples for custom middleware, queued jobs, external mail transports and
-  storage disks.
-- Promote `perf:budget` into CI once a stable hosted runner baseline has been
-  established for the public release process.
+There are no known release-blocking technical-debt items in this snapshot.
+Future work should be opened as explicit issues with owner, scope and acceptance
+criteria instead of staying as vague backlog text inside the repository.
 
 ## Current Hardening Notes
 
@@ -125,3 +82,6 @@ for keeping the framework small while reducing long-term operational risk.
 - Request IDs accepted from clients are restricted to a short safe character set.
 - File cache reads disallow PHP object hydration from serialized cache payloads.
 - Response headers reject invalid names and line-break/null-byte values.
+- Framework and runtime updates reject local sources, fork repositories and
+  repository overrides; downstream updates come only from the official
+  `techayoDEV/fnlla` GitHub channel.

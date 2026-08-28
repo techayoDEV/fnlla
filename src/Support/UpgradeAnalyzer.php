@@ -30,6 +30,8 @@ final class UpgradeAnalyzer
             $this->checkFrameworkLock(),
             $this->checkMajorDocs(),
             $this->checkCacheSerializer(),
+            $this->checkOptionalDistributedAdapters(),
+            $this->checkPublicApiContract(),
             $this->checkIntegratedAiRuntime(),
             $this->checkAssistantVendorMarkers(),
         ];
@@ -253,6 +255,39 @@ final class UpgradeAnalyzer
         ];
     }
 
+    private function checkOptionalDistributedAdapters(): array
+    {
+        $usesDistributed = in_array((string) config("cache.default", "file"), ["redis"], true)
+            || in_array((string) config("queue.default", "file"), ["redis"], true)
+            || (string) config("session.driver", "file") === "redis";
+
+        return [
+            "id" => "distributed-adapters",
+            "status" => $usesDistributed && !class_exists(\Redis::class) ? "fail" : ($usesDistributed ? "pass" : "info"),
+            "detail" => $usesDistributed
+                ? "Distributed Redis-backed runtime adapters are configured."
+                : "Local file-backed cache, queue and sessions are configured.",
+            "data" => [
+                "cache" => config("cache.default", "file"),
+                "queue" => config("queue.default", "file"),
+                "session" => config("session.driver", "file"),
+                "redis_extension_loaded" => class_exists(\Redis::class),
+            ],
+        ];
+    }
+
+    private function checkPublicApiContract(): array
+    {
+        $path = base_path("docs/PUBLIC-API.md");
+
+        return [
+            "id" => "public-api-contract",
+            "status" => is_file($path) ? "pass" : "warn",
+            "detail" => is_file($path) ? "Public API contract is documented." : "Document stable helpers, commands and extension points before major releases.",
+            "data" => ["path" => "docs/PUBLIC-API.md"],
+        ];
+    }
+
     private function checkAssistantVendorMarkers(): array
     {
         $matches = [];
@@ -330,7 +365,7 @@ final class UpgradeAnalyzer
         $actions[] = [
             "id" => "manual-migration-review",
             "title" => "Review migration notes and public API contract",
-            "detail" => "Confirm helper, CLI, config and project-export contracts before tagging a major release.",
+            "detail" => "Confirm transactional migration settings, helper, CLI, config and project-export contracts before tagging a major release.",
             "safe_to_apply" => false,
         ];
 

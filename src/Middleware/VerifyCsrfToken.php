@@ -22,6 +22,7 @@ namespace Fnlla\Php\Middleware;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Support\SecurityEventLogger;
 
 final class VerifyCsrfToken implements MiddlewareInterface
 {
@@ -34,6 +35,12 @@ final class VerifyCsrfToken implements MiddlewareInterface
         if (verify_csrf_token((string) $request->input("_token", ""))) {
             return $next($request);
         }
+
+        SecurityEventLogger::write("csrf_failed", [
+            "method" => $request->method(),
+            "path" => $request->path(),
+            "ip" => $request->ip(),
+        ]);
 
         flash_set("status", [
             "variant" => "danger",

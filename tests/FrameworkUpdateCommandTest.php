@@ -23,7 +23,7 @@ namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Console\Commands\MakeProjectCommand;
 use Fnlla\Php\Container\Container;
-use Fnlla\Php\Support\FrameworkLock;
+use Fnlla\Php\Support\FrameworkUpdater;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -40,204 +40,50 @@ final class FrameworkUpdateCommandTest extends TestCase
         }
     }
 
-    public function testFrameworkUpdateCanCheckAndApplyFrameworkManagedChanges(): void
+    public function testFrameworkUpdateRejectsLocalSourceOption(): void
     {
-        $projectRoot = $this->exportProject("Framework Update Test");
-        $sourceClone = $this->cloneRepository();
-        $managedFile = $sourceClone . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "PageMeta.php";
+        $projectRoot = $this->exportProject("Framework Source Block Test");
 
-        file_put_contents($managedFile, (string) file_get_contents($managedFile) . PHP_EOL . "// framework update source marker" . PHP_EOL);
-
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+        [$exitCode, $output] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone]
+            ["framework:update", "--check", "--source", base_path()]
         );
 
-        self::assertSame(0, $checkExitCode, $checkOutput);
-        self::assertStringContainsString("Safe framework changes available: 1", $checkOutput);
-        self::assertStringContainsString("[Automatic update ready] src/Support/PageMeta.php", $checkOutput);
-
-        [$applyExitCode, $applyOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--apply", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $applyExitCode, $applyOutput);
-        self::assertStringContainsString("Applied framework update changes: 1", $applyOutput);
-        self::assertStringContainsString(
-            "// framework update source marker",
-            (string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "PageMeta.php")
-        );
+        self::assertSame(1, $exitCode, $output);
+        self::assertStringContainsString("Local source updates are disabled", $output);
+        self::assertStringContainsString("techayoDEV/fnlla GitHub release channel", $output);
     }
 
-    public function testFrameworkUpdateCanEmitJsonReportForCi(): void
+    public function testFrameworkUpdateRejectsRepositoryOverrideOption(): void
     {
-        $projectRoot = $this->exportProject("Framework Json Report Test");
-        $sourceClone = $this->cloneRepository();
+        $projectRoot = $this->exportProject("Framework Fork Block Test");
 
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
+        [$exitCode, $output] = $this->runPhpScript(
             $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone, "--json"]
+            ["framework:update", "--check", "--repository", "someone/fnlla"]
         );
 
-        self::assertSame(0, $checkExitCode, $checkOutput);
-
-        $decoded = json_decode($checkOutput, true);
-
-        self::assertTrue(is_array($decoded), $checkOutput);
-        self::assertArrayHasKey("current_framework_version", $decoded);
-        self::assertArrayHasKey("updates", $decoded);
-        self::assertArrayHasKey("conflicts", $decoded);
+        self::assertSame(1, $exitCode, $output);
+        self::assertStringContainsString("Repository overrides are disabled", $output);
     }
 
-    public function testFrameworkUpdateTracksProjectSurfaceFilesInFreshExports(): void
+    public function testFrameworkUpdateDoesNotAutoDetectLocalSiblingRepository(): void
     {
-        $projectRoot = $this->exportProject("Framework Project Surface Test");
-        $sourceClone = $this->cloneRepository();
-        $projectView = $sourceClone . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php";
+        $workspaceRoot = $this->makeTempPath("fnlla-framework-update-workspace-");
+        mkdir($workspaceRoot, 0777, true);
 
-        file_put_contents(
-            $projectView,
-            str_replace(
-                "How teams work on it",
-                "How teams work on it updated by framework:update",
-                (string) file_get_contents($projectView)
-            )
-        );
+        $projectRoot = $workspaceRoot . DIRECTORY_SEPARATOR . "project";
+        $sourceClone = $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla";
 
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone]
-        );
+        $this->exportProjectTo($projectRoot, "Framework Auto Detect Block Test");
+        mkdir($sourceClone, 0777, true);
+        $this->copyDirectory(base_path(), $sourceClone);
 
-        self::assertSame(0, $checkExitCode, $checkOutput);
-        self::assertStringContainsString("[Automatic update ready] views/pages/home.php", $checkOutput);
+        $detection = FrameworkUpdater::detectSourceRoot($projectRoot);
 
-        [$applyExitCode, $applyOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--apply", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $applyExitCode, $applyOutput);
-        self::assertStringContainsString("How teams work on it updated by framework:update", (string) file_get_contents(
-            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php"
-        ));
-    }
-
-    public function testFrameworkUpdateCanMigrateLegacyUntrackedProjectSurfaceFiles(): void
-    {
-        if (!$this->gitAvailable()) {
-            self::assertTrue(true, "Skipping legacy migration history test because git is not available.");
-            return;
-        }
-
-        $projectRoot = $this->exportProject("Framework Legacy Project Test");
-        $sourceClone = $this->cloneRepository();
-        $lockPath = $projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json";
-        $lock = json_decode((string) file_get_contents($lockPath), true);
-
-        self::assertTrue(is_array($lock));
-
-        $lock["framework_base"]["framework"]["version"] = "1.0.18";
-        $lock["framework_base"]["ui_runtime"]["version"] = "1.1.0";
-        unset($lock["framework_base"]["managed_files"]["views/pages/home.php"]);
-        unset($lock["framework_base"]["managed_files"]["views/pages/contact.php"]);
-        $legacyHashes = FrameworkLock::legacyUntrackedManagedHashes("1.0.18");
-
-        file_put_contents(
-            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php",
-            $this->legacyRepositoryFileContents("views/pages/home.php", $legacyHashes["views/pages/home.php"] ?? null)
-        );
-        file_put_contents(
-            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php",
-            $this->legacyRepositoryFileContents("views/pages/contact.php", $legacyHashes["views/pages/contact.php"] ?? null)
-        );
-        file_put_contents($lockPath, json_encode($lock, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
-
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $checkExitCode, $checkOutput);
-        self::assertStringContainsString("[Automatic update ready] views/pages/home.php", $checkOutput);
-        self::assertStringContainsString("[Automatic update ready] views/pages/contact.php", $checkOutput);
-
-        [$applyExitCode, $applyOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--apply", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $applyExitCode, $applyOutput);
-        self::assertStringContainsString("How teams work on it", (string) file_get_contents(
-            $projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "home.php"
-        ));
-        self::assertFileExists($projectRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php");
-    }
-
-    public function testFrameworkUpdateReportsConflictsWhenManagedFilesChangedLocallyAndUpstream(): void
-    {
-        $projectRoot = $this->exportProject("Framework Conflict Test");
-        $sourceClone = $this->cloneRepository();
-        $relativeManagedPath = "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "PageMeta.php";
-        $sourceManagedFile = $sourceClone . DIRECTORY_SEPARATOR . $relativeManagedPath;
-        $projectManagedFile = $projectRoot . DIRECTORY_SEPARATOR . $relativeManagedPath;
-
-        file_put_contents($sourceManagedFile, (string) file_get_contents($sourceManagedFile) . PHP_EOL . "// upstream framework marker" . PHP_EOL);
-        file_put_contents($projectManagedFile, (string) file_get_contents($projectManagedFile) . PHP_EOL . "// local project marker" . PHP_EOL);
-
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone]
-        );
-
-        self::assertSame(1, $checkExitCode, $checkOutput);
-        self::assertStringContainsString("[CONFLICT] src/Support/PageMeta.php", $checkOutput);
-    }
-
-    public function testFrameworkUpdateTreatsFormattingOnlyDriftAsSafeSyncInsteadOfConflict(): void
-    {
-        $projectRoot = $this->exportProject("Framework Formatting Sync Test");
-        $sourceClone = $this->cloneRepository();
-        $relativeManagedPath = "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php";
-        $projectManagedFile = $projectRoot . DIRECTORY_SEPARATOR . $relativeManagedPath;
-        $sourceManagedFile = $sourceClone . DIRECTORY_SEPARATOR . $relativeManagedPath;
-        $projectContents = (string) file_get_contents($projectManagedFile);
-        $sourceContents = (string) file_get_contents($sourceManagedFile);
-        $marker = "<?php if ((\$maintenanceAccess[\"configured\"] ?? false)): ?>";
-
-        file_put_contents(
-            $sourceManagedFile,
-            str_replace(PHP_EOL . $marker, $marker, $sourceContents)
-        );
-        file_put_contents(
-            $projectManagedFile,
-            str_replace(PHP_EOL . $marker, PHP_EOL . PHP_EOL . $marker, $projectContents)
-        );
-
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $checkExitCode, $checkOutput);
-        self::assertTrue(
-            str_contains($checkOutput, "[Formatting-only sync ready] views/maintenance/index.php")
-            || str_contains($checkOutput, "Framework base is already aligned with the provided source export."),
-            $checkOutput
-        );
-        self::assertStringNotContainsString("[CONFLICT] views/maintenance/index.php", $checkOutput);
-
-        [$applyExitCode, $applyOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--apply", "--source", $sourceClone]
-        );
-
-        self::assertSame(0, $applyExitCode, $applyOutput);
-        self::assertSame(
-            (string) file_get_contents($sourceManagedFile),
-            (string) file_get_contents($projectManagedFile)
-        );
+        self::assertSame(null, $detection["resolved_path"]);
+        self::assertSame("official GitHub release channel only", $detection["origin"]);
+        self::assertSame([], $detection["candidates"]);
     }
 
     public function testExportedProjectExposesSupportedFrameworkUpdateCommand(): void
@@ -252,32 +98,6 @@ final class FrameworkUpdateCommandTest extends TestCase
         self::assertSame(0, $listExitCode, $listOutput);
         self::assertStringContainsString("framework:update", $listOutput);
         self::assertStringContainsString("fnlla-runtime:validate", $listOutput);
-    }
-
-    public function testFrameworkUpdateCanAutoDetectSiblingSourceRepository(): void
-    {
-        $workspaceRoot = $this->makeTempPath("fnlla-framework-update-workspace-");
-        mkdir($workspaceRoot, 0777, true);
-
-        $projectRoot = $workspaceRoot . DIRECTORY_SEPARATOR . "project";
-        $sourceClone = $workspaceRoot . DIRECTORY_SEPARATOR . "fnlla";
-
-        $this->exportProjectTo($projectRoot, "Framework Auto Detect Test");
-        mkdir($sourceClone, 0777, true);
-        $this->copyDirectory(base_path(), $sourceClone);
-
-        [$checkExitCode, $checkOutput] = $this->runPhpScript(
-            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
-            ["framework:update", "--check"]
-        );
-
-        self::assertSame(0, $checkExitCode, $checkOutput);
-        self::assertStringContainsString("Source repository: ", $checkOutput);
-        self::assertTrue(
-            str_contains($checkOutput, "auto-detected sibling repository")
-            || str_contains($checkOutput, "auto-detected legacy sibling repository"),
-            $checkOutput
-        );
     }
 
     private function exportProject(string $appName): string
@@ -388,11 +208,6 @@ final class FrameworkUpdateCommandTest extends TestCase
         return $exitCode <= 7;
     }
 
-    private function gitAvailable(): bool
-    {
-        return $this->findCommand("git") !== null;
-    }
-
     private function findCommand(string $command): ?string
     {
         if (!function_exists("exec")) {
@@ -466,41 +281,4 @@ final class FrameworkUpdateCommandTest extends TestCase
         return [$exitCode, implode(PHP_EOL, $lines)];
     }
 
-    private function legacyRepositoryFileContents(string $relativePath, ?string $expectedHash = null): string
-    {
-        $normalizedPath = str_replace("\\", "/", $relativePath);
-        $logCommand = 'git -C "' . base_path() . '" log --format=%H -- "' . $normalizedPath . '" 2>&1';
-        $logLines = [];
-        $logExitCode = 1;
-
-        exec($logCommand, $logLines, $logExitCode);
-
-        self::assertSame(0, $logExitCode, "Unable to inspect git history for legacy file: " . $relativePath);
-
-        foreach (array_reverse($logLines) as $commitLine) {
-            $commit = trim((string) $commitLine);
-
-            if ($commit === "") {
-                continue;
-            }
-
-            $command = 'git -C "' . base_path() . '" show ' . $commit . ':' . $normalizedPath . ' 2>&1';
-            $lines = [];
-            $exitCode = 1;
-
-            exec($command, $lines, $exitCode);
-
-            if ($exitCode === 0) {
-                $contents = implode("\n", $lines) . "\n";
-
-                if ($expectedHash !== null && hash("sha256", $contents) !== $expectedHash) {
-                    continue;
-                }
-
-                return $contents;
-            }
-        }
-
-        self::fail("Unable to read legacy repository file from git history: " . $relativePath);
-    }
 }

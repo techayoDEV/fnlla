@@ -1,0 +1,36 @@
+{
+    "schema": "fnlla.public_api_lock.v1",
+    "helpers": [
+        "config",
+        "env",
+        "base_path",
+        "public_path",
+        "storage_path",
+        "url",
+        "asset",
+        "route",
+        "csrf_token",
+        "csrf_field",
+        "csp_nonce",
+        "auth",
+        "cache",
+        "queue",
+        "runtime_ai",
+        "stream_request_body_to_file"
+    ],
+    "commands": [
+        "doctor",
+        "config:doctor",
+        "security:audit",
+        "app:map",
+        "upgrade:check",
+        "perf:budget",
+        "release:prepare",
+        "release:manifest",
+        "ai:ask",
+        "ai:triage",
+        "ai:explain-log",
+        "ai:brief",
+        "ai:providers"
+    ]
+}

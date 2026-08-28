@@ -101,6 +101,10 @@ final class DatabaseManager
     public function transaction(callable $callback): mixed
     {
         $pdo = $this->connection();
+        if ($pdo->inTransaction()) {
+            return $callback($this);
+        }
+
         $pdo->beginTransaction();
 
         try {
@@ -112,6 +116,18 @@ final class DatabaseManager
             $pdo->rollBack();
             throw $exception;
         }
+    }
+
+    public function supportsTransactionalMigrations(): bool
+    {
+        $configured = config("database.transactional_migrations", null);
+
+        if ($configured !== null) {
+            return (bool) $configured;
+        }
+
+        return $this->connection()->getAttribute(PDO::ATTR_DRIVER_NAME) !== "mysql"
+            || (bool) config("database.mysql_transactional_migrations", false);
     }
 
     private function sslOptions(array $ssl): array

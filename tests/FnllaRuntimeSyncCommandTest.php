@@ -39,7 +39,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         }
     }
 
-    public function testFnllaRuntimeSyncAcceptsLocalSourceOverride(): void
+    public function testFnllaRuntimeSyncRejectsLocalSourceOverride(): void
     {
         $projectRoot = $this->exportProject("FNLLA UI Surface Sync Test");
         $runtimeExport = $this->createRuntimeExport("9.9.9");
@@ -49,12 +49,8 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
             ["fnlla-runtime:sync", "--source", $runtimeExport]
         );
 
-        self::assertSame(0, $exitCode, $output);
-        self::assertStringContainsString("FNLLA integrated UI surface sync completed.", $output);
-        self::assertSame(
-            trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "VERSION"), "\r\n")),
-            trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n"))
-        );
+        self::assertSame(1, $exitCode, $output);
+        self::assertStringContainsString("Local runtime source sync is disabled", $output);
     }
 
     public function testFnllaRuntimeSyncRejectsUnknownOptions(): void
@@ -70,7 +66,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
         self::assertStringContainsString("Unknown option for fnlla-runtime:sync: --unknown-option", $output);
     }
 
-    public function testFnllaRuntimeSyncAcceptsMaintainerRepositorySourcePath(): void
+    public function testFnllaRuntimeSyncRejectsMaintainerRepositorySourcePath(): void
     {
         $projectRoot = $this->exportProject("FNLLA UI Surface Maintainer Sync Test");
 
@@ -79,12 +75,21 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
             ["fnlla-runtime:sync", "--source", base_path()]
         );
 
-        self::assertSame(0, $exitCode, $output);
-        self::assertStringContainsString("FNLLA integrated UI surface sync completed.", $output);
-        self::assertSame(
-            trim((string) strtok((string) file_get_contents(base_path() . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n")),
-            trim((string) strtok((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"), "\r\n"))
+        self::assertSame(1, $exitCode, $output);
+        self::assertStringContainsString("Local runtime source sync is disabled", $output);
+    }
+
+    public function testFnllaRuntimeSyncRejectsRepositoryOverride(): void
+    {
+        $projectRoot = $this->exportProject("FNLLA UI Surface Repo Override Test");
+
+        [$exitCode, $output] = $this->runPhpScript(
+            $projectRoot . DIRECTORY_SEPARATOR . "fnlla",
+            ["fnlla-runtime:sync", "--repository", "someone/fnlla"]
         );
+
+        self::assertSame(1, $exitCode, $output);
+        self::assertStringContainsString("Runtime repository overrides are disabled", $output);
     }
 
     private function exportProject(string $appName): string

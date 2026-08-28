@@ -243,29 +243,15 @@ $updateActionLabel = static function (array $update): string {
               </div>
             </section>
 
-            <section class="feature-card framework-update-channel-card" aria-label="Local maintained repository controls">
+            <section class="feature-card framework-update-channel-card" aria-label="Official update policy">
               <div class="framework-update-card-header">
                 <div>
-                  <p class="contact-kicker">Advanced override</p>
-                  <h2 class="contact-card-title">Local maintained repository</h2>
+                  <p class="contact-kicker">Hardening</p>
+                  <h2 class="contact-card-title">Official source only</h2>
                 </div>
-                <span class="framework-update-badge framework-update-badge-muted">Maintainer checkout</span>
+                <span class="framework-update-badge framework-update-badge-muted">Forks blocked</span>
               </div>
-              <p class="contact-text">Use this path-based workflow when you need to compare against a local maintainer checkout and confirm whether a newer maintained update is already waiting in that repository.</p>
-
-              <div class="form-group">
-                <label class="label" for="framework-update-source">Maintained FNLLA source repository</label>
-                <input class="input" id="framework-update-source" name="source_path" type="text" placeholder="Leave blank to use an auto-detected sibling fnlla repo, or enter C:\path\to\fnlla" value="<?= h($sourcePathValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
-                <p class="help-text">Leave this blank when the maintained repository sits next to the application. Use a manual path only when the source repository lives elsewhere.</p>
-                <?php if ($detectedSourcePath !== ""): ?>
-                <p class="help-text mb-0"><strong>Detected now:</strong> <?= h($detectedSourcePath) ?> (<?= h($detectedSourceOrigin) ?>)</p>
-                <?php endif; ?>
-              </div>
-
-              <div class="grid grid-2 contact-field-grid framework-update-actions-grid">
-                <button class="btn btn-outline" type="submit" name="mode" value="check" data-framework-update-progress-mode="check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check local maintained update</button>
-                <button class="btn btn-primary" type="submit" name="mode" value="apply" data-framework-update-progress-mode="apply" <?= ($pageState["can_apply"] ?? false) ? "" : "disabled" ?>>Apply local maintained update</button>
-              </div>
+              <p class="contact-text">FNLLA rejects local source paths, fork repositories, custom clone URLs and non-standard GitHub API endpoints. The update cache is trusted only after the downloaded release manifest confirms <code>techayoDEV/fnlla</code>.</p>
             </section>
           </div>
 
@@ -294,8 +280,8 @@ $updateActionLabel = static function (array $update): string {
       <div class="process-grid">
         <article class="process-step">
           <span class="process-step-number">1</span>
-          <h3 class="process-step-title">Resolve the source and export a fresh baseline</h3>
-          <p class="process-step-text">FNLLA can fetch the latest published release from GitHub and cache it locally, or it can use a configured source path and an auto-detected sibling <code>fnlla</code> repository before exporting a clean project baseline for comparison.</p>
+          <h3 class="process-step-title">Resolve the official release and export a fresh baseline</h3>
+          <p class="process-step-text">FNLLA fetches the selected published release from the official <code>techayoDEV/fnlla</code> GitHub channel, validates its manifest, caches it locally and exports a clean project baseline for comparison.</p>
         </article>
         <article class="process-step">
           <span class="process-step-number">2</span>
@@ -363,11 +349,9 @@ $updateActionLabel = static function (array $update): string {
           <input type="hidden" name="mode" value="<?= h($reportRecommendedApplyMode) ?>">
           <?php if ($reportUsesGitHub && $reportReleaseTag !== ""): ?>
           <input type="hidden" name="release_tag" value="<?= h($reportReleaseTag) ?>">
-          <?php elseif (!$reportUsesGitHub && $reportSourcePath !== ""): ?>
-          <input type="hidden" name="source_path" value="<?= h($reportSourcePath) ?>">
           <?php endif; ?>
           <div class="d-flex flex-wrap gap-md">
-            <button class="btn btn-primary" type="submit" data-framework-update-progress-mode="<?= h($reportRecommendedApplyMode) ?>"><?= $reportUsesGitHub ? "Apply this audited GitHub update" : "Apply this audited local update" ?></button>
+            <button class="btn btn-primary" type="submit" data-framework-update-progress-mode="<?= h($reportRecommendedApplyMode) ?>">Apply this audited GitHub update</button>
           </div>
           <p class="help-text mb-0">FNLLA keeps the update flow automatic for safe framework-managed changes like the ones reviewed above. It pauses only when a real file conflict needs a human merge, then runs the built-in post-install checks after apply.</p>
         </form>
@@ -385,9 +369,9 @@ $updateActionLabel = static function (array $update): string {
       <?php endif; ?>
 
       <article class="feature-card mb-lg">
-        <h3 class="content-title">Resolved source repository</h3>
+        <h3 class="content-title">Resolved official release cache</h3>
         <p class="content-text mb-0"><strong>Path:</strong> <?= h((string) ($report["source_root"] ?? $report["source_path"] ?? "unknown")) ?></p>
-        <p class="content-text mb-0"><strong>Resolution:</strong> <?= h((string) ($report["source_origin"] ?? "manual source path")) ?></p>
+        <p class="content-text mb-0"><strong>Resolution:</strong> <?= h((string) ($report["source_origin"] ?? "official GitHub release cache")) ?></p>
       </article>
 
       <?php if (is_array($report["github_release"] ?? null) && $report["github_release"] !== []): ?>
@@ -512,11 +496,11 @@ $updateActionLabel = static function (array $update): string {
     <ul class="progress-steps" data-framework-update-progress-steps aria-label="Framework update progress stages">
       <li class="progress-step is-active">
         <p class="progress-step-label">Preparing the maintenance request.</p>
-        <p class="progress-step-meta">The browser is packaging the selected mode and source details before the server-side workflow starts.</p>
+        <p class="progress-step-meta">The browser is packaging the selected official GitHub release mode before the server-side workflow starts.</p>
       </li>
       <li class="progress-step">
-        <p class="progress-step-label">Contacting the selected update source.</p>
-        <p class="progress-step-meta">The maintenance flow resolves the GitHub release cache or the maintained local source checkout.</p>
+        <p class="progress-step-label">Contacting the official update source.</p>
+        <p class="progress-step-meta">The maintenance flow resolves and validates the official GitHub release cache.</p>
       </li>
       <li class="progress-step">
         <p class="progress-step-label">Building the framework update report.</p>
@@ -590,48 +574,8 @@ $updateActionLabel = static function (array $update): string {
           }
         ]
       },
-      "check": {
-        copy: "FNLLA is comparing this application against the selected maintained source repository.",
-        steps: [
-          {
-            label: "Resolving the maintained local source repository.",
-            meta: "Finds the local maintainer checkout or the explicit path provided by the operator."
-          },
-          {
-            label: "Exporting a fresh project baseline from that source.",
-            meta: "Creates a clean application reference from the maintained framework source."
-          },
-          {
-            label: "Comparing framework-managed files against the current application.",
-            meta: "Detects framework drift without touching project-owned business logic."
-          },
-          {
-            label: "Preparing the structured drift report.",
-            meta: "Formats the findings so teams can review changes before deciding whether to apply them."
-          }
-        ]
-      },
-      "apply": {
-        copy: "FNLLA is applying safe changes from the selected maintained source repository and then running post-install checks.",
-        steps: [
-          {
-            label: "Resolving the maintained local source repository.",
-            meta: "Locks the update source before any file changes are considered."
-          },
-          {
-            label: "Exporting a fresh project baseline from that source.",
-            meta: "Builds the clean reference used to decide which framework-managed files are safe to update."
-          },
-          {
-            label: "Applying safe framework-managed changes.",
-            meta: "Updates approved framework surfaces while leaving project-owned customization in place."
-          },
-          {
-            label: "Running post-install checks for contract, tests, lint and version metadata.",
-            meta: "Validates the updated project so operators can trust the final result."
-          }
-        ]
-      }
+      "check": "github-check",
+      "apply": "github-apply"
     };
 
     form.querySelectorAll("button[type='submit']").forEach(function (button) {
@@ -643,7 +587,8 @@ $updateActionLabel = static function (array $update): string {
     form.addEventListener("submit", function (event) {
       var submitter = event.submitter || activeSubmitter;
       var mode = submitter ? submitter.getAttribute("data-framework-update-progress-mode") : "check";
-      var definition = progressDefinitions[mode] || progressDefinitions.check;
+      var fallbackMode = progressDefinitions[mode] || "github-check";
+      var definition = typeof fallbackMode === "string" ? progressDefinitions[fallbackMode] : fallbackMode;
       var steps = definition.steps.slice();
       var progressStops = [12, 38, 68, 92];
       var stepIndex = 0;

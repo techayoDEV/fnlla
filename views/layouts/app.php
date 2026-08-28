@@ -150,6 +150,6 @@ $pageMeta = page_meta([
   </footer>
   <?php endif; ?>
 
-  <script src="<?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?>"></script>
+  <script nonce="<?= h(csp_nonce()) ?>" src="<?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?>"></script>
 </body>
 </html>

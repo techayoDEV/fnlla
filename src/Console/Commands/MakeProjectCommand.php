@@ -463,7 +463,7 @@ php -S 127.0.0.1:8080 -t public public/router.php
    - open `/maintenance` locally and use the built-in "Save and enable maintenance" setup form on a fresh project export, or
    - set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`
 
-The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `FRAMEWORK_UPDATE_SOURCE_PATH`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
+The maintenance page is controlled through `FRAMEWORK_UPDATE_UI_ENABLED`, `FRAMEWORK_UPDATE_UI_LOCAL_ONLY`, `FRAMEWORK_UPDATE_UI_APPLY_ENABLED`, `FRAMEWORK_UPDATE_GITHUB_ENABLED`, `MAINTENANCE_MODE_ENABLED`, `MAINTENANCE_SETUP_UI_ENABLED`, `MAINTENANCE_SETUP_UI_LOCAL_ONLY` and the related `MAINTENANCE_ACCESS_*` variables in `.env`.
 
 For Apache environments, use `public/` as the document root.
 The exported project already includes `public/.htaccess`.
@@ -522,13 +522,14 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
 - `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
 - `php fnlla ai:review-pack --target=2.0.0` combines context, app map and upgrade readiness into one local AI review artefact
+- `php fnlla ai:providers --json` reports local runtime AI provider readiness without contacting external providers
 - `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
 - `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
-- `php fnlla framework:update --check --github` checks the latest published FNLLA release from GitHub and caches the release source locally before comparing drift
-- `php fnlla framework:update --check [--source <path-to-fnlla>]` checks framework drift against a maintained FNLLA source repository when a local maintainer checkout is preferred
-- `/maintenance/framework-update` provides the same framework-update workflow through a local-first maintenance page with GitHub-backed check/apply and a local source override
+- `php fnlla framework:update --check` checks the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel and caches the release source locally before comparing drift
+- `php fnlla framework:update --apply` applies the safe portion of a newer official GitHub-backed update after the report has no conflicts
+- `/maintenance/framework-update` provides the same official GitHub-backed workflow through a local-first maintenance page
 - `php fnlla version:sync` regenerates `MANIFEST.json` and re-syncs integrated UI surface metadata after an intentional FNLLA version change
-- `php fnlla fnlla-runtime:sync` or `update-fnlla-runtime.cmd` refresh the integrated FNLLA UI surface through the official publish -> sync workflow
+- `php fnlla fnlla-runtime:sync` refreshes the integrated FNLLA UI surface from the official `techayoDEV/fnlla` GitHub repository through the publish -> sync workflow
 
 The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
 
@@ -543,8 +544,7 @@ php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
 php fnlla doctor
 php fnlla security:audit
-php fnlla framework:update --check --github
-php fnlla framework:update --check --source ..\fnlla  # optional local override
+php fnlla framework:update --check
 php fnlla optimize
 php fnlla optimize:warm
 php fnlla app:map
@@ -553,6 +553,7 @@ php fnlla perf:profile --iterations=5
 php fnlla perf:baseline:update --iterations=7
 php fnlla ai:context
 php fnlla ai:review-pack --target=2.0.0
+php fnlla ai:providers --json
 php fnlla optimize:clear
 php fnlla release:prepare
 php fnlla route:list
@@ -712,6 +713,7 @@ Purpose:
 */
 
 use Fnlla\Php\Console\Commands\AiContextCommand;
+use Fnlla\Php\Console\Commands\AiProvidersCommand;
 use Fnlla\Php\Console\Commands\AiRedactCommand;
 use Fnlla\Php\Console\Commands\AiReviewPackCommand;
 use Fnlla\Php\Console\Commands\AiUpgradeBriefCommand;
@@ -756,6 +758,7 @@ $container = require __DIR__ . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEP
 
 $console = $container->make(\Fnlla\Php\Console\Application::class);
 $console->register(AiContextCommand::class);
+$console->register(AiProvidersCommand::class);
 $console->register(AiRedactCommand::class);
 $console->register(AiReviewPackCommand::class);
 $console->register(AiUpgradeBriefCommand::class);

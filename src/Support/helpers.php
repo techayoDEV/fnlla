@@ -19,6 +19,7 @@ Purpose:
 */
 
 use Fnlla\Php\Container\Container;
+use Fnlla\Php\Session\RedisSessionHandler;
 
 function env(string $key, mixed $default = null): mixed
 {
@@ -489,6 +490,13 @@ function framework_start_session_if_needed(): void
     ini_set("session.cookie_httponly", !empty($sessionConfig["http_only"]) ? "1" : "0");
     ini_set("session.cookie_secure", !empty($sessionConfig["secure"]) ? "1" : "0");
     ini_set("session.gc_maxlifetime", (string) ($sessionConfig["cookie_lifetime"] ?? 7200));
+    if ((string) ($sessionConfig["driver"] ?? "file") === "redis") {
+        session_set_save_handler(new RedisSessionHandler(
+            (array) ($sessionConfig["redis"] ?? []),
+            (int) ($sessionConfig["cookie_lifetime"] ?? 7200)
+        ), true);
+    }
+
     session_set_cookie_params([
         "lifetime" => (int) ($sessionConfig["cookie_lifetime"] ?? 7200),
         "path" => (string) ($sessionConfig["path"] ?? "/"),
@@ -648,6 +656,20 @@ function csrf_field(): string
     return '<input type="hidden" name="_token" value="' . h(csrf_token()) . '">';
 }
 
+function csp_nonce(): string
+{
+    $nonce = $_SERVER["FNLLA_CSP_NONCE"] ?? null;
+
+    if (is_string($nonce) && $nonce !== "") {
+        return $nonce;
+    }
+
+    $nonce = rtrim(strtr(base64_encode(random_bytes(16)), "+/", "-_"), "=");
+    $_SERVER["FNLLA_CSP_NONCE"] = $nonce;
+
+    return $nonce;
+}
+
 function verify_csrf_token(?string $token): bool
 {
     if (!is_string($token) || $token === "") {
@@ -727,4 +749,47 @@ function runtime_ai(): \Fnlla\Php\Ai\LocalRuntimeAssistant
 function queue(): \Fnlla\Php\Queue\QueueManager
 {
     return app(\Fnlla\Php\Queue\QueueManager::class);
+}
+
+function stream_request_body_to_file(string $destination, int $maxBytes): array
+{
+    $maxBytes = max(1, $maxBytes);
+    $directory = dirname($destination);
+
+    if (!is_dir($directory)) {
+        mkdir($directory, 0777, true);
+    }
+
+    $input = fopen("php://input", "rb");
+    $output = fopen($destination, "wb");
+    $bytes = 0;
+
+    if ($input === false || $output === false) {
+        throw new RuntimeException("Unable to open request body stream.");
+    }
+
+    try {
+        while (!feof($input)) {
+            $chunk = fread($input, 8192);
+            if ($chunk === false) {
+                throw new RuntimeException("Unable to read request body stream.");
+            }
+
+            $bytes += strlen($chunk);
+            if ($bytes > $maxBytes) {
+                throw new RuntimeException("Request body stream exceeds configured limit.");
+            }
+
+            fwrite($output, $chunk);
+        }
+    } finally {
+        fclose($input);
+        fclose($output);
+    }
+
+    return [
+        "path" => $destination,
+        "bytes" => $bytes,
+        "sha256" => hash_file("sha256", $destination),
+    ];
 }

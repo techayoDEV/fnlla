@@ -27,8 +27,7 @@ For a normal exported project, the important script set is:
 The exported application also keeps one framework-update command on purpose:
 
 - `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"`
-- `php fnlla framework:update --check --github`
-- `php fnlla framework:update --check [--source <path-to-fnlla>]`
+- `php fnlla framework:update --check`
 
 And the application now keeps one browser-facing maintenance page on purpose:
 
@@ -174,10 +173,9 @@ Important boundary:
 Purpose:
 
 - refreshes the built-in runtime under `public/vendor/fnlla-runtime/`
-- can work from a provided local source path or by cloning the GitHub source of truth
-- detects whether the provided source is a published runtime export or a source checkout
-- when the source is a maintained checkout, publishes `dist/fnlla-runtime/` first and then mirrors that export
-- can also work from a dedicated runtime export rooted elsewhere when that is the maintained source you have locally
+- clones the official `techayoDEV/fnlla` GitHub source of truth
+- publishes `dist/fnlla-runtime/` from that official clone and mirrors that export
+- rejects local source paths, fork repositories and custom clone URLs
 - finishes by running `scripts/sync-version-manifest.php`
 
 Use it when:
@@ -214,7 +212,7 @@ Important boundary:
 
 Purpose:
 
-- compares the current downstream project against a fresh application export generated from a maintained `techayoDEV/fnlla` repository
+- compares the current downstream project against a fresh application export generated from the official `techayoDEV/fnlla` GitHub release channel
 - checks only framework-managed files recorded in `.fnlla/framework-lock.json`
 - protects application-owned files such as routes, views, the project README and project-specific migrations from blind overwrite
 
@@ -229,15 +227,15 @@ Typical examples:
 ```bash
 php fnlla framework:update --check --github
 php fnlla framework:update --apply --github
-php fnlla framework:update --check --source ..\fnlla
-php fnlla framework:update --apply --source ..\fnlla
+php fnlla framework:update --check
+php fnlla framework:update --apply
 ```
 
 Important boundary:
 
 - by default, the GitHub-backed workflow checks the latest published FNLLA release and caches that release source locally under `storage/framework/updates/`
 - the GitHub-backed workflow only prepares a diff or apply path when the published release is actually newer than the current locked framework base
-- when `--source` is used, the command expects a maintained `techayoDEV/fnlla` source repository path
+- local `--source`, repository override and fork update paths are rejected
 - the GitHub-backed workflow depends on network access plus a working local `git` binary so the published release can be cached locally
 - it updates only files that the framework lock marks as framework-managed
 - older compatibility paths remain intentionally hidden so the public downstream command surface stays centered on `php fnlla framework:update`
@@ -259,7 +257,7 @@ Use it when:
 Important boundary:
 
 - it is meant for local or explicitly enabled maintenance usage, not for general public exposure
-- it can fetch the latest published FNLLA release from GitHub or rely on a maintained local `techayoDEV/fnlla` source path when a maintainer checkout is preferred
+- it can fetch the latest published FNLLA release only from the official `techayoDEV/fnlla` GitHub channel
 
 Operational note:
 
@@ -267,7 +265,6 @@ Operational note:
 - `FRAMEWORK_UPDATE_UI_LOCAL_ONLY` keeps it limited to localhost by default, and proxy-forwarded localhost headers are only trusted when `TRUSTED_PROXIES` explicitly names the proxy
 - `FRAMEWORK_UPDATE_UI_APPLY_ENABLED` controls whether the browser UI may run safe apply or only drift checks
 - `FRAMEWORK_UPDATE_GITHUB_ENABLED` controls whether the maintenance page may contact GitHub directly for published release checks
-- `FRAMEWORK_UPDATE_SOURCE_PATH` lets the project prefill the maintained `techayoDEV/fnlla` source path
 
 ## What stays maintainer-only
 
@@ -343,7 +340,7 @@ After export, a healthy first pass is:
 ```bash
 php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
-php fnlla framework:update --check --github
+php fnlla framework:update --check
 php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
@@ -356,7 +353,7 @@ Use this order when:
 - the vendored runtime was just synced
 - you want a compact pre-commit or pre-release project check
 
-Use the local `--source` override only when you intentionally want to compare the project against an unpublished maintainer checkout instead of the latest GitHub release.
+Local `--source` overrides are intentionally disabled. Do not update downstream projects from unpublished checkouts, forks or manually copied framework files.
 
 ## Final rule
 

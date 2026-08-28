@@ -66,6 +66,10 @@ final class ReleasePrepareCommand extends Command
             "sbom" => $builder->buildSbom($builder->defaultOutputPath("fnlla-sbom.cdx.json")),
             "checksums" => $builder->buildChecksums($builder->defaultOutputPath("SHA256SUMS")),
         ];
+        $artifacts["manifest"] = $builder->buildManifest($builder->defaultOutputPath("fnlla-release-manifest.json"), [
+            "sbom" => (string) ($artifacts["sbom"]["path"] ?? ""),
+            "checksums" => (string) ($artifacts["checksums"]["path"] ?? ""),
+        ]);
 
         if ($major) {
             $artifacts["major"] = $this->buildMajorArtifacts($target);
@@ -82,6 +86,7 @@ final class ReleasePrepareCommand extends Command
             "ok" => $exitCode === 0,
             "steps" => $steps,
             "artifacts" => $artifacts,
+            "risk" => $this->riskScore($steps, $artifacts),
             "error" => $error,
         ];
 
@@ -103,6 +108,20 @@ final class ReleasePrepareCommand extends Command
         $this->line($exitCode === 0 ? "Release preparation passed." : "Release preparation failed.");
 
         return $exitCode;
+    }
+
+    private function riskScore(array $steps, array $artifacts): string
+    {
+        if (count(array_filter($steps, static fn (array $step): bool => !($step["ok"] ?? false))) > 0) {
+            return "high";
+        }
+
+        $upgrade = $artifacts["major"]["upgrade_plan"] ?? null;
+        if (is_array($upgrade) && (int) ($upgrade["actions"] ?? 0) > 3) {
+            return "medium";
+        }
+
+        return "low";
     }
 
     private function validationCommands(bool $major, string $target): array

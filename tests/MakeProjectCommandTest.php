@@ -195,13 +195,10 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "php fnlla framework:update --check --github",
+            "php fnlla framework:update --check",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
-        self::assertStringContainsString(
-            "php fnlla framework:update --check [--source <path-to-fnlla>]",
-            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
-        );
+        self::assertStringNotContainsString("--source <path-to-fnlla>", (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md"));
         self::assertStringContainsString(
             'assertFalse(class_exists("Database\\\\Factories\\\\UserFactory"))',
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "BootstrapAutoloadTest.php")
@@ -347,8 +344,8 @@ final class MakeProjectCommandTest extends TestCase
             ["framework:update", "--check", "--source", base_path()]
         );
 
-        self::assertSame(0, $updateCheckExitCode, $updateCheckOutput);
-        self::assertStringContainsString("Framework base is already aligned with the provided source export.", $updateCheckOutput);
+        self::assertSame(1, $updateCheckExitCode, $updateCheckOutput);
+        self::assertStringContainsString("Local source updates are disabled", $updateCheckOutput);
 
         [$routeListExitCode, $routeListOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",

@@ -32,7 +32,7 @@ final class QueueManager
         private ?QueueStoreInterface $store = null
     )
     {
-        $this->store ??= new FileQueueStore(storage_path((string) config("queue.connections.file.path", "framework/queue")));
+        $this->store ??= $this->resolveConfiguredStore();
     }
 
     public function push(string $jobClass, array $payload = []): string
@@ -69,6 +69,7 @@ final class QueueManager
                 $this->store->complete($queuedJob);
                 $processed++;
             } catch (Throwable $exception) {
+                $queuedJob["last_error"] = $exception->getMessage();
                 $failedPath = $this->store->fail($queuedJob);
 
                 Logger::exception($exception, [
@@ -79,5 +80,14 @@ final class QueueManager
         }
 
         return $processed;
+    }
+
+    private function resolveConfiguredStore(): QueueStoreInterface
+    {
+        try {
+            return app(QueueStoreInterface::class);
+        } catch (RuntimeException) {
+            return new FileQueueStore(storage_path((string) config("queue.connections.file.path", "framework/queue")));
+        }
     }
 }

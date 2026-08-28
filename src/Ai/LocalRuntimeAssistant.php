@@ -18,7 +18,7 @@ namespace Fnlla\Php\Ai;
 
 use RuntimeException;
 
-final class LocalRuntimeAssistant
+final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
 {
     public function answer(string $input, array $context = []): array
     {
@@ -113,6 +113,21 @@ final class LocalRuntimeAssistant
         file_put_contents($path, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL, LOCK_EX);
 
         return $items[$id];
+    }
+
+    public function status(): array
+    {
+        $config = $this->runtimeConfig();
+
+        return [
+            "schema" => "fnlla.runtime_ai.status.v1",
+            "driver" => "local",
+            "enabled" => ($config["enabled"] ?? false) === true,
+            "learning_enabled" => ($config["learning_enabled"] ?? false) === true,
+            "provider_ready" => true,
+            "external_calls" => false,
+            "configured_runtime_path" => (string) ($config["runtime_path"] ?? "resources/fnlla-ai-runtime"),
+        ];
     }
 
     private function runtimeConfig(): array

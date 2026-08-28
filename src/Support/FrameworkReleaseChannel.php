@@ -26,6 +26,10 @@ use RuntimeException;
 
 final class FrameworkReleaseChannel
 {
+    public const OFFICIAL_REPOSITORY = "techayoDEV/fnlla";
+    public const OFFICIAL_CLONE_URL = "https://github.com/techayoDEV/fnlla.git";
+    public const OFFICIAL_API_BASE_URL = "https://api.github.com";
+
     public static function prepareReleaseSource(string $projectRoot, ?string $requestedTag = null): array
     {
         /*
@@ -137,28 +141,27 @@ final class FrameworkReleaseChannel
 
     private static function repositoryConfig(string $projectRoot): array
     {
-        $configuredSlug = trim((string) config("framework_update.github_repository", ""));
-        $configuredApiBase = rtrim((string) config("framework_update.github_api_base_url", "https://api.github.com"), "/");
-        $configuredCloneUrl = trim((string) config("framework_update.github_clone_url", ""));
+        $configuredSlug = self::canonicalRepositorySlug(trim((string) config("framework_update.github_repository", self::OFFICIAL_REPOSITORY)));
+        $configuredApiBase = rtrim((string) config("framework_update.github_api_base_url", self::OFFICIAL_API_BASE_URL), "/");
+        $configuredCloneUrl = trim((string) config("framework_update.github_clone_url", self::OFFICIAL_CLONE_URL));
 
-        if ($configuredSlug !== "") {
-            return [
-                "slug" => $configuredSlug,
-                "clone_url" => $configuredCloneUrl !== "" ? $configuredCloneUrl : "https://github.com/" . $configuredSlug . ".git",
-                "html_url" => "https://github.com/" . $configuredSlug,
-                "api_base_url" => $configuredApiBase,
-            ];
+        if (strcasecmp($configuredSlug, self::OFFICIAL_REPOSITORY) !== 0) {
+            throw new RuntimeException("Refusing FNLLA framework update from non-official GitHub repository: " . $configuredSlug);
         }
 
-        $lock = FrameworkLock::load($projectRoot);
-        $repositoryUrl = trim((string) ($lock["framework_base"]["framework"]["repository"] ?? ""));
-        $slug = self::parseRepositorySlug($repositoryUrl);
+        if ($configuredApiBase !== self::OFFICIAL_API_BASE_URL) {
+            throw new RuntimeException("Refusing FNLLA framework update through a non-official GitHub API endpoint.");
+        }
+
+        if (strcasecmp(self::canonicalRepositorySlug($configuredCloneUrl), self::OFFICIAL_REPOSITORY) !== 0) {
+            throw new RuntimeException("Refusing FNLLA framework update from a non-official clone URL.");
+        }
 
         return [
-            "slug" => $slug,
-            "clone_url" => $repositoryUrl !== "" ? $repositoryUrl : "https://github.com/" . $slug . ".git",
-            "html_url" => "https://github.com/" . $slug,
-            "api_base_url" => $configuredApiBase,
+            "slug" => self::OFFICIAL_REPOSITORY,
+            "clone_url" => self::OFFICIAL_CLONE_URL,
+            "html_url" => "https://github.com/" . self::OFFICIAL_REPOSITORY,
+            "api_base_url" => self::OFFICIAL_API_BASE_URL,
         ];
     }
 
@@ -410,6 +413,21 @@ final class FrameworkReleaseChannel
         return $matches[1] . "/" . $matches[2];
     }
 
+    private static function canonicalRepositorySlug(string $value): string
+    {
+        $trimmed = trim($value);
+
+        if ($trimmed === "") {
+            throw new RuntimeException("FNLLA framework update repository is missing.");
+        }
+
+        if (preg_match('#^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$#', $trimmed) === 1) {
+            return $trimmed;
+        }
+
+        return self::parseRepositorySlug($trimmed);
+    }
+
     private static function trimReleaseBody(string $body): string
     {
         $body = trim($body);
@@ -496,8 +514,8 @@ final class FrameworkReleaseChannel
         $repository = (string) ($manifest["product"]["repository"] ?? "");
         $slug = self::parseRepositorySlug($repository);
 
-        if (strcasecmp($slug, $expectedSlug) !== 0) {
-            throw new RuntimeException("Downloaded FNLLA release manifest repository does not match the configured release channel.");
+        if (strcasecmp($slug, self::OFFICIAL_REPOSITORY) !== 0 || strcasecmp($expectedSlug, self::OFFICIAL_REPOSITORY) !== 0) {
+            throw new RuntimeException("Downloaded FNLLA release manifest repository does not match the official techayoDEV/fnlla release channel.");
         }
 
         $version = self::readVersionLine($versionPath);

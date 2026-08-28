@@ -35,7 +35,7 @@ final class FrameworkUpdateCommand extends Command
 
     public function description(): string
     {
-        return "Check or apply FNLLA framework-base updates from a maintained source repository or the public GitHub release channel.";
+        return "Check or apply FNLLA framework-base updates from the official techayoDEV/fnlla GitHub release channel.";
     }
 
     public function handle(array $arguments): int
@@ -52,17 +52,9 @@ final class FrameworkUpdateCommand extends Command
         $currentLock = FrameworkLock::load($projectRoot);
         $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA Project"));
 
-        $report = ($options["github"] ?? false) === true
-            ? (
-                $options["apply"] === true
-                    ? FrameworkUpdater::applyLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
-                    : FrameworkUpdater::checkLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
-            )
-            : (
-                $options["apply"] === true
-                    ? FrameworkUpdater::apply($projectRoot, (string) ($options["source"] ?? ""), $appName)
-                    : FrameworkUpdater::check($projectRoot, (string) ($options["source"] ?? ""), $appName)
-            );
+        $report = $options["apply"] === true
+            ? FrameworkUpdater::applyLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""))
+            : FrameworkUpdater::checkLatestRelease($projectRoot, $appName, (string) ($options["release_tag"] ?? ""));
 
         if ($options["json"] === true) {
             $this->line($this->encodeJson($report));
@@ -87,11 +79,9 @@ final class FrameworkUpdateCommand extends Command
     {
         $options = [
             "apply" => false,
-            "github" => false,
             "help" => false,
             "json" => false,
             "release_tag" => null,
-            "source" => null,
         ];
 
         for ($index = 0, $count = count($arguments); $index < $count; $index++) {
@@ -112,7 +102,6 @@ final class FrameworkUpdateCommand extends Command
             }
 
             if ($argument === "--github") {
-                $options["github"] = true;
                 continue;
             }
 
@@ -138,14 +127,15 @@ final class FrameworkUpdateCommand extends Command
             }
 
             if (str_starts_with($argument, "--source=")) {
-                $options["source"] = substr($argument, strlen("--source="));
-                continue;
+                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
             }
 
             if ($argument === "--source") {
-                $options["source"] = trim((string) ($arguments[$index + 1] ?? ""));
-                $index++;
-                continue;
+                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
+            }
+
+            if (str_starts_with($argument, "--repository=") || $argument === "--repository" || str_starts_with($argument, "--repo-url=") || $argument === "--repo-url") {
+                throw new RuntimeException("Repository overrides are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
             }
 
             throw new RuntimeException("Unknown option for framework:update: " . $argument);
@@ -156,12 +146,9 @@ final class FrameworkUpdateCommand extends Command
 
     private function printUsage(): void
     {
-        $this->line("Usage: php fnlla framework:update --check [--source <path-to-fnlla>]");
-        $this->line("   or: php fnlla framework:update --apply [--source <path-to-fnlla>]");
-        $this->line("   or: php fnlla framework:update --check --github [--release-tag v1.0.x]");
-        $this->line("   or: php fnlla framework:update --apply --github [--release-tag v1.0.x]");
-        $this->line("If --source is omitted, FNLLA will try to auto-detect a sibling maintained repository.");
-        $this->line("Use --github to compare against the latest published FNLLA release downloaded into the local update cache.");
+        $this->line("Usage: php fnlla framework:update --check [--release-tag v1.0.x] [--json]");
+        $this->line("   or: php fnlla framework:update --apply [--release-tag v1.0.x] [--json]");
+        $this->line("Updates are downloaded only from the official techayoDEV/fnlla GitHub release channel.");
         $this->line("Use --json to emit the framework update report as machine-readable JSON.");
     }
 

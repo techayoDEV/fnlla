@@ -24,6 +24,8 @@ use Fnlla\Php\Database\DatabaseManager;
 
 abstract class Migration
 {
+    public bool $withinTransaction = true;
+
     public function __construct(protected DatabaseManager $database)
     {
     }

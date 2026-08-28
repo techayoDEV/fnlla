@@ -39,13 +39,7 @@ final class FrameworkUpdateController extends Controller
         $report = flash("framework_update_report");
         $upgradeReport = flash("framework_upgrade_report");
         $upgradeApply = flash("framework_upgrade_apply");
-        $configuredSourcePath = (string) config("framework_update.source_path", "");
-        $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
-        $oldSourcePath = trim((string) old("source_path", ""));
         $cachedRelease = FrameworkReleaseChannel::readCachedReleaseSummary(base_path());
-        $sourcePathValue = $oldSourcePath !== ""
-            ? $oldSourcePath
-            : (string) ($sourceDetection["resolved_path"] ?? $configuredSourcePath);
 
         return $this->view("maintenance/framework-update", [
             "pageTitle" => "Framework updates",
@@ -53,8 +47,8 @@ final class FrameworkUpdateController extends Controller
             "frameworkUpdatePageState" => $pageState,
             "frameworkUpdateLock" => $lock,
             "frameworkUpdateReport" => is_array($report) ? $report : null,
-            "frameworkUpdateSourcePath" => $sourcePathValue,
-            "frameworkUpdateSourceDetection" => $sourceDetection,
+            "frameworkUpdateSourcePath" => "",
+            "frameworkUpdateSourceDetection" => FrameworkUpdater::detectSourceRoot(base_path()),
             "frameworkUpdateCachedRelease" => $cachedRelease,
             "frameworkUpgradeReport" => is_array($upgradeReport) ? $upgradeReport : null,
             "frameworkUpgradeApply" => is_array($upgradeApply) ? $upgradeApply : null,
@@ -82,36 +76,24 @@ final class FrameworkUpdateController extends Controller
             return $this->runUpgradeWorkflow($request, $mode, $pageState);
         }
 
-        $usesGitHub = in_array($mode, ["github-check", "github-apply"], true);
-        $configuredSourcePath = (string) config("framework_update.source_path", "");
-        $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), $configuredSourcePath);
-        $sourcePathInput = trim((string) $request->input("source_path", ""));
-        $sourcePath = $sourcePathInput !== ""
-            ? $sourcePathInput
-            : (string) ($sourceDetection["resolved_path"] ?? "");
+        $usesGitHub = true;
         $releaseTag = trim((string) $request->input("release_tag", ""));
         flash_set("old", [
-            "source_path" => $sourcePath,
+            "source_path" => "",
             "release_tag" => $releaseTag,
         ]);
 
-        if ($usesGitHub !== true && $sourcePath === "") {
-            flash_set("status", [
-                "variant" => "warning",
-                "title" => "Maintained source repository still needed",
-                "text" => "FNLLA could not auto-detect a maintained source repository for this project. Set FRAMEWORK_UPDATE_SOURCE_PATH in .env or enter the path manually below.",
-                "toast" => false,
-            ]);
-            regenerate_csrf_token();
-
-            return $this->redirect(route("maintenance.framework_update"));
+        if ($mode === "check") {
+            $mode = "github-check";
+        } elseif ($mode === "apply") {
+            $mode = "github-apply";
         }
 
-        if (!in_array($mode, ["check", "apply", "github-check", "github-apply"], true)) {
+        if (!in_array($mode, ["github-check", "github-apply"], true)) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Unknown framework update action",
-                "text" => "Choose a supported action before rerunning the framework update workflow.",
+                "text" => "Choose a supported official GitHub framework update action before rerunning the workflow.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -145,16 +127,15 @@ final class FrameworkUpdateController extends Controller
 
         try {
             $report = match ($mode) {
-                "apply" => FrameworkUpdater::apply(base_path(), $sourcePath, (string) config("app.name")),
                 "github-check" => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
                 "github-apply" => FrameworkUpdater::applyLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
-                default => FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name")),
+                default => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
             };
 
             $report = array_merge($report, [
                 "mode" => $mode,
                 "executed_at_utc" => gmdate(DATE_ATOM),
-                "source_path" => (string) ($report["source_root"] ?? $sourcePath),
+                "source_path" => (string) ($report["source_root"] ?? ""),
                 "release_tag" => $releaseTag,
             ]);
             $report = array_merge($report, $this->reportPresentation($mode, $report, $pageState));
@@ -163,15 +144,13 @@ final class FrameworkUpdateController extends Controller
             flash_set("framework_update_report", $report);
             flash_set("status", $status);
         } catch (RuntimeException $exception) {
-            if (in_array($mode, ["apply", "github-apply"], true) && $exception->getMessage() === FrameworkUpdater::APPLY_CONFLICT_MESSAGE) {
-                $report = $mode === "github-apply"
-                    ? FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null)
-                    : FrameworkUpdater::check(base_path(), $sourcePath, (string) config("app.name"));
+            if ($mode === "github-apply" && $exception->getMessage() === FrameworkUpdater::APPLY_CONFLICT_MESSAGE) {
+                $report = FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null);
 
                 $report = array_merge($report, [
-                    "mode" => $mode === "github-apply" ? "github-check" : "check",
+                    "mode" => "github-check",
                     "executed_at_utc" => gmdate(DATE_ATOM),
-                    "source_path" => (string) ($report["source_root"] ?? $sourcePath),
+                    "source_path" => (string) ($report["source_root"] ?? ""),
                     "release_tag" => $releaseTag,
                 ]);
                 $report = array_merge($report, $this->reportPresentation((string) $report["mode"], $report, $pageState));
@@ -374,7 +353,6 @@ final class FrameworkUpdateController extends Controller
         $requiresManualReview = !$isApplyMode && $conflicts > 0;
         $updateReady = !$isApplyMode && $updates > 0 && $conflicts === 0;
         $recommendedApplyMode = match ($mode) {
-            "check" => "apply",
             "github-check" => "github-apply",
             default => "",
         };

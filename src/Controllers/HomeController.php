@@ -388,7 +388,7 @@ final class HomeController extends Controller
 
     public function profileApi(): array
     {
-        return [
+        $payload = [
             "meta" => [
                 "name" => config("app.name"),
                 "version" => "1.0",
@@ -399,11 +399,13 @@ final class HomeController extends Controller
 
     private function buildHealthPayload(Request $request): array
     {
-        $cached = $this->cachedHealthSnapshot();
+        $level = $this->healthLevel($request);
+        $cached = $level === "live" ? $this->liveHealthSnapshot() : $this->cachedHealthSnapshot($level);
 
         return array_replace_recursive($cached, [
             "service" => [
                 "timestamp" => gmdate(DATE_ATOM),
+                "level" => $level,
             ],
             "request" => [
                 "id" => request_id(),
@@ -415,22 +417,43 @@ final class HomeController extends Controller
         ]);
     }
 
-    private function cachedHealthSnapshot(): array
+    private function liveHealthSnapshot(): array
+    {
+        return [
+            "service" => [
+                "name" => config("app.name"),
+                "slug" => $this->slugifyServiceName((string) config("app.name")),
+                "status" => "ok",
+                "environment" => app_environment(),
+                "timestamp" => gmdate(DATE_ATOM),
+                "level" => "live",
+            ],
+            "request" => [
+                "id" => "",
+                "method" => "",
+                "path" => "",
+                "secure" => app_request_is_secure(),
+                "ip" => "",
+            ],
+        ];
+    }
+
+    private function cachedHealthSnapshot(string $level): array
     {
         $ttl = max(0, (int) config("health.cache_ttl_seconds", 10));
 
         if ($ttl <= 0) {
-            return $this->buildCachedHealthSnapshot(0);
+            return $this->buildCachedHealthSnapshot(0, $level);
         }
 
         return cache()->remember(
-            "fnlla:health:snapshot:" . app_environment(),
+            "fnlla:health:snapshot:" . app_environment() . ":" . $level,
             $ttl,
-            fn (): array => $this->buildCachedHealthSnapshot($ttl)
+            fn (): array => $this->buildCachedHealthSnapshot($ttl, $level)
         );
     }
 
-    private function buildCachedHealthSnapshot(int $ttlSeconds): array
+    private function buildCachedHealthSnapshot(int $ttlSeconds, string $level): array
     {
         $sourceDetection = FrameworkUpdater::detectSourceRoot(base_path(), (string) config("framework_update.source_path", ""));
         $versionStatus = VersionManifest::status();
@@ -458,10 +481,10 @@ final class HomeController extends Controller
                 ? ($releaseCacheReady
                     ? "A published framework baseline is already cached locally and can be reviewed or applied from the maintenance surface."
                     : "Published release checks are enabled, but no cached baseline is stored yet for this project.")
-                : "Published release checks are disabled in this environment, so operators should use the local maintainer source workflow instead.",
+                : "Published release checks are disabled in this environment, so operators must re-enable the official GitHub channel before framework updates can run.",
         ];
 
-        return [
+        $payload = [
             "service" => [
                 "name" => config("app.name"),
                 "slug" => $this->slugifyServiceName((string) config("app.name")),
@@ -470,6 +493,7 @@ final class HomeController extends Controller
                 "timestamp" => gmdate(DATE_ATOM),
                 "health_cache_ttl_seconds" => $ttlSeconds,
                 "health_snapshot_generated_at" => gmdate(DATE_ATOM),
+                "level" => $level,
                 "description" => "FNLLA project application health status.",
             ],
             "versions" => [
@@ -591,6 +615,19 @@ final class HomeController extends Controller
                 "framework_updates" => route("maintenance.framework_update"),
             ],
         ];
+
+        if ($level !== "deep") {
+            unset($payload["dependencies"], $payload["storage"], $payload["cache"], $payload["queue"], $payload["migrations"]);
+        }
+
+        return $payload;
+    }
+
+    private function healthLevel(Request $request): string
+    {
+        $level = strtolower(trim((string) $request->query("level", "ready")));
+
+        return in_array($level, ["live", "ready", "deep"], true) ? $level : "ready";
     }
 
     private function healthApiWantsJson(Request $request): bool

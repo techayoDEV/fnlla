@@ -19,10 +19,20 @@ Purpose:
 */
 
 return [
-    "default" => "file",
+    "default" => (string) env("QUEUE_CONNECTION", "file"),
+    "max_attempts" => max(1, (int) env("QUEUE_MAX_ATTEMPTS", 1)),
+    "retry_backoff_seconds" => max(1, (int) env("QUEUE_RETRY_BACKOFF_SECONDS", 30)),
     "connections" => [
         "file" => [
             "path" => (string) env("QUEUE_PATH", "framework/queue"),
+        ],
+        "redis" => [
+            "host" => (string) env("REDIS_HOST", "127.0.0.1"),
+            "port" => (int) env("REDIS_PORT", 6379),
+            "password" => (string) env("REDIS_PASSWORD", ""),
+            "database" => (int) env("REDIS_QUEUE_DB", 2),
+            "timeout" => (float) env("REDIS_TIMEOUT", 1.5),
+            "prefix" => (string) env("REDIS_QUEUE_PREFIX", "fnlla:queue:"),
         ],
     ],
 ];

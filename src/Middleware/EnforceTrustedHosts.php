@@ -18,6 +18,7 @@ namespace Fnlla\Php\Middleware;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Support\SecurityEventLogger;
 
 final class EnforceTrustedHosts implements MiddlewareInterface
 {
@@ -32,6 +33,11 @@ final class EnforceTrustedHosts implements MiddlewareInterface
         $host = $this->normaliseHost((string) $request->header("Host", $request->server("HTTP_HOST", "")));
 
         if ($host === "" || !$this->isTrusted($host, $trustedHosts)) {
+            SecurityEventLogger::write("trusted_host_rejected", [
+                "host" => $host,
+                "ip" => $request->ip(),
+            ]);
+
             return Response::text("Untrusted host.", 400);
         }
 

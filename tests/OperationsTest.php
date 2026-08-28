@@ -17,6 +17,7 @@ namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Application;
 use Fnlla\Php\Console\Commands\DoctorCommand;
+use Fnlla\Php\Console\Commands\PublicApiLockCommand;
 use Fnlla\Php\Console\Commands\SecurityAuditCommand;
 use Fnlla\Php\Container\Container;
 use Fnlla\Php\Exceptions\ExceptionHandler;
@@ -105,7 +106,22 @@ final class OperationsTest extends TestCase
         $container = new Container();
 
         self::assertSame("doctor", (new DoctorCommand($container))->name());
+        self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
         self::assertSame("security:audit", (new SecurityAuditCommand($container))->name());
+    }
+
+    public function testPublicApiLockFileExists(): void
+    {
+        if (!is_file(base_path("docs/PUBLIC-API.md"))) {
+            self::assertTrue(true);
+            return;
+        }
+
+        self::assertFileExists(base_path("docs/PUBLIC-API.lock.json"));
+        $payload = json_decode((string) file_get_contents(base_path("docs/PUBLIC-API.lock.json")), true);
+
+        self::assertSame("fnlla.public_api_lock.v1", $payload["schema"] ?? null);
+        self::assertTrue(in_array("csp_nonce", (array) ($payload["helpers"] ?? []), true));
     }
 
     public function testReleaseArtifactBuilderWritesCycloneDxSbomAndChecksums(): void
@@ -114,18 +130,26 @@ final class OperationsTest extends TestCase
         $directory = storage_path("framework/cache/release-artifacts-" . bin2hex(random_bytes(4)));
         $sbomPath = $directory . DIRECTORY_SEPARATOR . "sbom.json";
         $checksumsPath = $directory . DIRECTORY_SEPARATOR . "SHA256SUMS";
+        $manifestPath = $directory . DIRECTORY_SEPARATOR . "release-manifest.json";
 
         $sbom = $builder->buildSbom($sbomPath);
         $checksums = $builder->buildChecksums($checksumsPath);
+        $manifest = $builder->buildManifest($manifestPath, [
+            "sbom" => $sbomPath,
+            "checksums" => $checksumsPath,
+        ]);
 
         self::assertFileExists($sbomPath);
         self::assertFileExists($checksumsPath);
+        self::assertFileExists($manifestPath);
         self::assertTrue($sbom["components"] > 0);
         self::assertTrue($checksums["files"] > 0);
+        self::assertSame(2, $manifest["artifacts"]);
         self::assertStringContainsString("README.md", (string) file_get_contents($checksumsPath));
 
         @unlink($sbomPath);
         @unlink($checksumsPath);
+        @unlink($manifestPath);
         @rmdir($directory);
     }
 }

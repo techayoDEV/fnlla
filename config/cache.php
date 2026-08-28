@@ -19,11 +19,19 @@ Purpose:
 */
 
 return [
-    "default" => "file",
+    "default" => (string) env("CACHE_STORE", "file"),
     "serializer" => (string) env("CACHE_SERIALIZER", "json"),
     "stores" => [
         "file" => [
             "path" => storage_path("framework/cache"),
+        ],
+        "redis" => [
+            "host" => (string) env("REDIS_HOST", "127.0.0.1"),
+            "port" => (int) env("REDIS_PORT", 6379),
+            "password" => (string) env("REDIS_PASSWORD", ""),
+            "database" => (int) env("REDIS_CACHE_DB", 1),
+            "timeout" => (float) env("REDIS_TIMEOUT", 1.5),
+            "prefix" => (string) env("REDIS_CACHE_PREFIX", "fnlla:cache:"),
         ],
     ],
 ];

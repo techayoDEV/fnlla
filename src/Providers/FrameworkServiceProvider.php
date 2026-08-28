@@ -25,11 +25,13 @@ use Fnlla\Php\Auth\Authorization\Gate;
 use Fnlla\Php\Auth\DatabaseUserProvider;
 use Fnlla\Php\Auth\UserProviderInterface;
 use Fnlla\Php\Ai\LocalRuntimeAssistant;
+use Fnlla\Php\Ai\RuntimeAiProviderRegistry;
 use Fnlla\Php\Cache\CacheStoreInterface;
 use Fnlla\Php\Cache\FileCacheStore;
 use Fnlla\Php\Cache\JsonCacheSerializer;
 use Fnlla\Php\Cache\PhpCacheSerializer;
 use Fnlla\Php\Cache\RateLimiter;
+use Fnlla\Php\Cache\RedisCacheStore;
 use Fnlla\Php\Console\Application as ConsoleApplication;
 use Fnlla\Php\Container\Container;
 use Fnlla\Php\Database\DatabaseManager;
@@ -47,6 +49,7 @@ use Fnlla\Php\Observability\RequestObserver;
 use Fnlla\Php\Queue\FileQueueStore;
 use Fnlla\Php\Queue\QueueManager;
 use Fnlla\Php\Queue\QueueStoreInterface;
+use Fnlla\Php\Queue\RedisQueueStore;
 use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Routing\UrlGenerator;
 use Fnlla\Php\Session\SessionStore;
@@ -71,6 +74,10 @@ final class FrameworkServiceProvider extends ServiceProvider
                 throw new RuntimeException("Unsupported cache serializer: " . $serializer);
             }
 
+            if ($defaultStore === "redis") {
+                return new RedisCacheStore((array) config("cache.stores.redis", []));
+            }
+
             return new FileCacheStore(
                 (string) ($storeConfig["path"] ?? storage_path("framework/cache")),
                 $serializer === "php" ? new PhpCacheSerializer() : new JsonCacheSerializer(),
@@ -86,12 +93,19 @@ final class FrameworkServiceProvider extends ServiceProvider
         $this->container->singleton(DeveloperAccessManager::class);
         $this->container->singleton(EnvironmentFileManager::class);
         $this->container->singleton(LocalRuntimeAssistant::class);
+        $this->container->singleton(RuntimeAiProviderRegistry::class);
         $this->container->singleton(Mailer::class);
         $this->container->singleton(MetricsRecorder::class);
         $this->container->singleton(RequestObserver::class);
-        $this->container->singleton(QueueStoreInterface::class, static fn (): QueueStoreInterface => new FileQueueStore(
-            storage_path((string) config("queue.connections.file.path", "framework/queue"))
-        ));
+        $this->container->singleton(QueueStoreInterface::class, static function (): QueueStoreInterface {
+            $default = (string) config("queue.default", "file");
+
+            if ($default === "redis") {
+                return new RedisQueueStore((array) config("queue.connections.redis", []));
+            }
+
+            return new FileQueueStore(storage_path((string) config("queue.connections.file.path", "framework/queue")));
+        });
         $this->container->singleton(QueueManager::class);
         $this->container->singleton(UserProviderInterface::class, static fn (Container $container): DatabaseUserProvider => new DatabaseUserProvider(
             $container->make(DatabaseManager::class)

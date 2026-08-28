@@ -23,6 +23,7 @@ $isDevelopment = $environment === "development";
 $sessionLifetimeMinutes = max(1, (int) env("SESSION_LIFETIME_MINUTES", 120));
 
 return [
+    "driver" => (string) env("SESSION_DRIVER", "file"),
     "name" => (string) env("SESSION_NAME", "fnlla_session"),
     "lifetime_minutes" => $sessionLifetimeMinutes,
     "cookie_lifetime" => $sessionLifetimeMinutes * 60,
@@ -34,4 +35,12 @@ return [
     "strict_mode" => (bool) env("SESSION_STRICT_MODE", true),
     "use_only_cookies" => (bool) env("SESSION_USE_ONLY_COOKIES", true),
     "rotate_after_minutes" => max(1, (int) env("SESSION_ROTATE_AFTER_MINUTES", 30)),
+    "redis" => [
+        "host" => (string) env("REDIS_HOST", "127.0.0.1"),
+        "port" => (int) env("REDIS_PORT", 6379),
+        "password" => (string) env("REDIS_PASSWORD", ""),
+        "database" => (int) env("REDIS_SESSION_DB", 3),
+        "timeout" => (float) env("REDIS_TIMEOUT", 1.5),
+        "prefix" => (string) env("REDIS_SESSION_PREFIX", "fnlla:session:"),
+    ],
 ];

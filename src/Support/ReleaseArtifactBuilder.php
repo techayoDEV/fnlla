@@ -86,6 +86,49 @@ final class ReleaseArtifactBuilder
         ];
     }
 
+    public function buildManifest(string $outputPath, array $artifactPaths): array
+    {
+        $artifacts = [];
+
+        foreach ($artifactPaths as $name => $path) {
+            if (!is_string($path) || !is_file($path)) {
+                continue;
+            }
+
+            $artifacts[(string) $name] = [
+                "path" => str_replace("\\", "/", ltrim(str_replace(base_path(), "", $path), "\\/")),
+                "sha256" => hash_file("sha256", $path),
+                "bytes" => filesize($path),
+            ];
+        }
+
+        $payload = [
+            "schema" => "fnlla.release_manifest.v1",
+            "generated_at_utc" => gmdate(DATE_ATOM),
+            "product" => (string) config("app.name", "FNLLA"),
+            "version" => $this->version(),
+            "artifacts" => $artifacts,
+            "signature" => null,
+        ];
+        $signingKey = (string) env("RELEASE_SIGNING_KEY", "");
+
+        if ($signingKey !== "") {
+            $payload["signature"] = [
+                "algorithm" => "hmac-sha256",
+                "value" => hash_hmac("sha256", json_encode($artifacts, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), $signingKey),
+            ];
+        }
+
+        $this->writeJson($outputPath, $payload);
+
+        return [
+            "path" => $outputPath,
+            "artifacts" => count($artifacts),
+            "signed" => $payload["signature"] !== null,
+            "version" => $this->version(),
+        ];
+    }
+
     public function defaultOutputPath(string $filename): string
     {
         return base_path("dist/release/" . $filename);

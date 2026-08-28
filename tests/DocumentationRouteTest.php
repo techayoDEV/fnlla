@@ -62,6 +62,7 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("Documentation hub", $response->body());
         self::assertStringContainsString("/docs/index.html", $response->body());
         self::assertStringContainsString("/docs/starting-a-new-project.html", $response->body());
+        self::assertStringContainsString("/docs/enterprise-todo.html", $response->body());
     }
 
     public function testDocsOverviewPageIsServedThroughApplicationRoute(): void
@@ -159,6 +160,24 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("&lt;header&gt;", $response->body());
         self::assertStringContainsString("&lt;main&gt;", $response->body());
         self::assertStringContainsString("&lt;footer&gt;", $response->body());
+    }
+
+    public function testEnterpriseTodoGuideIsServedThroughApplicationRoute(): void
+    {
+        if ($this->skipWhenDocsWorkspaceMissing()) {
+            return;
+        }
+
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/docs/enterprise-todo.html",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("Enterprise To-Do", $response->body());
+        self::assertStringContainsString("Fionn", $response->body());
     }
 
     private function makeApplication(): Application

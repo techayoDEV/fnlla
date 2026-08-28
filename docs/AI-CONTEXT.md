@@ -9,6 +9,11 @@ php fnlla ai:context --output storage/framework/cache/my-ai-context.json
 php fnlla ai:review-pack --target=2.0.0
 php fnlla ai:upgrade-brief --target=2.0.0
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
+php fnlla ai:ask "How do I check release readiness?"
+php fnlla ai:triage --input="route 404 on controller" --json
+php fnlla ai:explain-log storage/logs/app.log
+php fnlla ai:brief
+php fnlla ai:providers --json
 ```
 
 The command does not call any external AI service and does not prove or imply
@@ -33,6 +38,14 @@ The context pack includes:
 `upgrade:check` report into one review artefact. `ai:upgrade-brief` writes a
 short Markdown brief for migration review. `ai:redact` redacts sensitive-looking
 keys from any local JSON artefact before a developer chooses to share it.
+
+`ai:ask`, `ai:triage`, `ai:explain-log`, `ai:brief` and `ai:providers` are the practical daily commands. They stay local, deterministic and small:
+
+- `ai:ask` answers from configured local knowledge.
+- `ai:triage` maps a short problem statement to likely areas and next tests.
+- `ai:explain-log` reads the tail of a local log and returns probable cause, likely area and a suggested test filter.
+- `ai:brief` gives a short project summary for review handoff.
+- `ai:providers` reports configured runtime AI providers, readiness state and whether any provider is allowed to make external calls.
 
 ## What It Excludes
 
@@ -123,3 +136,26 @@ Useful end-user features built on this local runtime include:
 This is not a general large language model. It is a predictable local
 intelligence layer for project-owned knowledge, deterministic routing and
 auditable user guidance.
+
+## Future Fionn AI Bridge
+
+FNLLA reserves a provider boundary for a future Fionn AI adapter, but it does
+not integrate with Fionn yet.
+
+Fionn is treated as a separate TechAyo-owned intelligence system with memory,
+reviewed knowledge, controlled learning, model packages, evals and a local chat
+server. FNLLA should not import Fionn code, write to its learning queue or call
+its server until a stable service contract is reviewed.
+
+The reserved bridge is `Fnlla\Php\Ai\FionnRuntimeBridge`. Its current status is `reserved`, `provider_ready=false` and `external_calls=false`. It exists so future work can integrate Fionn deliberately behind the same small runtime AI shape instead of scattering Fionn-specific calls through controllers.
+
+`Fnlla\Php\Ai\RuntimeAiProviderRegistry` and `php fnlla ai:providers --json` expose this status for operators and CI. The bridge can be configured with `AI_FIONN_BRIDGE_ENABLED`, `AI_FIONN_ENDPOINT` and `AI_FIONN_TIMEOUT_SECONDS`, but those values do not enable network calls while the integration state remains `reserved`.
+
+Before enabling a real Fionn adapter, complete:
+
+- stable Fionn request and response schemas
+- authentication and endpoint policy
+- redaction and no-secrets forwarding checks
+- prompt registry and eval fixtures
+- cost, token and latency accounting
+- explicit operator controls for reviewed knowledge and controlled learning
