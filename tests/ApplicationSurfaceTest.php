@@ -524,19 +524,6 @@ final class ApplicationSurfaceTest extends TestCase
 
     private function expectedProjectName(): string
     {
-        $manifestPath = base_path("MANIFEST.json");
-        $manifest = is_file($manifestPath)
-            ? json_decode((string) file_get_contents($manifestPath), true)
-            : null;
-
-        if (is_array($manifest)) {
-            $productName = (string) ($manifest["product"]["name"] ?? "");
-
-            if ($productName !== "") {
-                return $productName;
-            }
-        }
-
         return (string) config("app.name");
     }
 

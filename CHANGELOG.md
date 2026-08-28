@@ -32,6 +32,8 @@ release tags are cut.
 - Runtime AI now has an opt-in Fionn HTTP bridge contract with endpoint policy
   checks, redacted context forwarding, provider selection through
   `runtime_ai()` and strict security-audit coverage.
+- Exported application surface tests now validate the configured application
+  name instead of assuming the framework repository name after `.env` is copied.
 
 ## 2.1.0 - 2026-08-28
 
