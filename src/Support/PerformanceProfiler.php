@@ -33,6 +33,7 @@ final class PerformanceProfiler
             "iterations" => $iterations,
             "footprint" => $this->footprint(),
             "cli" => $this->cli($iterations),
+            "http" => $this->http($iterations),
             "memory" => [
                 "peak_bytes" => memory_get_peak_usage(true),
             ],
@@ -65,8 +66,8 @@ final class PerformanceProfiler
     {
         $rows = [];
 
-        foreach ((array) ($current["cli"] ?? []) as $name => $currentRow) {
-            $baselineRow = (array) (($baseline["cli"] ?? [])[$name] ?? []);
+        foreach ($this->comparableRows($current) as $name => $currentRow) {
+            $baselineRow = (array) ($this->comparableRows($baseline)[$name] ?? []);
             $baselineP95 = (float) ($baselineRow["p95_ms"] ?? 0);
             $currentP95 = (float) ($currentRow["p95_ms"] ?? 0);
             $deltaMs = $currentP95 - $baselineP95;
@@ -83,6 +84,22 @@ final class PerformanceProfiler
         }
 
         return $rows;
+    }
+
+    private function http(int $iterations): array
+    {
+        return (new ApplicationProbe())->measure([
+            "GET /" => [
+                "uri" => "/",
+                "expected_statuses" => [200, 302],
+                "server" => ["HTTP_ACCEPT" => "text/html"],
+            ],
+            "GET /api/health" => [
+                "uri" => "/api/health",
+                "expected_statuses" => [200, 503],
+                "server" => ["HTTP_ACCEPT" => "application/json"],
+            ],
+        ], $iterations);
     }
 
     private function cli(int $iterations): array
@@ -160,6 +177,21 @@ final class PerformanceProfiler
             "min_ms" => round(min($times), 3),
             "max_ms" => round(max($times), 3),
         ];
+    }
+
+    private function comparableRows(array $profile): array
+    {
+        $rows = [];
+
+        foreach ((array) ($profile["cli"] ?? []) as $name => $row) {
+            $rows[(string) $name] = (array) $row;
+        }
+
+        foreach ((array) ($profile["http"] ?? []) as $name => $row) {
+            $rows["http:" . (string) $name] = (array) $row;
+        }
+
+        return $rows;
     }
 
     private function footprint(): array

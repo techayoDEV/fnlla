@@ -36,7 +36,8 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("php ./scripts/build-docs.php --check", $workflow);
         self::assertStringContainsString("php ./fnlla release:prepare --skip-tests", $workflow);
         self::assertStringContainsString("php ./fnlla security:audit --strict", $workflow);
-        self::assertStringContainsString("php ./fnlla ops:backup-plan --output=framework/backup-plan.json", $workflow);
+        self::assertStringContainsString("php ./fnlla ops:backup-plan --verify --output=framework/backup-plan.json", $workflow);
+        self::assertStringContainsString("php ./fnlla project:acceptance --json", $workflow);
         self::assertStringContainsString("php ./fnlla perf:budget --iterations=1 --max-regression=20 --max-regression-ms=1000", $workflow);
     }
 
@@ -100,6 +101,7 @@ final class ReleaseWorkflowTest extends TestCase
 
         self::assertStringContainsString("v2.0.3", $workflow);
         self::assertStringContainsString("upgrade:check --target=2.1.0", $workflow);
+        self::assertStringContainsString("project:acceptance --json", $workflow);
         self::assertSame("fnlla.performance_baseline_policy.v1", $policy["schema"] ?? null);
 
         foreach (["cli.list", "cli.route_list", "http.home", "http.health", "project.export"] as $target) {

@@ -171,6 +171,33 @@ Important boundary:
 - it does not generate client pages, copy client branding or decide business workflows
 - project-specific content, data models and UI still belong to normal delivery work after claim
 
+### `php fnlla project:acceptance`
+
+Purpose:
+
+- verifies that the exported project base is ready for commercial application work
+- checks required runtime/version files and writable storage directories
+- probes `/`, `/api/health` and `/maintenance` in-process without starting a web server
+- returns a machine-readable `fnlla.project_acceptance.v1` JSON payload with `--json`
+
+Use it when:
+
+- you have just exported and claimed a new project
+- you have restored a backup onto staging and need a quick base-readiness check
+- a release pipeline needs to prove the framework base is intact before product E2E tests run
+
+Typical example:
+
+```bash
+php fnlla project:acceptance --json
+```
+
+Important boundary:
+
+- this is not a substitute for product E2E tests
+- login, role, CRUD, upload and form workflows must still be tested in the downstream application after those workflows exist
+- warnings are allowed for the maintainer framework repo, but exported projects should keep `.fnlla/framework-lock.json`
+
 ### `scripts/sync-fnlla-runtime.ps1`
 
 Purpose:

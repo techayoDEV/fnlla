@@ -41,6 +41,7 @@ php fnlla perf:compare --iterations=5 --against storage/framework/cache/performa
 The profiler records:
 
 - CLI timings for `list`, `route:list`, `version:status` and `make:project`
+- in-process HTTP probe timings for `/` and `/api/health`
 - p50, p95, average, minimum and maximum command times
 - source footprint for the main framework directories
 - PHP version, environment and peak memory

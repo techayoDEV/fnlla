@@ -18,6 +18,7 @@ namespace Fnlla\Php\Tests;
 use Fnlla\Php\Application;
 use Fnlla\Php\Console\Commands\BackupPlanCommand;
 use Fnlla\Php\Console\Commands\DoctorCommand;
+use Fnlla\Php\Console\Commands\ProjectAcceptanceCommand;
 use Fnlla\Php\Console\Commands\PublicApiLockCommand;
 use Fnlla\Php\Console\Commands\SecurityAuditCommand;
 use Fnlla\Php\Container\Container;
@@ -27,6 +28,7 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Support\DoctorReport;
 use Fnlla\Php\Support\BackupPlanBuilder;
+use Fnlla\Php\Support\ProjectAcceptanceReportBuilder;
 use Fnlla\Php\Support\ReleaseArtifactBuilder;
 use Fnlla\Php\Support\SecurityAuditReport;
 use PHPUnit\Framework\TestCase;
@@ -111,6 +113,7 @@ final class OperationsTest extends TestCase
         self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
         self::assertSame("security:audit", (new SecurityAuditCommand($container))->name());
         self::assertSame("ops:backup-plan", (new BackupPlanCommand($container))->name());
+        self::assertSame("project:acceptance", (new ProjectAcceptanceCommand($container))->name());
     }
 
     public function testPublicApiLockFileExists(): void
@@ -127,6 +130,7 @@ final class OperationsTest extends TestCase
         self::assertTrue(in_array("csp_nonce", (array) ($payload["helpers"] ?? []), true));
         self::assertTrue(in_array("db", (array) ($payload["helpers"] ?? []), true));
         self::assertTrue(in_array("ops:backup-plan", (array) ($payload["commands"] ?? []), true));
+        self::assertTrue(in_array("project:acceptance", (array) ($payload["commands"] ?? []), true));
         self::assertTrue(in_array("query_builder.paginate", (array) ($payload["data"] ?? []), true));
     }
 
@@ -139,8 +143,30 @@ final class OperationsTest extends TestCase
 
         self::assertSame("fnlla.backup_plan.v1", $plan["schema"] ?? null);
         self::assertStringContainsString("mysqldump --single-transaction", (string) ($plan["database"]["recommended_dump"] ?? ""));
+        self::assertStringContainsString("mysql --default-character-set", (string) ($plan["database"]["recommended_restore"] ?? ""));
         self::assertStringContainsString("security:audit --strict", implode(" ", (array) ($plan["restore_order"] ?? [])));
+        self::assertStringContainsString("project:acceptance --json", implode(" ", (array) ($plan["verification"] ?? [])));
         self::assertStringNotContainsString("do-not-leak", $encoded);
+
+        $verification = (new BackupPlanBuilder())->verify($plan);
+        self::assertSame("fnlla.backup_plan_verification.v1", $verification["schema"] ?? null);
+        self::assertTrue((bool) ($verification["ok"] ?? false), json_encode($verification, JSON_PRETTY_PRINT));
+    }
+
+    public function testProjectAcceptanceReportCoversProjectRuntimeHttpAndStorage(): void
+    {
+        $report = (new ProjectAcceptanceReportBuilder())->build();
+        $checks = [];
+
+        foreach ((array) ($report["checks"] ?? []) as $check) {
+            $checks[$check["id"]] = $check;
+        }
+
+        self::assertSame("fnlla.project_acceptance.v1", $report["schema"] ?? null);
+        self::assertTrue((bool) ($report["ok"] ?? false), json_encode($report, JSON_PRETTY_PRINT));
+        self::assertSame("pass", $checks["http.home"]["status"] ?? null);
+        self::assertSame("pass", $checks["http.api_health"]["status"] ?? null);
+        self::assertSame("pass", $checks["storage.cache"]["status"] ?? null);
     }
 
     public function testReleaseArtifactBuilderWritesCycloneDxSbomAndChecksums(): void

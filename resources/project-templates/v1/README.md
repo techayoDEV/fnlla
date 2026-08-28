@@ -22,6 +22,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
 - local lint, test, version metadata and integrated UI surface validation scripts
+- `project:acceptance` for framework-base smoke checks before product work begins
 - a local-first framework maintenance page at `/maintenance/framework-update`
 
 ## How to start working
@@ -37,6 +38,7 @@ php fnlla project:claim --product "{{APP_NAME}}" --owner "Owner LTD" --developer
 4. Run:
 
 ```bash
+php fnlla project:acceptance --json
 php fnlla fnlla-runtime:validate
 php scripts/test.php
 php scripts/lint.php
@@ -104,6 +106,7 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
 - `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
+- `php fnlla project:acceptance --json` checks runtime files, writable storage, `/`, `/api/health` and `/maintenance` before product-specific work or release
 - `php fnlla doctor` checks local PHP/runtime readiness before development, CI or release
 - `php fnlla security:audit` checks deploy-time security configuration posture
 - `php fnlla optimize` builds route and configuration caches for production-style deployments
@@ -137,6 +140,7 @@ php fnlla list
 php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
 php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
+php fnlla project:acceptance --json
 php fnlla doctor
 php fnlla security:audit
 php fnlla framework:update --check

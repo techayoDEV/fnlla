@@ -108,7 +108,9 @@ final class PerformanceAndAiTest extends TestCase
 
         self::assertSame("fnlla.performance_profile.v1", $profile["schema"] ?? null);
         self::assertArrayHasKey("cli", $profile);
+        self::assertArrayHasKey("http", $profile);
         self::assertArrayHasKey("footprint", $profile);
+        self::assertTrue((bool) ($profile["http"]["GET /api/health"]["ok"] ?? false), json_encode($profile["http"]["GET /api/health"] ?? [], JSON_PRETTY_PRINT));
     }
 
     public function testPerformanceCommandsAreNamedForCli(): void

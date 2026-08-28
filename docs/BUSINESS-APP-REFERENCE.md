@@ -13,6 +13,7 @@ Start from a normal project export:
 php fnlla make:project ../fnlla-business-reference "FNLLA Business Reference"
 cd ../fnlla-business-reference
 php fnlla project:claim --product "FNLLA Business Reference" --owner "Example LTD" --developer "TechAyo LTD"
+php fnlla project:acceptance --json
 ```
 
 Use `resources/business-reference/2.1/blueprint.json` as the implementation
@@ -36,6 +37,7 @@ A release-quality reference application should demonstrate:
 - queue dispatch and `queue:work`;
 - `/api/health` and the browser maintenance screen;
 - password-protected client preview before public launch;
+- `project:acceptance` passing on a fresh export before business code is added;
 - `ops:backup-plan`, `security:audit --strict` and `optimize:warm` before
   deployment.
 
@@ -141,7 +143,8 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
-php fnlla ops:backup-plan --output=framework/backup-plan.json
+php fnlla project:acceptance --json
+php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
 php fnlla security:audit --strict
 php fnlla optimize:warm
 ```

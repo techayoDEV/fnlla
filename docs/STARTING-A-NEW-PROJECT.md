@@ -49,6 +49,7 @@ The exported project already includes:
 - MySQL config and migration support
 - auth, sessions, cookies and CSRF foundations
 - lint, test and runtime validation scripts
+- a project-base acceptance command for runtime, storage and HTTP smoke checks
 - an application base with public pages for `/`, `/about` and `/services`
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - an optional password-protected maintenance access screen for client preview or staged review
@@ -147,11 +148,13 @@ Inside the new project directory:
 4. Leave `ASSET_URL` empty unless the project serves CSS, JavaScript and images from a separate asset domain or CDN.
 5. Set MySQL credentials.
 6. Review `config/app.php`.
-7. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
-8. Replace the demo routes and pages with the real application flow.
-9. Run:
+7. Run `php fnlla project:acceptance --json` before adding product-specific code.
+8. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
+9. Replace the demo routes and pages with the real application flow.
+10. Run:
 
 ```bash
+php fnlla project:acceptance --json
 php fnlla fnlla-runtime:validate
 php fnlla framework:update --check
 php fnlla framework:update --dry-run
@@ -160,17 +163,17 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-10. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
+11. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
 
-11. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
+12. When client preview should stay private, either open `/maintenance` locally and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true` and `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 
-12. Start the local server:
+13. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-13. Open `http://127.0.0.1:8080` in your browser.
+14. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.

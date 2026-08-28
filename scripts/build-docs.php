@@ -162,6 +162,15 @@ $guidePages = [
         "lead" => "Upgrade notes and verification workflow for downstream applications moving from 2.0.x to 2.1.0.",
     ],
     [
+        "label" => "Upgrade 2.1.1",
+        "href" => "upgrade-2-1-1.html",
+        "source" => "docs/UPGRADE-2.1.1.md",
+        "source_name" => "UPGRADE-2.1.1.md",
+        "title" => "Upgrade 2.1.1",
+        "document_title" => "Upgrade 2.1.1 - FNLLA Documentation",
+        "lead" => "Patch upgrade notes for downstream applications moving from 2.1.0 to 2.1.1.",
+    ],
+    [
         "label" => "Major Release Checklist",
         "href" => "major-release-checklist.html",
         "source" => "docs/MAJOR-RELEASE-CHECKLIST.md",
@@ -183,6 +192,7 @@ $guideLinkMap = [
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
     "./UPGRADE-2.1.md" => "./upgrade-2-1.html",
+    "./UPGRADE-2.1.1.md" => "./upgrade-2-1-1.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
 ];
 
@@ -1234,6 +1244,7 @@ throttle</code></pre>
           <ul class="doc-checklist">
             <li><code>php fnlla make:project</code></li>
             <li><code>php fnlla project:claim</code></li>
+            <li><code>php fnlla project:acceptance --json</code></li>
             <li><code>php fnlla fnlla-runtime:sync</code></li>
             <li><code>php fnlla fnlla-runtime:validate</code></li>
             <li><code>php fnlla framework:update --check</code></li>

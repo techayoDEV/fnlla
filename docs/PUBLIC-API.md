@@ -13,7 +13,10 @@ unless a release note promotes it.
 - Plain PHP views under `views/` rendered through controllers.
 - Config files under `config/`, with environment overrides through `.env`.
 - Console launcher: `php fnlla`.
-- Core CLI contracts: `doctor`, `config:doctor`, `security:audit`, `app:map`, `ops:backup-plan`, `upgrade:check`, `perf:budget`, `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`, `ai:explain-log`, `ai:brief` and `ai:providers`.
+- Core CLI contracts: `doctor`, `config:doctor`, `security:audit`, `app:map`,
+  `ops:backup-plan`, `project:acceptance`, `upgrade:check`, `perf:budget`,
+  `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`,
+  `ai:explain-log`, `ai:brief` and `ai:providers`.
 
 ## Stable Helper Surface
 

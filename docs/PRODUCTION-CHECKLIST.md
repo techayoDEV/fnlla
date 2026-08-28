@@ -47,7 +47,7 @@ blockers unless the release owner records an explicit exception.
 Generate a redacted operational plan:
 
 ```bash
-php fnlla ops:backup-plan --output=framework/backup-plan.json
+php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
 ```
 
 The real runbook must cover:
@@ -61,11 +61,14 @@ The real runbook must cover:
 - verification commands after restore.
 
 Before deployment, verify the latest backup by restoring it to a non-production
-environment.
+environment, then run `php fnlla project:acceptance --json` on the restored
+copy.
 
 ## Runtime And Performance
 
 - `php fnlla optimize:warm` completes successfully.
+- `php fnlla project:acceptance --json` passes on the deployable source tree or
+  restored staging copy.
 - `php fnlla perf:baseline:update --iterations=7` has a current baseline.
 - `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000`
   passes against that baseline.
@@ -86,6 +89,7 @@ php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
 php fnlla doctor
 php fnlla security:audit --strict
+php fnlla project:acceptance --json
 php fnlla release:prepare --major --target=2.1.0
 ```
 

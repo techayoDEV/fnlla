@@ -85,7 +85,11 @@ jobs:
 
       - name: Generate backup and restore plan
         shell: pwsh
-        run: php ./fnlla ops:backup-plan --output=framework/backup-plan.json
+        run: php ./fnlla ops:backup-plan --verify --output=framework/backup-plan.json
+
+      - name: Run project acceptance smoke checks
+        shell: pwsh
+        run: php ./fnlla project:acceptance --json
 
       - name: Run performance release budget
         shell: pwsh
@@ -168,6 +172,8 @@ jobs:
         run: |
           $work = Join-Path $env:RUNNER_TEMP "fnlla-update-path"
           New-Item -ItemType Directory -Force $work | Out-Null
+          php ./fnlla make:project (Join-Path $work "app-current") "FNLLA Current Export"
+          php (Join-Path $work "app-current" "fnlla") project:acceptance --json
           git worktree add (Join-Path $work "source-2.0.3") v2.0.3
           php (Join-Path $work "source-2.0.3" "fnlla") make:project (Join-Path $work "app-2.0.3") "FNLLA Update Path"
           php ./fnlla upgrade:check --target=2.1.0

@@ -42,12 +42,18 @@ php fnlla security:audit --strict
 pipelines once environment variables are fully defined.
 
 `ops:backup-plan` emits a redacted backup and restore plan for the current
-environment. Use `--output=framework/backup-plan.json` when a deployment
-pipeline needs to archive the runbook as local evidence.
+environment. Use `--verify --output=framework/backup-plan.json` when a
+deployment pipeline needs to archive the runbook as local evidence and fail on
+missing backup include paths.
 
-`perf:profile` records local command timings, repository footprint and peak
-memory. Run `php fnlla perf:profile --write-baseline` before a performance-sensitive
-change and `php fnlla perf:budget --max-regression=20 --max-regression-ms=1000`
+`project:acceptance` runs framework-base smoke checks for the current project:
+version/runtime files, writable storage and in-process HTTP probes for `/`,
+`/api/health` and `/maintenance`. It is the checkpoint to run after
+`make:project`, after restore to staging and before product-specific E2E tests.
+
+`perf:profile` records local command timings, in-process HTTP probe timings,
+repository footprint and peak memory. Run `php fnlla perf:profile --write-baseline`
+before a performance-sensitive change and `php fnlla perf:budget --max-regression=20 --max-regression-ms=1000`
 after the change to catch p95 regressions before release while avoiding noisy
 microbenchmark false positives.
 
@@ -123,7 +129,12 @@ The repository ships a GitHub Actions release gate at `.github/workflows/fnlla-r
 
 It runs on pushes to `main`, pull requests to `main`, version tags and manual dispatch. The matrix covers `ubuntu-latest`, `macos-latest` and `windows-latest`, with PowerShell Core as the shared shell for repository scripts.
 
-The gate checks docs, runtime contract, version manifest, release metadata, fast tests, `doctor`, strict `security:audit`, backup-plan generation, performance budget, lint, release artefacts, runtime publish and ecosystem audit. A second matrix job runs the slower export/update regression suite across the same operating systems and keeps the 2.0.3 export path visible before 2.1.0 publication.
+The gate checks docs, runtime contract, version manifest, release metadata, fast
+tests, `doctor`, strict `security:audit`, verified backup-plan generation,
+`project:acceptance`, performance budget, lint, release artefacts, runtime
+publish and ecosystem audit. A second matrix job runs the slower export/update
+regression suite across the same operating systems and keeps the 2.0.3 export
+path visible before 2.1.0 publication.
 
 ## Branch Protection
 

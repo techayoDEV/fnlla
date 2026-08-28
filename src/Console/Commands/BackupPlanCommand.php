@@ -32,9 +32,17 @@ final class BackupPlanCommand extends Command
 
     public function handle(array $arguments): int
     {
-        $plan = $this->container->make(BackupPlanBuilder::class)->build();
+        $builder = $this->container->make(BackupPlanBuilder::class);
+        $plan = $builder->build();
+        $verify = in_array("--verify", $arguments, true);
+
+        if ($verify) {
+            $plan["readiness"] = $builder->verify($plan);
+        }
+
         $json = json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $output = $this->optionValue($arguments, "--output");
+        $exitCode = ($verify && !($plan["readiness"]["ok"] ?? false)) ? 1 : 0;
 
         if ($output !== null && trim($output) !== "") {
             $path = $this->resolveStorageOutput(trim($output));
@@ -49,12 +57,12 @@ final class BackupPlanCommand extends Command
             file_put_contents($path, $json . PHP_EOL, LOCK_EX);
             $this->line("Backup plan written: " . $path);
 
-            return 0;
+            return $exitCode;
         }
 
         $this->line($json);
 
-        return 0;
+        return $exitCode;
     }
 
     private function optionValue(array $arguments, string $name): ?string

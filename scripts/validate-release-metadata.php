@@ -42,12 +42,15 @@ $requiredContains = [
         'resources/business-reference/2.1/',
     ],
     'CHANGELOG.md' => [
+        '## 2.1.1 - 2026-08-28',
         '## 2.1.0 - 2026-08-28',
+        'project:acceptance',
         'ops:backup-plan',
         'security:audit --strict',
     ],
     'docs/PUBLIC-API.md' => [
         'ops:backup-plan',
+        'project:acceptance',
         'db()',
         'QueryBuilder::paginate()',
     ],
@@ -61,7 +64,13 @@ $requiredContains = [
     'docs/PRODUCTION-CHECKLIST.md' => [
         'security:audit --strict',
         'ops:backup-plan',
+        'project:acceptance --json',
         'APP_DEBUG=false',
+    ],
+    'docs/UPGRADE-2.1.1.md' => [
+        '2.1.0 to 2.1.1',
+        'project:acceptance --json',
+        'ops:backup-plan --verify',
     ],
     'docs/UPGRADE-2.1.md' => [
         '2.0.x to 2.1.0',

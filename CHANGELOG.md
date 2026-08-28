@@ -3,6 +3,21 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.1.1 - 2026-08-28
+
+### Added
+
+- `project:acceptance` for machine-readable project-base smoke checks after
+  `make:project` export and before commercial product work begins.
+- In-process HTTP performance probes for `/` and `/api/health`.
+- `ops:backup-plan --verify` readiness checks and an explicit restore command.
+
+### Changed
+
+- Release gate now runs project acceptance and verified backup-plan generation.
+- Project export smoke coverage now proves the generated project can run the
+  acceptance command.
+
 ## 2.1.0 - 2026-08-28
 
 ### Added

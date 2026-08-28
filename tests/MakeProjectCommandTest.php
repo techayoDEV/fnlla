@@ -261,6 +261,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame(0, $listExitCode, $listOutput);
         self::assertStringContainsString("framework:update", $listOutput);
         self::assertStringContainsString("fnlla-runtime:validate", $listOutput);
+        self::assertStringContainsString("project:acceptance", $listOutput);
         self::assertStringContainsString("project:claim", $listOutput);
         self::assertFalse(str_contains($listOutput, "make:project"));
         self::assertFalse(str_contains($listOutput, "make:controller"));
@@ -343,6 +344,15 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $projectTestExitCode, $projectTestOutput);
         self::assertStringContainsString("OK (", $projectTestOutput);
+
+        [$acceptanceExitCode, $acceptanceOutput] = $this->runPhpScript(
+            $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
+            ["project:acceptance", "--json"]
+        );
+
+        self::assertSame(0, $acceptanceExitCode, $acceptanceOutput);
+        self::assertStringContainsString("fnlla.project_acceptance.v1", $acceptanceOutput);
+        self::assertStringContainsString("http.api_health", $acceptanceOutput);
 
         [$updateCheckExitCode, $updateCheckOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",

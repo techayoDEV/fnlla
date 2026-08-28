@@ -24,6 +24,7 @@
         "config:doctor",
         "security:audit",
         "ops:backup-plan",
+        "project:acceptance",
         "app:map",
         "upgrade:check",
         "perf:budget",

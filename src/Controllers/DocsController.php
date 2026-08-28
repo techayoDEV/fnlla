@@ -128,6 +128,12 @@ final class DocsController extends Controller
             "kind" => "Guide",
         ],
         [
+            "file" => "upgrade-2-1-1.html",
+            "title" => "Upgrade 2.1.1",
+            "summary" => "Patch upgrade notes for downstream applications moving from 2.1.0 to 2.1.1.",
+            "kind" => "Guide",
+        ],
+        [
             "file" => "major-release-checklist.html",
             "title" => "Major Release Checklist",
             "summary" => "Release-owner checklist for validation, performance, privacy and publication readiness.",

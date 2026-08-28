@@ -230,6 +230,7 @@ php fnlla optimize
 php fnlla optimize:warm
 php fnlla app:map
 php fnlla upgrade:check --target=2.1.0
+php fnlla project:acceptance --json
 php fnlla perf:profile --iterations=5
 php fnlla perf:baseline:update --iterations=7
 php fnlla ai:context
@@ -243,7 +244,8 @@ php fnlla release:prepare
 - `optimize:warm` also builds the asset manifest and optional OPcache preload file.
 - `app:map` generates a route/controller/view map for onboarding, audits and AI-assisted review.
 - `upgrade:check`, `upgrade:plan` and `upgrade:apply` provide a local major-release upgrade workflow; `/maintenance/framework-update` exposes the same major readiness and safe-action flow through the browser maintenance GUI.
-- `perf:profile` records local CLI timings, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
+- `project:acceptance` runs project-base smoke checks for runtime files, writable storage, health routes and maintenance preview readiness.
+- `perf:profile` records local CLI timings, in-process HTTP probes, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
 - `perf:baseline:update` and `perf:compare` make performance baselines explicit for release work.
 - `ops:backup-plan` generates a redacted backup and restore runbook for production operations.
 - `ai:context`, `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` write local redacted artefacts for tool-assisted review without raw `.env`, credentials or source-file contents.
@@ -425,6 +427,7 @@ Important commands:
 - `php fnlla optimize:warm`
 - `php fnlla app:map`
 - `php fnlla ops:backup-plan`
+- `php fnlla project:acceptance --json`
 - `php fnlla upgrade:check --target=2.1.0`
 - `php fnlla upgrade:plan --target=2.1.0`
 - `php fnlla upgrade:apply --target=2.1.0`
@@ -495,7 +498,8 @@ php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
 php fnlla upgrade:check --target=2.1.0
 php fnlla app:map
-php fnlla ops:backup-plan --output=framework/backup-plan.json
+php fnlla project:acceptance --json
+php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
 php fnlla security:audit --strict
 php fnlla ai:review-pack --target=2.1.0
 php fnlla perf:profile --iterations=5 --write-baseline

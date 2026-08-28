@@ -27,7 +27,7 @@ final class PerfProfileCommand extends Command
 
     public function description(): string
     {
-        return "Measure FNLLA CLI and footprint performance.";
+        return "Measure FNLLA CLI, HTTP probe and footprint performance.";
     }
 
     public function handle(array $arguments): int
@@ -58,6 +58,17 @@ final class PerfProfileCommand extends Command
                 (string) ($row["avg_ms"] ?? "n/a"),
                 (string) ($row["p50_ms"] ?? "n/a"),
                 (string) ($row["p95_ms"] ?? "n/a")
+            ));
+        }
+
+        foreach ((array) $profile["http"] as $name => $row) {
+            $this->line(sprintf(
+                "%s avg=%sms p50=%sms p95=%sms status=%s",
+                (string) $name,
+                (string) ($row["avg_ms"] ?? "n/a"),
+                (string) ($row["p50_ms"] ?? "n/a"),
+                (string) ($row["p95_ms"] ?? "n/a"),
+                implode(",", array_map("strval", (array) ($row["statuses"] ?? [])))
             ));
         }
 
