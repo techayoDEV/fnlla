@@ -26,6 +26,7 @@ use Fnlla\Php\Http\HttpException;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Http\UploadedFile;
+use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Support\ProcessRunner;
 use PHPUnit\Framework\TestCase;
@@ -66,6 +67,26 @@ final class HardeningTest extends TestCase
 
         self::assertSame(124, $result["exit_code"], $result["output"]);
         self::assertTrue($result["timed_out"]);
+    }
+
+    public function testEnvironmentFileManagerPreservesDollarPrefixedValuesWhenReplacingExistingKeys(): void
+    {
+        $directory = $this->makeTempDirectory("fnlla-env-hardening-");
+        $envPath = $directory . DIRECTORY_SEPARATOR . ".env";
+        file_put_contents($envPath, "DEVELOPER_ACCESS_PASSWORD_HASH=" . PHP_EOL);
+
+        config_set("maintenance.env_path", $envPath);
+        config_set("maintenance.env_example_path", $directory . DIRECTORY_SEPARATOR . ".env.example");
+
+        $hash = '$2y$10$abcdefghijklmnopqrstuu8u5yOEPZgspmNwBl3Pq7BzFn5yGfl6m';
+        (new EnvironmentFileManager())->write([
+            "DEVELOPER_ACCESS_PASSWORD_HASH" => $hash,
+        ]);
+
+        self::assertStringContainsString(
+            "DEVELOPER_ACCESS_PASSWORD_HASH=" . $hash,
+            (string) file_get_contents($envPath)
+        );
     }
 
     public function testRequestIdRejectsHeaderInjectionCharacters(): void

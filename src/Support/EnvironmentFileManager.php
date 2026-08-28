@@ -73,7 +73,12 @@ final class EnvironmentFileManager
             $pattern = '/^' . preg_quote($key, '/') . '=.*$/m';
 
             if (preg_match($pattern, $contents) === 1) {
-                $contents = (string) preg_replace($pattern, $key . "=" . $serialized, $contents, 1);
+                $contents = (string) preg_replace_callback(
+                    $pattern,
+                    static fn (): string => $key . "=" . $serialized,
+                    $contents,
+                    1
+                );
                 continue;
             }
 

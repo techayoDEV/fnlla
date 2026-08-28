@@ -35,6 +35,12 @@ release tags are cut.
 - Exported application surface tests now validate the configured application
   name instead of assuming the framework repository name after `.env` is copied.
 
+### Fixed
+
+- Developer panel setup now preserves bcrypt hashes when replacing existing
+  `.env` keys, so fresh exported projects no longer redirect to a hidden `404`
+  after the first developer password is created.
+
 ## 2.1.0 - 2026-08-28
 
 ### Added
