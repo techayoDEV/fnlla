@@ -140,7 +140,16 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $response->status());
-        self::assertSame("/maintenance?redirect=%2F#developer-panel-setup", $response->headers()["Location"] ?? null);
+        self::assertSame("/developer-panel-setup", $response->headers()["Location"] ?? null);
+
+        $setupResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer-panel-setup",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $setupResponse->status());
+        self::assertStringContainsString("Create developer access", $setupResponse->body());
     }
 
     public function testProjectPagesAreAvailableThroughPublicRoutes(): void

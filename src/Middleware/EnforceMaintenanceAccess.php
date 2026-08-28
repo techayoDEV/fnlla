@@ -59,6 +59,7 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
     {
         $allowedPaths = [
             "/maintenance",
+            "/developer-panel-setup",
             "/maintenance/setup-access",
             "/maintenance/unlock",
             "/maintenance/lock",
@@ -104,12 +105,7 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
 
     private function freshSetupRedirectPath(Request $request): string
     {
-        $requestUri = (string) $request->server("REQUEST_URI", $request->path());
-        $relativeTarget = str_starts_with($requestUri, "/") ? $requestUri : $request->path();
-
-        return route("maintenance.home")
-            . "?redirect=" . rawurlencode($relativeTarget)
-            . "#developer-panel-setup";
+        return route("developer.setup");
     }
 
     private function lockedRedirectPath(Request $request): string

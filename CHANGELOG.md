@@ -40,6 +40,9 @@ release tags are cut.
 - Developer panel setup now preserves bcrypt hashes when replacing existing
   `.env` keys, so fresh exported projects no longer redirect to a hidden `404`
   after the first developer password is created.
+- Fresh exported projects now redirect first browser visits to the readable
+  `/developer-panel-setup` onboarding URL instead of exposing the internal
+  `/maintenance?redirect=%2F#developer-panel-setup` anchor form.
 
 ## 2.1.0 - 2026-08-28
 
