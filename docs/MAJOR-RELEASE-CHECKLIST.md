@@ -23,10 +23,10 @@ php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
 php scripts/static-analysis.php
-php fnlla upgrade:check --target=2.0.0
+php fnlla upgrade:check --target=2.1.0
 php fnlla app:map
-php fnlla ai:review-pack --target=2.0.0
-php fnlla release:prepare --major --target=2.0.0
+php fnlla ai:review-pack --target=2.1.0
+php fnlla release:prepare --major --target=2.1.0
 ```
 
 ## Performance

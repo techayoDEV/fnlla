@@ -32,6 +32,8 @@ final class UpgradeAnalyzer
             $this->checkCacheSerializer(),
             $this->checkOptionalDistributedAdapters(),
             $this->checkPublicApiContract(),
+            $this->checkBusinessReferenceBlueprint(),
+            $this->checkProductionBaselinePolicy(),
             $this->checkIntegratedAiRuntime(),
             $this->checkAssistantVendorMarkers(),
         ];
@@ -204,7 +206,14 @@ final class UpgradeAnalyzer
     {
         $missing = [];
 
-        foreach (["docs/MIGRATION.md", "CHANGELOG.md", "docs/MAJOR-RELEASE-CHECKLIST.md"] as $file) {
+        foreach ([
+            "docs/MIGRATION.md",
+            "docs/UPGRADE-2.1.md",
+            "docs/PRODUCTION-CHECKLIST.md",
+            "docs/BUSINESS-APP-REFERENCE.md",
+            "CHANGELOG.md",
+            "docs/MAJOR-RELEASE-CHECKLIST.md",
+        ] as $file) {
             if (!is_file(base_path($file))) {
                 $missing[] = $file;
             }
@@ -213,7 +222,7 @@ final class UpgradeAnalyzer
         return [
             "id" => "major-release-docs",
             "status" => $missing === [] ? "pass" : "warn",
-            "detail" => $missing === [] ? "Major-release docs are present." : "Major release should include migration, changelog and checklist docs.",
+            "detail" => $missing === [] ? "Major-release docs are present." : "Major release should include migration, upgrade, production, business-reference, changelog and checklist docs.",
             "data" => ["missing" => $missing],
         ];
     }
@@ -287,6 +296,54 @@ final class UpgradeAnalyzer
             "status" => is_file($path) ? "pass" : "warn",
             "detail" => is_file($path) ? "Public API contract is documented." : "Document stable helpers, commands and extension points before major releases.",
             "data" => ["path" => "docs/PUBLIC-API.md"],
+        ];
+    }
+
+    private function checkBusinessReferenceBlueprint(): array
+    {
+        $manifestPath = base_path("resources/business-reference/2.1/MANIFEST.json");
+        $blueprintPath = base_path("resources/business-reference/2.1/blueprint.json");
+        $readmePath = base_path("resources/business-reference/2.1/README.md");
+        $missing = [];
+
+        foreach ([$manifestPath, $blueprintPath, $readmePath] as $path) {
+            if (!is_file($path)) {
+                $missing[] = str_replace("\\", "/", substr($path, strlen(base_path()) + 1));
+            }
+        }
+
+        $valid = false;
+        if ($missing === []) {
+            $manifest = json_decode((string) file_get_contents($manifestPath), true);
+            $blueprint = json_decode((string) file_get_contents($blueprintPath), true);
+            $valid = ($manifest["schema"] ?? null) === "fnlla.business_reference.v1"
+                && ($manifest["version"] ?? null) === "2.1.0"
+                && ($blueprint["schema"] ?? null) === "fnlla.business_app_blueprint.v1";
+        }
+
+        return [
+            "id" => "business-reference-blueprint",
+            "status" => $missing === [] && $valid ? "pass" : "warn",
+            "detail" => $missing === [] && $valid
+                ? "Business reference blueprint is present and versioned for 2.1."
+                : "Business reference blueprint should be present, parseable and versioned for 2.1.",
+            "data" => ["missing" => $missing],
+        ];
+    }
+
+    private function checkProductionBaselinePolicy(): array
+    {
+        $path = base_path("resources/performance-baselines/2.1-policy.json");
+        $decoded = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
+        $targets = is_array($decoded) ? (array) ($decoded["targets"] ?? []) : [];
+
+        return [
+            "id" => "production-baseline-policy",
+            "status" => is_array($decoded) && $targets !== [] ? "pass" : "warn",
+            "detail" => is_array($decoded) && $targets !== []
+                ? "Production performance baseline policy is present."
+                : "Define the production performance baseline policy before release.",
+            "data" => ["path" => "resources/performance-baselines/2.1-policy.json"],
         ];
     }
 

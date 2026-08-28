@@ -62,6 +62,9 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("Documentation hub", $response->body());
         self::assertStringContainsString("/docs/index.html", $response->body());
         self::assertStringContainsString("/docs/starting-a-new-project.html", $response->body());
+        self::assertStringContainsString("/docs/business-app-reference.html", $response->body());
+        self::assertStringContainsString("/docs/production-checklist.html", $response->body());
+        self::assertStringContainsString("/docs/upgrade-2-1.html", $response->body());
         self::assertStringNotContainsString("/docs/enterprise-todo.html", $response->body());
     }
 
@@ -176,6 +179,25 @@ final class DocumentationRouteTest extends TestCase
         ]));
 
         self::assertSame(404, $response->status());
+    }
+
+    public function testBusinessReferenceGuideIsServedThroughApplicationRoute(): void
+    {
+        if ($this->skipWhenDocsWorkspaceMissing()) {
+            return;
+        }
+
+        $application = $this->makeApplication();
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/docs/business-app-reference.html",
+            "REQUEST_METHOD" => "GET",
+        ]));
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("Business App Reference", $response->body());
+        self::assertStringContainsString("security:audit --strict", $response->body());
+        self::assertStringContainsString("db()-&gt;transaction", $response->body());
     }
 
     private function makeApplication(): Application

@@ -29,6 +29,12 @@ jobs:
       APP_ENV: production
       APP_DEBUG: false
       APP_URL: https://fnlla.example
+      TRUSTED_HOSTS: fnlla.example
+      TRUSTED_PROXIES: 127.0.0.1
+      SECURITY_HEADERS_PRESET: strict
+      MAIL_MAILER: http
+      MAIL_HTTP_ENDPOINT: https://mail.fnlla.example/send
+      MAIL_HTTP_ALLOWED_HOSTS: mail.fnlla.example
       FNLLA_RUNTIME_AUTO_SYNC: false
       FNLLA_RUNTIME_ENFORCE: true
 
@@ -75,7 +81,17 @@ jobs:
 
       - name: Run security audit
         shell: pwsh
-        run: php ./fnlla security:audit
+        run: php ./fnlla security:audit --strict
+
+      - name: Generate backup and restore plan
+        shell: pwsh
+        run: php ./fnlla ops:backup-plan --output=framework/backup-plan.json
+
+      - name: Run performance release budget
+        shell: pwsh
+        run: |
+          php ./fnlla perf:profile --iterations=1 --write-baseline
+          php ./fnlla perf:budget --iterations=1 --max-regression=20 --max-regression-ms=1000
 
       - name: Run Composer lint script
         shell: pwsh
@@ -121,6 +137,12 @@ jobs:
       APP_ENV: production
       APP_DEBUG: false
       APP_URL: https://fnlla.example
+      TRUSTED_HOSTS: fnlla.example
+      TRUSTED_PROXIES: 127.0.0.1
+      SECURITY_HEADERS_PRESET: strict
+      MAIL_MAILER: http
+      MAIL_HTTP_ENDPOINT: https://mail.fnlla.example/send
+      MAIL_HTTP_ALLOWED_HOSTS: mail.fnlla.example
       FNLLA_RUNTIME_AUTO_SYNC: false
       FNLLA_RUNTIME_ENFORCE: true
 
@@ -141,6 +163,15 @@ jobs:
         shell: pwsh
         run: php ./scripts/test.php --suite slow
 
+      - name: Verify 2.0.3 export and 2.1 update readiness
+        shell: pwsh
+        run: |
+          $work = Join-Path $env:RUNNER_TEMP "fnlla-update-path"
+          New-Item -ItemType Directory -Force $work | Out-Null
+          git worktree add (Join-Path $work "source-2.0.3") v2.0.3
+          php (Join-Path $work "source-2.0.3" "fnlla") make:project (Join-Path $work "app-2.0.3") "FNLLA Update Path"
+          php ./fnlla upgrade:check --target=2.1.0
+
   release-assets:
     name: Attach release assets
     if: startsWith(github.ref, 'refs/tags/v')
@@ -154,6 +185,12 @@ jobs:
       APP_ENV: production
       APP_DEBUG: false
       APP_URL: https://fnlla.example
+      TRUSTED_HOSTS: fnlla.example
+      TRUSTED_PROXIES: 127.0.0.1
+      SECURITY_HEADERS_PRESET: strict
+      MAIL_MAILER: http
+      MAIL_HTTP_ENDPOINT: https://mail.fnlla.example/send
+      MAIL_HTTP_ALLOWED_HOSTS: mail.fnlla.example
       FNLLA_RUNTIME_AUTO_SYNC: false
       FNLLA_RUNTIME_ENFORCE: true
       RELEASE_SIGNING_KEY: ${{ secrets.FNLLA_RELEASE_SIGNING_KEY }}

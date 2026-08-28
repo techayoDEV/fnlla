@@ -29,7 +29,7 @@ removing submitted form values.
 
 ## Version
 
-2.0.3
+2.1.0
 
 ## Maintainer notes
 

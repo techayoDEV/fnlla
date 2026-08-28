@@ -229,11 +229,11 @@ php fnlla security:audit
 php fnlla optimize
 php fnlla optimize:warm
 php fnlla app:map
-php fnlla upgrade:check --target=2.0.0
+php fnlla upgrade:check --target=2.1.0
 php fnlla perf:profile --iterations=5
 php fnlla perf:baseline:update --iterations=7
 php fnlla ai:context
-php fnlla ai:review-pack --target=2.0.0
+php fnlla ai:review-pack --target=2.1.0
 php fnlla release:prepare
 ```
 
@@ -245,10 +245,11 @@ php fnlla release:prepare
 - `upgrade:check`, `upgrade:plan` and `upgrade:apply` provide a local major-release upgrade workflow; `/maintenance/framework-update` exposes the same major readiness and safe-action flow through the browser maintenance GUI.
 - `perf:profile` records local CLI timings, footprint and peak memory; `perf:budget` compares p95 timings against a saved baseline with percentage and absolute-ms thresholds.
 - `perf:baseline:update` and `perf:compare` make performance baselines explicit for release work.
+- `ops:backup-plan` generates a redacted backup and restore runbook for production operations.
 - `ai:context`, `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` write local redacted artefacts for tool-assisted review without raw `.env`, credentials or source-file contents.
 - `release:prepare` runs the release gate, clears runtime residue and generates CycloneDX SBOM, SHA-256 checksum and release-manifest artefacts under `dist/release/`.
 - tag pushes attach `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json` to the GitHub Release after the release gate passes
-- `release:prepare --major --target=2.0.0` adds major-release readiness checks and emits app-map, upgrade-plan and review artefacts.
+- `release:prepare --major --target=2.1.0` adds major-release readiness checks and emits app-map, upgrade-plan and review artefacts.
 
 Mail is intentionally transport-light but production-ready. FNLLA ships a `log`
 mail driver for development, an `http` driver for a transactional provider or
@@ -305,6 +306,12 @@ The intended model is:
 
 Use [`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md) for the exact workflow and rationale.
 
+For FNLLA 2.1 business application evidence, use
+[`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) together
+with the versioned blueprint under `resources/business-reference/2.1/`. It
+covers login, roles, CRUD, dashboard, business forms, mail/log mailer,
+migrations, seeders, queues, health, client preview and production operations.
+
 ## Database boundary
 
 FNLLA currently targets MySQL only.
@@ -323,6 +330,9 @@ Database work is exposed through:
 - `database/migrations/`
 - `database/seeders/`
 - `database/factories/`
+
+Use `db()` to resolve the database manager, `db()->transaction()` for atomic
+writes and `QueryBuilder::paginate()` for list screens.
 
 ## Local quality checks
 
@@ -358,6 +368,8 @@ That guide covers:
 - how to use MySQL, migrations and the query builder
 - how to protect pages with auth and authorisation
 - how to use the built-in runtime while composing and extending views
+- how to follow the 2.1 business reference blueprint for login, roles, CRUD,
+  forms, queues and production checks
 
 ## Documentation set
 
@@ -376,6 +388,9 @@ The long-form guide pages are generated from:
 
 - `docs/STARTING-A-NEW-PROJECT.md`
 - `docs/BUILDING-WITH-FNLLA.md`
+- `docs/BUSINESS-APP-REFERENCE.md`
+- `docs/PRODUCTION-CHECKLIST.md`
+- `docs/UPGRADE-2.1.md`
 - `docs/AI-CONTEXT.md`
 - `docs/MAJOR-RELEASE-CHECKLIST.md`
 - `docs/MIGRATION.md`
@@ -409,22 +424,23 @@ Important commands:
 - `php fnlla optimize`
 - `php fnlla optimize:warm`
 - `php fnlla app:map`
-- `php fnlla upgrade:check --target=2.0.0`
-- `php fnlla upgrade:plan --target=2.0.0`
-- `php fnlla upgrade:apply --target=2.0.0`
+- `php fnlla ops:backup-plan`
+- `php fnlla upgrade:check --target=2.1.0`
+- `php fnlla upgrade:plan --target=2.1.0`
+- `php fnlla upgrade:apply --target=2.1.0`
 - `php fnlla perf:profile --iterations=5`
 - `php fnlla perf:baseline:update --iterations=7`
 - `php fnlla perf:compare --iterations=5`
 - `php fnlla perf:budget --iterations=5`
 - `php fnlla ai:context`
-- `php fnlla ai:review-pack --target=2.0.0`
-- `php fnlla ai:upgrade-brief --target=2.0.0`
+- `php fnlla ai:review-pack --target=2.1.0`
+- `php fnlla ai:upgrade-brief --target=2.1.0`
 - `php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json`
 - `php fnlla queue:work`
 - `php fnlla schedule:run`
 - `php fnlla route:list`
 - `php fnlla version:status`
-- `php fnlla version:set 2.0.0`
+- `php fnlla version:set 2.1.0`
 - `php fnlla version:sync`
 
 ## Public source of truth
@@ -469,7 +485,7 @@ Important boundary:
 Recommended maintainer sequence:
 
 ```bash
-php fnlla version:set 2.0.0
+php fnlla version:set 2.1.0
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php
@@ -477,12 +493,14 @@ php scripts/validate-fnlla-runtime.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
 php scripts/build-docs.php --check
-php fnlla upgrade:check --target=2.0.0
+php fnlla upgrade:check --target=2.1.0
 php fnlla app:map
-php fnlla ai:review-pack --target=2.0.0
+php fnlla ops:backup-plan --output=framework/backup-plan.json
+php fnlla security:audit --strict
+php fnlla ai:review-pack --target=2.1.0
 php fnlla perf:profile --iterations=5 --write-baseline
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
-php fnlla release:prepare --major --target=2.0.0
+php fnlla release:prepare --major --target=2.1.0
 powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 php fnlla version:status

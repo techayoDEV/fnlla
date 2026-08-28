@@ -22,6 +22,11 @@ use RuntimeException;
 
 final class DatabaseSnapshotTest extends TestCase
 {
+    public function testDbHelperReturnsDatabaseManager(): void
+    {
+        self::assertInstanceOf(DatabaseManager::class, db());
+    }
+
     public function testRejectsUnsafeTableNames(): void
     {
         $this->expectException(RuntimeException::class);
@@ -57,6 +62,46 @@ final class DatabaseSnapshotTest extends TestCase
         } finally {
             try {
                 $database->statement("DROP TABLE IF EXISTS {$table}");
+            } catch (\Throwable) {
+            }
+        }
+    }
+
+    public function testQueryBuilderPaginatesRowsWhenDatabaseIsAvailable(): void
+    {
+        $database = null;
+        $table = "fnlla_pagination_test_" . strtolower(bin2hex(random_bytes(3)));
+
+        try {
+            $database = app(DatabaseManager::class);
+            $database->statement("CREATE TABLE {$table} (id INT PRIMARY KEY, label VARCHAR(40) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            for ($index = 1; $index <= 5; $index++) {
+                $database->table($table)->insert(["id" => $index, "label" => "item-" . $index]);
+            }
+
+            $page = $database->table($table)
+                ->orderBy("id")
+                ->paginate(2, 2);
+
+            self::assertSame(5, $page["meta"]["total"] ?? null);
+            self::assertSame(2, $page["meta"]["current_page"] ?? null);
+            self::assertSame(3, $page["meta"]["last_page"] ?? null);
+            self::assertSame(3, $page["meta"]["from"] ?? null);
+            self::assertSame(4, $page["meta"]["to"] ?? null);
+            self::assertSame([3, 4], array_map(static fn (array $row): int => (int) $row["id"], (array) $page["data"]));
+        } catch (RuntimeException $exception) {
+            if (str_contains($exception->getMessage(), "Database connection failed") || str_contains($exception->getMessage(), "pdo_mysql")) {
+                self::assertTrue(true);
+                return;
+            }
+
+            throw $exception;
+        } finally {
+            try {
+                if ($database instanceof DatabaseManager) {
+                    $database->statement("DROP TABLE IF EXISTS {$table}");
+                }
             } catch (\Throwable) {
             }
         }

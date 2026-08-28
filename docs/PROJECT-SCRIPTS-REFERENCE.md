@@ -308,7 +308,7 @@ Purpose:
 Typical example:
 
 ```bash
-php fnlla version:set 2.0.0
+php fnlla version:set 2.1.0
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php

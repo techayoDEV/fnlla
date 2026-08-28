@@ -41,7 +41,7 @@ final class ReleasePrepareCommand extends Command
         $json = in_array("--json", $arguments, true);
         $skipTests = in_array("--skip-tests", $arguments, true);
         $major = in_array("--major", $arguments, true);
-        $target = $this->optionValue($arguments, "--target") ?? "2.0.0";
+        $target = $this->optionValue($arguments, "--target") ?? $this->currentVersionTarget();
         $steps = [];
 
         if (!$skipTests) {
@@ -137,12 +137,20 @@ final class ReleasePrepareCommand extends Command
 
         if ($major) {
             $commands["docs in sync"] = [PHP_BINARY, base_path("scripts/build-docs.php"), "--check"];
-            $commands["security posture"] = [PHP_BINARY, base_path("fnlla"), "security:audit", "--json"];
+            $commands["security posture"] = [PHP_BINARY, base_path("fnlla"), "security:audit", "--strict", "--json"];
             $commands["upgrade readiness"] = [PHP_BINARY, base_path("fnlla"), "upgrade:check", "--target", $target, "--json"];
             $commands["application map"] = [PHP_BINARY, base_path("fnlla"), "app:map", "--json"];
         }
 
         return $commands;
+    }
+
+    private function currentVersionTarget(): string
+    {
+        $contents = is_file(base_path("VERSION")) ? (string) file_get_contents(base_path("VERSION")) : "";
+        $version = trim(strtok($contents, "\r\n") ?: "");
+
+        return $version !== "" ? $version : "2.1.0";
     }
 
     private function printArtifacts(array $artifacts, string $prefix = ""): void

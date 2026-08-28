@@ -686,6 +686,11 @@ function auth(): \Fnlla\Php\Auth\AuthManager
     return app(\Fnlla\Php\Auth\AuthManager::class);
 }
 
+function db(): \Fnlla\Php\Database\DatabaseManager
+{
+    return app(\Fnlla\Php\Database\DatabaseManager::class);
+}
+
 function session_store(): \Fnlla\Php\Session\SessionStore
 {
     return app(\Fnlla\Php\Session\SessionStore::class);

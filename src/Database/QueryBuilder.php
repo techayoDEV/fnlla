@@ -41,6 +41,7 @@ final class QueryBuilder
     private array $wheres = [];
     private array $bindings = [];
     private ?int $limit = null;
+    private ?int $offset = null;
     private array $orders = [];
 
     public function __construct(private PDO $pdo, private string $table)
@@ -84,6 +85,38 @@ final class QueryBuilder
         $this->limit = max(1, $limit);
 
         return $this;
+    }
+
+    public function offset(int $offset): self
+    {
+        $this->offset = max(0, $offset);
+
+        return $this;
+    }
+
+    public function paginate(int $perPage = 15, int $page = 1): array
+    {
+        $perPage = max(1, min(100, $perPage));
+        $page = max(1, $page);
+        $total = $this->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $currentPage = min($page, $lastPage);
+        $results = (clone $this)
+            ->limit($perPage)
+            ->offset(($currentPage - 1) * $perPage)
+            ->get();
+
+        return [
+            "data" => $results,
+            "meta" => [
+                "current_page" => $currentPage,
+                "per_page" => $perPage,
+                "total" => $total,
+                "last_page" => $lastPage,
+                "from" => $total === 0 ? null : (($currentPage - 1) * $perPage) + 1,
+                "to" => $total === 0 ? null : (($currentPage - 1) * $perPage) + count($results),
+            ],
+        ];
     }
 
     public function get(): array
@@ -188,6 +221,12 @@ final class QueryBuilder
 
         if ($this->limit !== null) {
             $sql .= " LIMIT " . $this->limit;
+        } elseif ($this->offset !== null) {
+            $sql .= " LIMIT 18446744073709551615";
+        }
+
+        if ($this->offset !== null) {
+            $sql .= " OFFSET " . $this->offset;
         }
 
         return [$sql, $this->bindings];

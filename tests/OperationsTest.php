@@ -16,6 +16,7 @@ Purpose:
 namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Application;
+use Fnlla\Php\Console\Commands\BackupPlanCommand;
 use Fnlla\Php\Console\Commands\DoctorCommand;
 use Fnlla\Php\Console\Commands\PublicApiLockCommand;
 use Fnlla\Php\Console\Commands\SecurityAuditCommand;
@@ -25,6 +26,7 @@ use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Support\DoctorReport;
+use Fnlla\Php\Support\BackupPlanBuilder;
 use Fnlla\Php\Support\ReleaseArtifactBuilder;
 use Fnlla\Php\Support\SecurityAuditReport;
 use PHPUnit\Framework\TestCase;
@@ -108,6 +110,7 @@ final class OperationsTest extends TestCase
         self::assertSame("doctor", (new DoctorCommand($container))->name());
         self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
         self::assertSame("security:audit", (new SecurityAuditCommand($container))->name());
+        self::assertSame("ops:backup-plan", (new BackupPlanCommand($container))->name());
     }
 
     public function testPublicApiLockFileExists(): void
@@ -122,6 +125,22 @@ final class OperationsTest extends TestCase
 
         self::assertSame("fnlla.public_api_lock.v1", $payload["schema"] ?? null);
         self::assertTrue(in_array("csp_nonce", (array) ($payload["helpers"] ?? []), true));
+        self::assertTrue(in_array("db", (array) ($payload["helpers"] ?? []), true));
+        self::assertTrue(in_array("ops:backup-plan", (array) ($payload["commands"] ?? []), true));
+        self::assertTrue(in_array("query_builder.paginate", (array) ($payload["data"] ?? []), true));
+    }
+
+    public function testBackupPlanIsRedactedAndProductionActionable(): void
+    {
+        config_set("database.connections.mysql.password", "do-not-leak");
+
+        $plan = (new BackupPlanBuilder())->build();
+        $encoded = json_encode($plan, JSON_THROW_ON_ERROR);
+
+        self::assertSame("fnlla.backup_plan.v1", $plan["schema"] ?? null);
+        self::assertStringContainsString("mysqldump --single-transaction", (string) ($plan["database"]["recommended_dump"] ?? ""));
+        self::assertStringContainsString("security:audit --strict", implode(" ", (array) ($plan["restore_order"] ?? [])));
+        self::assertStringNotContainsString("do-not-leak", $encoded);
     }
 
     public function testReleaseArtifactBuilderWritesCycloneDxSbomAndChecksums(): void

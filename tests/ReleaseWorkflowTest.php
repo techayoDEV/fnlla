@@ -35,6 +35,9 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("composer run lint", $workflow);
         self::assertStringContainsString("php ./scripts/build-docs.php --check", $workflow);
         self::assertStringContainsString("php ./fnlla release:prepare --skip-tests", $workflow);
+        self::assertStringContainsString("php ./fnlla security:audit --strict", $workflow);
+        self::assertStringContainsString("php ./fnlla ops:backup-plan --output=framework/backup-plan.json", $workflow);
+        self::assertStringContainsString("php ./fnlla perf:budget --iterations=1 --max-regression=20 --max-regression-ms=1000", $workflow);
     }
 
     public function testTagReleaseGateAttachesSupplyChainAssetsToGitHubRelease(): void
@@ -66,5 +69,41 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("Install PHPStan or Psalm locally", $fallbackAnalysis);
         self::assertStringContainsString("declares return type", $fallbackAnalysis);
         self::assertStringContainsString("T_RETURN", $fallbackAnalysis);
+    }
+
+    public function testBusinessReferenceBlueprintCoversProfessionalApplicationSurface(): void
+    {
+        $manifest = json_decode((string) file_get_contents(base_path("resources/business-reference/2.1/MANIFEST.json")), true);
+        $blueprint = json_decode((string) file_get_contents(base_path("resources/business-reference/2.1/blueprint.json")), true);
+        $readme = (string) file_get_contents(base_path("resources/business-reference/2.1/README.md"));
+
+        self::assertSame("fnlla.business_reference.v1", $manifest["schema"] ?? null);
+        self::assertSame("2.1.0", $manifest["version"] ?? null);
+
+        foreach (["login", "roles", "crud", "dashboard", "business_form", "log_mailer", "migrations", "seeders", "queue", "health", "maintenance_preview", "backup_restore", "production_security"] as $capability) {
+            self::assertTrue(in_array($capability, (array) ($manifest["capabilities"] ?? []), true), $capability);
+        }
+
+        foreach (["admin", "operator", "client"] as $role) {
+            self::assertTrue(in_array($role, (array) ($manifest["roles"] ?? []), true), $role);
+        }
+
+        self::assertSame("fnlla.business_app_blueprint.v1", $blueprint["schema"] ?? null);
+        self::assertStringContainsString("make:project", $readme);
+        self::assertStringContainsString("security:audit --strict", $readme);
+    }
+
+    public function testUpdatePathAndPerformanceBaselinePolicyAreReleaseVisible(): void
+    {
+        $workflow = (string) file_get_contents(base_path(".github/workflows/fnlla-release-gate.yml"));
+        $policy = json_decode((string) file_get_contents(base_path("resources/performance-baselines/2.1-policy.json")), true);
+
+        self::assertStringContainsString("v2.0.3", $workflow);
+        self::assertStringContainsString("upgrade:check --target=2.1.0", $workflow);
+        self::assertSame("fnlla.performance_baseline_policy.v1", $policy["schema"] ?? null);
+
+        foreach (["cli.list", "cli.route_list", "http.home", "http.health", "project.export"] as $target) {
+            self::assertTrue(in_array($target, array_column((array) ($policy["targets"] ?? []), "id"), true), $target);
+        }
     }
 }

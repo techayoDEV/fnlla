@@ -13,6 +13,7 @@
         "csrf_field",
         "csp_nonce",
         "auth",
+        "db",
         "cache",
         "queue",
         "runtime_ai",
@@ -22,6 +23,7 @@
         "doctor",
         "config:doctor",
         "security:audit",
+        "ops:backup-plan",
         "app:map",
         "upgrade:check",
         "perf:budget",
@@ -32,5 +34,10 @@
         "ai:explain-log",
         "ai:brief",
         "ai:providers"
+    ],
+    "data": [
+        "database.transaction",
+        "query_builder.offset",
+        "query_builder.paginate"
     ]
 }

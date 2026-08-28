@@ -37,6 +37,51 @@ $requiredContains = [
     'README.md' => [
         'techayoDEV/fnlla',
         'public/vendor/fnlla-runtime/',
+        'docs/BUSINESS-APP-REFERENCE.md',
+        'docs/PRODUCTION-CHECKLIST.md',
+        'resources/business-reference/2.1/',
+    ],
+    'CHANGELOG.md' => [
+        '## 2.1.0 - 2026-08-28',
+        'ops:backup-plan',
+        'security:audit --strict',
+    ],
+    'docs/PUBLIC-API.md' => [
+        'ops:backup-plan',
+        'db()',
+        'QueryBuilder::paginate()',
+    ],
+    'docs/BUSINESS-APP-REFERENCE.md' => [
+        'resources/business-reference/2.1/blueprint.json',
+        'admin',
+        'operator',
+        'client',
+        'security:audit --strict',
+    ],
+    'docs/PRODUCTION-CHECKLIST.md' => [
+        'security:audit --strict',
+        'ops:backup-plan',
+        'APP_DEBUG=false',
+    ],
+    'docs/UPGRADE-2.1.md' => [
+        '2.0.x to 2.1.0',
+        'framework:update --dry-run',
+        'ops:backup-plan',
+    ],
+    'resources/business-reference/2.1/MANIFEST.json' => [
+        '"schema": "fnlla.business_reference.v1"',
+        '"version": "2.1.0"',
+        '"maintenance_preview"',
+    ],
+    'resources/business-reference/2.1/blueprint.json' => [
+        '"schema": "fnlla.business_app_blueprint.v1"',
+        '"admin.access"',
+        '"client.records.view"',
+    ],
+    'resources/performance-baselines/2.1-policy.json' => [
+        '"schema": "fnlla.performance_baseline_policy.v1"',
+        '"project.export"',
+        '"http.health"',
     ],
     'MANIFEST.json' => [
         'https://github.com/techayoDEV/fnlla.git',

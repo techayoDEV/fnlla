@@ -122,7 +122,44 @@ final class PerformanceProfiler
             ];
         }
 
+        $rows["make:project"] = $this->profileProjectExport($iterations);
+
         return $rows;
+    }
+
+    private function profileProjectExport(int $iterations): array
+    {
+        $times = [];
+
+        for ($index = 0; $index < $iterations; $index++) {
+            $target = $this->temporaryExportPath($index);
+            $started = microtime(true);
+            $result = ProcessRunner::run(
+                [PHP_BINARY, base_path("fnlla"), "make:project", $target, "FNLLA Performance Probe"],
+                base_path(),
+                120
+            );
+            $times[] = (microtime(true) - $started) * 1000;
+            $this->removeTemporaryExport($target);
+
+            if ($result["exit_code"] !== 0) {
+                return [
+                    "ok" => false,
+                    "error" => $result["output"],
+                ];
+            }
+        }
+
+        sort($times);
+
+        return [
+            "ok" => true,
+            "avg_ms" => round(array_sum($times) / count($times), 3),
+            "p50_ms" => round($this->percentile($times, 50), 3),
+            "p95_ms" => round($this->percentile($times, 95), 3),
+            "min_ms" => round(min($times), 3),
+            "max_ms" => round(max($times), 3),
+        ];
     }
 
     private function footprint(): array
@@ -176,5 +213,32 @@ final class PerformanceProfiler
         $index = max(0, min(count($sortedTimes) - 1, $index));
 
         return (float) $sortedTimes[$index];
+    }
+
+    private function temporaryExportPath(int $index): string
+    {
+        return rtrim(sys_get_temp_dir(), "\\/") . DIRECTORY_SEPARATOR
+            . "fnlla-perf-export-" . getmypid() . "-" . $index . "-" . bin2hex(random_bytes(4));
+    }
+
+    private function removeTemporaryExport(string $directory): void
+    {
+        $normalizedDirectory = str_replace("\\", "/", $directory);
+        $normalizedTemp = str_replace("\\", "/", rtrim(sys_get_temp_dir(), "\\/"));
+
+        if (!is_dir($directory) || !str_starts_with($normalizedDirectory, $normalizedTemp . "/fnlla-perf-export-")) {
+            return;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        }
+
+        rmdir($directory);
     }
 }

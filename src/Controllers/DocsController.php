@@ -80,6 +80,12 @@ final class DocsController extends Controller
             "kind" => "Guide",
         ],
         [
+            "file" => "business-app-reference.html",
+            "title" => "Business App Reference",
+            "summary" => "The reference blueprint for professional business applications built with FNLLA 2.1.",
+            "kind" => "Guide",
+        ],
+        [
             "file" => "project-scripts-reference.html",
             "title" => "Project Scripts Reference",
             "summary" => "What the project-facing scripts are responsible for and which ones belong only in the maintainer workspace.",
@@ -89,6 +95,12 @@ final class DocsController extends Controller
             "file" => "release-and-operations.html",
             "title" => "Release And Operations",
             "summary" => "Operational readiness, observability and release supply-chain workflow for FNLLA deployments.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "production-checklist.html",
+            "title" => "Production Checklist",
+            "summary" => "The production security, backup, performance and deployment gate for FNLLA applications.",
             "kind" => "Guide",
         ],
         [
@@ -107,6 +119,12 @@ final class DocsController extends Controller
             "file" => "migration.html",
             "title" => "Migration",
             "summary" => "Major-version migration workflow, contract review and downstream upgrade guidance.",
+            "kind" => "Guide",
+        ],
+        [
+            "file" => "upgrade-2-1.html",
+            "title" => "Upgrade 2.1",
+            "summary" => "Upgrade notes and verification workflow for downstream applications moving from 2.0.x to 2.1.0.",
             "kind" => "Guide",
         ],
         [

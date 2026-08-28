@@ -40,7 +40,7 @@ php fnlla perf:compare --iterations=5 --against storage/framework/cache/performa
 
 The profiler records:
 
-- CLI timings for `list`, `route:list` and `version:status`
+- CLI timings for `list`, `route:list`, `version:status` and `make:project`
 - p50, p95, average, minimum and maximum command times
 - source footprint for the main framework directories
 - PHP version, environment and peak memory
@@ -70,6 +70,13 @@ php fnlla perf:compare --iterations=7 --max-regression=20 --max-regression-ms=10
 from becoming noisy false positives. A comparison fails only when both thresholds
 are exceeded. A failed budget exits with code `1`, which makes it suitable for
 CI and release gates.
+
+FNLLA 2.1 also ships a baseline policy at
+`resources/performance-baselines/2.1-policy.json`. It names the release-decision
+targets for command listing, route listing, homepage health, API health and
+project export. The built-in profiler measures the CLI/export targets locally;
+deployment pipelines should add HTTP probes for `/` and `/api/health` against
+the same thresholds.
 
 ## What To Optimize First
 

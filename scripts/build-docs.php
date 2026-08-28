@@ -90,6 +90,15 @@ $guidePages = [
         "lead" => "Long-form implementation guidance for routes, controllers, views, forms, MySQL and auth.",
     ],
     [
+        "label" => "Business App Reference",
+        "href" => "business-app-reference.html",
+        "source" => "docs/BUSINESS-APP-REFERENCE.md",
+        "source_name" => "BUSINESS-APP-REFERENCE.md",
+        "title" => "Business App Reference",
+        "document_title" => "Business App Reference - FNLLA Documentation",
+        "lead" => "Reference blueprint for a professional FNLLA business application with auth, CRUD, forms, queues and operations.",
+    ],
+    [
         "label" => "Project Scripts Reference",
         "href" => "project-scripts-reference.html",
         "source" => "docs/PROJECT-SCRIPTS-REFERENCE.md",
@@ -106,6 +115,15 @@ $guidePages = [
         "title" => "Release And Operations",
         "document_title" => "Release And Operations - FNLLA Documentation",
         "lead" => "Operational readiness, observability and supply-chain release workflow for FNLLA deployments.",
+    ],
+    [
+        "label" => "Production Checklist",
+        "href" => "production-checklist.html",
+        "source" => "docs/PRODUCTION-CHECKLIST.md",
+        "source_name" => "PRODUCTION-CHECKLIST.md",
+        "title" => "Production Checklist",
+        "document_title" => "Production Checklist - FNLLA Documentation",
+        "lead" => "Security, backup, performance and deployment gate for production FNLLA applications.",
     ],
     [
         "label" => "Performance",
@@ -135,6 +153,15 @@ $guidePages = [
         "lead" => "Major-version migration workflow, public contract review and AI-assisted upgrade guidance.",
     ],
     [
+        "label" => "Upgrade 2.1",
+        "href" => "upgrade-2-1.html",
+        "source" => "docs/UPGRADE-2.1.md",
+        "source_name" => "UPGRADE-2.1.md",
+        "title" => "Upgrade 2.1",
+        "document_title" => "Upgrade 2.1 - FNLLA Documentation",
+        "lead" => "Upgrade notes and verification workflow for downstream applications moving from 2.0.x to 2.1.0.",
+    ],
+    [
         "label" => "Major Release Checklist",
         "href" => "major-release-checklist.html",
         "source" => "docs/MAJOR-RELEASE-CHECKLIST.md",
@@ -148,11 +175,14 @@ $guidePages = [
 $guideLinkMap = [
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
+    "./BUSINESS-APP-REFERENCE.md" => "./business-app-reference.html",
     "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
     "./RELEASE-AND-OPERATIONS.md" => "./release-and-operations.html",
+    "./PRODUCTION-CHECKLIST.md" => "./production-checklist.html",
     "./PERFORMANCE.md" => "./performance.html",
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
+    "./UPGRADE-2.1.md" => "./upgrade-2-1.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
 ];
 
@@ -1210,7 +1240,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --apply</code> for conflict-free official GitHub updates</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla ai:providers</code> for runtime AI provider readiness</li>
-            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.0.0</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.0</code></li>
           </ul>
         </article>
         <article class="card">

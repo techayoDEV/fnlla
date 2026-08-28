@@ -68,6 +68,11 @@ for keeping the framework small while reducing long-term operational risk.
 - `config:doctor`, `ai:explain-log`, `ai:brief`, queue retry metadata, health
   levels, release risk labels and a small public API lock are available as
   simple operational guardrails.
+- FNLLA 2.1 adds a business reference blueprint, production checklist,
+  2.0.x-to-2.1.0 upgrade notes, `db()` helper, query pagination, transactional
+  data examples and `ops:backup-plan` for practical recovery planning.
+- The release gate now treats strict security audit, backup-plan generation,
+  performance budgets and 2.0.3 export readiness as visible release evidence.
 
 ## Current Backlog
 

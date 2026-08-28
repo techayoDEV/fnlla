@@ -3,6 +3,33 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.1.0 - 2026-08-28
+
+### Added
+
+- Business reference blueprint for login, roles, CRUD, dashboard, forms,
+  mail/log delivery, migrations, seeders, queue, health and client preview.
+- `db()` helper, query-builder pagination and offset support for business list
+  screens.
+- `ops:backup-plan` for redacted backup and restore runbook generation.
+- Production checklist, 2.0.x-to-2.1.0 upgrade notes and performance baseline
+  policy.
+
+### Changed
+
+- Public API contract now names stable minor-release surfaces and internal
+  boundaries more explicitly.
+- Performance profiling now includes `make:project` export timing.
+- Release gate now includes strict security audit, backup-plan generation,
+  performance budget evidence and 2.0.3 export readiness.
+- `release:prepare` now runs `security:audit --strict`.
+
+### Security
+
+- Production readiness now treats strict security audit as a release blocker.
+- Backup plans redact database credentials and exclude cache, session, queue and
+  log residue from recovery state.
+
 ## 2.0.3 - 2026-08-28
 
 ### Added

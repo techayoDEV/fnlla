@@ -11,8 +11,9 @@ Run:
 php fnlla doctor
 php fnlla config:doctor
 php fnlla security:audit
+php fnlla ops:backup-plan
 php fnlla app:map
-php fnlla upgrade:check --target=2.0.0
+php fnlla upgrade:check --target=2.1.0
 php fnlla perf:profile --iterations=5
 ```
 
@@ -40,6 +41,10 @@ php fnlla security:audit --strict
 `--strict` makes warnings fail the security audit. Use it for production release
 pipelines once environment variables are fully defined.
 
+`ops:backup-plan` emits a redacted backup and restore plan for the current
+environment. Use `--output=framework/backup-plan.json` when a deployment
+pipeline needs to archive the runbook as local evidence.
+
 `perf:profile` records local command timings, repository footprint and peak
 memory. Run `php fnlla perf:profile --write-baseline` before a performance-sensitive
 change and `php fnlla perf:budget --max-regression=20 --max-regression-ms=1000`
@@ -55,7 +60,7 @@ Run the full local release gate:
 
 ```bash
 php fnlla release:prepare
-php fnlla release:prepare --major --target=2.0.0
+php fnlla release:prepare --major --target=2.1.0
 ```
 
 The command runs:
@@ -66,6 +71,7 @@ The command runs:
 - version manifest validation
 - release metadata validation
 - static analysis baseline
+- strict security audit
 - bootstrap/cache cleanup
 - CycloneDX SBOM generation
 - SHA-256 checksum generation
@@ -117,7 +123,7 @@ The repository ships a GitHub Actions release gate at `.github/workflows/fnlla-r
 
 It runs on pushes to `main`, pull requests to `main`, version tags and manual dispatch. The matrix covers `ubuntu-latest`, `macos-latest` and `windows-latest`, with PowerShell Core as the shared shell for repository scripts.
 
-The gate checks docs, runtime contract, version manifest, release metadata, fast tests, `doctor`, `security:audit`, lint, release artefacts, runtime publish and ecosystem audit. A second matrix job runs the slower export/update regression suite across the same operating systems.
+The gate checks docs, runtime contract, version manifest, release metadata, fast tests, `doctor`, strict `security:audit`, backup-plan generation, performance budget, lint, release artefacts, runtime publish and ecosystem audit. A second matrix job runs the slower export/update regression suite across the same operating systems and keeps the 2.0.3 export path visible before 2.1.0 publication.
 
 ## Branch Protection
 
@@ -229,9 +235,11 @@ Release:
 
 1. Confirm `CHANGELOG.md`, `VERSION`, `MANIFEST.json` and runtime metadata are aligned.
 2. Run `php scripts/build-docs.php --check`.
-3. Run `php fnlla release:prepare`.
-4. Review `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json`.
-5. Push the commit and signed tag only after local validation is green.
+3. Run `php fnlla ops:backup-plan --output=framework/backup-plan.json`.
+4. Run `php fnlla security:audit --strict`.
+5. Run `php fnlla release:prepare`.
+6. Review `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json`.
+7. Push the commit and signed tag only after local validation is green.
 
 Rollback:
 
@@ -251,8 +259,9 @@ Backup and restore:
 
 1. Back up `.env`, `storage/`, uploaded project files and the application database before deployment.
 2. Do not back up generated cache, queue, session or log residue as release state.
-3. Restore database and uploaded files before warming caches.
-4. Run `php fnlla migrate:status` after restore.
+3. Generate `php fnlla ops:backup-plan` and attach the redacted plan to internal deployment evidence.
+4. Restore database and uploaded files before warming caches.
+5. Run `php fnlla migrate:status` after restore.
 
 Common production failures:
 
