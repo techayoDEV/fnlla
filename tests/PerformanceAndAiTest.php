@@ -152,17 +152,22 @@ final class PerformanceAndAiTest extends TestCase
         self::assertTrue((int) ($map["routes"]["count"] ?? 0) > 0);
 
         $homeRoute = null;
+        $aboutRoute = null;
 
         foreach ((array) ($map["routes"]["items"] ?? []) as $route) {
             if (($route["name"] ?? null) === "home") {
                 $homeRoute = $route;
-                break;
+            }
+
+            if (($route["name"] ?? null) === "about") {
+                $aboutRoute = $route;
             }
         }
 
         self::assertTrue(is_array($homeRoute));
-        self::assertSame("Fnlla\\Php\\Controllers\\PageController@home", $homeRoute["handler"]["label"] ?? null);
-        self::assertStringContainsString("pages/home", implode(",", (array) ($homeRoute["view_references"] ?? [])));
+        self::assertSame("Fnlla\\Php\\Controllers\\HomeController@projectHome", $homeRoute["handler"]["label"] ?? null);
+        self::assertTrue(is_array($aboutRoute));
+        self::assertStringContainsString("pages/about", implode(",", (array) ($aboutRoute["view_references"] ?? [])));
     }
 
     public function testUpgradeAnalyzerProducesMajorReleasePlan(): void

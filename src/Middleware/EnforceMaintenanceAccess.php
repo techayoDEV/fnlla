@@ -85,6 +85,10 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
             return false;
         }
 
+        if ($request->path() === "/") {
+            return false;
+        }
+
         if ($request->path() === "/maintenance" || str_starts_with($request->path(), "/maintenance/")) {
             return false;
         }
@@ -105,7 +109,7 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
 
     private function freshSetupRedirectPath(Request $request): string
     {
-        return route("developer.setup");
+        return route("home");
     }
 
     private function lockedRedirectPath(Request $request): string

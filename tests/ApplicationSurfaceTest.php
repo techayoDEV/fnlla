@@ -111,7 +111,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString(">Operations<", $response->body());
     }
 
-    public function testLocalFreshProjectRedirectsHomeToDeveloperOnboarding(): void
+    public function testLocalFreshProjectRendersDeveloperOnboardingOnHome(): void
     {
         $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
             . DIRECTORY_SEPARATOR
@@ -139,8 +139,9 @@ final class ApplicationSurfaceTest extends TestCase
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
 
-        self::assertSame(302, $response->status());
-        self::assertSame("/developer-panel-setup", $response->headers()["Location"] ?? null);
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("Create developer access", $response->body());
+        self::assertStringContainsString("Create the first developer password", $response->body());
 
         $setupResponse = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/developer-panel-setup",
@@ -148,8 +149,17 @@ final class ApplicationSurfaceTest extends TestCase
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
 
-        self::assertSame(200, $setupResponse->status());
-        self::assertStringContainsString("Create developer access", $setupResponse->body());
+        self::assertSame(302, $setupResponse->status());
+        self::assertSame("/", $setupResponse->headers()["Location"] ?? null);
+
+        $maintenanceResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(302, $maintenanceResponse->status());
+        self::assertSame("/", $maintenanceResponse->headers()["Location"] ?? null);
     }
 
     public function testProjectPagesAreAvailableThroughPublicRoutes(): void
@@ -659,7 +669,7 @@ final class ApplicationSurfaceTest extends TestCase
 
         $application = $this->makeApplication();
         $pageResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/maintenance",
+            "REQUEST_URI" => "/",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
@@ -668,6 +678,15 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Create developer access", $pageResponse->body());
         self::assertStringContainsString("Create the first developer password", $pageResponse->body());
         self::assertStringNotContainsString("Configure maintenance access", $pageResponse->body());
+
+        $maintenanceResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/maintenance",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(302, $maintenanceResponse->status());
+        self::assertSame("/", $maintenanceResponse->headers()["Location"] ?? null);
 
         $token = csrf_token();
         $setupResponse = $application->handle(Request::capture("", [

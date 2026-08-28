@@ -25,7 +25,7 @@ use Fnlla\Php\Controllers\FrameworkUpdateController;
 use Fnlla\Php\Controllers\HomeController;
 
 $router->get("/maintenance", [HomeController::class, "maintenanceHome"])->name("maintenance.home");
-$router->get("/developer-panel-setup", [HomeController::class, "maintenanceHome"])->name("developer.setup");
+$router->get("/developer-panel-setup", [HomeController::class, "developerSetupAlias"])->name("developer.setup");
 $router->post("/maintenance/setup-access", [HomeController::class, "setupMaintenanceAccess"])->middleware("csrf")->name("maintenance.setup_access");
 $router->post("/maintenance/setup-developer-access", [HomeController::class, "setupDeveloperAccess"])->middleware(["csrf", "developer-operations"])->name("maintenance.setup_developer_access");
 $router->post("/maintenance/unlock", [HomeController::class, "unlockMaintenance"])->middleware("csrf")->name("maintenance.unlock");

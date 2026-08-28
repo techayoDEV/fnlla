@@ -31,7 +31,7 @@ if (has_local_docs_workspace()) {
     $router->get("/docs/{page}", [DocsController::class, "page"])->name("docs.page");
 }
 
-$router->get("/", [PageController::class, "home"])->name("home");
+$router->get("/", [HomeController::class, "projectHome"])->name("home");
 $router->get("/about", [PageController::class, "about"])->name("about");
 $router->get("/services", [PageController::class, "services"])->name("services");
 $router->get("/contact", [PageController::class, "contact"])->name("contact");

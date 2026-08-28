@@ -35,6 +35,24 @@ use Fnlla\Php\Validation\ValidationException;
 
 final class HomeController extends Controller
 {
+    public function projectHome(
+        Request $request,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess,
+        PageController $pages
+    ): Response {
+        if ($this->freshDeveloperOnboardingAvailable($request, $maintenanceAccess, $developerAccess)) {
+            return $this->firstRunDeveloperSetup($request, $maintenanceAccess, $developerAccess);
+        }
+
+        return $pages->home($request);
+    }
+
+    public function developerSetupAlias(): Response
+    {
+        return $this->redirect(route("home"));
+    }
+
     public function maintenanceHome(
         Request $request,
         MaintenanceAccessManager $maintenanceAccess,
@@ -47,6 +65,10 @@ final class HomeController extends Controller
         $developerSetupState = $this->developerAccessSetupState($request, $environmentFileManager, $developerAccess);
         $developerAccessState = $developerAccess->viewState();
         $clientPreviewState = $this->clientPreviewState();
+
+        if ($request->path() === "/maintenance" && $this->freshDeveloperOnboardingAvailable($request, $maintenanceAccess, $developerAccess)) {
+            return $this->redirect(route("home"));
+        }
 
         if ($accessState["enabled"] && !$accessState["unlocked"]) {
             $useClientPreview = $clientPreviewState["active"] && $accessState["configured"];
@@ -79,6 +101,39 @@ final class HomeController extends Controller
             "developerSetup" => $developerSetupState,
             "maintenanceLocked" => false,
         ]);
+    }
+
+    private function firstRunDeveloperSetup(
+        Request $request,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess
+    ): Response {
+        $environmentFileManager = app(EnvironmentFileManager::class);
+
+        return $this->view("maintenance/index", [
+            "pageTitle" => "Project Setup",
+            "pageTitleSection" => "Onboarding",
+            "maintenanceAccess" => $maintenanceAccess->viewState(),
+            "developerAccess" => $developerAccess->viewState(),
+            "maintenanceSetup" => $this->maintenanceSetupState($request, $environmentFileManager, $maintenanceAccess, $developerAccess),
+            "developerSetup" => $this->developerAccessSetupState($request, $environmentFileManager, $developerAccess),
+            "maintenanceLocked" => false,
+        ]);
+    }
+
+    private function freshDeveloperOnboardingAvailable(
+        Request $request,
+        MaintenanceAccessManager $maintenanceAccess,
+        DeveloperAccessManager $developerAccess
+    ): bool {
+        if ($maintenanceAccess->enabled() || $maintenanceAccess->configured() || $developerAccess->configured()) {
+            return false;
+        }
+
+        $environmentFileManager = app(EnvironmentFileManager::class);
+        $setupState = $this->developerAccessSetupState($request, $environmentFileManager, $developerAccess);
+
+        return $setupState["can_setup"] === true && $setupState["needs_setup"] === true;
     }
 
     public function setupMaintenanceAccess(
