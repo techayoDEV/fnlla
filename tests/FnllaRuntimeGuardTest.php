@@ -157,4 +157,22 @@ final class FnllaRuntimeGuardTest extends TestCase
             }
         }
     }
+
+    public function testRuntimeJavascriptDoesNotCallUndefinedScopedQueryHelper(): void
+    {
+        $runtimeScript = (string) file_get_contents(public_path("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"));
+
+        self::assertStringContainsString("function getScopedMatches(", $runtimeScript);
+        self::assertStringNotContainsString("queryAll(", $runtimeScript);
+    }
+
+    public function testRuntimeJavascriptDismissesPageStatusAlertsThroughDelegatedClicks(): void
+    {
+        $runtimeScript = (string) file_get_contents(public_path("vendor/fnlla-runtime/assets/js/fnlla-runtime.js"));
+
+        self::assertStringContainsString("function dismissAlertFromControl(control)", $runtimeScript);
+        self::assertStringContainsString("event.target.closest(selectors.alertClose)", $runtimeScript);
+        self::assertStringContainsString('alert.closest("#page-status")', $runtimeScript);
+        self::assertStringContainsString('target.setAttribute("aria-hidden", "true")', $runtimeScript);
+    }
 }

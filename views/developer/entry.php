@@ -7,9 +7,11 @@ $developerAccess ??= [
     "path" => "",
     "unlocked" => false,
     "unlock_ttl_minutes" => 120,
+    "email_required" => false,
 ];
 
 $developerNotice ??= null;
+$emailRequired = (bool) ($developerAccess["email_required"] ?? false);
 ?>
 <section class="section pt-1 developer-surface developer-entry-surface">
   <div class="container site-page-stack">
@@ -29,7 +31,7 @@ $developerNotice ??= null;
         <article class="feature-card">
           <p class="feature-kicker">Developer session</p>
           <h1 class="section-title mb-0">Developer tools stay locked until this browser session is explicitly unlocked.</h1>
-          <p class="content-text">This private address is only the login entry. The actual developer panel remains unavailable until the correct password opens a developer session for <?= h((string) ($developerAccess["unlock_ttl_minutes"] ?? 120)) ?> minutes.</p>
+          <p class="content-text">This private address is only the login entry. The actual developer panel remains unavailable until the correct <?= $emailRequired ? "developer email and password open" : "password opens" ?> a developer session for <?= h((string) ($developerAccess["unlock_ttl_minutes"] ?? 120)) ?> minutes.</p>
           <ul class="project-note-list">
             <li>The public project header stays plain for the client.</li>
             <li>The developer panel itself only opens after a successful unlock.</li>
@@ -41,12 +43,23 @@ $developerNotice ??= null;
           <h2 class="content-title">Unlock developer session</h2>
           <form class="form stack gap-md" action="<?= h(route("developer.login.unlock")) ?>" method="post" novalidate>
             <?= csrf_field() ?>
+            <?php if ($emailRequired): ?>
+            <div class="form-group">
+              <label class="label" for="developer-access-email">Email</label>
+              <input class="input" id="developer-access-email" name="developer_access_email" type="email" autocomplete="username" value="<?= h((string) old("developer_access_email")) ?>" required>
+            </div>
+            <?php endif; ?>
             <div class="form-group">
               <label class="label" for="developer-access-password">Password</label>
               <div class="password-field">
                 <input class="input" id="developer-access-password" name="developer_access_password" type="password" autocomplete="current-password" required>
                 <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#developer-access-password" aria-label="Toggle password visibility">Show</button>
               </div>
+            </div>
+            <div class="form-group">
+              <label class="label" for="developer-access-totp">Authenticator code</label>
+              <input class="input" id="developer-access-totp" name="developer_access_totp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Required only when 2FA is enabled">
+              <p class="help-text">Named developer accounts with TOTP enabled require a current six-digit authenticator code.</p>
             </div>
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit">Unlock developer panel</button>

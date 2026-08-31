@@ -39,7 +39,7 @@
   --fnlla-color-scheme: light;
   --fnlla-color-primary: #2563eb;
   --fnlla-color-secondary: #15304f;
-  --fnlla-color-accent: #0891b2;
+  --fnlla-color-accent: #2f70e8;
   --fnlla-color-text: #10233f;
   --fnlla-color-muted: #5f6f85;
   --fnlla-color-border: rgba(16, 35, 63, 0.14);
@@ -51,31 +51,31 @@
   --fnlla-color-surface-soft: rgba(255, 255, 255, 0.88);
   --fnlla-color-surface-strong: rgba(255, 255, 255, 0.96);
   --fnlla-color-primary-soft: rgba(37, 99, 235, 0.12);
-  --fnlla-color-accent-soft: rgba(8, 145, 178, 0.12);
+  --fnlla-color-accent-soft: rgba(47, 112, 232, 0.12);
   --fnlla-color-primary-border: rgba(37, 99, 235, 0.16);
-  --fnlla-color-accent-border: rgba(8, 145, 178, 0.18);
+  --fnlla-color-accent-border: rgba(47, 112, 232, 0.18);
   --fnlla-color-info: #2563eb;
   --fnlla-color-info-soft: rgba(37, 99, 235, 0.12);
   --fnlla-color-info-border: rgba(37, 99, 235, 0.2);
   --fnlla-color-info-text: #1742a0;
-  --fnlla-color-success: #15803d;
-  --fnlla-color-success-soft: rgba(21, 128, 61, 0.12);
-  --fnlla-color-success-border: rgba(21, 128, 61, 0.2);
-  --fnlla-color-success-text: #166534;
-  --fnlla-color-warning: #b45309;
-  --fnlla-color-warning-soft: rgba(180, 83, 9, 0.14);
-  --fnlla-color-warning-border: rgba(180, 83, 9, 0.22);
-  --fnlla-color-warning-text: #92400e;
+  --fnlla-color-success: #2563eb;
+  --fnlla-color-success-soft: rgba(37, 99, 235, 0.1);
+  --fnlla-color-success-border: rgba(37, 99, 235, 0.2);
+  --fnlla-color-success-text: #1d4ed8;
+  --fnlla-color-warning: #2563eb;
+  --fnlla-color-warning-soft: rgba(37, 99, 235, 0.1);
+  --fnlla-color-warning-border: rgba(37, 99, 235, 0.2);
+  --fnlla-color-warning-text: #1d4ed8;
   --fnlla-color-overlay: rgba(15, 23, 42, 0.56);
   --fnlla-color-code-bg: rgba(16, 35, 63, 0.08);
   --fnlla-color-code-surface: #f8fbff;
   --fnlla-color-code-text: #15304f;
   --fnlla-color-focus-ring: rgba(37, 99, 235, 0.28);
   --fnlla-color-placeholder: rgba(95, 111, 133, 0.78);
-  --fnlla-color-danger: #b42318;
-  --fnlla-color-danger-soft: rgba(180, 35, 24, 0.12);
-  --fnlla-color-danger-border: rgba(180, 35, 24, 0.22);
-  --fnlla-color-danger-text: #912018;
+  --fnlla-color-danger: #1d4ed8;
+  --fnlla-color-danger-soft: rgba(37, 99, 235, 0.1);
+  --fnlla-color-danger-border: rgba(37, 99, 235, 0.2);
+  --fnlla-color-danger-text: #15304f;
   --fnlla-color-on-dark: #ffffff;
 
   /* ==========================================================================
@@ -150,9 +150,9 @@
      BORDER RADIUS
      Buttons are intentionally less rounded than before.
      ========================================================================== */
-  --fnlla-radius-sm: 0.625rem;
-  --fnlla-radius-md: 0.875rem;
-  --fnlla-radius-lg: 1.125rem;
+  --fnlla-radius-sm: 0.75rem;
+  --fnlla-radius-md: 0.75rem;
+  --fnlla-radius-lg: 0.75rem;
   --fnlla-radius-pill: 999rem;
 
   /* ==========================================================================
@@ -200,7 +200,7 @@
      BACKGROUND DECORATION
      ========================================================================== */
   --fnlla-bg-radial-primary: rgba(37, 99, 235, 0.08);
-  --fnlla-bg-radial-secondary: rgba(8, 145, 178, 0.07);
+  --fnlla-bg-radial-secondary: rgba(47, 112, 232, 0.07);
   --fnlla-bg-gradient-start: #ffffff;
   --fnlla-bg-gradient-mid: #fbfdff;
   --fnlla-bg-gradient-end: #f5f8fc;
@@ -229,24 +229,24 @@
   --fnlla-color-info-soft: rgba(96, 165, 250, 0.18);
   --fnlla-color-info-border: rgba(96, 165, 250, 0.28);
   --fnlla-color-info-text: #bfdbfe;
-  --fnlla-color-success: #4ade80;
-  --fnlla-color-success-soft: rgba(74, 222, 128, 0.16);
-  --fnlla-color-success-border: rgba(74, 222, 128, 0.28);
-  --fnlla-color-success-text: #bbf7d0;
-  --fnlla-color-warning: #fbbf24;
-  --fnlla-color-warning-soft: rgba(251, 191, 36, 0.18);
-  --fnlla-color-warning-border: rgba(251, 191, 36, 0.32);
-  --fnlla-color-warning-text: #fde68a;
+  --fnlla-color-success: #60a5fa;
+  --fnlla-color-success-soft: rgba(96, 165, 250, 0.16);
+  --fnlla-color-success-border: rgba(96, 165, 250, 0.28);
+  --fnlla-color-success-text: #bfdbfe;
+  --fnlla-color-warning: #60a5fa;
+  --fnlla-color-warning-soft: rgba(96, 165, 250, 0.16);
+  --fnlla-color-warning-border: rgba(96, 165, 250, 0.28);
+  --fnlla-color-warning-text: #bfdbfe;
   --fnlla-color-overlay: rgba(2, 6, 23, 0.76);
   --fnlla-color-code-bg: rgba(226, 236, 255, 0.1);
   --fnlla-color-code-surface: #0f1729;
   --fnlla-color-code-text: #e2ecff;
   --fnlla-color-focus-ring: rgba(96, 165, 250, 0.36);
   --fnlla-color-placeholder: rgba(169, 186, 210, 0.78);
-  --fnlla-color-danger: #fca5a5;
-  --fnlla-color-danger-soft: rgba(252, 165, 165, 0.16);
-  --fnlla-color-danger-border: rgba(252, 165, 165, 0.3);
-  --fnlla-color-danger-text: #fecaca;
+  --fnlla-color-danger: #93c5fd;
+  --fnlla-color-danger-soft: rgba(96, 165, 250, 0.16);
+  --fnlla-color-danger-border: rgba(96, 165, 250, 0.3);
+  --fnlla-color-danger-text: #dbeafe;
   --fnlla-shadow-sm: none;
   --fnlla-shadow-md: none;
   --fnlla-bg-radial-primary: rgba(96, 165, 250, 0.16);
@@ -1711,7 +1711,7 @@ textarea {
 }
 
 .alert-success {
-  background: rgba(21, 128, 61, 0.16);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .alert-success .alert-title {
@@ -1719,7 +1719,7 @@ textarea {
 }
 
 .alert-warning {
-  background: rgba(180, 83, 9, 0.18);
+  background: rgba(37, 99, 235, 0.1);
 }
 
 .alert-warning .alert-title {
@@ -1727,7 +1727,7 @@ textarea {
 }
 
 .alert-danger {
-  background: rgba(180, 35, 24, 0.18);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .alert-danger .alert-title {
@@ -2246,6 +2246,16 @@ textarea {
   top: 50%;
   right: 0.5rem;
   transform: translateY(-50%);
+  min-width: 3.85rem;
+  min-height: 2.05rem;
+  padding: 0.28rem 0.72rem;
+  border: 1px solid var(--fnlla-color-border);
+  border-radius: var(--fnlla-radius-md);
+  background: var(--fnlla-color-surface);
+  color: var(--fnlla-color-primary);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .password-toggle:hover,
@@ -2256,6 +2266,17 @@ textarea {
   background: var(--fnlla-color-primary-soft);
   color: var(--fnlla-color-secondary);
   outline: none;
+}
+
+.password-field .password-toggle:hover,
+.password-field .password-toggle:focus-visible,
+.password-field .password-toggle.is-revealed,
+.password-field [data-fnlla-password-toggle]:hover,
+.password-field [data-fnlla-password-toggle]:focus-visible,
+.password-field [data-fnlla-password-toggle].is-revealed {
+  border-color: var(--fnlla-color-border-strong);
+  border-radius: var(--fnlla-radius-md);
+  background: var(--fnlla-color-primary-soft);
 }
 
 .stepper,
@@ -3900,7 +3921,7 @@ textarea {
   border-radius: var(--fnlla-radius-lg);
   background: var(--fnlla-color-surface-strong);
   background:
-    linear-gradient(180deg, rgba(8, 145, 178, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(47, 112, 232, 0.08), transparent 28%),
     var(--fnlla-color-surface-strong);
 }
 

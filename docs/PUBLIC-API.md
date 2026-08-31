@@ -10,13 +10,30 @@ unless a release note promotes it.
 
 - Public entrypoints: `public/index.php`, `public/router.php`.
 - Project routes: `routes/web.php`, plus route names generated through `route()`.
+- Consent telemetry endpoint: `POST /fnlla/consent`, used by the built-in cookie
+  consent banner to record aggregate consent decisions without raw visitor
+  identifiers.
 - Plain PHP views under `views/` rendered through controllers.
 - Config files under `config/`, with environment overrides through `.env`.
 - Console launcher: `php fnlla`.
 - Core CLI contracts: `doctor`, `config:doctor`, `security:audit`, `app:map`,
-  `ops:backup-plan`, `project:acceptance`, `upgrade:check`, `perf:budget`,
-  `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`,
+  `ops:backup-plan`, `project:acceptance`, `developer:install-storage`,
+  `upgrade:check`, `perf:budget`, `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`,
   `ai:explain-log`, `ai:brief` and `ai:providers`.
+- Developer operations routes: `/developer`, `/developer/panel`,
+  `/developer/panel/project-identity`, `/developer/panel/project-settings`,
+  `/developer/panel/access`, `/developer/panel/profile`,
+  `/developer/panel/settings`, `/developer/panel/workspace`, `/developer/panel/operations`,
+  `/developer/panel/analytics`, `/developer/panel/notifications`,
+  `/developer/panel/release-readiness`, `/developer/panel/integrations`,
+  `/developer/panel/policy`,
+  `/developer/panel/integrations/settings`,
+  `/developer/panel/settings/project-leadership`,
+  `/developer/panel/settings/project-leadership/confirmation` and
+  `/developer/panel/framework-updates`.
+  `/developer/panel/security` and `/developer/panel/health` remain compatibility
+  routes that lead to the integrated Access & Security and Readiness & Health
+  surfaces.
 
 ## Compatibility Policy
 
@@ -38,6 +55,8 @@ release notes say otherwise.
 - `h()`, `csrf_token()`, `csrf_field()`, `verify_csrf_token()`.
 - `csp_nonce()`.
 - `auth()`, `db()`, `cache()`, `queue()`, `storage()`, `mailer()`, `runtime_ai()`.
+- `project_leadership()` for the optional neutral responsibility record used by
+  public About pages, documentation and Developer Panel system information.
 - `stream_request_body_to_file()` for endpoints that intentionally stream a raw
   request body to storage with a hard byte limit.
 
@@ -74,10 +93,52 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.runtime_ai.providers.v1`
 - `fnlla.runtime_ai.provider_status.v1`
 - `fnlla.runtime_ai.provider.fionn.v1`
+- `fnlla.developer_activity.v1`
+- `fnlla.developer_activity_export.v1`
+- `fnlla.developer_operations.v1`
+- `fnlla.developer_analytics.v1`
+- `fnlla.developer_analytics_settings.v1`
+- `fnlla.cookie_consent_event.v1`
+- `fnlla.form_inbox_summary.v1`
+- `fnlla.developer_integrations_settings.v1`
+- `fnlla.developer_notifications.v1`
+- `fnlla.developer_policy_boundary.v1`
+- `fnlla.project_leadership.v1`
+- `fnlla.developer_security.v1`
+- `fnlla.developer_storage_install.v1`
+- `fnlla.developer_workspace.v1`
+- `fnlla.remote_control_plugin.v1`
+- `fnlla.techayo_remote_control.v1`
+- `fnlla.techayo_remote_control_state.v1`
 - `fnlla.public_api_lock.v1`
 
 Automation should tolerate additional keys and should key decisions off
 documented status fields such as `ok`, `status`, `failures` and `warnings`.
+
+## Developer Panel Boundary
+
+The Developer Panel is a stable technical control surface, not a product admin
+panel. It may manage framework-owned operations such as developer access,
+client preview, service control, framework updates, privacy-light operations
+summaries, audit export and the technical Kanban workspace.
+
+The optional project leadership block names a real person responsible for
+product direction, roadmap, delivery or technical leadership. It is neutral
+system information, not a branding device. Client projects can keep it private
+with `PROJECT_LEADERSHIP_VISIBILITY=admin` or disable it entirely.
+
+Optional integrations are public configuration contracts only when explicitly
+enabled by project developers. FNLLA ships disabled adapters for privacy-light
+analytics, error reporting, consent-aware heatmaps, API hooks, Fionn and the
+TechAyo remote-control bridge; private provider logic and secrets stay outside
+the framework repository.
+
+It must not contain customer data, product CRM/CMS logic, billing, bookings,
+private client workflows or the private Fionn brain. Those belong to the
+downstream application repository or to an external service accessed through an
+explicit adapter contract.
+
+The detailed boundary is documented in `docs/DEVELOPER-PANEL.md`.
 
 ## Stable Extension Points
 

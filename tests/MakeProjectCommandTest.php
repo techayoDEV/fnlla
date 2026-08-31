@@ -101,6 +101,8 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "legal.php");
+        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "partials" . DIRECTORY_SEPARATOR . "page-hero.php");
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "login.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "app.log"));
@@ -234,6 +236,18 @@ final class MakeProjectCommandTest extends TestCase
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
         self::assertArrayHasKey(
+            "views/developer/panel-header.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/developer/profile.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/developer/project-settings.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
             "views/pages/home.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
@@ -290,8 +304,12 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("Project identity claimed.", $claimOutput);
         self::assertStringContainsString("Identifier: CLAIMED_PROJECT", $claimOutput);
         self::assertStringContainsString(
-            "'name' => 'Claimed Project'",
+            "'name' => (string) env(\"APP_NAME\", 'Claimed Project')",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "app.php")
+        );
+        self::assertStringContainsString(
+            'APP_NAME="Claimed Project"',
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
         );
         self::assertStringContainsString(
             "PROJECT_ID=CLAIMED_PROJECT",
@@ -372,6 +390,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("GET     /about", $routeListOutput);
         self::assertStringContainsString("GET     /services", $routeListOutput);
         self::assertStringContainsString("GET     /contact", $routeListOutput);
+        self::assertStringContainsString("POST    /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/health", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance/framework-update", $routeListOutput);

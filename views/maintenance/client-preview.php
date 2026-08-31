@@ -28,9 +28,12 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
         </header>
 
         <?php if (is_array($status) && isset($status["title"], $status["text"])): ?>
-        <div class="alert alert-<?= h((string) ($status["variant"] ?? "info")) ?> client-preview-alert" role="<?= (($status["variant"] ?? "") === "danger" || ($status["variant"] ?? "") === "warning") ? "alert" : "status" ?>">
-          <h2 class="alert-title"><?= h((string) $status["title"]) ?></h2>
-          <p class="alert-text"><?= h((string) $status["text"]) ?></p>
+        <div class="alert alert-dismissible alert-<?= h((string) ($status["variant"] ?? "info")) ?> client-preview-alert" role="<?= (($status["variant"] ?? "") === "danger" || ($status["variant"] ?? "") === "warning") ? "alert" : "status" ?>" data-fnlla-alert>
+          <div>
+            <h2 class="alert-title"><?= h((string) $status["title"]) ?></h2>
+            <p class="alert-text"><?= h((string) $status["text"]) ?></p>
+          </div>
+          <button class="alert-close" type="button" aria-label="Close alert" data-fnlla-alert-close>&times;</button>
         </div>
         <?php endif; ?>
 

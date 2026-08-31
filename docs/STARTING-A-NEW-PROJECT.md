@@ -51,6 +51,9 @@ The exported project already includes:
 - lint, test and runtime validation scripts
 - a project-base acceptance command for runtime, storage and HTTP smoke checks
 - an application base with public pages for `/`, `/about` and `/services`
+- a working starter contact form at `/contact` with CSRF, validation, old
+  input, flash feedback, honeypot spam friction and log-mail delivery
+- reusable public page-title hero markup under `views/partials/page-hero.php`
 - a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
 - an optional password-protected maintenance access screen for client preview or staged review
 - a browser-based first-time maintenance setup flow available from `/maintenance` on a fresh local project export
@@ -180,8 +183,11 @@ Inside the new project directory:
 6. Review `config/app.php`.
 7. Run `php fnlla project:acceptance --json` before adding product-specific code.
 8. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
-9. Replace the demo routes and pages with the real application flow.
-10. Run:
+9. Open `/contact`, submit a test enquiry with `MAIL_MAILER=log`, then decide
+   whether the project needs persistence, queue delivery or a CRM/webhook
+   adapter.
+10. Replace the demo routes and pages with the real application flow.
+11. Run:
 
 ```bash
 php fnlla project:acceptance --json
@@ -193,20 +199,20 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-11. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
+12. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
 
-12. When client preview should stay private, either open `/maintenance` locally
+13. When client preview should stay private, either open `/maintenance` locally
     and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true`,
     `CLIENT_PREVIEW_ENABLED=true` and
     `MAINTENANCE_ACCESS_PASSWORD=<your-password>` in `.env`.
 
-13. Start the local server:
+14. Start the local server:
 
 ```bash
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-14. Open `http://127.0.0.1:8080` in your browser.
+15. Open `http://127.0.0.1:8080` in your browser.
 
 For Apache environments, use `public/` as the document root.
 The exported project already contains `public/.htaccess`.
@@ -241,6 +247,22 @@ For a new project, the first files are usually:
 - `views/pages/`
 - `public/assets/app.css`
 - `database/migrations/`
+
+## Simple Starter Surface
+
+A practical simple starter should normally include:
+
+- public pages: home, about, services, contact, terms and privacy;
+- reusable page-title hero component for non-home pages;
+- working contact form with validation, CSRF, old input and log mailer;
+- cookie consent and editable privacy/terms snippets;
+- health endpoint and maintenance/client-preview access;
+- Developer Panel for project identity, preview, readiness, analytics,
+  notifications, integrations and framework updates;
+- basic auth/roles only when the first product workflow needs protected users;
+- first migration and seed only when the project has real data to own;
+- tests covering public routes, form validation, mail delivery and protected
+  flows once they exist.
 
 ## Should there still be a separate template directory inside fnlla
 

@@ -374,10 +374,10 @@ final class MakeProjectCommand extends Command
     {
         $path = $targetRoot . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "app.php";
         $contents = (string) file_get_contents($path);
-        $replacement = "'name' => " . var_export($appName, true) . ",";
-        $updated = preg_replace("/\"name\" => \"FNLLA\",/", $replacement, $contents, 1);
+        $replacement = "'name' => (string) env(\"APP_NAME\", " . var_export($appName, true) . "),";
+        $updated = preg_replace('/^\s*["\']name["\']\s*=>\s*.*,\s*$/m', "    " . $replacement, $contents, 1, $count);
 
-        if (!is_string($updated)) {
+        if (!is_string($updated) || $count !== 1) {
             throw new RuntimeException("Unable to update config/app.php for exported project.");
         }
 
@@ -419,6 +419,9 @@ final class MakeProjectCommand extends Command
             "views/pages/home.php",
             "views/pages/about.php",
             "views/pages/services.php",
+            "views/pages/contact.php",
+            "views/pages/legal.php",
+            "views/partials/page-hero.php",
             "public/assets/app.css",
         ]);
 

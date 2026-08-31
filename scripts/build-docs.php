@@ -117,6 +117,15 @@ $guidePages = [
         "lead" => "Stable public framework surfaces, compatibility rules and internal boundaries.",
     ],
     [
+        "label" => "Developer Panel",
+        "href" => "developer-panel.html",
+        "source" => "docs/DEVELOPER-PANEL.md",
+        "source_name" => "DEVELOPER-PANEL.md",
+        "title" => "Developer Panel",
+        "document_title" => "Developer Panel - FNLLA Documentation",
+        "lead" => "Private technical workspace, capability model and framework-vs-product boundary.",
+    ],
+    [
         "label" => "Project Scripts Reference",
         "href" => "project-scripts-reference.html",
         "source" => "docs/PROJECT-SCRIPTS-REFERENCE.md",
@@ -232,6 +241,7 @@ $guideLinkMap = [
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
     "./BUSINESS-APP-REFERENCE.md" => "./business-app-reference.html",
     "./PUBLIC-API.md" => "./public-api.html",
+    "./DEVELOPER-PANEL.md" => "./developer-panel.html",
     "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
     "./RELEASE-AND-OPERATIONS.md" => "./release-and-operations.html",
     "./PRODUCTION-CHECKLIST.md" => "./production-checklist.html",
@@ -433,7 +443,7 @@ function render_docs_page(array $page): string
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#18352f">
+  <meta name="theme-color" content="#15304f">
   <title>{$documentTitle}</title>
   <link rel="icon" href="./assets/brand/fnlla.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css">
@@ -771,7 +781,7 @@ function render_fnlla_runtime_content(): string
 &lt;head&gt;
   &lt;meta charset="UTF-8"&gt;
   &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-  &lt;meta name="theme-color" content="#1A4137"&gt;
+  &lt;meta name="theme-color" content="#15304f"&gt;
   &lt;title&gt;&lt;?= h(\$pageMeta["title"]) ?&gt;&lt;/title&gt;
   &lt;link rel="stylesheet" href="&lt;?= h(asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css")) ?&gt;"&gt;
   &lt;link rel="stylesheet" href="&lt;?= h(asset("assets/app.css")) ?&gt;"&gt;

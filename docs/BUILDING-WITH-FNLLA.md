@@ -56,11 +56,12 @@ When starting a new delivery on top of FNLLA, the safest sequence is:
 7. Add routes.
 8. Add or extend controllers.
 9. Add views.
-10. Add forms, validation and flash feedback where needed.
-11. Add database tables and migrations when persistence is required.
-12. Add auth or authorisation boundaries when a page is protected.
-13. Add product-specific tests.
-14. Run tests, lint, acceptance, security and runtime validation before shipping.
+10. Reuse `views/partials/page-hero.php` for normal public page-title heroes.
+11. Add forms, validation and flash feedback where needed.
+12. Add database tables and migrations when persistence is required.
+13. Add auth or authorisation boundaries when a page is protected.
+14. Add product-specific tests.
+15. Run tests, lint, acceptance, security and runtime validation before shipping.
 
 ## Commercial Project Baseline
 
@@ -205,6 +206,24 @@ Example page template:
 </section>
 ```
 
+For normal non-home pages, prefer the starter page-title hero partial instead
+of rewriting the same heading structure in every view:
+
+```php
+<?php require VIEW_ROOT . "/partials/page-hero.php"; ?>
+```
+
+Pass `pageHero` from the controller:
+
+```php
+"pageHero" => [
+    "eyebrow" => "Services",
+    "title" => "Describe the real page purpose.",
+    "text" => "Use one clear paragraph that tells visitors what happens here.",
+    "meta" => ["Public page", "Starter module"],
+],
+```
+
 ## How to structure views
 
 Use these rules for page templates:
@@ -305,7 +324,18 @@ For forms:
 - send notifications through `mailer()` only after validation and rate limits
   have accepted the submission
 
-The existing maintenance flows are the reference patterns:
+The starter `/contact` page is the public reference implementation:
+
+- `routes/web.php` defines `GET /contact` and CSRF-protected `POST /contact`;
+- `src/Controllers/PageController.php` validates normalized form input;
+- `views/pages/contact.php` renders field errors and `old()` values;
+- the default `MAIL_MAILER=log` writes the message to `storage/mail/`;
+- a privacy-light metadata line is written to
+  `storage/framework/developer/form-submissions.jsonl` for Developer Panel
+  form-inbox summaries, without raw IP or full message storage.
+
+The maintenance flows remain useful reference patterns for private operational
+forms:
 
 - GET page route for the screen
 - POST submit route with `csrf`

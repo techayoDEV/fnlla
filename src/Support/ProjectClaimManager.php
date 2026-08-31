@@ -92,8 +92,8 @@ final class ProjectClaimManager
 
         $contents = (string) file_get_contents($path);
         $updated = preg_replace_callback(
-            '/(["\']name["\']\s*=>\s*)(["\'])(.*?)\2\s*,/',
-            static fn (array $matches): string => $matches[1] . var_export($identity["product"], true) . ",",
+            '/^(\s*["\']name["\']\s*=>\s*).*,\s*$/m',
+            static fn (array $matches): string => $matches[1] . "(string) env(\"APP_NAME\", " . var_export($identity["product"], true) . "),",
             $contents,
             1,
             $count
@@ -116,6 +116,7 @@ final class ProjectClaimManager
 
         $contents = (string) file_get_contents($path);
         $values = [
+            "APP_NAME" => $identity["product"],
             "PROJECT_ID" => $identity["id"],
             "PROJECT_NAME" => $identity["product"],
             "PROJECT_OWNER" => $identity["owner"],

@@ -402,7 +402,31 @@ function has_local_docs_workspace(): bool
 
 function page_meta(array $overrides = []): array
 {
-    return \Fnlla\Php\Support\PageMeta::resolve($overrides, (string) config("app.name", "FNLLA"));
+    return \Fnlla\Php\Support\PageMeta::resolve(array_merge([
+        "tagline" => (string) config("app.tagline", ""),
+    ], $overrides), (string) config("app.name", "FNLLA"));
+}
+
+function project_brand_mark(?string $name = null): string
+{
+    $name = trim((string) ($name ?? config("app.name", "FNLLA")));
+    $tokens = array_values(array_filter(
+        preg_split('/[^A-Za-z0-9]+/', $name) ?: [],
+        static fn (string $token): bool => $token !== ""
+    ));
+
+    if (count($tokens) >= 2) {
+        return strtoupper(substr($tokens[0], 0, 1) . substr($tokens[1], 0, 1));
+    }
+
+    $compact = preg_replace('/[^A-Za-z0-9]/', "", $name) ?? "";
+
+    return strtoupper(substr($compact !== "" ? $compact : "FN", 0, 2));
+}
+
+function project_leadership(string $context = "admin"): array
+{
+    return (new \Fnlla\Php\Support\ProjectLeadership())->state($context);
 }
 
 function route(string $name, array $parameters = []): string
@@ -709,6 +733,16 @@ function maintenance_access(): \Fnlla\Php\Maintenance\MaintenanceAccessManager
 function developer_access(): \Fnlla\Php\Maintenance\DeveloperAccessManager
 {
     return app(\Fnlla\Php\Maintenance\DeveloperAccessManager::class);
+}
+
+function developer_activity(): \Fnlla\Php\Maintenance\DeveloperActivityLog
+{
+    return app(\Fnlla\Php\Maintenance\DeveloperActivityLog::class);
+}
+
+function developer_control(): \Fnlla\Php\Maintenance\DeveloperControlManager
+{
+    return app(\Fnlla\Php\Maintenance\DeveloperControlManager::class);
 }
 
 function cache(): \Fnlla\Php\Cache\CacheStoreInterface

@@ -9,7 +9,7 @@
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var storageKey = "fnlla-docs-theme";
   var themeColors = {
-    default: "#18352f",
+    default: "#15304f",
     dark: "#0d1723"
   };
 

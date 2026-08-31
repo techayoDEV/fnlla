@@ -23,16 +23,43 @@ namespace Fnlla\Php\Middleware;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Maintenance\DeveloperControlManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
+use Fnlla\Php\View\View;
 
 final class EnforceMaintenanceAccess implements MiddlewareInterface
 {
-    public function __construct(private MaintenanceAccessManager $access)
+    public function __construct(
+        private MaintenanceAccessManager $access,
+        private DeveloperControlManager $developerControl
+    )
     {
     }
 
     public function handle(Request $request, callable $next): mixed
     {
+        if ($this->developerControl->disabled() && !$this->isAllowedDuringDeveloperDisable($request)) {
+            $state = $this->developerControl->state();
+
+            if ($request->expectsJson() || str_starts_with($request->path(), "/api/")) {
+                return Response::json([
+                    "error" => "Service Disabled",
+                    "message" => (string) ($state["message"] ?? "This service is temporarily disabled by the developer team."),
+                    "contact" => (string) ($state["contact"] ?? ""),
+                    "source" => (string) ($state["source"] ?? "local"),
+                    "request_id" => $request->requestId(),
+                ], 503, [
+                    "Retry-After" => "60",
+                ]);
+            }
+
+            return Response::html(View::render("maintenance/service-disabled", [
+                "pageTitle" => "Service Disabled",
+                "layoutChromeMode" => "client-preview",
+                "developerControl" => $state,
+            ]), 503);
+        }
+
         if ($this->shouldRedirectFreshSetup($request)) {
             return Response::redirect($this->freshSetupRedirectPath($request));
         }
@@ -66,6 +93,22 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
         ];
 
         if (in_array($request->path(), $allowedPaths, true)) {
+            return true;
+        }
+
+        $developerPath = developer_access()->path();
+
+        return $developerPath !== ""
+            && ($request->path() === $developerPath || str_starts_with($request->path(), $developerPath . "/"));
+    }
+
+    private function isAllowedDuringDeveloperDisable(Request $request): bool
+    {
+        if (developer_access()->isUnlocked()) {
+            return true;
+        }
+
+        if ($request->path() === "/developer-panel-setup") {
             return true;
         }
 

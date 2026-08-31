@@ -44,6 +44,8 @@ $reportRequiresManualReview = ($report["requires_manual_review"] ?? false) === t
 $reportSourcePath = trim((string) ($report["source_root"] ?? $report["source_path"] ?? $sourcePathValue));
 $reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report["release_tag"] ?? ""))));
 $reportDryRunPath = trim((string) ($report["dry_run_report_path"] ?? ""));
+$frameworkUpdateRunRoute = (string) ($frameworkUpdateRunRoute ?? route("maintenance.framework_update.run"));
+$frameworkUpdateRefreshRoute = (string) ($frameworkUpdateRefreshRoute ?? route("maintenance.framework_update"));
 $updateActionLabel = static function (array $update): string {
     $label = trim((string) ($update["label"] ?? ""));
 
@@ -107,7 +109,7 @@ $updateActionLabel = static function (array $update): string {
         <article class="feature-card">
           <h3 class="content-title">Run major readiness</h3>
           <p class="content-text">Use this before touching a production update. The check covers required files, runtime residue, bootstrap caches, major-release docs, cache serialisation and assistant-vendor marker hygiene.</p>
-          <form class="form stack gap-md" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-fnlla-busy-form data-fnlla-busy-label="Checking major upgrade readiness">
+          <form class="form stack gap-md" action="<?= h($frameworkUpdateRunRoute) ?>" method="post" novalidate data-fnlla-busy-form data-fnlla-busy-label="Checking major upgrade readiness">
             <?= csrf_field() ?>
             <div class="form-group">
               <label class="label" for="framework-upgrade-target">Target version</label>
@@ -207,7 +209,7 @@ $updateActionLabel = static function (array $update): string {
       </aside>
 
       <article class="cta-card contact-form-card">
-        <form class="form contact-form" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate data-framework-update-form data-fnlla-busy-form data-fnlla-busy-label="Preparing framework update">
+        <form class="form contact-form" action="<?= h($frameworkUpdateRunRoute) ?>" method="post" novalidate data-framework-update-form data-fnlla-busy-form data-fnlla-busy-label="Preparing framework update">
           <?= csrf_field() ?>
           <div class="grid grid-2 gap-md framework-update-channel-grid">
             <section class="feature-card framework-update-channel-card" aria-label="GitHub release channel controls">
@@ -353,7 +355,7 @@ $updateActionLabel = static function (array $update): string {
         <?php endif; ?>
 
         <?php if ($reportApplyActionAvailable && $reportRecommendedApplyMode !== ""): ?>
-        <form class="form stack gap-md mt-3" action="<?= h(route("maintenance.framework_update.run")) ?>" method="post" novalidate>
+        <form class="form stack gap-md mt-3" action="<?= h($frameworkUpdateRunRoute) ?>" method="post" novalidate>
           <?= csrf_field() ?>
           <input type="hidden" name="mode" value="<?= h($reportRecommendedApplyMode) ?>">
           <?php if ($reportUsesGitHub && $reportReleaseTag !== ""): ?>
@@ -370,7 +372,7 @@ $updateActionLabel = static function (array $update): string {
         <p class="content-text mb-0">Apply is intentionally blocked until the conflicts listed below are reviewed and resolved. Once those framework-managed files are aligned again, rerun the check and the apply action will become available here.</p>
         <?php elseif ($reportIsApply): ?>
         <div class="d-flex flex-wrap gap-md">
-          <a class="btn btn-outline" href="<?= h(route("maintenance.framework_update")) ?>">Refresh page</a>
+          <a class="btn btn-outline" href="<?= h($frameworkUpdateRefreshRoute) ?>">Refresh page</a>
         </div>
         <p class="help-text mb-0">Use the refresh after reviewing the report if you want the top version cards to confirm that the newly applied framework base is now active in the maintenance UI.</p>
         <?php endif; ?>

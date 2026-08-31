@@ -36,6 +36,15 @@ final class PageMetaTest extends TestCase
         );
 
         self::assertSame(
+            "Contact | FNLLA - Business systems delivered clearly",
+            PageMeta::composeDocumentTitle([
+                "site" => "FNLLA",
+                "page" => "Contact",
+                "tagline" => "Business systems delivered clearly",
+            ])
+        );
+
+        self::assertSame(
             "About | Framework | FNLLA",
             PageMeta::composeDocumentTitle([
                 "site" => "FNLLA",
@@ -55,6 +64,16 @@ final class PageMetaTest extends TestCase
                 "home" => true,
             ])
         );
+
+        self::assertSame(
+            "FNLLA - Business systems delivered clearly",
+            PageMeta::composeDocumentTitle([
+                "site" => "FNLLA",
+                "page" => "Overview",
+                "home" => true,
+                "tagline" => "Business systems delivered clearly",
+            ])
+        );
     }
 
     public function testResolveDeduplicatesRepeatedLabels(): void
@@ -68,5 +87,6 @@ final class PageMetaTest extends TestCase
 
         self::assertSame("FNLLA | Framework", $meta["title"]);
         self::assertSame("FNLLA", $meta["site"]);
+        self::assertSame("", $meta["tagline"]);
     }
 }

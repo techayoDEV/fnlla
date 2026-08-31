@@ -43,7 +43,9 @@ use Fnlla\Php\Exceptions\ExceptionHandler;
 use Fnlla\Php\Filesystem\StorageManager;
 use Fnlla\Php\Hashing\Hasher;
 use Fnlla\Php\Localization\Translator;
+use Fnlla\Php\Maintenance\DeveloperActivityLog;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
+use Fnlla\Php\Maintenance\DeveloperControlManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Mail\Mailer;
 use Fnlla\Php\Observability\MetricsRecorder;
@@ -56,7 +58,13 @@ use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Routing\UrlGenerator;
 use Fnlla\Php\Session\SessionStore;
 use Fnlla\Php\Support\ServiceProvider;
+use Fnlla\Php\Support\DeveloperAnalyticsReport;
+use Fnlla\Php\Support\DeveloperHeatmapReport;
+use Fnlla\Php\Support\DeveloperNotificationCenter;
+use Fnlla\Php\Support\DeveloperOperationsReport;
+use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
+use Fnlla\Php\Support\TechAyoRemoteControlPlugin;
 use RuntimeException;
 
 final class FrameworkServiceProvider extends ServiceProvider
@@ -93,6 +101,14 @@ final class FrameworkServiceProvider extends ServiceProvider
         $this->container->singleton(Translator::class);
         $this->container->singleton(MaintenanceAccessManager::class);
         $this->container->singleton(DeveloperAccessManager::class);
+        $this->container->singleton(DeveloperActivityLog::class);
+        $this->container->singleton(DeveloperControlManager::class);
+        $this->container->singleton(DeveloperAnalyticsReport::class);
+        $this->container->singleton(DeveloperHeatmapReport::class);
+        $this->container->singleton(DeveloperNotificationCenter::class);
+        $this->container->singleton(DeveloperOperationsReport::class);
+        $this->container->singleton(DeveloperWorkspaceBoard::class);
+        $this->container->singleton(TechAyoRemoteControlPlugin::class);
         $this->container->singleton(EnvironmentFileManager::class);
         $this->container->singleton(LocalRuntimeAssistant::class);
         $this->container->singleton(FionnRuntimeBridge::class);

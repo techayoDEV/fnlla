@@ -36,6 +36,19 @@ final class SecurityAuditReport
         $mailHttpAllowedHosts = (array) config("mail.http.allowed_hosts", []);
         $runtimeAiEnabled = (bool) config("ai.runtime.enabled", false);
         $runtimeAiDriver = (string) config("ai.runtime.driver", "local");
+        $developerControlRemoteEnabled = (bool) config("developer_control.remote.enabled", false);
+        $developerControlRemoteEndpoint = trim((string) config("developer_control.remote.endpoint", ""));
+        $developerControlAllowedHosts = (array) config("developer_control.remote.allowed_hosts", []);
+        $ga4Enabled = (bool) config("integrations.ga4.enabled", false);
+        $ga4MeasurementId = trim((string) config("integrations.ga4.measurement_id", ""));
+        $clarityEnabled = (bool) config("integrations.clarity.enabled", false);
+        $clarityProjectId = trim((string) config("integrations.clarity.project_id", ""));
+        $heatmapsEnabled = (bool) config("integrations.heatmaps.enabled", false);
+        $heatmapsProvider = trim((string) config("integrations.heatmaps.provider", ""));
+        $sentryEnabled = (bool) config("integrations.sentry.enabled", false);
+        $sentryDsn = trim((string) config("integrations.sentry.dsn", ""));
+        $apiHooksEnabled = (bool) config("integrations.api_hooks.enabled", false);
+        $apiHooksEndpoint = trim((string) config("integrations.api_hooks.endpoint", ""));
 
         $checks = [
             $this->check("debug_disabled", !$isProduction || !app_debug(), "fail", "APP_DEBUG must be false in production."),
@@ -63,6 +76,15 @@ final class SecurityAuditReport
             $this->check("runtime_ai_bundle", !$runtimeAiEnabled || $runtimeAiDriver === "fionn" || $this->runtimeAiBundleIsPresent(), "fail", "Local runtime AI requires the integrated framework runtime intelligence bundle."),
             $this->check("runtime_ai_local_driver", !$runtimeAiEnabled || $this->runtimeAiDriverIsAllowed($runtimeAiDriver), "fail", "Runtime AI must use the local driver or the audited opt-in Fionn bridge policy."),
             $this->check("runtime_ai_learning_path", !$runtimeAiEnabled || $this->runtimeAiLearningPathIsSafe(), "fail", "Runtime AI learning data must stay inside storage."),
+            $this->check("developer_control_remote_https", !$developerControlRemoteEnabled || str_starts_with(strtolower($developerControlRemoteEndpoint), "https://"), "fail", "Remote developer control must use HTTPS."),
+            $this->check("developer_control_remote_allowlist", !$developerControlRemoteEnabled || $this->developerControlRemoteHostAllowed($developerControlRemoteEndpoint, $developerControlAllowedHosts), "fail", "Remote developer control must pin an allowed host."),
+            $this->check("integration_ga4_configured", !$ga4Enabled || preg_match('/^G-[A-Z0-9-]+$/i', $ga4MeasurementId) === 1, "warning", "Enabled GA4 integration should use a measurement ID such as G-XXXXXXXXXX."),
+            $this->check("integration_ga4_csp", !$ga4Enabled || $this->cspAllowsExternal($csp, "www.googletagmanager.com"), "warning", "Enabled GA4 integration requires CSP script-src for www.googletagmanager.com."),
+            $this->check("integration_clarity_configured", !$clarityEnabled || $clarityProjectId !== "", "warning", "Enabled Clarity integration requires a project ID."),
+            $this->check("integration_clarity_csp", !$clarityEnabled || $this->cspAllowsExternal($csp, "www.clarity.ms"), "warning", "Enabled Clarity integration requires CSP script-src for www.clarity.ms."),
+            $this->check("integration_heatmaps_configured", !$heatmapsEnabled || $heatmapsProvider !== "", "warning", "Enabled heatmaps require a provider label and project-owned recorder policy."),
+            $this->check("integration_sentry_https", !$sentryEnabled || str_starts_with(strtolower($sentryDsn), "https://"), "fail", "Enabled Sentry integration must use an HTTPS DSN."),
+            $this->check("integration_api_hooks_https", !$apiHooksEnabled || str_starts_with(strtolower($apiHooksEndpoint), "https://"), "fail", "Enabled API hook integration must use an HTTPS endpoint."),
         ];
 
         return [
@@ -148,5 +170,28 @@ final class SecurityAuditReport
         }
 
         return true;
+    }
+
+    private function developerControlRemoteHostAllowed(string $endpoint, array $allowedHosts): bool
+    {
+        $host = strtolower((string) (parse_url($endpoint, PHP_URL_HOST) ?: ""));
+
+        if ($host === "") {
+            return false;
+        }
+
+        return in_array($host, array_map("strtolower", $allowedHosts), true);
+    }
+
+    private function cspAllowsExternal(string $csp, string $host): bool
+    {
+        if ($csp === "") {
+            return false;
+        }
+
+        $host = strtolower($host);
+        $csp = strtolower($csp);
+
+        return str_contains($csp, $host) || str_contains($csp, "https://{$host}");
     }
 }

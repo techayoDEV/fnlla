@@ -215,15 +215,6 @@ final class FrameworkUpdateCommandTest extends TestCase
         );
     }
 
-    private function cloneRepository(): string
-    {
-        $targetPath = $this->makeTempPath("fnlla-framework-update-source-");
-        mkdir($targetPath, 0777, true);
-        $this->copyDirectory(base_path(), $targetPath);
-
-        return $targetPath;
-    }
-
     private function makeTempPath(string $prefix): string
     {
         $path = rtrim(sys_get_temp_dir(), "\\/") . DIRECTORY_SEPARATOR . $prefix . bin2hex(random_bytes(4));

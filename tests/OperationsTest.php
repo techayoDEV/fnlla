@@ -17,6 +17,7 @@ namespace Fnlla\Php\Tests;
 
 use Fnlla\Php\Application;
 use Fnlla\Php\Console\Commands\BackupPlanCommand;
+use Fnlla\Php\Console\Commands\DeveloperInstallStorageCommand;
 use Fnlla\Php\Console\Commands\DoctorCommand;
 use Fnlla\Php\Console\Commands\ProjectAcceptanceCommand;
 use Fnlla\Php\Console\Commands\PublicApiLockCommand;
@@ -28,9 +29,13 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Support\DoctorReport;
 use Fnlla\Php\Support\BackupPlanBuilder;
+use Fnlla\Php\Support\DeveloperPanelStorageInstaller;
+use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\ProjectAcceptanceReportBuilder;
+use Fnlla\Php\Support\RecentFileLines;
 use Fnlla\Php\Support\ReleaseArtifactBuilder;
 use Fnlla\Php\Support\SecurityAuditReport;
+use Fnlla\Php\Support\TechAyoRemoteControlPlugin;
 use PHPUnit\Framework\TestCase;
 
 final class OperationsTest extends TestCase
@@ -76,9 +81,40 @@ final class OperationsTest extends TestCase
         self::assertSame("fnlla.metrics.v1", $metrics["schema"] ?? null);
         self::assertSame(1, $metrics["total_requests"] ?? null);
         self::assertSame(1, $metrics["route_counts"]["observed.route"] ?? null);
+        self::assertSame(1, $metrics["page_views"] ?? null);
+        self::assertSame(1, $metrics["page_route_counts"]["observed.route"] ?? null);
+        self::assertSame(1, $metrics["source_counts"]["direct"] ?? null);
+        self::assertArrayHasKey("daily_page_views", $metrics);
+        self::assertArrayHasKey("route_duration_totals", $metrics);
+        self::assertStringNotContainsString("127.0.0.1", json_encode($metrics, JSON_THROW_ON_ERROR));
 
         @unlink($absoluteMetricsPath);
         @unlink($absoluteMetricsPath . ".lock");
+    }
+
+    public function testRecentFileLinesReadsNewestNonEmptyLinesWithoutWholeFileContract(): void
+    {
+        $path = storage_path("framework/cache/recent-lines-" . bin2hex(random_bytes(4)) . ".log");
+
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0777, true);
+        }
+
+        try {
+            $lines = [];
+
+            for ($index = 0; $index < 320; $index++) {
+                $lines[] = "line-" . $index;
+            }
+
+            file_put_contents($path, implode(PHP_EOL, $lines) . PHP_EOL . PHP_EOL, LOCK_EX);
+
+            self::assertSame(["line-319", "line-318", "line-317"], RecentFileLines::read($path, 3));
+        } finally {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
     }
 
     public function testDoctorReportHasMachineReadableSummary(): void
@@ -110,6 +146,7 @@ final class OperationsTest extends TestCase
         $container = new Container();
 
         self::assertSame("doctor", (new DoctorCommand($container))->name());
+        self::assertSame("developer:install-storage", (new DeveloperInstallStorageCommand($container))->name());
         self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
         self::assertSame("security:audit", (new SecurityAuditCommand($container))->name());
         self::assertSame("ops:backup-plan", (new BackupPlanCommand($container))->name());
@@ -131,7 +168,115 @@ final class OperationsTest extends TestCase
         self::assertTrue(in_array("db", (array) ($payload["helpers"] ?? []), true));
         self::assertTrue(in_array("ops:backup-plan", (array) ($payload["commands"] ?? []), true));
         self::assertTrue(in_array("project:acceptance", (array) ($payload["commands"] ?? []), true));
+        self::assertTrue(in_array("developer:install-storage", (array) ($payload["commands"] ?? []), true));
         self::assertTrue(in_array("query_builder.paginate", (array) ($payload["data"] ?? []), true));
+        self::assertTrue(in_array("developer.analytics", (array) ($payload["data"] ?? []), true));
+        self::assertTrue(in_array("developer.analytics_settings", (array) ($payload["data"] ?? []), true));
+    }
+
+    public function testDeveloperPanelStorageInstallerProvidesDatabaseContract(): void
+    {
+        $installer = new DeveloperPanelStorageInstaller();
+        $sql = implode("\n", $installer->statements());
+        $tables = $installer->tables();
+
+        self::assertSame("fnlla_developer_activity_log", $tables["activity_log"] ?? null);
+        self::assertSame("fnlla_developer_workspace_state", $tables["workspace_state"] ?? null);
+        self::assertStringContainsString("fnlla_developer_notifications", $sql);
+        self::assertStringContainsString("acknowledged_at", $sql);
+        self::assertStringContainsString("archived_at", $sql);
+        self::assertStringContainsString("fnlla_developer_analytics_events", $sql);
+        self::assertStringContainsString("event_hash", $sql);
+    }
+
+    public function testTechAyoRemoteControlPluginDescribesPublicContract(): void
+    {
+        config_set("developer_control.remote.enabled", true);
+        config_set("developer_control.remote.endpoint", "https://techayo.co.uk/admin/fnlla/projects/qwerty/control.json?secret=hidden");
+        config_set("developer_control.remote.project_id", "qwerty");
+        config_set("developer_control.remote.tenant", "techayo");
+        config_set("developer_control.remote.signature_secret", "do-not-leak");
+
+        $manifest = (new TechAyoRemoteControlPlugin())->manifest();
+        $encoded = json_encode($manifest, JSON_THROW_ON_ERROR);
+
+        self::assertSame("fnlla.remote_control_plugin.v1", $manifest["schema"] ?? null);
+        self::assertSame("TechAyo Limited", $manifest["provider"] ?? null);
+        self::assertSame("ready", $manifest["status"] ?? null);
+        self::assertSame("https://techayo.co.uk/admin", $manifest["admin_surface"] ?? null);
+        self::assertSame("https://techayo.co.uk/admin/fnlla/projects/qwerty/control.json", $manifest["fnlla_runtime_contract"]["endpoint"] ?? null);
+        self::assertStringContainsString("X-FNLLA-Control-Signature", $encoded);
+        self::assertStringNotContainsString("secret=hidden", $encoded);
+        self::assertStringNotContainsString("do-not-leak", $encoded);
+    }
+
+    public function testDeveloperWorkspaceBoardTracksKanbanDeliveryMetadata(): void
+    {
+        $path = "framework/developer/workspace-test-" . bin2hex(random_bytes(4)) . ".json";
+        config_set("developer_workspace.driver", "file");
+        config_set("developer_workspace.path", $path);
+
+        $board = new DeveloperWorkspaceBoard();
+        $board->create([
+            "title" => "Prepare client handover",
+            "status" => "in_progress",
+            "priority" => "high",
+            "type" => "release",
+            "assignee" => "dev@example.com",
+            "due_date" => gmdate("Y-m-d", strtotime("+2 days")),
+            "estimate" => "45m",
+            "blocked" => true,
+            "checklist" => "[x] Confirm routes\n[ ] Run release checks",
+        ], ["email" => "dev@example.com"]);
+
+        $state = $board->state(["email" => "dev@example.com"]);
+        $task = $state["columns_with_tasks"]["in_progress"][0] ?? [];
+        $taskId = (string) ($task["id"] ?? "");
+
+        $board->update($taskId, [
+            "title" => "Prepare client handover",
+            "status" => "review",
+            "position" => 250,
+            "priority" => "urgent",
+            "type" => "release",
+            "color" => "sky",
+            "assignee" => "dev@example.com",
+            "due_date" => gmdate("Y-m-d", strtotime("+2 days")),
+            "estimate" => "45m",
+            "blocked" => true,
+            "checklist" => "[x] Confirm routes\n[ ] Run release checks",
+            "subtask" => "Capture QA screenshot",
+            "subtask_color" => "sky",
+            "comment" => "Client handover needs a final browser pass.",
+            "attachment_label" => "Release checklist",
+            "attachment_url" => "https://example.test/release-checklist",
+            "attachment_added_by" => "lead@example.com",
+        ], ["email" => "lead@example.com"]);
+        $updatedState = $board->state(["email" => "dev@example.com"]);
+        $updatedTask = [];
+        foreach ((array) ($updatedState["columns_with_tasks"]["review"] ?? []) as $candidate) {
+            if (($candidate["id"] ?? "") === $taskId) {
+                $updatedTask = $candidate;
+                break;
+            }
+        }
+
+        self::assertSame("fnlla.developer_workspace.v1", $state["schema"] ?? null);
+        self::assertSame(1, $state["my_tasks_count"] ?? null);
+        self::assertSame(1, $state["blocked_tasks_count"] ?? null);
+        self::assertSame(1, $state["due_soon_count"] ?? null);
+        self::assertSame("release", $task["type"] ?? null);
+        self::assertSame("45m", $task["estimate"] ?? null);
+        self::assertSame(2, count((array) ($task["checklist"] ?? [])));
+        self::assertSame("review", $updatedTask["status"] ?? null);
+        self::assertSame(250.0, (float) ($updatedTask["position"] ?? 0.0));
+        self::assertSame("urgent", $updatedTask["priority"] ?? null);
+        self::assertSame("lead@example.com", $updatedTask["updated_by"] ?? null);
+        self::assertSame(3, count((array) ($updatedTask["checklist"] ?? [])));
+        self::assertSame(1, $updatedState["comments_count"] ?? null);
+        self::assertSame(1, $updatedState["attachments_count"] ?? null);
+
+        @unlink(storage_path($path));
     }
 
     public function testBackupPlanIsRedactedAndProductionActionable(): void

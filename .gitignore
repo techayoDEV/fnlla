@@ -8,6 +8,7 @@
 /.env
 /vendor/
 /dist/
+/framework/
 /storage/logs/*.log
 /storage/framework/cache/*
 !/storage/framework/cache/.gitignore
@@ -16,6 +17,7 @@
 /storage/framework/fnlla-runtime-guard.json
 /storage/framework/metrics.json
 /storage/framework/metrics.json.lock
+/storage/framework/developer/*
 /storage/framework/updates/
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore

@@ -34,6 +34,11 @@ final class FrameworkUpdateController extends Controller
 {
     public function show(Request $request): Response
     {
+        return $this->view("maintenance/framework-update", $this->viewData($request));
+    }
+
+    public function viewData(Request $request, array $overrides = []): array
+    {
         $pageState = $this->pageState($request);
         $lock = $this->safeLoadLock();
         $report = flash("framework_update_report");
@@ -41,9 +46,9 @@ final class FrameworkUpdateController extends Controller
         $upgradeApply = flash("framework_upgrade_apply");
         $cachedRelease = FrameworkReleaseChannel::readCachedReleaseSummary(base_path());
 
-        return $this->view("maintenance/framework-update", [
-            "pageTitle" => "Framework updates",
-            "pageTitleSection" => "Maintenance",
+        return array_merge([
+            "pageTitle" => "Framework Updates",
+            "pageTitleSection" => "Operations",
             "frameworkUpdatePageState" => $pageState,
             "frameworkUpdateLock" => $lock,
             "frameworkUpdateReport" => is_array($report) ? $report : null,
@@ -52,7 +57,7 @@ final class FrameworkUpdateController extends Controller
             "frameworkUpdateCachedRelease" => $cachedRelease,
             "frameworkUpgradeReport" => is_array($upgradeReport) ? $upgradeReport : null,
             "frameworkUpgradeApply" => is_array($upgradeApply) ? $upgradeApply : null,
-        ]);
+        ], $overrides);
     }
 
     public function run(Request $request): Response
@@ -68,7 +73,7 @@ final class FrameworkUpdateController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("maintenance.framework_update"));
+            return $this->redirect($this->redirectRoute($request));
         }
 
         $mode = trim((string) $request->input("mode", "check"));
@@ -100,7 +105,7 @@ final class FrameworkUpdateController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("maintenance.framework_update"));
+            return $this->redirect($this->redirectRoute($request));
         }
 
         if (in_array($mode, ["apply", "github-apply"], true) && $pageState["can_apply"] !== true) {
@@ -112,7 +117,7 @@ final class FrameworkUpdateController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("maintenance.framework_update"));
+            return $this->redirect($this->redirectRoute($request));
         }
 
         if ($usesGitHub && ((bool) config("framework_update.github_enabled", true)) !== true) {
@@ -124,7 +129,7 @@ final class FrameworkUpdateController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("maintenance.framework_update"));
+            return $this->redirect($this->redirectRoute($request));
         }
 
         try {
@@ -166,7 +171,7 @@ final class FrameworkUpdateController extends Controller
                 ]);
                 regenerate_csrf_token();
 
-                return $this->redirect(route("maintenance.framework_update"));
+                return $this->redirect($this->redirectRoute($request));
             }
 
             flash_set("status", [
@@ -179,7 +184,7 @@ final class FrameworkUpdateController extends Controller
 
         regenerate_csrf_token();
 
-        return $this->redirect(route("maintenance.framework_update"));
+        return $this->redirect($this->redirectRoute($request));
     }
 
     private function runUpgradeWorkflow(Request $request, string $mode, array $pageState): Response
@@ -196,7 +201,7 @@ final class FrameworkUpdateController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("maintenance.framework_update"));
+            return $this->redirect($this->redirectRoute($request));
         }
 
         $analyzer = app(UpgradeAnalyzer::class);
@@ -236,7 +241,7 @@ final class FrameworkUpdateController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("maintenance.framework_update"));
+        return $this->redirect($this->redirectRoute($request));
     }
 
     private function pageState(Request $request): array
@@ -264,6 +269,13 @@ final class FrameworkUpdateController extends Controller
             "can_apply" => $canRun && $applyEnabled,
             "message" => $message,
         ];
+    }
+
+    private function redirectRoute(Request $request): string
+    {
+        return str_starts_with($request->path(), "/developer/panel/framework-updates")
+            ? route("developer.panel.framework_updates")
+            : route("maintenance.framework_update");
     }
 
     private function safeLoadLock(): ?array

@@ -20,6 +20,7 @@ Purpose:
 
 use Fnlla\Php\Controllers\DocsController;
 use Fnlla\Php\Controllers\HomeController;
+use Fnlla\Php\Controllers\ConsentController;
 use Fnlla\Php\Controllers\PageController;
 
 if (has_local_docs_workspace()) {
@@ -35,6 +36,11 @@ $router->get("/", [HomeController::class, "projectHome"])->name("home");
 $router->get("/about", [PageController::class, "about"])->name("about");
 $router->get("/services", [PageController::class, "services"])->name("services");
 $router->get("/contact", [PageController::class, "contact"])->name("contact");
+$router->post("/contact", [PageController::class, "submitContact"])->middleware(["csrf", "throttle"])->name("contact.submit");
+$router->post("/fnlla/consent", [ConsentController::class, "store"])->middleware("throttle")->name("fnlla.consent");
+$router->post("/fnlla/analytics/event", [ConsentController::class, "analyticsEvent"])->middleware("throttle")->name("fnlla.analytics.event");
+$router->get("/terms", [PageController::class, "terms"])->name("terms");
+$router->get("/privacy", [PageController::class, "privacy"])->name("privacy");
 $router->get("/health", [HomeController::class, "redirectHealthToMaintenance"]);
 
 $router->group([

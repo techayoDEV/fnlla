@@ -3,6 +3,34 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.1.2 - 2026-08-31
+
+### Added
+
+- Developer panel analytics and heatmap surfaces backed by FNLLA observability
+  data, keeping GA4 and Microsoft Clarity as optional external adapters.
+- Project leadership/system information configuration for discreet, confirmed
+  responsibility disclosure across public, administrator-only and disabled
+  visibility modes.
+- Developer panel documentation, About/System information, profile, 2FA,
+  integration settings and storage installer surfaces.
+- Developer workspace Kanban with modal task editing, participants, sub-tasks,
+  status movement and compact Jira-style controls.
+
+### Changed
+
+- Developer panel navigation, policy boundary, operations, integrations,
+  analytics and profile views now use a more consistent shared layout.
+- Project exports now carry the developer panel, observability and leadership
+  contracts without maintainer-only test or template residue.
+- Runtime UI controls, sidebar typography, navbar actions and Kanban card
+  spacing have been tightened for denser operational use.
+
+### Fixed
+
+- Release-readiness tests now assert the active framework version dynamically
+  instead of hardcoding the previous patch version.
+
 ## 2.1.1 - 2026-08-28
 
 ### Added

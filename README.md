@@ -76,6 +76,9 @@ documentation set:
 - [`docs/PUBLIC-API.md`](./docs/PUBLIC-API.md) for the stable public contract.
 - [`docs/PRODUCTION-CHECKLIST.md`](./docs/PRODUCTION-CHECKLIST.md) for
   deployment and security gates.
+- [`docs/DEVELOPER-PANEL.md`](./docs/DEVELOPER-PANEL.md) for the private
+  technical workspace, security, analytics, TechAyo Remote Control adapter
+  contract, storage and framework-vs-product boundary.
 - [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
   `.env.full.example`, client preview and the Fionn bridge boundary.
 - [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for

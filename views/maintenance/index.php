@@ -47,6 +47,11 @@ $developerAccess ??= [
     "operations_nav_visible" => false,
 ];
 
+$projectSetup ??= [
+    "name" => (string) config("app.name", "FNLLA Project"),
+    "url" => (string) config("app.base_url", ""),
+];
+
 $maintenanceLocked ??= false;
 $maintenanceRedirectTarget ??= "";
 $countdownLabel = "";
@@ -100,6 +105,11 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                   <input class="input" id="maintenance-setup-password-confirmation" name="maintenance_setup_password_confirmation" type="password" autocomplete="new-password" required>
                   <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#maintenance-setup-password-confirmation" aria-label="Toggle password visibility">Show</button>
                 </div>
+              </div>
+              <div class="form-group">
+                <label class="label" for="developer-setup-email">Developer email</label>
+                <input class="input" id="developer-setup-email" name="developer_setup_email" type="email" autocomplete="username" required>
+                <p class="help-text">Used as the named login for the first developer account.</p>
               </div>
               <div class="form-group">
                 <label class="label" for="developer-setup-password">Developer panel password <span class="content-text">(optional)</span></label>
@@ -275,6 +285,11 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               </div>
             </div>
             <div class="form-group">
+              <label class="label" for="developer-setup-email-unlocked">Developer email</label>
+              <input class="input" id="developer-setup-email-unlocked" name="developer_setup_email" type="email" autocomplete="username" required>
+              <p class="help-text">Used as the named login for the first developer account.</p>
+            </div>
+            <div class="form-group">
               <label class="label" for="developer-setup-password-unlocked">Developer panel password <span class="content-text">(optional)</span></label>
               <div class="password-field">
                 <input class="input" id="developer-setup-password-unlocked" name="developer_setup_password" type="password" autocomplete="new-password">
@@ -332,22 +347,23 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
 <?php if (($developerSetup["show_setup"] ?? false) && !($developerAccess["configured"] ?? false)): ?>
 <section class="section">
   <div class="container">
-    <section class="feature-section" id="developer-panel-setup" aria-label="<?= $freshDeveloperOnboarding ? "Developer access onboarding" : "Developer panel activation" ?>">
+    <section class="feature-section" id="developer-panel-setup" aria-label="<?= $freshDeveloperOnboarding ? "Project setup" : "Developer panel activation" ?>">
       <div class="grid grid-2 gap-lg site-login-grid">
         <article class="feature-card">
-          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Developer onboarding" : "Framework update fallback" ?></p>
+          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Project setup" : "Framework update fallback" ?></p>
           <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
-              ? "Create developer access before you decide whether maintenance should be active."
+              ? "Set the project identity and private developer entry before client preview is enabled."
               : "Activate the developer panel for an existing project that predates this feature." ?></h2>
           <p class="content-text"><?= $freshDeveloperOnboarding
-              ? "This first local setup step saves a hashed developer password and opens the panel in the current browser session. Once inside the panel, you can decide whether maintenance should stay off or be enabled for client preview."
+              ? "This first local setup step saves the visible project name, optional public URL and a hashed password for the developer panel. The public site remains available until you deliberately enable maintenance or private client preview from the panel."
               : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
           <ul class="project-note-list">
             <?php if ($freshDeveloperOnboarding): ?>
-            <li>The standard <code>/developer</code> route becomes the private entry point for the developer team.</li>
-            <li>The public site stays open until you explicitly enable maintenance later from the developer panel.</li>
-            <li>The first unlocked developer session opens immediately after setup so onboarding can continue without another login step.</li>
-            <li>You can rotate the password later, and existing sessions are invalidated after the credential changes.</li>
+            <li>The project name is used in browser titles, the header and framework operation screens.</li>
+            <li>The optional project slogan is appended to public browser titles after the site name.</li>
+            <li>The standard <code>/developer</code> route becomes the private entry point for technical project work.</li>
+            <li>Maintenance and client preview are not enabled automatically; choose that later when the project is ready to be protected.</li>
+            <li>The developer password is stored as a hash and can be rotated later from the developer panel.</li>
             <?php else: ?>
             <li>The standard <code>/developer</code> route becomes the long-term service entry after client handoff.</li>
             <li>The public header stays plain. Developer tools appear only after a developer unlocks the panel.</li>
@@ -357,10 +373,68 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
           </ul>
         </article>
         <article class="feature-card">
-          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Create developer access" : "Activate developer panel" ?></p>
-          <h2 class="content-title"><?= $freshDeveloperOnboarding ? "Create the first developer password" : "Activate the developer surface" ?></h2>
+          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Developer panel" : "Activate developer panel" ?></p>
+          <h2 class="content-title"><?= $freshDeveloperOnboarding ? "Save project setup and private access" : "Activate the developer surface" ?></h2>
           <form class="form stack gap-md" action="<?= h(route("maintenance.setup_developer_access")) ?>" method="post" novalidate>
             <?= csrf_field() ?>
+            <?php if ($freshDeveloperOnboarding): ?>
+            <div class="form-group">
+              <label class="label" for="project-setup-name">Project name</label>
+              <input class="input" id="project-setup-name" name="project_name" type="text" value="<?= h((string) ($projectSetup["name"] ?? "")) ?>" autocomplete="organization" required maxlength="80">
+              <p class="help-text">Used in browser titles, the header and framework operation screens.</p>
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-tagline">Project slogan <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-tagline" name="project_tagline" type="text" value="<?= h((string) ($projectSetup["tagline"] ?? "")) ?>" maxlength="120" placeholder="Business systems delivered clearly">
+              <p class="help-text">Appended to public browser titles, for example: Contact | Project - Slogan.</p>
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-url">Public URL <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-url" name="project_url" type="url" value="<?= h((string) ($projectSetup["url"] ?? "")) ?>" inputmode="url" autocomplete="url" placeholder="https://example.com">
+              <p class="help-text">Leave blank until the project has a real local, staging or production address.</p>
+            </div>
+            <div class="developer-panel-status-note">
+              <strong>Optional system information</strong>
+              <span>Name the real product or delivery lead only when the person can confirm that responsibility from a matching developer account.</span>
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-organization">Delivery organisation <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="TechAyo Limited">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-person">Responsible person <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-person" name="project_leadership_person_name" type="text" maxlength="120" autocomplete="name" placeholder="Name Surname">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-email">Confirmation email <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-email" name="project_leadership_person_email" type="email" maxlength="160" autocomplete="email" placeholder="lead@example.com">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-role">Role or position <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-role" name="project_leadership_person_role" type="text" maxlength="120" placeholder="Director of TechAyo">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-responsibility">Responsibility scope <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-responsibility" name="project_leadership_responsibility" type="text" maxlength="240" placeholder="product direction, roadmap and technical delivery">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-profile">Profile or contact URL <span class="content-text">(optional)</span></label>
+              <input class="input" id="project-setup-leadership-profile" name="project_leadership_profile_url" type="url" maxlength="2048" inputmode="url" placeholder="https://example.com/contact">
+            </div>
+            <div class="form-group">
+              <label class="label" for="project-setup-leadership-visibility">Leadership visibility</label>
+              <select class="select" id="project-setup-leadership-visibility" name="project_leadership_visibility">
+                <option value="disabled">Disabled</option>
+                <option value="admin">Private panel and documentation</option>
+                <option value="public">Public after confirmation</option>
+              </select>
+            </div>
+            <?php endif; ?>
+            <div class="form-group">
+              <label class="label" for="developer-panel-activation-email">Developer email</label>
+              <input class="input" id="developer-panel-activation-email" name="developer_setup_email" type="email" autocomplete="username" required>
+              <p class="help-text">This email becomes the first named developer login for <code>/developer</code>.</p>
+            </div>
             <div class="form-group">
               <label class="label" for="developer-panel-activation-password">Developer panel password</label>
               <div class="password-field">
@@ -376,7 +450,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               </div>
             </div>
             <div class="d-flex flex-wrap gap-md">
-              <button class="btn btn-primary" type="submit"><?= $freshDeveloperOnboarding ? "Create developer access" : "Activate developer panel" ?></button>
+              <button class="btn btn-primary" type="submit"><?= $freshDeveloperOnboarding ? "Save setup and open developer panel" : "Activate developer panel" ?></button>
             </div>
           </form>
         </article>

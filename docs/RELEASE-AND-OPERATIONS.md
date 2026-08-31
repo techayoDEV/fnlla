@@ -284,7 +284,7 @@ Release:
 4. Run `php fnlla security:audit --strict`.
 5. Run `php fnlla release:prepare`.
 6. Review `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json`.
-7. Push the commit and signed tag only after local validation is green.
+7. Push the commit and signed tag only after local validation passes.
 
 Rollback:
 

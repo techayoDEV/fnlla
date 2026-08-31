@@ -11,8 +11,9 @@ carry the full technical, operational and release detail.
 3. [PUBLIC-API.md](./PUBLIC-API.md) - which framework surfaces are stable across minor releases.
 4. [PRODUCTION-CHECKLIST.md](./PRODUCTION-CHECKLIST.md) - the production security, backup, restore and deployment gate.
 5. [ENVIRONMENT.md](./ENVIRONMENT.md) - the short `.env.example`, full `.env.full.example`, client preview and Fionn bridge contract.
-6. [RELEASE-AND-OPERATIONS.md](./RELEASE-AND-OPERATIONS.md) - release workflow, GitHub Actions, SBOM/checksum assets, restore evidence and operational commands.
-7. [PERFORMANCE.md](./PERFORMANCE.md) - CLI and HTTP performance profiling, baseline management and regression budgets.
+6. [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) - the technical workspace, security, analytics, TechAyo Remote Control adapter contract, storage and framework-vs-product boundary.
+7. [RELEASE-AND-OPERATIONS.md](./RELEASE-AND-OPERATIONS.md) - release workflow, GitHub Actions, SBOM/checksum assets, restore evidence and operational commands.
+8. [PERFORMANCE.md](./PERFORMANCE.md) - CLI and HTTP performance profiling, baseline management and regression budgets.
 
 ## Build A Commercial Application
 
@@ -51,6 +52,7 @@ for the first serious business application built on FNLLA.
 ### Operations And Security
 
 - [PRODUCTION-CHECKLIST.md](./PRODUCTION-CHECKLIST.md) is the deploy gate.
+- [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) defines the private technical workspace, security, analytics, TechAyo Remote Control adapter contract, storage and the line between FNLLA-managed operations and project-owned product code.
 - [ENVIRONMENT.md](./ENVIRONMENT.md) explains environment layers, client preview and the Fionn bridge boundary.
 - [RELEASE-AND-OPERATIONS.md](./RELEASE-AND-OPERATIONS.md) documents release, restore, supply-chain and GitHub Actions workflows.
 - [PERFORMANCE.md](./PERFORMANCE.md) explains baselines and p95 budgets.

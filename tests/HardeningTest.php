@@ -73,16 +73,21 @@ final class HardeningTest extends TestCase
     {
         $directory = $this->makeTempDirectory("fnlla-env-hardening-");
         $envPath = $directory . DIRECTORY_SEPARATOR . ".env";
-        file_put_contents($envPath, "DEVELOPER_ACCESS_PASSWORD_HASH=" . PHP_EOL);
+        file_put_contents($envPath, "APP_NAME=" . PHP_EOL . "DEVELOPER_ACCESS_PASSWORD_HASH=" . PHP_EOL);
 
         config_set("maintenance.env_path", $envPath);
         config_set("maintenance.env_example_path", $directory . DIRECTORY_SEPARATOR . ".env.example");
 
         $hash = '$2y$10$abcdefghijklmnopqrstuu8u5yOEPZgspmNwBl3Pq7BzFn5yGfl6m';
         (new EnvironmentFileManager())->write([
+            "APP_NAME" => "Client Operations Hub",
             "DEVELOPER_ACCESS_PASSWORD_HASH" => $hash,
         ]);
 
+        self::assertStringContainsString(
+            'APP_NAME="Client Operations Hub"',
+            (string) file_get_contents($envPath)
+        );
         self::assertStringContainsString(
             "DEVELOPER_ACCESS_PASSWORD_HASH=" . $hash,
             (string) file_get_contents($envPath)

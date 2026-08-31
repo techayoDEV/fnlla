@@ -2,17 +2,7 @@
 
 declare(strict_types=1);
 ?>
-<section class="section starter-page-hero">
-  <div class="container">
-    <div class="starter-page-heading">
-      <p class="starter-kicker">Services</p>
-      <h1>Turn these starter cards into the actual services, modules or workflows the project offers.</h1>
-      <p>
-        Use the page as a structured place for offers, product modules, internal capabilities or delivery tracks.
-      </p>
-    </div>
-  </div>
-</section>
+<?php require VIEW_ROOT . "/partials/page-hero.php"; ?>
 
 <section class="section">
   <div class="container">

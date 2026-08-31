@@ -35,9 +35,15 @@ use Fnlla\Php\Console\Commands\UpgradeApplyCommand;
 use Fnlla\Php\Console\Commands\UpgradeCheckCommand;
 use Fnlla\Php\Console\Commands\UpgradePlanCommand;
 use Fnlla\Php\Container\Container;
+use Fnlla\Php\Http\Request;
+use Fnlla\Php\Http\Response;
+use Fnlla\Php\Observability\MetricsRecorder;
 use Fnlla\Php\Support\AiContextBuilder;
 use Fnlla\Php\Support\AppMapBuilder;
 use Fnlla\Php\Support\AssetManifestBuilder;
+use Fnlla\Php\Support\DeveloperAnalyticsReport;
+use Fnlla\Php\Support\DeveloperHeatmapReport;
+use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\PerformanceProfiler;
 use Fnlla\Php\Support\UpgradeAnalyzer;
 use PHPUnit\Framework\TestCase;
@@ -47,6 +53,7 @@ final class PerformanceAndAiTest extends TestCase
     private ?string $previousAssetManifest = null;
     private bool $assetManifestExisted = false;
     private array $previousConfig = [];
+    private array $temporaryFiles = [];
 
     protected function setUp(): void
     {
@@ -72,6 +79,16 @@ final class PerformanceAndAiTest extends TestCase
         foreach ([framework_ai_review_pack_path(), framework_ai_upgrade_brief_path(), framework_app_map_path(), framework_upgrade_plan_path()] as $path) {
             if (is_file($path)) {
                 unlink($path);
+            }
+        }
+
+        foreach ($this->temporaryFiles as $path) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+
+            if (is_file($path . ".lock")) {
+                unlink($path . ".lock");
             }
         }
 
@@ -111,6 +128,192 @@ final class PerformanceAndAiTest extends TestCase
         self::assertArrayHasKey("http", $profile);
         self::assertArrayHasKey("footprint", $profile);
         self::assertTrue((bool) ($profile["http"]["GET /api/health"]["ok"] ?? false), json_encode($profile["http"]["GET /api/health"] ?? [], JSON_PRETTY_PRINT));
+    }
+
+    public function testDeveloperOperationsReportUsesPrivacyLightAnalytics(): void
+    {
+        $relativeMetricsPath = "framework/cache/operations-test-" . bin2hex(random_bytes(4)) . ".json";
+        $this->temporaryFiles[] = storage_path($relativeMetricsPath);
+        config_set("observability.metrics.path", $relativeMetricsPath);
+        config_set("observability.metrics.enabled", true);
+        $_SERVER["FNLLA_ROUTE_NAME"] = "home";
+
+        (new MetricsRecorder())->record(Request::capture("", [
+            "REQUEST_URI" => "/",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "203.0.113.10",
+            "HTTP_ACCEPT" => "text/html",
+            "HTTP_REFERER" => "https://example.test/campaign?utm_secret=hidden",
+        ]), Response::html("OK"), 14.5);
+
+        unset($_SERVER["FNLLA_ROUTE_NAME"]);
+
+        $report = (new DeveloperOperationsReport())->build();
+        $encoded = json_encode($report, JSON_THROW_ON_ERROR);
+
+        self::assertSame("fnlla.developer_operations.v1", $report["schema"] ?? null);
+        self::assertFalse((bool) ($report["privacy"]["raw_ip_addresses"] ?? true));
+        self::assertFalse((bool) ($report["privacy"]["raw_user_agents"] ?? true));
+        self::assertSame(1, (int) ($report["analytics"]["page_views"] ?? 0));
+        self::assertSame("example.test", $report["analytics"]["referrers"][0]["label"] ?? null);
+        self::assertSame(0.0, (float) ($report["analytics"]["consent"]["backend_rate"] ?? 0.0));
+        self::assertSame(0, (int) ($report["analytics"]["consent"]["events"] ?? 0));
+        self::assertArrayHasKey("performance", $report);
+        self::assertArrayHasKey("forms", $report);
+        self::assertArrayHasKey("release_readiness", $report);
+        self::assertArrayHasKey("integrations", $report);
+        self::assertArrayHasKey("heatmaps", $report);
+        self::assertStringNotContainsString("203.0.113.10", $encoded);
+        self::assertStringNotContainsString("utm_secret", $encoded);
+    }
+
+    public function testDeveloperOperationsReportReadsRecentLogTailForErrors(): void
+    {
+        $logPath = storage_path("framework/cache/operations-log-tail-" . bin2hex(random_bytes(4)) . ".log");
+        $this->temporaryFiles[] = $logPath;
+        config_set("app.log_path", $logPath);
+
+        if (!is_dir(dirname($logPath))) {
+            mkdir(dirname($logPath), 0777, true);
+        }
+
+        $lines = [
+            json_encode([
+                "timestamp" => "2026-08-01T00:00:00+00:00",
+                "level" => "ERROR",
+                "message" => "Old ignored failure",
+            ], JSON_THROW_ON_ERROR),
+        ];
+
+        for ($index = 0; $index < 300; $index++) {
+            $lines[] = json_encode([
+                "timestamp" => "2026-08-01T00:00:00+00:00",
+                "level" => "INFO",
+                "message" => "Routine line " . $index,
+            ], JSON_THROW_ON_ERROR);
+        }
+
+        $lines[] = json_encode([
+            "timestamp" => "2026-08-01T00:05:00+00:00",
+            "level" => "ERROR",
+            "message" => "Recent edge failure",
+        ], JSON_THROW_ON_ERROR);
+        file_put_contents($logPath, implode(PHP_EOL, $lines) . PHP_EOL, LOCK_EX);
+
+        $report = (new DeveloperOperationsReport())->build();
+        $encodedErrors = json_encode($report["analytics"]["errors"] ?? [], JSON_THROW_ON_ERROR);
+
+        self::assertStringContainsString("Recent edge failure", $encodedErrors);
+        self::assertStringNotContainsString("Old ignored failure", $encodedErrors);
+    }
+
+    public function testDeveloperAnalyticsReportBuildsInternalCockpitWithoutRawVisitorData(): void
+    {
+        $relativeMetricsPath = "framework/cache/analytics-test-" . bin2hex(random_bytes(4)) . ".json";
+        $this->temporaryFiles[] = storage_path($relativeMetricsPath);
+        config_set("observability.metrics.path", $relativeMetricsPath);
+        config_set("observability.metrics.enabled", true);
+        config_set("observability.analytics.enabled", true);
+        config_set("observability.analytics.sample_rate", 100);
+        $_SERVER["FNLLA_ROUTE_NAME"] = "contact";
+
+        $recorder = new MetricsRecorder();
+        $recorder->record(Request::capture("", [
+            "REQUEST_URI" => "/contact?token=hidden",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "203.0.113.55",
+            "HTTP_ACCEPT" => "text/html",
+            "HTTP_REFERER" => "https://google.com/search?q=private",
+            "HTTP_USER_AGENT" => "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+        ]), Response::html("OK"), 45.25);
+        $recorder->record(Request::capture("", [
+            "REQUEST_URI" => "/contact",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "203.0.113.55",
+            "HTTP_ACCEPT" => "text/html",
+            "HTTP_USER_AGENT" => "Mozilla/5.0",
+        ]), Response::html("Saved"), 60.0);
+        $recorder->recordConsent([
+            "analytics" => true,
+            "marketing" => false,
+            "source" => "cookie-banner",
+        ]);
+
+        unset($_SERVER["FNLLA_ROUTE_NAME"]);
+
+        $report = (new DeveloperAnalyticsReport())->build();
+        $encoded = json_encode($report, JSON_THROW_ON_ERROR);
+
+        self::assertSame("fnlla.developer_analytics.v1", $report["schema"] ?? null);
+        self::assertSame(1, (int) ($report["summary"]["page_views"] ?? 0));
+        self::assertSame(1, (int) ($report["summary"]["conversion_events"] ?? 0));
+        self::assertSame(1, (int) ($report["summary"]["consent_events"] ?? 0));
+        self::assertSame(100.0, (float) ($report["summary"]["analytics_consent_rate"] ?? 0.0));
+        self::assertArrayHasKey("daily_page_views", $report["charts"] ?? []);
+        self::assertArrayHasKey("hourly_page_views", $report["charts"] ?? []);
+        self::assertArrayHasKey("device_counts", $report["charts"] ?? []);
+        self::assertArrayHasKey("route_response_times", $report["charts"] ?? []);
+        self::assertArrayHasKey("consent_counts", $report["charts"] ?? []);
+        self::assertArrayHasKey("daily_consent_events", $report["charts"] ?? []);
+        self::assertSame("analytics_only", $report["charts"]["consent_counts"][0]["label"] ?? null);
+        self::assertSame("analytics_only", $report["last_consent_event"]["state"] ?? null);
+        self::assertSame("FNLLA Internal Analytics", $report["integrations"]["fnlla_internal"]["name"] ?? null);
+        self::assertTrue((bool) ($report["settings"]["editable_from_panel"] ?? false));
+        self::assertStringNotContainsString("203.0.113.55", $encoded);
+        self::assertStringNotContainsString("q=private", $encoded);
+        self::assertStringNotContainsString("iPhone OS", $encoded);
+    }
+
+    public function testDeveloperHeatmapReportBuildsAggregateBehaviorCockpitWithoutRawVisitorData(): void
+    {
+        $relativeMetricsPath = "framework/cache/heatmap-test-" . bin2hex(random_bytes(4)) . ".json";
+        $this->temporaryFiles[] = storage_path($relativeMetricsPath);
+        config_set("observability.metrics.path", $relativeMetricsPath);
+        config_set("observability.metrics.enabled", true);
+        config_set("observability.analytics.enabled", true);
+        config_set("observability.heatmap.enabled", true);
+        config_set("observability.heatmap.sample_rate", 100);
+        config_set("observability.heatmap.click_grid_columns", 5);
+        config_set("observability.heatmap.click_grid_rows", 5);
+
+        $recorder = new MetricsRecorder();
+        $recorder->recordBehaviorEvent([
+            "type" => "view",
+            "path" => "/services?token=hidden",
+            "device" => "desktop",
+            "viewport" => ["width" => 1440, "height" => 900],
+        ]);
+        $recorder->recordBehaviorEvent([
+            "type" => "click",
+            "path" => "/services",
+            "device" => "desktop",
+            "element" => "button",
+            "position" => ["x_percent" => 66, "y_percent" => 42],
+        ]);
+        $recorder->recordBehaviorEvent([
+            "type" => "scroll",
+            "path" => "/services",
+            "device" => "desktop",
+            "depth" => 75,
+        ]);
+
+        $report = (new DeveloperHeatmapReport())->build();
+        $encoded = json_encode($report, JSON_THROW_ON_ERROR);
+
+        self::assertSame("fnlla.developer_heatmap.v1", $report["schema"] ?? null);
+        self::assertSame("first-party aggregate heatmap", $report["privacy"]["mode"] ?? null);
+        self::assertFalse((bool) ($report["privacy"]["raw_session_recording"] ?? true));
+        self::assertFalse((bool) ($report["privacy"]["raw_cursor_trails"] ?? true));
+        self::assertSame(3, (int) ($report["summary"]["behavior_events"] ?? 0));
+        self::assertSame(1, (int) ($report["summary"]["click_events"] ?? 0));
+        self::assertSame(1, (int) ($report["summary"]["scroll_events"] ?? 0));
+        self::assertSame("/services", $report["summary"]["top_page"] ?? null);
+        self::assertSame(5, (int) ($report["charts"]["top_page_click_grid"]["columns"] ?? 0));
+        self::assertSame(5, count((array) ($report["charts"]["top_page_click_grid"]["rows"] ?? [])));
+        self::assertSame("button", $report["charts"]["click_elements"][0]["label"] ?? null);
+        self::assertStringNotContainsString("token=hidden", $encoded);
+        self::assertStringNotContainsString("Mozilla", $encoded);
+        self::assertStringNotContainsString("203.0.113", $encoded);
     }
 
     public function testPerformanceCommandsAreNamedForCli(): void

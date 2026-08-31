@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FNLLA Developer Panel Sidebar Concept</title>
+  <style>
+    :root {
+      --page: #f5f7fb;
+      --rail: #eef3f9;
+      --surface: #ffffff;
+      --surface-muted: #f8fafc;
+      --line: #dce4ef;
+      --line-strong: #c6d3e2;
+      --text: #111827;
+      --muted: #5f6f85;
+      --soft: #8190a5;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --navy: #15304f;
+      --radius: 8px;
+      --shadow: 0 20px 55px rgba(21, 48, 79, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .concept-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 293px minmax(0, 1fr);
+    }
+
+    .concept-sidebar {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 2rem;
+      padding: 27px 20px 36px;
+      border-right: 1px solid var(--line);
+      background: var(--rail);
+    }
+
+    .brand-lockup {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 0.75rem;
+      align-items: center;
+      min-height: 48px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--navy);
+      font-size: 1.1rem;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(21, 48, 79, 0.08);
+    }
+
+    .brand-title {
+      display: grid;
+      gap: 0.12rem;
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand-title span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .sidebar-nav {
+      display: grid;
+      align-content: start;
+      gap: 1rem;
+      margin-top: 58px;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: 5px;
+    }
+
+    .nav-group-label {
+      margin: 0;
+      padding: 0 13px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      min-height: 43px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0 13px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: transparent;
+      color: #334155;
+      font-size: 0.875rem;
+      font-weight: 450;
+      text-decoration: none;
+      text-align: left;
+    }
+
+    .nav-link.active {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 8px 22px rgba(21, 48, 79, 0.06);
+      text-decoration: none;
+    }
+
+    .nav-link:hover {
+      background: var(--surface-muted);
+      color: var(--navy);
+      text-decoration: none;
+    }
+
+    .nav-count {
+      color: var(--soft);
+      font-size: 0.74rem;
+      font-weight: 850;
+    }
+
+    .concept-main {
+      min-width: 0;
+      padding: 44px 100px 80px 42px;
+    }
+
+    .page-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    .page-head h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: 3.05rem;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .page-head p {
+      max-width: 47rem;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .button {
+      min-height: 2.65rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 0.84rem;
+      font-weight: 820;
+    }
+
+    .button.secondary {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--navy);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card {
+      min-height: 171px;
+      display: grid;
+      align-content: start;
+      gap: 24px;
+      padding: 21px;
+    }
+
+    .label {
+      color: #7e8ba0;
+      font-size: 0.75rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      color: var(--text);
+      font-size: 2.45rem;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .stat-card p,
+    .muted {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.45;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.97fr);
+      gap: 18px;
+    }
+
+    .panel-card {
+      padding: 29px 24px;
+    }
+
+    .panel-card h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1.94rem;
+      line-height: 1.05;
+      font-weight: 830;
+    }
+
+    .panel-card > p {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .action-list {
+      display: grid;
+      gap: 15px;
+      margin-top: 18px;
+    }
+
+    .action-row {
+      min-height: 77px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .action-row strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.94rem;
+    }
+
+    .action-row p {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2rem;
+      padding: 0 0.72rem;
+      border: 1px solid rgba(37, 99, 235, 0.24);
+      border-radius: var(--radius);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .meter-list {
+      display: grid;
+      gap: 28px;
+      margin-top: 34px;
+    }
+
+    .meter-item strong {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .meter {
+      height: 11px;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: #e7ecf3;
+    }
+
+    .meter-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--navy);
+    }
+
+    .concept-note {
+      margin-top: 18px;
+      padding: 15px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.66);
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1100px) {
+      .concept-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .concept-sidebar {
+        min-height: auto;
+      }
+
+      .sidebar-nav {
+        margin-top: 1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .concept-main {
+        padding: 28px 18px 52px;
+      }
+
+      .stats-grid,
+      .dashboard-grid,
+      .page-head {
+        grid-template-columns: 1fr;
+      }
+
+      .page-head h1 {
+        font-size: 2.35rem;
+      }
+
+      .head-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .concept-sidebar {
+        padding: 18px 14px;
+      }
+
+      .sidebar-nav {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-link {
+        min-height: 40px;
+      }
+
+      .concept-main {
+        padding-inline: 14px;
+      }
+
+      .action-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="concept-shell">
+    <aside class="concept-sidebar" aria-label="Developer panel navigation concept">
+      <div>
+        <a class="brand-lockup" href="#">
+          <span class="brand-mark">F</span>
+          <span class="brand-title">
+            <strong>qwerty</strong>
+            <span>FNLLA Developer</span>
+          </span>
+        </a>
+        <nav class="sidebar-nav" aria-label="Developer sections">
+          <div class="nav-group">
+            <p class="nav-group-label">Workspace</p>
+            <a class="nav-link active" href="#"><span>Dashboard</span><span class="nav-count">NOW</span></a>
+            <a class="nav-link" href="#"><span>Project workspace</span><span class="nav-count">6</span></a>
+            <a class="nav-link" href="#"><span>Notifications</span><span class="nav-count">3</span></a>
+          </div>
+          <div class="nav-group">
+            <p class="nav-group-label">Project setup</p>
+            <a class="nav-link" href="#"><span>Project identity</span><span class="nav-count">1</span></a>
+            <a class="nav-link" href="#"><span>Access &amp; preview</span><span class="nav-count">2</span></a>
+            <a class="nav-link" href="#"><span>Analytics</span><span class="nav-count">ON</span></a>
+          </div>
+          <div class="nav-group">
+            <p class="nav-group-label">Operations</p>
+            <a class="nav-link" href="#"><span>Readiness &amp; health</span><span class="nav-count">OK</span></a>
+            <a class="nav-link" href="#"><span>Operations hub</span><span class="nav-count">4</span></a>
+            <a class="nav-link" href="#"><span>Framework updates</span><span class="nav-count">0</span></a>
+            <a class="nav-link" href="#"><span>Integrations</span><span class="nav-count">OFF</span></a>
+          </div>
+          <div class="nav-group">
+            <p class="nav-group-label">Security &amp; policy</p>
+            <a class="nav-link" href="#"><span>Access &amp; security</span><span class="nav-count">1</span></a>
+            <a class="nav-link" href="#"><span>Runtime &amp; storage</span><span class="nav-count">OK</span></a>
+            <a class="nav-link" href="#"><span>Policy boundary</span><span class="nav-count">DOC</span></a>
+          </div>
+        </nav>
+      </div>
+
+      <div></div>
+
+      <div></div>
+    </aside>
+
+    <main class="concept-main">
+      <header class="page-head">
+        <div>
+          <h1>Developer Dashboard</h1>
+          <p>Fionn-inspired rail navigation applied to FNLLA's developer panel. This concept keeps the public site clean while making the private technical workspace feel more like an operational console.</p>
+        </div>
+        <div class="head-actions">
+          <a class="button secondary" href="#">Open public site</a>
+          <a class="button" href="#">Project settings</a>
+        </div>
+      </header>
+
+      <section class="stats-grid" aria-label="Dashboard summary">
+        <article class="card stat-card">
+          <span class="label">Client preview</span>
+          <strong class="stat-value">Off</strong>
+          <p>Public routes are open. A preview password can be prepared before client handoff.</p>
+        </article>
+        <article class="card stat-card">
+          <span class="label">Framework</span>
+          <strong class="stat-value">2.1.1</strong>
+          <p>Framework lock is present and runtime surface validation is available.</p>
+        </article>
+        <article class="card stat-card">
+          <span class="label">Storage</span>
+          <strong class="stat-value">OK</strong>
+          <p>Cache, sessions, queue and logs are writable in this environment.</p>
+        </article>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Dashboard operational areas">
+        <article class="card panel-card">
+          <h2>Next actions</h2>
+          <p>Primary operator actions stay visible without putting every form on the first screen.</p>
+          <div class="action-list">
+            <div class="action-row">
+              <div>
+                <strong>Set project slogan</strong>
+                <p>Browser titles can become Contact | qwerty - Built for clarity.</p>
+              </div>
+              <a class="button secondary" href="#">Edit identity</a>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Prepare client preview</strong>
+                <p>Create or rotate the password before enabling maintenance mode.</p>
+              </div>
+              <a class="button" href="#">Open settings</a>
+            </div>
+            <div class="action-row">
+              <div>
+                <strong>Run release checks</strong>
+                <p>Use tests, runtime validation, security audit and acceptance before push.</p>
+              </div>
+              <span class="badge">Ready</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card panel-card">
+          <h2>Readiness</h2>
+          <p>This area replaces fake analytics with framework-owned signals that are real today.</p>
+          <div class="meter-list">
+            <div class="meter-item">
+              <strong>Identity configured</strong>
+              <div class="meter"><div class="meter-fill" style="width: 82%"></div></div>
+            </div>
+            <div class="meter-item">
+              <strong>Preview handoff prepared</strong>
+              <div class="meter"><div class="meter-fill" style="width: 38%"></div></div>
+            </div>
+            <div class="meter-item">
+              <strong>Release hygiene</strong>
+              <div class="meter"><div class="meter-fill" style="width: 91%"></div></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <p class="concept-note">Preview only: this file visualizes a possible future sidebar layout. It does not register routes, change controllers, replace the current tabs, or alter qwerty/FNLLA runtime behavior.</p>
+    </main>
+  </div>
+</body>
+</html>

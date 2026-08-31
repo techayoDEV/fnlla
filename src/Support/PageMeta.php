@@ -29,6 +29,7 @@ final class PageMeta
             "page" => self::normalize((string) ($input["page"] ?? "")),
             "section" => self::normalize((string) ($input["section"] ?? "")),
             "suffix" => self::normalize((string) ($input["suffix"] ?? "")),
+            "tagline" => self::normalize((string) ($input["tagline"] ?? "")),
             "home" => (bool) ($input["home"] ?? false),
         ];
 
@@ -43,6 +44,7 @@ final class PageMeta
         $page = self::normalize((string) ($input["page"] ?? ""));
         $section = self::normalize((string) ($input["section"] ?? ""));
         $suffix = self::normalize((string) ($input["suffix"] ?? ""));
+        $tagline = self::normalize((string) ($input["tagline"] ?? ""));
         $home = (bool) ($input["home"] ?? false);
         $parts = [];
 
@@ -58,7 +60,13 @@ final class PageMeta
             $parts[] = $suffix;
         }
 
-        return implode(" | ", self::deduplicateParts($parts));
+        $title = implode(" | ", self::deduplicateParts($parts));
+
+        if ($tagline !== "" && strcasecmp($tagline, $title) !== 0) {
+            return $title !== "" ? $title . " - " . $tagline : $tagline;
+        }
+
+        return $title;
     }
 
     /**

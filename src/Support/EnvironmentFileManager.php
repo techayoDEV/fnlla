@@ -144,6 +144,10 @@ final class EnvironmentFileManager
             throw new RuntimeException("Environment values cannot contain line breaks or null bytes.");
         }
 
-        return $stringValue;
+        if ($stringValue === "" || preg_match('~^[A-Za-z0-9_.:\\\\/@$|;,+-]+$~', $stringValue) === 1) {
+            return $stringValue;
+        }
+
+        return '"' . str_replace('"', '\"', $stringValue) . '"';
     }
 }

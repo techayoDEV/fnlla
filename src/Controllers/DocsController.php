@@ -182,7 +182,7 @@ final class DocsController extends Controller
         $documents = self::DOCUMENTS;
 
         return $this->view("pages/docs", [
-            "pageTitle" => "Docs",
+            "pageTitle" => "Documentation",
             "pageTitleSection" => "Framework",
             "guideDocuments" => array_values(array_filter(
                 $documents,

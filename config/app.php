@@ -24,11 +24,24 @@ $appLogPath = trim((string) env("APP_LOG_PATH", "logs/app.log"));
 $sessionPath = trim((string) env("SESSION_PATH", "framework/sessions"));
 
 return [
-    "name" => "FNLLA",
+    "name" => (string) env("APP_NAME", "FNLLA"),
+    "tagline" => (string) env("APP_TAGLINE", ""),
     "environment" => $environment,
     "debug" => (bool) env("APP_DEBUG", $isDevelopment),
     "base_url" => rtrim((string) env("APP_URL", ""), "/"),
     "asset_url" => rtrim((string) env("ASSET_URL", ""), "/"),
+    "project_leadership" => [
+        "organization" => trim((string) env("PROJECT_LEADERSHIP_ORGANIZATION", "")),
+        "person_name" => trim((string) env("PROJECT_LEADERSHIP_PERSON_NAME", "")),
+        "person_email" => strtolower(trim((string) env("PROJECT_LEADERSHIP_PERSON_EMAIL", ""))),
+        "person_role" => trim((string) env("PROJECT_LEADERSHIP_PERSON_ROLE", "")),
+        "responsibility" => trim((string) env("PROJECT_LEADERSHIP_RESPONSIBILITY", "")),
+        "profile_url" => trim((string) env("PROJECT_LEADERSHIP_PROFILE_URL", "")),
+        "visibility" => strtolower(trim((string) env("PROJECT_LEADERSHIP_VISIBILITY", "disabled"))),
+        "status" => strtolower(trim((string) env("PROJECT_LEADERSHIP_STATUS", "pending"))),
+        "confirmed_by" => trim((string) env("PROJECT_LEADERSHIP_CONFIRMED_BY", "")),
+        "confirmed_at" => trim((string) env("PROJECT_LEADERSHIP_CONFIRMED_AT", "")),
+    ],
     "timezone" => (string) env("APP_TIMEZONE", "UTC"),
     "locale" => (string) env("APP_LOCALE", "en"),
     "fallback_locale" => (string) env("APP_FALLBACK_LOCALE", "en"),

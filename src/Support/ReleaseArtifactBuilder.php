@@ -27,13 +27,19 @@ final class ReleaseArtifactBuilder
         $components = [];
 
         foreach ($this->releaseFiles() as $relativePath => $absolutePath) {
+            $hash = $this->fileHash($absolutePath);
+
+            if ($hash === null) {
+                continue;
+            }
+
             $components[] = [
                 "type" => "file",
                 "name" => $relativePath,
                 "hashes" => [
                     [
                         "alg" => "SHA-256",
-                        "content" => hash_file("sha256", $absolutePath),
+                        "content" => $hash,
                     ],
                 ],
             ];
@@ -73,7 +79,17 @@ final class ReleaseArtifactBuilder
         $files = $this->releaseFiles();
 
         foreach ($files as $relativePath => $absolutePath) {
-            $lines[] = hash_file("sha256", $absolutePath) . "  " . str_replace("\\", "/", $relativePath);
+            if (!is_file($absolutePath) || !is_readable($absolutePath)) {
+                continue;
+            }
+
+            $hash = $this->fileHash($absolutePath);
+
+            if ($hash === null) {
+                continue;
+            }
+
+            $lines[] = $hash . "  " . str_replace("\\", "/", $relativePath);
         }
 
         sort($lines);
@@ -91,13 +107,19 @@ final class ReleaseArtifactBuilder
         $artifacts = [];
 
         foreach ($artifactPaths as $name => $path) {
-            if (!is_string($path) || !is_file($path)) {
+            if (!is_string($path) || !is_file($path) || !is_readable($path)) {
+                continue;
+            }
+
+            $hash = $this->fileHash($path);
+
+            if ($hash === null) {
                 continue;
             }
 
             $artifacts[(string) $name] = [
                 "path" => str_replace("\\", "/", ltrim(str_replace(base_path(), "", $path), "\\/")),
-                "sha256" => hash_file("sha256", $path),
+                "sha256" => $hash,
                 "bytes" => filesize($path),
             ];
         }
@@ -183,7 +205,9 @@ final class ReleaseArtifactBuilder
             ".git/",
             "dist/",
             "vendor/",
+            "storage/framework/",
             "storage/framework/cache/",
+            "storage/framework/developer/",
             "storage/framework/queue/",
             "storage/framework/sessions/",
             "storage/framework/updates/",
@@ -198,6 +222,17 @@ final class ReleaseArtifactBuilder
             ".env",
             "storage/framework/fnlla-runtime-guard.json",
         ], true);
+    }
+
+    private function fileHash(string $path): ?string
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            return null;
+        }
+
+        $hash = @hash_file("sha256", $path);
+
+        return is_string($hash) ? $hash : null;
     }
 
     private function writeJson(string $path, array $payload): void

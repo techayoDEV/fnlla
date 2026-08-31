@@ -15,6 +15,7 @@ A new FNLLA application should not begin with a wall of advanced switches. The
 first decisions are usually:
 
 - local or production environment;
+- project name and optional browser-title slogan;
 - application URL and optional asset URL;
 - database credentials;
 - mail transport;
@@ -64,6 +65,8 @@ Recommended local starter values:
 ```dotenv
 APP_ENV=development
 APP_DEBUG=true
+APP_NAME=FNLLA Project
+APP_TAGLINE=
 APP_URL=http://127.0.0.1:8080
 SESSION_SECURE=false
 DB_HOST=127.0.0.1
@@ -94,6 +97,8 @@ Production `.env` should be minimal and strict:
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
+APP_NAME=Example Business App
+APP_TAGLINE=Operations delivered clearly
 APP_URL=https://example.com
 SESSION_SECURE=true
 TRUSTED_HOSTS=example.com,www.example.com
@@ -109,6 +114,39 @@ MAIL_HTTP_ALLOWED_HOSTS=mail-relay.example.com
 Production-specific secrets should come from the platform secret store where
 possible. A committed file should never contain database passwords, API tokens,
 private keys, customer data, backup credentials or Fionn service tokens.
+
+`APP_TAGLINE` is optional and is appended only to browser document titles. For
+example, `Contact | Example Business App - Operations delivered clearly`. Leave
+it empty if the product already has a short enough project name.
+
+## Project Leadership
+
+FNLLA supports an optional responsibility record for projects where the product
+or delivery lead should be named without turning the footer or About page into a
+marketing byline.
+
+```dotenv
+PROJECT_LEADERSHIP_ORGANIZATION=TechAyo Limited
+PROJECT_LEADERSHIP_PERSON_NAME="Name Surname"
+PROJECT_LEADERSHIP_PERSON_EMAIL=lead@example.com
+PROJECT_LEADERSHIP_PERSON_ROLE="Director of TechAyo"
+PROJECT_LEADERSHIP_RESPONSIBILITY="product direction, roadmap and technical delivery"
+PROJECT_LEADERSHIP_PROFILE_URL=https://example.com/contact
+PROJECT_LEADERSHIP_VISIBILITY=admin
+PROJECT_LEADERSHIP_STATUS=pending
+```
+
+Visibility modes:
+
+- `disabled` keeps the block off.
+- `admin` shows the record only in the Developer Panel and documentation.
+- `public` allows public display only after the named person confirms it from a
+  matching developer account.
+
+Changing the named person, email, role, organisation, responsibility scope or
+profile URL resets confirmation to `pending`. This lets a project developer
+prepare the record without falsely presenting another person as responsible for
+product direction or technical delivery.
 
 ## Client Preview
 
@@ -127,6 +165,106 @@ CLIENT_PREVIEW_STATUS_TITLE=Password-protected preview mode is enabled
 
 Rotate the preview password before sharing with a real client and again before
 public launch.
+
+## Developer Access And Service Control
+
+Developer access is separate from client preview. Client preview protects the
+public site for customer review. Developer access unlocks operational screens
+for the team maintaining the project.
+
+FNLLA 2.1.1 supports named developer accounts:
+
+```dotenv
+DEVELOPER_ACCESS_ENABLED=true
+DEVELOPER_ACCESS_EMAIL=lead@example.com
+DEVELOPER_ACCESS_USERS=
+```
+
+`DEVELOPER_ACCESS_USERS` is managed by the developer panel after first setup.
+Each account has its own email login, display name, role and password hash. The
+project settings changed from any developer account remain global because they
+belong to the application environment, not to one developer session.
+
+The panel also keeps a shared developer activity log. When one developer rotates
+preview access, updates identity, changes panel settings or disables the public
+service, other unlocked developer sessions can see that operational event in the
+dashboard.
+
+Developer workspace and activity storage are file-backed by default:
+
+```dotenv
+DEVELOPER_ACTIVITY_LOG_DRIVER=file
+DEVELOPER_ACTIVITY_LOG_PATH=framework/developer/activity.jsonl
+DEVELOPER_ACCESS_TOTP_ISSUER="${APP_NAME}"
+DEVELOPER_WORKSPACE_DRIVER=file
+DEVELOPER_WORKSPACE_PATH=framework/developer/workspace.json
+```
+
+For a production team that expects frequent developer-panel changes, switch the
+technical workspace and activity log to database storage after the project
+database is configured:
+
+```dotenv
+DEVELOPER_ACTIVITY_LOG_DRIVER=database
+DEVELOPER_ACTIVITY_LOG_TABLE=fnlla_developer_activity_log
+DEVELOPER_WORKSPACE_DRIVER=database
+DEVELOPER_WORKSPACE_TABLE=fnlla_developer_workspace_state
+DEVELOPER_NOTIFICATIONS_TABLE=fnlla_developer_notifications
+DEVELOPER_ANALYTICS_EVENTS_TABLE=fnlla_developer_analytics_events
+```
+
+These tables are still technical operations data. Business records, customer
+activity, product audit events and application admin workflows belong to the
+downstream application schema, not to FNLLA core.
+
+## Local Developer Analytics
+
+FNLLA ships first-party analytics for the Developer Panel. It is intentionally
+aggregate-only: page views, top routes, host-only referrers, device buckets,
+form submissions, slow-route counts, response-time averages and configured
+goals. It does not store raw IP addresses, raw user agents or browser
+fingerprints.
+
+```dotenv
+OBSERVABILITY_METRICS_ENABLED=true
+OBSERVABILITY_METRICS_PATH=framework/metrics.json
+OBSERVABILITY_ANALYTICS_ENABLED=true
+OBSERVABILITY_ANALYTICS_RETENTION_DAYS=90
+OBSERVABILITY_ANALYTICS_SAMPLE_RATE=100
+OBSERVABILITY_ANALYTICS_BOT_FILTERING=true
+OBSERVABILITY_ANALYTICS_DEVICE_DETECTION=true
+OBSERVABILITY_ANALYTICS_TRACK_QUERY_STRINGS=false
+OBSERVABILITY_SLOW_ROUTE_THRESHOLD_MS=750
+```
+
+The same values can be changed from `/developer/panel/analytics` by a developer
+role with panel-settings permission. FNLLA writes only these explicit
+environment keys and records the change in the developer audit log.
+
+Developer service control is a stronger lock than client preview:
+
+```dotenv
+DEVELOPER_CONTROL_DISABLED_CONTACT=developer@example.com
+DEVELOPER_CONTROL_REMOTE_ENABLED=false
+DEVELOPER_CONTROL_REMOTE_ENDPOINT=
+DEVELOPER_CONTROL_REMOTE_TOKEN=
+DEVELOPER_CONTROL_REMOTE_PROJECT_ID="${PROJECT_ID}"
+DEVELOPER_CONTROL_REMOTE_TENANT=techayo
+DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=
+```
+
+When enabled locally, public routes return a service-disabled screen and API
+requests return `503` JSON. Developer routes stay reachable so the team can
+recover the site.
+
+The remote control keys are only a contract for a future central operations
+system such as TechAyo admin at `https://techayo.co.uk/admin`. Public FNLLA
+contains no private TechAyo control logic and no Fionn brain. A remote control
+endpoint must be HTTPS, token protected and host-allowlisted before
+`security:audit --strict` accepts it. When enabled, FNLLA sends the project id,
+tenant, schema, timestamp, bearer token and optional HMAC signature headers,
+then consumes only the `fnlla.techayo_remote_control_state.v1` disable/open
+state.
 
 ## Runtime AI
 

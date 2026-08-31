@@ -124,7 +124,7 @@ final class ProjectAcceptanceReportBuilder
             ],
             "http.maintenance" => [
                 "uri" => "/maintenance",
-                "expected_statuses" => [200, 302],
+                "expected_statuses" => [200, 302, 404],
                 "server" => ["HTTP_ACCEPT" => "text/html"],
             ],
         ];

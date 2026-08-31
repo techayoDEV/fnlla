@@ -2,17 +2,7 @@
 
 declare(strict_types=1);
 ?>
-<section class="section starter-page-hero">
-  <div class="container">
-    <div class="starter-page-heading">
-      <p class="starter-kicker">About</p>
-      <h1>Use this page to explain the real organisation, product or service behind the project.</h1>
-      <p>
-        The starter copy is intentionally replaceable. Keep the section rhythm, then swap in the real narrative and trust markers.
-      </p>
-    </div>
-  </div>
-</section>
+<?php require VIEW_ROOT . "/partials/page-hero.php"; ?>
 
 <section class="section">
   <div class="container">
@@ -26,6 +16,18 @@ declare(strict_types=1);
     </div>
   </div>
 </section>
+
+<?php
+$projectLeadership = project_leadership("public");
+$projectLeadershipContext = "public";
+if (($projectLeadership["public_visible"] ?? false) === true):
+?>
+<section class="section">
+  <div class="container">
+    <?php require VIEW_ROOT . "/partials/project-leadership.php"; ?>
+  </div>
+</section>
+<?php endif; ?>
 
 <section class="section">
   <div class="container">

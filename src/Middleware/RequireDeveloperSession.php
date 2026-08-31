@@ -23,7 +23,6 @@ namespace Fnlla\Php\Middleware;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
-use Fnlla\Php\View\View;
 
 final class RequireDeveloperSession implements MiddlewareInterface
 {
@@ -41,8 +40,6 @@ final class RequireDeveloperSession implements MiddlewareInterface
             ], 404);
         }
 
-        return Response::html(View::render("pages/not-found", [
-            "pageTitle" => "Not Found",
-        ]), 404);
+        return Response::redirect(route("developer.login"));
     }
 }

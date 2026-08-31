@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaRuntimeVersion = "2.1.1";
+  var fnllaRuntimeVersion = "2.1.2";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -78,6 +78,8 @@
     consentAccept: new WeakSet(),
     consentSave: new WeakSet(),
     consentReset: new WeakSet(),
+    sessionCountdown: new WeakSet(),
+    alertClose: new WeakSet(),
     busyForm: new WeakSet()
   };
   /*
@@ -182,6 +184,8 @@
     consentSave: "[data-fnlla-consent-save]",
     consentReset: "[data-fnlla-consent-reset]",
     consentCategory: "[data-fnlla-consent-category]",
+    sessionCountdown: "[data-fnlla-session-countdown]",
+    alertClose: "[data-fnlla-alert-close]",
     busyForm: "[data-fnlla-busy-form]"
   };
   /* Shared ID prefixes used when markup does not provide explicit IDs. */
@@ -1542,6 +1546,7 @@
       page: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-page") : ""),
       section: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-section") : ""),
       suffix: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-suffix") : ""),
+      tagline: normalizeTitlePart(root ? root.getAttribute("data-fnlla-title-tagline") : ""),
       home: root ? root.getAttribute("data-fnlla-title-home") === "true" : false
     };
   }
@@ -1557,7 +1562,8 @@
       ["data-fnlla-title-site", config.site],
       ["data-fnlla-title-page", config.page],
       ["data-fnlla-title-section", config.section],
-      ["data-fnlla-title-suffix", config.suffix]
+      ["data-fnlla-title-suffix", config.suffix],
+      ["data-fnlla-title-tagline", config.tagline]
     ].forEach(function (entry) {
       var attributeName = entry[0];
       var value = normalizeTitlePart(entry[1]);
@@ -1605,6 +1611,10 @@
       current.suffix = normalizeTitlePart(nextConfig.suffix);
     }
 
+    if (Object.prototype.hasOwnProperty.call(nextConfig, "tagline")) {
+      current.tagline = normalizeTitlePart(nextConfig.tagline);
+    }
+
     if (Object.prototype.hasOwnProperty.call(nextConfig, "home")) {
       current.home = nextConfig.home === true;
     }
@@ -1628,7 +1638,7 @@
       parts.push(normalizedConfig.suffix);
     }
 
-    return parts
+    var title = parts
       .filter(Boolean)
       .filter(function (part, index, array) {
         return array.findIndex(function (candidate) {
@@ -1636,6 +1646,12 @@
         }) === index;
       })
       .join(" | ");
+
+    if (normalizedConfig.tagline && normalizedConfig.tagline.toLowerCase() !== title.toLowerCase()) {
+      return title ? title + " - " + normalizedConfig.tagline : normalizedConfig.tagline;
+    }
+
+    return title;
   }
 
   function syncDocumentTitle(config) {
@@ -3393,6 +3409,73 @@
 
 /*
   ============================================================================
+  FNLLA Runtime SOURCE MODULE: SESSION COUNTDOWN INITIALIZER
+  Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
+  ============================================================================
+*/
+
+  function formatSessionCountdown(seconds, format) {
+    var safeSeconds = Math.max(0, Math.floor(seconds));
+    var hours = Math.floor(safeSeconds / 3600);
+    var minutes = Math.floor((safeSeconds % 3600) / 60);
+    var remainingSeconds = safeSeconds % 60;
+    var paddedMinutes = String(minutes).padStart(2, "0");
+    var paddedSeconds = String(remainingSeconds).padStart(2, "0");
+
+    if (format === "hm") {
+      return String(hours).padStart(2, "0") + ":" + paddedMinutes;
+    }
+
+    if (hours > 0) {
+      return hours + "h " + paddedMinutes + "m " + paddedSeconds + "s";
+    }
+
+    return paddedMinutes + "m " + paddedSeconds + "s";
+  }
+
+  function initSessionCountdowns(root) {
+    getScopedMatches(root, selectors.sessionCountdown).forEach(function (element) {
+      if (initializationState.sessionCountdown.has(element)) {
+        return;
+      }
+
+      var expiresAt = parseInt(element.getAttribute("data-fnlla-session-expires-at") || "0", 10);
+      var format = element.getAttribute("data-fnlla-session-countdown-format") || "";
+      var output = element.querySelector("[data-fnlla-session-countdown-output]");
+
+      if (!expiresAt || !output) {
+        return;
+      }
+
+      initializationState.sessionCountdown.add(element);
+
+      function renderCountdown() {
+        var remaining = expiresAt - Math.floor(Date.now() / 1000);
+
+        if (remaining <= 0) {
+          element.classList.add("is-expired");
+          output.textContent = "Session expired";
+          return false;
+        }
+
+        output.textContent = formatSessionCountdown(remaining, format);
+        return true;
+      }
+
+      if (!renderCountdown()) {
+        return;
+      }
+
+      var timer = window.setInterval(function () {
+        if (!element.isConnected || !renderCountdown()) {
+          window.clearInterval(timer);
+        }
+      }, format === "hm" ? 30000 : 1000);
+    });
+  }
+
+/*
+  ============================================================================
   FNLLA Runtime SOURCE MODULE: NUMERIC STEPPER INITIALIZER
   Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
   ============================================================================
@@ -4253,6 +4336,13 @@
   function bindRuntimeHandlers() {
     if (!runtimeBindings.documentClick) {
       document.addEventListener("click", function (event) {
+        var alertClose = event.target && event.target.closest ? event.target.closest(selectors.alertClose) : null;
+
+        if (alertClose && dismissAlertFromControl(alertClose)) {
+          event.preventDefault();
+          return;
+        }
+
         /*
           Close floating UI when the interaction clearly moved outside it.
           Each family is handled explicitly so shared close helpers can preserve
@@ -4391,6 +4481,8 @@
     initRanges(scope);
     initStickies(scope);
     initCounters(scope);
+    initSessionCountdowns(scope);
+    initAlertDismiss(scope);
     initPasswordToggles(scope);
     initSteppers(scope);
     initFilters(scope);
@@ -4420,8 +4512,24 @@
     return fnllaRuntimeApi;
   }
 
+  function dismissAlertFromControl(control) {
+    var alert = control ? control.closest("[data-fnlla-alert], .alert") : null;
+
+    if (!alert) {
+      return false;
+    }
+
+    var statusContainer = alert.closest("#page-status");
+    var target = statusContainer || alert;
+
+    target.hidden = true;
+    target.setAttribute("aria-hidden", "true");
+
+    return true;
+  }
+
   function initBusyForms(root) {
-    queryAll(root, selectors.busyForm).forEach(function (form) {
+    getScopedMatches(root, selectors.busyForm).forEach(function (form) {
       if (initializationState.busyForm.has(form)) {
         return;
       }
@@ -4435,6 +4543,23 @@
         setBusyState(form, true, form.getAttribute("data-fnlla-busy-label") || "Working");
       });
       initializationState.busyForm.add(form);
+    });
+  }
+
+  function initAlertDismiss(root) {
+    getScopedMatches(root, selectors.alertClose).forEach(function (button) {
+      if (initializationState.alertClose.has(button)) {
+        return;
+      }
+
+      button.addEventListener("click", function (event) {
+        if (!dismissAlertFromControl(event.currentTarget)) {
+          return;
+        }
+
+        event.preventDefault();
+      });
+      initializationState.alertClose.add(button);
     });
   }
 
