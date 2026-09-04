@@ -130,7 +130,7 @@ php scripts/build-docs.php --check
 php fnlla doctor
 php fnlla security:audit --strict
 php fnlla project:acceptance --json
-php fnlla release:prepare --major --target=2.1.1
+php fnlla release:prepare --major --target=2.1.3
 ```
 
 Strict security audit is a production blocker. If it fails, fix the

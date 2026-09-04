@@ -21,6 +21,7 @@ Purpose:
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Console\Command;
+use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\ProjectClaimManager;
 use RuntimeException;
 
@@ -152,7 +153,7 @@ final class ProjectClaimCommand extends Command
         $this->line("  --system-owner <name>  Website/system owner. Defaults to owner.");
         $this->line("  --maintainer <name>    Maintenance/update provider. Defaults to developer.");
         $this->line("  --runtime <name>       Runtime/framework name. Defaults to FNLLA.");
-        $this->line("  --runtime-creator <n>  Runtime/framework creator. Defaults to TechAyo LTD (techayo.co.uk).");
+        $this->line("  --runtime-creator <n>  Runtime/framework creator. Defaults to " . FrameworkIdentity::DEFAULT_RUNTIME_CREATOR . ".");
         $this->line("  --summary <text>       Short machine-readable project summary.");
     }
 }

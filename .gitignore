@@ -19,6 +19,7 @@
 /storage/framework/metrics.json.lock
 /storage/framework/developer/*
 /storage/framework/updates/
+/storage/framework/testing/*
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore
 /contact*.html

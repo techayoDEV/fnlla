@@ -10,8 +10,30 @@ $developerRoleOptions = is_array($developerAccess["role_options"] ?? null) ? (ar
 $currentEmail = strtolower(trim((string) ($currentDeveloper["email"] ?? "")));
 $currentCapabilities = is_array($developerAccess["current_capabilities"] ?? null) ? (array) $developerAccess["current_capabilities"] : [];
 $canManageDeveloperAccounts = in_array("developer.accounts.write", $currentCapabilities, true);
+$customerAccessState = is_array($customerAccess ?? null) ? (array) $customerAccess : [];
+$customerAccounts = is_array($customerAccessState["accounts"] ?? null) ? (array) $customerAccessState["accounts"] : [];
+$customerPermissionOptions = is_array($customerAccessState["permission_options"] ?? null) ? (array) $customerAccessState["permission_options"] : [];
+$customerInviteFlash = flash("customer_access_invite");
+$customerInviteNotice = is_array($customerInviteFlash) ? (array) $customerInviteFlash : [];
+$customerPortalPath = (string) ($customerAccessState["path"] ?? "/client");
+$customerPortalLogin = (string) ($developerLinks["customer_login"] ?? route("customer.login"));
+$customerAccountRoute = (string) ($developerLinks["customer_account"] ?? route("developer.settings.customer_account"));
+$customerAccountDeleteRoute = (string) ($developerLinks["customer_account_delete"] ?? route("developer.settings.customer_account.delete"));
 $security = is_array($developerAccess["security"] ?? null) ? (array) $developerAccess["security"] : [];
 $hasNamedAccount = trim((string) ($currentDeveloper["email"] ?? "")) !== "";
+$formatCustomerAccessTime = static function (string $value): string {
+    $value = trim($value);
+
+    if ($value === "") {
+        return "";
+    }
+
+    try {
+        return (new \DateTimeImmutable($value))->setTimezone(new \DateTimeZone("UTC"))->format("d M Y, H:i") . " UTC";
+    } catch (\Throwable) {
+        return $value;
+    }
+};
 $leadCount = 0;
 $totpCount = 0;
 $passkeyCount = 0;
@@ -37,8 +59,10 @@ require __DIR__ . "/panel-header.php";
               <p class="content-text mb-0">Project changes remain global, but every session should be attributable to one developer account. Lead developer accounts can add, rotate or deactivate other developers.</p>
             </div>
             <div class="developer-panel-intro-actions">
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Project setup</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>">My profile</a>
               <?php if ($canManageDeveloperAccounts): ?>
+              <button class="btn btn-outline btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Add customer</button>
               <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#developer-account-modal">Add developer</button>
               <?php endif; ?>
             </div>
@@ -112,6 +136,101 @@ require __DIR__ . "/panel-header.php";
             <span>Your role can use the workspace and personal security settings, but only a Lead developer can add, rotate or deactivate developer accounts.</span>
           </div>
           <?php endif; ?>
+        </section>
+
+        <section class="developer-dashboard-section" id="customer-access-settings" aria-label="Customer portal access settings">
+          <div class="developer-panel-intro">
+            <div class="developer-panel-intro-copy">
+              <p class="feature-kicker">Customer portal</p>
+              <h2 class="developer-dashboard-section-title">Read-only customer access for delivery visibility.</h2>
+              <p class="content-text mb-0">Customers can review client-visible Kanban cards, public-preview access, aggregate analytics and heatmap summaries without entering the Developer Panel.</p>
+            </div>
+            <div class="developer-panel-intro-actions">
+              <a class="btn btn-outline btn-sm" href="<?= h($customerPortalLogin) ?>">Open portal</a>
+              <?php if ($canManageDeveloperAccounts): ?>
+              <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Invite customer</button>
+              <?php endif; ?>
+            </div>
+          </div>
+
+          <div class="developer-dashboard-status-grid">
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Customers</strong><span class="developer-dashboard-ok"><?= h((string) count($customerAccounts)) ?></span></div>
+              <h3><?= h((string) count($customerAccounts)) ?> portal <?= count($customerAccounts) === 1 ? "account" : "accounts" ?></h3>
+              <p>Customer credentials stay separate from developer roles.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Pending invites</strong><span class="developer-dashboard-ok"><?= h((string) ($customerAccessState["pending_invites_count"] ?? 0)) ?></span></div>
+              <h3><?= h((string) ($customerAccessState["pending_invites_count"] ?? 0)) ?> open</h3>
+              <p>Invitation links expire after <?= h((string) ($customerAccessState["invite_ttl_hours"] ?? 72)) ?> hours.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Portal URL</strong><span class="developer-dashboard-ok">PRIVATE</span></div>
+              <h3><?= h($customerPortalPath) ?></h3>
+              <p>Use this URL after the customer sets a password.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Default scope</strong><span class="developer-dashboard-ok">READ</span></div>
+              <h3>Kanban, analytics, heatmap</h3>
+              <p>Individual task visibility is controlled in each Kanban card.</p>
+            </article>
+          </div>
+
+          <?php if ($customerInviteNotice !== []): ?>
+          <div class="developer-panel-status-note developer-panel-status-note-success">
+            <strong>Customer first-login link</strong>
+            <span><?= h((string) ($customerInviteNotice["email"] ?? "")) ?> · expires <?= h($formatCustomerAccessTime((string) ($customerInviteNotice["expires_at_utc"] ?? ""))) ?></span>
+            <code><?= h((string) ($customerInviteNotice["url"] ?? "")) ?></code>
+          </div>
+          <?php endif; ?>
+
+          <div class="developer-account-table developer-customer-table" aria-label="Customer portal account list">
+            <?php if ($customerAccounts === []): ?>
+            <article class="developer-account-row">
+              <span class="developer-profile-avatar" aria-hidden="true">CU</span>
+              <div class="developer-account-copy">
+                <strong>No customer access yet</strong>
+                <span>Create a customer invitation when the project is ready for external review.</span>
+              </div>
+              <?php if ($canManageDeveloperAccounts): ?>
+              <button class="btn btn-outline btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Create invitation</button>
+              <?php endif; ?>
+            </article>
+            <?php else: ?>
+            <?php foreach ($customerAccounts as $account): ?>
+            <?php
+                $customerEmail = strtolower(trim((string) ($account["email"] ?? "")));
+                $customerName = trim((string) ($account["name"] ?? $customerEmail ?: "Customer"));
+                $customerCompany = trim((string) ($account["company"] ?? ""));
+                $customerInitialSource = preg_replace('/[^A-Za-z0-9]/', '', $customerName) ?: "CU";
+                $customerInitials = strtoupper(substr((string) $customerInitialSource, 0, 2));
+                $accountPermissions = array_values(array_filter((array) ($account["permissions"] ?? []), static fn ($permission): bool => is_string($permission) && $permission !== ""));
+            ?>
+            <article class="developer-account-row">
+              <span class="developer-profile-avatar" aria-hidden="true"><?= h($customerInitials) ?></span>
+              <div class="developer-account-copy">
+                <strong><?= h($customerName) ?></strong>
+                <span><?= h($customerEmail) ?><?= $customerCompany !== "" ? " · " . h($customerCompany) : "" ?></span>
+              </div>
+              <div class="developer-account-meta developer-customer-permissions">
+                <?php foreach ($accountPermissions as $permission): ?>
+                <span><?= h((string) ($customerPermissionOptions[$permission] ?? $permission)) ?></span>
+                <?php endforeach; ?>
+              </div>
+              <span class="developer-dashboard-status <?= ($account["invite_pending"] ?? false) ? "is-warning" : "is-ready" ?>">
+                <?= ($account["invite_pending"] ?? false) ? "Invite pending" : "Active" ?>
+              </span>
+              <?php if ($canManageDeveloperAccounts && $customerEmail !== ""): ?>
+              <form action="<?= h($customerAccountDeleteRoute) ?>" method="post">
+                <?= csrf_field() ?>
+                <input type="hidden" name="customer_account_email" value="<?= h($customerEmail) ?>">
+                <button class="btn btn-ghost btn-sm" type="submit">Deactivate</button>
+              </form>
+              <?php endif; ?>
+            </article>
+            <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
         </section>
 
         <section class="developer-dashboard-section" id="developer-security" aria-label="Developer security">
@@ -188,15 +307,62 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <?php if ($canManageDeveloperAccounts): ?>
+        <div class="modal developer-kanban-modal" id="customer-account-modal" data-fnlla-modal role="dialog" aria-modal="true" aria-labelledby="customer-account-modal-title" hidden>
+          <div class="developer-kanban-modal-backdrop" data-fnlla-modal-close></div>
+          <div class="modal-content developer-kanban-modal-panel" role="document">
+            <div class="developer-kanban-modal-head">
+              <div>
+                <p class="feature-kicker">Customer portal</p>
+                <h2 class="content-title mb-0" id="customer-account-modal-title">Create or rotate customer access</h2>
+              </div>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close customer account modal"><span aria-hidden="true">x</span></button>
+            </div>
+            <form class="form developer-modal-form-grid" action="<?= h($customerAccountRoute) ?>" method="post" novalidate>
+              <?= csrf_field() ?>
+              <div class="form-group">
+                <label class="label" for="customer-account-email">Email</label>
+                <input class="input" id="customer-account-email" name="customer_account_email" type="email" autocomplete="username" value="<?= h((string) old("customer_account_email")) ?>" required data-fnlla-modal-initial-focus>
+              </div>
+              <div class="form-group">
+                <label class="label" for="customer-account-name">Name</label>
+                <input class="input" id="customer-account-name" name="customer_account_name" type="text" autocomplete="name" value="<?= h((string) old("customer_account_name", "Customer")) ?>" required>
+              </div>
+              <div class="form-group developer-modal-form-wide">
+                <label class="label" for="customer-account-company">Company</label>
+                <input class="input" id="customer-account-company" name="customer_account_company" type="text" maxlength="120" value="<?= h((string) old("customer_account_company")) ?>" placeholder="Client company or team">
+              </div>
+              <div class="developer-modal-form-wide">
+                <span class="label">Portal sections</span>
+                <div class="developer-customer-permission-grid">
+                  <?php foreach ($customerPermissionOptions as $permission => $label): ?>
+                  <label class="developer-workspace-check">
+                    <input type="checkbox" name="customer_permission_<?= h((string) $permission) ?>" value="1" checked>
+                    <span><?= h((string) $label) ?></span>
+                  </label>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+              <label class="developer-workspace-check developer-modal-form-wide">
+                <input type="checkbox" name="customer_account_send_invite" value="1" checked>
+                <span>Email first-login link if mail delivery is configured</span>
+              </label>
+              <div class="developer-modal-form-wide developer-inline-actions">
+                <button class="btn btn-primary" type="submit">Create customer invitation</button>
+                <button class="btn btn-ghost" type="button" data-fnlla-modal-close>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <div class="modal developer-kanban-modal" id="developer-account-modal" data-fnlla-modal role="dialog" aria-modal="true" aria-labelledby="developer-account-modal-title" hidden>
           <div class="developer-kanban-modal-backdrop" data-fnlla-modal-close></div>
-          <div class="developer-kanban-modal-panel" role="document">
+          <div class="modal-content developer-kanban-modal-panel" role="document">
             <div class="developer-kanban-modal-head">
               <div>
                 <p class="feature-kicker">Developer account</p>
                 <h2 class="content-title mb-0" id="developer-account-modal-title">Add or rotate a named account</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close developer account modal">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close developer account modal"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-modal-form-grid" action="<?= h(route("developer.settings.developer_account")) ?>" method="post" novalidate>
               <?= csrf_field() ?>

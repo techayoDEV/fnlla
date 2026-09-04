@@ -33,9 +33,9 @@ final class DeveloperActivityLog
             "ip_hash" => $this->ipHash(),
             "previous_hash" => $previousHash,
             "developer" => [
-                "email" => $this->normalise((string) ($developer["email"] ?? "legacy-developer"), 160),
+                "email" => $this->normalise((string) ($developer["email"] ?? ""), 160),
                 "name" => $this->normalise((string) ($developer["name"] ?? "Developer"), 100),
-                "role" => $this->normalise((string) ($developer["role"] ?? "admin"), 40),
+                "role" => $this->normalise((string) ($developer["role"] ?? "lead_developer"), 40),
             ],
         ];
         $payload["event_hash"] = $this->eventHash($payload);

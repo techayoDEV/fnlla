@@ -341,6 +341,11 @@ function framework_upgrade_plan_path(): string
     return framework_cache_path("upgrade-plan.json");
 }
 
+function framework_technical_debt_report_path(): string
+{
+    return framework_cache_path("technical-debt-report.json");
+}
+
 function base_path(string $path = ""): string
 {
     return APP_ROOT . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : "");
@@ -394,6 +399,34 @@ function asset(string $path = ""): string
     return $assetUrl . '?v=' . (string) filemtime($publicPath);
 }
 
+function framework_brand_asset(string $key): ?string
+{
+    $configured = trim((string) config("framework.brand.assets." . $key, ""));
+
+    if ($configured === "") {
+        return null;
+    }
+
+    if (filter_var($configured, FILTER_VALIDATE_URL) !== false) {
+        return $configured;
+    }
+
+    $normalizedPath = ltrim(str_replace("\\", "/", $configured), "/");
+
+    if ($normalizedPath === "" || !is_file(public_path($normalizedPath))) {
+        return null;
+    }
+
+    return asset($normalizedPath);
+}
+
+function framework_brand_color(string $key, string $default = ""): string
+{
+    $configured = trim((string) config("framework.brand.colors." . $key, ""));
+
+    return preg_match('/^#[0-9A-Fa-f]{6}$/', $configured) === 1 ? strtoupper($configured) : $default;
+}
+
 function has_local_docs_workspace(): bool
 {
     return is_dir(base_path("docs"))
@@ -422,6 +455,36 @@ function project_brand_mark(?string $name = null): string
     $compact = preg_replace('/[^A-Za-z0-9]/', "", $name) ?? "";
 
     return strtoupper(substr($compact !== "" ? $compact : "FN", 0, 2));
+}
+
+function project_brand_logo_asset(?string $path = null): ?string
+{
+    $configured = trim((string) ($path ?? config("app.brand_logo", "auto")));
+
+    if ($configured === "" || strtolower($configured) === "none") {
+        return null;
+    }
+
+    if (strtolower($configured) === "auto") {
+        $appName = strtolower(trim((string) config("app.name", "FNLLA")));
+        $configured = $appName === "fnlla" ? "assets/fnlla-logo.png" : "";
+    }
+
+    if ($configured === "") {
+        return null;
+    }
+
+    if (filter_var($configured, FILTER_VALIDATE_URL) !== false) {
+        return $configured;
+    }
+
+    $normalizedPath = ltrim(str_replace("\\", "/", $configured), "/");
+
+    if ($normalizedPath === "" || !is_file(public_path($normalizedPath))) {
+        return null;
+    }
+
+    return asset($normalizedPath);
 }
 
 function project_leadership(string $context = "admin"): array
@@ -733,6 +796,11 @@ function maintenance_access(): \Fnlla\Php\Maintenance\MaintenanceAccessManager
 function developer_access(): \Fnlla\Php\Maintenance\DeveloperAccessManager
 {
     return app(\Fnlla\Php\Maintenance\DeveloperAccessManager::class);
+}
+
+function customer_access(): \Fnlla\Php\Maintenance\CustomerAccessManager
+{
+    return app(\Fnlla\Php\Maintenance\CustomerAccessManager::class);
 }
 
 function developer_activity(): \Fnlla\Php\Maintenance\DeveloperActivityLog

@@ -16,6 +16,10 @@ $avatarMark = $developerAvatar !== "" && !$avatarIsUrl
     : strtoupper(substr($developerNameMark !== "" ? $developerNameMark : "D", 0, 2));
 $security = is_array($developerAccess["security"] ?? null) ? (array) $developerAccess["security"] : [];
 $hasNamedAccount = trim((string) ($currentDeveloper["email"] ?? "")) !== "";
+$developerAvatarMaxBytes = max(1, (int) config("security.uploads.max_file_bytes", 5242880));
+$developerAvatarMaxLabel = $developerAvatarMaxBytes >= 1048576
+    ? rtrim(rtrim(number_format($developerAvatarMaxBytes / 1048576, 1), "0"), ".") . " MB"
+    : (string) $developerAvatarMaxBytes . " bytes";
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -49,7 +53,7 @@ require __DIR__ . "/panel-header.php";
               </div>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Email</strong><span class="developer-dashboard-ok"><?= ($currentDeveloper["email"] ?? "") !== "" ? "NAMED" : "LEGACY" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Email</strong><span class="developer-dashboard-ok">NAMED</span></div>
               <h3><?= h((string) (($currentDeveloper["email"] ?? "") ?: "Named account required")) ?></h3>
               <p>Used in activity logs and workspace updates.</p>
             </article>
@@ -88,16 +92,22 @@ require __DIR__ . "/panel-header.php";
                 </div>
                 <div class="form-group">
                   <label class="label" for="developer-profile-avatar-file">Upload avatar image</label>
-                  <input class="input developer-profile-file-input" id="developer-profile-avatar-file" name="developer_profile_avatar_file" type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml">
-                  <p class="help-text">Accepted: JPEG, PNG, WebP or SVG up to 1 MB. Uploaded files are stored under <code>public/uploads/developer-avatars</code>.</p>
+                  <input class="input developer-profile-file-input" id="developer-profile-avatar-file" name="developer_profile_avatar_file" type="file" accept="image/jpeg,image/png,image/webp">
+                  <p class="help-text">Accepted: JPEG, PNG or WebP up to <?= h($developerAvatarMaxLabel) ?>. Uploaded files are stored under <code>public/uploads/developer-avatars</code>.</p>
                 </div>
+                <?php if ($developerAvatar !== ""): ?>
+                <label class="checkbox-option developer-profile-remove-avatar">
+                  <input type="checkbox" name="developer_profile_remove_avatar" value="1">
+                  <span>Remove current avatar and use account initials.</span>
+                </label>
+                <?php endif; ?>
                 <label class="checkbox-option">
                   <input type="checkbox" name="developer_profile_generate_avatar" value="1">
                   <span>Generate a clean local avatar from my display name.</span>
                 </label>
                 <div class="form-message" role="status">
                   <h3 class="form-message-title">Avatar priority</h3>
-                  <p class="form-message-text mb-0">Uploaded image wins first, generated avatar second, and the text avatar field is used when neither option is selected.</p>
+                  <p class="form-message-text mb-0">Remove clears the current avatar first. Otherwise, uploaded image wins, generated avatar follows, and the text avatar field is used when neither option is selected.</p>
                 </div>
                 <button class="btn btn-primary" type="submit">Save profile</button>
               </form>
@@ -140,7 +150,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker">Two-factor authentication</p>
                 <h2 class="content-title" id="developer-profile-2fa-title">Configure authenticator 2FA</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close 2FA settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close 2FA settings"><span aria-hidden="true">x</span></button>
             </div>
 
             <div class="developer-profile-security-grid">

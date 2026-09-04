@@ -80,15 +80,15 @@ Files that require special care:
 ## Recommended Current Update Flow
 
 Use this flow for maintained 2.x applications moving to the latest public
-release, currently `2.1.1`:
+release, currently `2.1.3`:
 
 ```bash
 php fnlla version:status
 php fnlla framework:update --check
 php fnlla framework:update --dry-run
-php fnlla upgrade:check --target=2.1.1
-php fnlla upgrade:plan --target=2.1.1
-php fnlla ai:upgrade-brief --target=2.1.1
+php fnlla upgrade:check --target=2.1.3
+php fnlla upgrade:plan --target=2.1.3
+php fnlla ai:upgrade-brief --target=2.1.3
 ```
 
 If the dry-run report has no conflicts and the upgrade plan contains only safe
@@ -96,7 +96,7 @@ actions you accept, apply the update:
 
 ```bash
 php fnlla framework:update --apply
-php fnlla upgrade:apply --target=2.1.1 --yes
+php fnlla upgrade:apply --target=2.1.3 --yes
 ```
 
 Then validate the product:
@@ -162,7 +162,7 @@ For a maintained commercial product:
 php fnlla version:status
 php fnlla framework:update --check
 php fnlla framework:update --dry-run
-php fnlla upgrade:check --target=2.1.1
+php fnlla upgrade:check --target=2.1.3
 php fnlla project:acceptance --json
 php scripts/test.php
 php scripts/lint.php
@@ -178,7 +178,7 @@ FNLLA does not send application data to an AI provider. Generate local artefacts
 and decide explicitly what to share:
 
 ```bash
-php fnlla ai:review-pack --target=2.1.1
+php fnlla ai:review-pack --target=2.1.3
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 ```
 
@@ -189,7 +189,7 @@ Good review prompt:
 
 ## Release Owner Checklist
 
-- Run `php fnlla release:prepare --major --target=2.1.1`.
+- Run `php fnlla release:prepare --major --target=2.1.3`.
 - Confirm generated SBOM and checksums are attached to the public release.
 - Confirm `CHANGELOG.md` has a dated entry for the tag.
 - Confirm this migration guide matches the final public behaviour.

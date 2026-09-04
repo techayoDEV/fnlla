@@ -15,13 +15,18 @@ unless a release note promotes it.
   identifiers.
 - Plain PHP views under `views/` rendered through controllers.
 - Config files under `config/`, with environment overrides through `.env`.
+- Framework identity config under `config/framework.php`, especially
+  `config("framework.official_url")`, `config("framework.support_email")` and
+  `config("framework.repository_web_url")`.
 - Console launcher: `php fnlla`.
 - Core CLI contracts: `doctor`, `config:doctor`, `security:audit`, `app:map`,
   `ops:backup-plan`, `project:acceptance`, `developer:install-storage`,
-  `upgrade:check`, `perf:budget`, `release:prepare`, `release:manifest`, `ai:ask`, `ai:triage`,
-  `ai:explain-log`, `ai:brief` and `ai:providers`.
+  `upgrade:check`, `perf:budget`, `release:prepare`, `release:manifest`,
+  `tech-debt:update`, `ai:ask`, `ai:triage`, `ai:explain-log`, `ai:brief`
+  and `ai:providers`.
 - Developer operations routes: `/developer`, `/developer/panel`,
-  `/developer/panel/project-identity`, `/developer/panel/project-settings`,
+  `/developer/panel/project-identity`, `/developer/panel/setup-checklist`,
+  `/developer/panel/project-settings`,
   `/developer/panel/access`, `/developer/panel/profile`,
   `/developer/panel/settings`, `/developer/panel/workspace`, `/developer/panel/operations`,
   `/developer/panel/analytics`, `/developer/panel/notifications`,
@@ -31,9 +36,14 @@ unless a release note promotes it.
   `/developer/panel/settings/project-leadership`,
   `/developer/panel/settings/project-leadership/confirmation` and
   `/developer/panel/framework-updates`.
+  `/developer/panel/setup-checklist`, `/developer/panel/project-settings`,
   `/developer/panel/security` and `/developer/panel/health` remain compatibility
-  routes that lead to the integrated Access & Security and Readiness & Health
-  surfaces.
+  routes that lead to the integrated Project Setup, Access & Security and
+  Readiness & Health surfaces.
+- Customer portal routes: `/client`, `/client/invite`, `/client/panel`,
+  `/client/panel/kanban`, `/client/panel/analytics` and
+  `/client/panel/heatmap`, with the entry path configurable through
+  `CUSTOMER_ACCESS_PATH`.
 
 ## Compatibility Policy
 
@@ -57,6 +67,8 @@ release notes say otherwise.
 - `auth()`, `db()`, `cache()`, `queue()`, `storage()`, `mailer()`, `runtime_ai()`.
 - `project_leadership()` for the optional neutral responsibility record used by
   public About pages, documentation and Developer Panel system information.
+- `customer_access()` for the private read-only customer portal account and
+  session contract.
 - `stream_request_body_to_file()` for endpoints that intentionally stream a raw
   request body to storage with a hard byte limit.
 
@@ -93,6 +105,9 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.runtime_ai.providers.v1`
 - `fnlla.runtime_ai.provider_status.v1`
 - `fnlla.runtime_ai.provider.fionn.v1`
+- `fnlla.technical_debt_report.v1`
+- `fnlla.technical_debt_update.v1`
+- `fnlla.framework_identity.v1`
 - `fnlla.developer_activity.v1`
 - `fnlla.developer_activity_export.v1`
 - `fnlla.developer_operations.v1`
@@ -107,6 +122,8 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.developer_security.v1`
 - `fnlla.developer_storage_install.v1`
 - `fnlla.developer_workspace.v1`
+- `fnlla.customer_access.v1`
+- `fnlla.customer_workspace.v1`
 - `fnlla.remote_control_plugin.v1`
 - `fnlla.techayo_remote_control.v1`
 - `fnlla.techayo_remote_control_state.v1`
@@ -119,8 +136,15 @@ documented status fields such as `ok`, `status`, `failures` and `warnings`.
 
 The Developer Panel is a stable technical control surface, not a product admin
 panel. It may manage framework-owned operations such as developer access,
-client preview, service control, framework updates, privacy-light operations
-summaries, audit export and the technical Kanban workspace.
+customer portal invitations, client preview, service control, framework
+updates, privacy-light operations summaries, audit export and the technical
+Kanban workspace.
+
+The Customer Portal is a separate read-only review surface. It can show
+customer-visible Kanban cards, aggregate analytics, aggregate heatmap summaries
+and a preview link. It must not expose Developer Panel actions, framework
+updates, audit export, service control, private developer notes or customer
+business records.
 
 The optional project leadership block names a real person responsible for
 product direction, roadmap, delivery or technical leadership. It is neutral
@@ -152,6 +176,22 @@ The detailed boundary is documented in `docs/DEVELOPER-PANEL.md`.
 
 The machine-readable lock for this surface is `docs/PUBLIC-API.lock.json`.
 Refresh it with `php fnlla api:lock` after intentional public API changes.
+
+## Framework Identity Contract
+
+`config("framework.*")` describes FNLLA itself, not the downstream product.
+The stable keys are:
+
+- `framework.name` and `framework.slug`;
+- `framework.official_domain` and `framework.official_url`;
+- `framework.support_email`;
+- `framework.maintainer_name`, `framework.maintainer_legal` and
+  `framework.maintainer_url`;
+- `framework.repository`, `framework.repository_url` and
+  `framework.repository_web_url`.
+
+The official website is `https://fnlla.com`. `APP_URL` stays project-owned and
+must point at the local, staging or production URL for the current installation.
 
 ## Internal By Default
 

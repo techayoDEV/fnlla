@@ -1,9 +1,19 @@
-# FNLLA Developer Panel
+# FNLLA Developer Operations Panel
 
-The Developer Panel is FNLLA's private technical workspace for projects created
-with `make:project`. It is not the product admin panel, CMS, CRM or customer
-back office. It exists so a developer can prepare, inspect, protect and update a
-project without mixing those operations into the public application.
+The Developer Operations Panel is FNLLA's private technical workspace for
+projects created with `make:project`. The route and compatibility name remain
+Developer Panel, but the product role is broader: it is the operational control
+centre for delivery teams building and maintaining a web product. It is not the
+product admin panel, CMS, CRM or customer back office. It exists so developers
+can prepare, inspect, protect, preview, hand over and update a project without
+mixing those operations into the public application.
+
+Official FNLLA framework identity is exposed through `config/framework.php`:
+`https://fnlla.com` is the framework website, `support@fnlla.com` is the
+framework support mailbox and `techayoDEV/fnlla` is the official release
+repository. These values are metadata for the framework layer. They do not
+replace a downstream project's `APP_NAME`, `APP_URL`, public logo or mail
+sender.
 
 ## Purpose
 
@@ -16,13 +26,17 @@ Use the Developer Panel for:
 - health, runtime, storage and release-readiness review;
 - privacy-light operations summaries and consent-aware integration status;
 - developer activity review and audit export;
-- a lightweight technical Kanban workspace.
+- customer portal invitations for read-only project review;
+- dashboard overview for the current project state;
+- a lightweight technical Kanban workspace;
+- technical-debt snapshot checks before release work;
 - TOTP two-factor protection for named developer accounts;
 - passkey adapter-readiness metadata for project-owned WebAuthn providers;
 - notification, analytics, release-readiness and integration review pages;
 - optional project leadership and system-information records with explicit
   confirmation by the named person;
-- clear framework attribution: FNLLA is produced by TechAyo Limited.
+- clear framework attribution: FNLLA is produced by TechAyo Limited and
+  published at `https://fnlla.com`.
 
 Do not use the Developer Panel for:
 
@@ -59,7 +73,10 @@ The hard rule is:
 The following belong in FNLLA core:
 
 - `/developer` sign-in and `/developer/panel/*` technical routes;
+- `/client` sign-in and `/client/panel/*` read-only customer review routes;
 - developer session TTL, absolute TTL, credential fingerprint and lock flow;
+- customer session TTL, first-login invitation hash and customer portal lock
+  flow;
 - developer role capability checks;
 - project identity and preview settings stored through controlled environment
   writes;
@@ -82,6 +99,7 @@ The downstream product owns:
 
 - business migrations, tables and repositories;
 - application auth journeys and customer-facing account policies;
+- customer-facing product portals beyond the read-only FNLLA delivery review;
 - business roles such as customer, staff, owner, supplier or tenant;
 - product dashboards, reports, documents and data exports;
 - forms, uploads and mail content specific to the business;
@@ -142,6 +160,48 @@ The installer creates tables for developer activity, workspace state,
 notifications and analytics events. The default remains file-backed storage so
 fresh `make:project` exports work before a database exists.
 
+## Navigation Model
+
+The Developer Panel navigation is grouped by intent:
+
+- `Dashboard` is the first standalone sidebar destination.
+- `Workspace` contains Project Kanban for delivery tasks.
+- `Project setup` contains the setup checklist, project identity, preview
+  access, service control and leadership visibility.
+- `Operations` contains release readiness, framework updates, project logs,
+  analytics, heatmap and integrations.
+- `Security` contains named developer accounts, roles, TOTP, runtime and
+  storage settings, plus customer portal invitations.
+- `Reference` contains Documentation & policy.
+
+Operations Hub is intentionally not a primary sidebar destination when the more
+specific tools already expose the actionable information directly.
+
+## Customer Portal
+
+The Customer Portal is not a reduced-permission Developer Panel account. It is
+a separate private route, defaulting to `/client`, with its own session,
+credential fingerprint and invitation flow.
+
+A lead developer creates or rotates a customer account from
+`/developer/panel/access`. FNLLA writes `CUSTOMER_ACCESS_USERS` to the local
+environment file and can send the first-login link through the configured mail
+driver. The customer follows `/client/invite?token=...`, sets their own
+password, and then signs in through `/client`.
+
+Customer portal permissions are section-based:
+
+- `kanban` shows only tasks marked visible to customer;
+- `analytics` shows aggregate analytics summaries;
+- `heatmap` shows aggregate click and scroll summaries;
+- `preview` shows a link to the public preview route.
+
+Kanban visibility is controlled per task. New tasks are visible to the customer
+by default, but technical cards can be marked internal from the task modal. The
+customer portal never shows task edit controls, framework updates, developer
+account management, audit export, service-control switches or private
+developer-only navigation.
+
 ## Project Leadership
 
 `/developer/panel/project-identity` includes an optional responsibility record
@@ -160,8 +220,13 @@ record private until the details are corrected.
 ## Security Model
 
 Named developer accounts can enable TOTP from `/developer/panel/security`.
-After TOTP is active, password-only login is rejected and the `/developer`
-unlock form requires a current six-digit authenticator code.
+The `/developer` unlock form always requires a developer email and password.
+After TOTP is active, it also requires a current six-digit authenticator code.
+
+Each named developer can maintain a profile from `/developer/panel/profile`.
+The profile includes display name, role visibility, password rotation, optional
+avatar upload or generated avatar and an explicit remove-avatar action that
+falls back to account initials.
 
 Passkeys are intentionally kept as an adapter contract in FNLLA core. Full
 WebAuthn attestation, credential storage, device policy and recovery workflow
@@ -195,6 +260,27 @@ The panel can update the local analytics posture through explicit `.env` keys:
 
 The default mode is internal-only. FNLLA does not need GA4, Matomo, Clarity or a
 third-party script to provide the Developer Panel traffic cockpit.
+
+## Notification Workflow
+
+`/developer/panel/notifications` is an actionable release and operations queue,
+not a static message wall. Each item records source, severity, generated time,
+state and the notification key. `Review` marks the item as read before opening
+the relevant source screen, `Mark read` acknowledges it in place, `Archive`
+hides it from active work and `Restore` brings an archived item back into the
+active queue.
+
+## Project Logs
+
+`/developer/panel/project-logs` is the human-readable activity trail for
+project changes and internal developer work. It uses the same hash-chained
+Developer Panel activity log as the JSON and CSV audit exports, but presents
+events as a daily timeline with actor, category, timestamp, request metadata and
+short change descriptions.
+
+Use this view when reviewing what changed before a client preview, handover,
+framework update or release. Use the JSON and CSV exports when the same history
+must be archived, attached to a change request or reviewed outside the panel.
 
 ## Integrations
 
@@ -303,9 +389,22 @@ php fnlla ops:backup-plan --verify
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
 ```
 
+## Product Message
+
+FNLLA should be sold to developers as an AI-ready framework for operated web
+products. The panel is the reason this message is credible: setup, preview,
+maintenance, service control, customer review, analytics, project logs, release
+readiness, framework updates and technical-debt checks are all close to the
+codebase instead of scattered across notes and one-off scripts.
+
+The AI claim should stay precise. FNLLA includes local deterministic runtime AI,
+redacted review packs, triage and provider-readiness commands, plus the reserved
+Fionn bridge. It does not bundle private Fionn memory, train models or call
+third-party providers by default.
+
 ## Functional Closure Criteria
 
-Developer Panel should be considered functionally complete when it covers these
+Developer Operations Panel should be considered functionally complete when it covers these
 technical workspace needs without becoming a business application:
 
 - named developer accounts with role capabilities;
@@ -315,6 +414,7 @@ technical workspace needs without becoming a business application:
 - notification center for actionable operational warnings;
 - release-readiness gate for security, backup, cache, framework drift and
   acceptance posture;
+- self-checking technical-debt snapshot for release cleanup;
 - immutable audit entries with JSON and CSV export;
 - optional database-backed storage installed by `developer:install-storage`;
 - lightweight Kanban workspace for technical project delivery;

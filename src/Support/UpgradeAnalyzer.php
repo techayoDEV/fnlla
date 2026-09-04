@@ -35,6 +35,7 @@ final class UpgradeAnalyzer
             $this->checkBusinessReferenceBlueprint(),
             $this->checkProductionBaselinePolicy(),
             $this->checkIntegratedAiRuntime(),
+            $this->checkTechnicalDebtSnapshot(),
             $this->checkAssistantVendorMarkers(),
         ];
 
@@ -287,6 +288,24 @@ final class UpgradeAnalyzer
         ];
     }
 
+    private function checkTechnicalDebtSnapshot(): array
+    {
+        $builder = new TechnicalDebtReportBuilder();
+        $report = $builder->build();
+        $sync = $builder->syncMarkdown(base_path("docs/TECH-DEBT-AND-FUTURE-PROOFING.md"), $report, true);
+
+        return [
+            "id" => "technical-debt-snapshot",
+            "status" => ($sync["ok"] ?? false) ? "pass" : "warn",
+            "detail" => ($sync["ok"] ?? false)
+                ? "Technical-debt snapshot is current."
+                : "Run php fnlla tech-debt:update before release readiness review.",
+            "data" => [
+                "summary" => $report["summary"] ?? [],
+            ],
+        ];
+    }
+
     private function checkPublicApiContract(): array
     {
         $path = base_path("docs/PUBLIC-API.md");
@@ -463,7 +482,7 @@ final class UpgradeAnalyzer
 
     private function clearRuntimeResidue(): void
     {
-        foreach ([framework_config_cache_path(), framework_route_cache_path(), framework_asset_manifest_path(), framework_preload_path(), framework_ai_context_path(), framework_ai_review_pack_path(), framework_ai_upgrade_brief_path(), framework_app_map_path()] as $path) {
+        foreach ([framework_config_cache_path(), framework_route_cache_path(), framework_asset_manifest_path(), framework_preload_path(), framework_ai_context_path(), framework_ai_review_pack_path(), framework_ai_upgrade_brief_path(), framework_app_map_path(), framework_technical_debt_report_path()] as $path) {
             if (is_file($path)) {
                 unlink($path);
             }

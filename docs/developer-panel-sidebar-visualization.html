@@ -19,6 +19,9 @@
       --primary-dark: #1d4ed8;
       --primary-soft: #eff6ff;
       --navy: #15304f;
+      --scrollbar-track: rgba(239, 246, 255, 0.72);
+      --scrollbar-thumb: rgba(95, 111, 133, 0.34);
+      --scrollbar-thumb-hover: rgba(37, 99, 235, 0.58);
       --radius: 8px;
       --shadow: 0 20px 55px rgba(21, 48, 79, 0.12);
     }
@@ -56,9 +59,32 @@
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
       gap: 2rem;
+      overflow-y: auto;
       padding: 27px 20px 36px;
       border-right: 1px solid var(--line);
       background: var(--rail);
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+    }
+
+    .concept-sidebar::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .concept-sidebar::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+      border-radius: 999px;
+    }
+
+    .concept-sidebar::-webkit-scrollbar-thumb {
+      border: 2px solid var(--scrollbar-track);
+      border-radius: 999px;
+      background: var(--scrollbar-thumb);
+    }
+
+    .concept-sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover);
     }
 
     .brand-lockup {
@@ -438,30 +464,32 @@
           </span>
         </a>
         <nav class="sidebar-nav" aria-label="Developer sections">
+          <a class="nav-link active" href="#"><span>Dashboard</span><span class="nav-count">NOW</span></a>
           <div class="nav-group">
             <p class="nav-group-label">Workspace</p>
-            <a class="nav-link active" href="#"><span>Dashboard</span><span class="nav-count">NOW</span></a>
-            <a class="nav-link" href="#"><span>Project workspace</span><span class="nav-count">6</span></a>
-            <a class="nav-link" href="#"><span>Notifications</span><span class="nav-count">3</span></a>
+            <a class="nav-link" href="#"><span>Project Kanban</span><span class="nav-count">6</span></a>
           </div>
           <div class="nav-group">
             <p class="nav-group-label">Project setup</p>
-            <a class="nav-link" href="#"><span>Project identity</span><span class="nav-count">1</span></a>
-            <a class="nav-link" href="#"><span>Access &amp; preview</span><span class="nav-count">2</span></a>
-            <a class="nav-link" href="#"><span>Analytics</span><span class="nav-count">ON</span></a>
+            <a class="nav-link" href="#"><span>Project setup</span><span class="nav-count">4</span></a>
           </div>
           <div class="nav-group">
             <p class="nav-group-label">Operations</p>
             <a class="nav-link" href="#"><span>Readiness &amp; health</span><span class="nav-count">OK</span></a>
-            <a class="nav-link" href="#"><span>Operations hub</span><span class="nav-count">4</span></a>
             <a class="nav-link" href="#"><span>Framework updates</span><span class="nav-count">0</span></a>
+            <a class="nav-link" href="#"><span>Project logs</span><span class="nav-count">120</span></a>
+            <a class="nav-link" href="#"><span>Analytics</span><span class="nav-count">ON</span></a>
+            <a class="nav-link" href="#"><span>Heatmap</span><span class="nav-count">ON</span></a>
             <a class="nav-link" href="#"><span>Integrations</span><span class="nav-count">OFF</span></a>
           </div>
           <div class="nav-group">
-            <p class="nav-group-label">Security &amp; policy</p>
+            <p class="nav-group-label">Security</p>
             <a class="nav-link" href="#"><span>Access &amp; security</span><span class="nav-count">1</span></a>
             <a class="nav-link" href="#"><span>Runtime &amp; storage</span><span class="nav-count">OK</span></a>
-            <a class="nav-link" href="#"><span>Policy boundary</span><span class="nav-count">DOC</span></a>
+          </div>
+          <div class="nav-group">
+            <p class="nav-group-label">Reference</p>
+            <a class="nav-link" href="#"><span>Documentation &amp; policy</span><span class="nav-count">DOC</span></a>
           </div>
         </nav>
       </div>
@@ -511,14 +539,14 @@
                 <strong>Set project slogan</strong>
                 <p>Browser titles can become Contact | qwerty - Built for clarity.</p>
               </div>
-              <a class="button secondary" href="#">Edit identity</a>
+              <a class="button secondary" href="#">Open setup</a>
             </div>
             <div class="action-row">
               <div>
                 <strong>Prepare client preview</strong>
                 <p>Create or rotate the password before enabling maintenance mode.</p>
               </div>
-              <a class="button" href="#">Open settings</a>
+              <a class="button" href="#">Open preview</a>
             </div>
             <div class="action-row">
               <div>

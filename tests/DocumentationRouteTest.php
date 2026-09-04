@@ -86,6 +86,7 @@ final class DocumentationRouteTest extends TestCase
 
         self::assertSame(200, $response->status());
         self::assertStringContainsString("FNLLA Documentation", $response->body());
+        self::assertStringContainsString("https://fnlla.com", $response->body());
         self::assertStringContainsString("/docs/assets/docs.css", $response->body());
         self::assertStringContainsString("/docs/distribution.html", $response->body());
         self::assertStringContainsString("/vendor/fnlla-runtime/assets/js/fnlla-runtime.js", $response->body());
@@ -217,7 +218,9 @@ final class DocumentationRouteTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("FNLLA 2.1.1 uses two environment templates", $response->body());
+        self::assertStringContainsString("FNLLA 2.1.3 uses two environment templates", $response->body());
+        self::assertStringContainsString("FNLLA_OFFICIAL_URL", $response->body());
+        self::assertStringContainsString("https://fnlla.com", $response->body());
         self::assertStringContainsString(".env.full.example", $response->body());
         self::assertStringContainsString("Fionn Bridge", $response->body());
         self::assertStringContainsString("CLIENT_PREVIEW_ENABLED", $response->body());

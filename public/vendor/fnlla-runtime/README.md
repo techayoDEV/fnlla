@@ -4,6 +4,8 @@ This directory is the integrated FNLLA UI surface handoff for downstream project
 
 In the integrated `techayoDEV/fnlla` maintainer repository, this directory is the authoritative vendored UI surface consumed by FNLLA itself.
 
+Official FNLLA framework website: `https://fnlla.com`.
+
 ## Included files
 
 - `assets/css/fnlla-runtime.css`
@@ -54,7 +56,7 @@ php scripts/lint.php
 
 ## Version
 
-2.1.2
+2.1.3
 
 ## Maintainer notes
 

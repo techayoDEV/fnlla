@@ -18,6 +18,7 @@
         "queue",
         "runtime_ai",
         "project_leadership",
+        "customer_access",
         "stream_request_body_to_file"
     ],
     "commands": [
@@ -32,13 +33,19 @@
         "perf:budget",
         "release:prepare",
         "release:manifest",
+        "tech-debt:update",
         "ai:ask",
         "ai:triage",
         "ai:explain-log",
         "ai:brief",
         "ai:providers"
     ],
+    "schemas": [
+        "fnlla.technical_debt_report.v1",
+        "fnlla.technical_debt_update.v1"
+    ],
     "data": [
+        "framework.identity",
         "database.transaction",
         "query_builder.offset",
         "query_builder.paginate",
@@ -57,6 +64,10 @@
         "developer.security",
         "developer.storage_install",
         "developer.workspace",
+        "customer.access",
+        "customer.workspace",
+        "customer.analytics",
+        "customer.heatmap",
         "remote_control_plugin",
         "techayo_remote_control",
         "techayo_remote_control_state",
@@ -64,5 +75,12 @@
         "runtime_ai.providers",
         "runtime_ai.provider_status",
         "runtime_ai.provider.fionn"
-    ]
+    ],
+    "framework_identity": {
+        "schema": "fnlla.framework_identity.v1",
+        "name": "FNLLA",
+        "official_url": "https://fnlla.com",
+        "support_email": "support@fnlla.com",
+        "repository": "techayoDEV/fnlla"
+    }
 }

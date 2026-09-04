@@ -24,6 +24,8 @@ namespace Fnlla\Php\Controllers;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
 use Fnlla\Php\Http\UploadedFile;
+use Fnlla\Php\Mail\Mailer;
+use Fnlla\Php\Maintenance\CustomerAccessManager;
 use Fnlla\Php\Maintenance\DeveloperActivityLog;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
 use Fnlla\Php\Maintenance\DeveloperControlManager;
@@ -34,6 +36,7 @@ use Fnlla\Php\Support\DeveloperNotificationCenter;
 use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
+use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Support\ProjectLeadership;
 use Fnlla\Php\Validation\ValidationException;
@@ -62,6 +65,7 @@ final class DeveloperAccessController extends Controller
             ],
             "projectSettings" => $this->projectSettings(),
             "developerNotice" => flash("developer_access_notice"),
+            "developerTotpRequired" => (bool) flash("developer_access_totp_required", false),
         ]);
     }
 
@@ -76,26 +80,25 @@ final class DeveloperAccessController extends Controller
         );
     }
 
+    public function setupChecklist(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->redirect(route("developer.panel.project_identity") . "#developer-setup-checklist");
+    }
+
     public function projectIdentity(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
             "developer/project-identity",
-            "Project Identity",
+            "Project Setup",
             "identity"
         );
     }
 
     public function projectSettingsPage(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        return $this->renderDeveloperPanel(
-            $developerAccess,
-            $maintenanceAccess,
-            "developer/project-settings",
-            "Project Settings",
-            "project-settings"
-        );
+        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
     }
 
     public function accessSettings(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
@@ -193,6 +196,24 @@ final class DeveloperAccessController extends Controller
             [
                 "operationsReport" => $report->build(),
                 "health" => app(HomeController::class)->healthPayload($request),
+            ]
+        );
+    }
+
+    public function projectLogs(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess, DeveloperActivityLog $activityLog): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "operations.view")) {
+            return $this->redirect(route("developer.panel"));
+        }
+
+        return $this->renderDeveloperPanel(
+            $developerAccess,
+            $maintenanceAccess,
+            "developer/project-logs",
+            "Project Logs",
+            "project-logs",
+            [
+                "projectLogReport" => $this->projectLogReport($activityLog->recent(120)),
             ]
         );
     }
@@ -480,8 +501,12 @@ final class DeveloperAccessController extends Controller
             $developerAccess,
             $maintenanceAccess,
             "developer/documentation",
-            "Documentation",
-            "documentation"
+            "Documentation & Policy",
+            "documentation",
+            [
+                "developerPolicy" => $this->developerPolicy($developerAccess),
+                "aboutFnlla" => $this->fnllaInstallationFacts(),
+            ]
         );
     }
 
@@ -496,16 +521,9 @@ final class DeveloperAccessController extends Controller
             $maintenanceAccess,
             "developer/about",
             "About FNLLA",
-            "about",
+            "documentation",
             [
-                "aboutFnlla" => [
-                    "framework_version" => (string) config("app.framework_version", "unknown"),
-                    "runtime_version" => (string) config("fnlla_runtime.version", "unknown"),
-                    "app_name" => (string) config("app.name", "FNLLA"),
-                    "environment" => app_environment(),
-                    "maintainer" => "TechAyo Limited",
-                    "license" => "MIT",
-                ],
+                "aboutFnlla" => $this->fnllaInstallationFacts(),
             ]
         );
     }
@@ -519,7 +537,7 @@ final class DeveloperAccessController extends Controller
         $key = strtolower(trim((string) $request->input("developer_notification_key", "")));
         $action = strtolower(trim((string) $request->input("developer_notification_action", "")));
 
-        if ($key === "" || !in_array($action, ["acknowledge", "archive", "restore"], true)) {
+        if ($key === "" || !in_array($action, ["review", "acknowledge", "archive", "restore"], true)) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Notification action was not applied",
@@ -532,8 +550,13 @@ final class DeveloperAccessController extends Controller
         }
 
         $developer = $developerAccess->currentDeveloper();
+        $redirectTo = route("developer.panel.notifications");
 
-        if ($action === "acknowledge") {
+        if ($action === "review") {
+            $notifications->acknowledge($key, $developer);
+            $message = "Notification opened for review";
+            $redirectTo = $this->developerNotificationActionRedirect($request);
+        } elseif ($action === "acknowledge") {
             $notifications->acknowledge($key, $developer);
             $message = "Notification marked as read";
         } elseif ($action === "archive") {
@@ -559,7 +582,7 @@ final class DeveloperAccessController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.notifications"));
+        return $this->redirect($redirectTo);
     }
 
     public function updateIntegrationSettings(
@@ -698,7 +721,7 @@ final class DeveloperAccessController extends Controller
             $maintenanceAccess,
             "developer/policy",
             "Policy Boundary",
-            "policy",
+            "documentation",
             [
                 "developerPolicy" => $this->developerPolicy($developerAccess),
             ]
@@ -736,7 +759,7 @@ final class DeveloperAccessController extends Controller
             $developerAccess,
             $maintenanceAccess,
             "developer/workspace",
-            "Project Workspace",
+            "Project Kanban",
             "workspace",
             [
                 "workspaceBoard" => $workspace->state($developerAccess->currentDeveloper()),
@@ -755,20 +778,12 @@ final class DeveloperAccessController extends Controller
         $email = trim((string) $request->input("developer_access_email", ""));
         $password = trim((string) $request->input("developer_access_password", ""));
         $totpCode = trim((string) $request->input("developer_access_totp", ""));
-        $emailRequired = (bool) ($developerAccess->viewState()["email_required"] ?? false);
-
         try {
-            if ($emailRequired) {
-                $this->validate([
-                    "developer_access_email" => $email,
-                ], [
-                    "developer_access_email" => ["required", "email", "max:160"],
-                ]);
-            }
-
             $this->validate([
+                "developer_access_email" => $email,
                 "developer_access_password" => $password,
             ], [
+                "developer_access_email" => ["required", "email", "max:160"],
                 "developer_access_password" => ["required", "string", "min:8", "max:255"],
             ]);
         } catch (ValidationException $exception) {
@@ -777,9 +792,7 @@ final class DeveloperAccessController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Developer access still needs attention",
-                "text" => $emailRequired
-                    ? "Enter your developer email and password to unlock this hidden panel."
-                    : "Enter the developer password to unlock this hidden panel.",
+                "text" => "Enter your developer email and password to unlock this hidden panel.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -791,6 +804,7 @@ final class DeveloperAccessController extends Controller
 
         if (!$result["success"]) {
             flash_set("old", ["developer_access_email" => $email]);
+            flash_set("developer_access_totp_required", (bool) ($result["totp_required"] ?? false));
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Developer access denied",
@@ -821,7 +835,7 @@ final class DeveloperAccessController extends Controller
         DeveloperActivityLog $activityLog
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "service_control.write")) {
-            return $this->redirect(route("developer.panel.project_settings"));
+            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
         }
 
         $payload = [
@@ -846,7 +860,7 @@ final class DeveloperAccessController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_settings"));
+            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
         }
 
         $developer = $developerAccess->currentDeveloper();
@@ -875,7 +889,7 @@ final class DeveloperAccessController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_settings"));
+        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
     }
 
     public function lock(Request $request, DeveloperAccessManager $developerAccess): Response
@@ -1188,7 +1202,7 @@ final class DeveloperAccessController extends Controller
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "preview.manage")) {
-            return $this->redirect(route("developer.panel.project_settings"));
+            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
         }
 
         $payload = [
@@ -1211,7 +1225,7 @@ final class DeveloperAccessController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_settings"));
+            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
         }
 
         $environmentValues = [
@@ -1232,7 +1246,7 @@ final class DeveloperAccessController extends Controller
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_settings"));
+            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
         }
 
         config_set("maintenance", array_merge((array) config("maintenance", []), [
@@ -1259,7 +1273,7 @@ final class DeveloperAccessController extends Controller
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_settings"));
+        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
     }
 
     public function updateDeveloperPassword(
@@ -1296,32 +1310,35 @@ final class DeveloperAccessController extends Controller
         $passwordHash = password_hash($payload["developer_access_password"], PASSWORD_DEFAULT);
         $currentDeveloper = $developerAccess->currentDeveloper();
         $currentEmail = trim((string) ($currentDeveloper["email"] ?? ""));
-        $usesNamedAccounts = $currentEmail !== "";
+
+        if ($currentEmail === "") {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Named developer account required",
+                "text" => "Password-only developer access is no longer supported. Activate a named developer account before rotating credentials.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access"));
+        }
 
         try {
-            if ($usesNamedAccounts) {
-                $accounts = $developerAccess->upsertAccount([
-                    "email" => $currentEmail,
-                    "name" => (string) ($currentDeveloper["name"] ?? "Developer"),
-                    "role" => (string) ($currentDeveloper["role"] ?? "admin"),
-                    "password_hash" => $passwordHash,
-                ]);
-                $serializedAccounts = $developerAccess->serializeAccounts($accounts);
-                $environmentValues = [
-                    "DEVELOPER_ACCESS_EMAIL" => $currentEmail,
-                    "DEVELOPER_ACCESS_PASSWORD" => "",
-                    "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
-                    "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
-                ];
-            } else {
-                $environmentValues = [
-                    "DEVELOPER_ACCESS_PASSWORD" => "",
-                    "DEVELOPER_ACCESS_PASSWORD_HASH" => $passwordHash,
-                ];
-            }
+            $accounts = $developerAccess->upsertAccount([
+                "email" => $currentEmail,
+                "name" => (string) ($currentDeveloper["name"] ?? "Developer"),
+                "role" => (string) ($currentDeveloper["role"] ?? "lead_developer"),
+                "password_hash" => $passwordHash,
+            ]);
+            $serializedAccounts = $developerAccess->serializeAccounts($accounts);
+            $environmentValues = [
+                "DEVELOPER_ACCESS_EMAIL" => $currentEmail,
+                "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
+            ];
 
             $environmentFileManager->write($environmentValues);
             $environmentFileManager->apply($environmentValues);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -1334,18 +1351,13 @@ final class DeveloperAccessController extends Controller
             return $this->redirect($this->developerPasswordRedirect($request));
         }
 
-        config_set("developer_access", array_merge((array) config("developer_access", []), $usesNamedAccounts
-            ? [
-                "email" => $currentEmail,
-                "password" => "",
-                "password_hash" => "",
-                "users" => (string) ($environmentValues["DEVELOPER_ACCESS_USERS"] ?? ""),
-            ]
-            : [
-                "password" => "",
-                "password_hash" => $passwordHash,
-            ]));
-        $developerAccess->grantAccess($usesNamedAccounts ? $this->developerAccountByEmail($developerAccess->accounts(), $currentEmail) : null);
+        config_set("developer_access", array_merge((array) config("developer_access", []), [
+            "email" => $currentEmail,
+            "password" => "",
+            "password_hash" => "",
+            "users" => (string) ($environmentValues["DEVELOPER_ACCESS_USERS"] ?? ""),
+        ]));
+        $developerAccess->grantAccess($this->developerAccountByEmail($developerAccess->accounts(), $currentEmail));
         Logger::write("notice", "Developer password updated", [
             "event" => "developer_password_updated",
             "email" => $currentEmail,
@@ -1353,7 +1365,7 @@ final class DeveloperAccessController extends Controller
         developer_activity()->record(
             "developer_access",
             "Developer password rotated",
-            $usesNamedAccounts ? "A named developer account password was rotated." : "The legacy developer panel password was rotated.",
+            "A named developer account password was rotated.",
             $developerAccess->currentDeveloper()
         );
 
@@ -1385,34 +1397,26 @@ final class DeveloperAccessController extends Controller
             "developer_profile_role" => strtolower(str_replace([" ", "-"], "_", trim((string) $request->input("developer_profile_role", "")))),
             "developer_profile_avatar" => trim((string) $request->input("developer_profile_avatar", "")),
             "developer_profile_generate_avatar" => (string) $request->input("developer_profile_generate_avatar", "") === "1",
+            "developer_profile_remove_avatar" => (string) $request->input("developer_profile_remove_avatar", "") === "1",
         ];
 
         if (!array_key_exists($payload["developer_profile_role"], $roleOptions)) {
             $payload["developer_profile_role"] = "application_developer";
         }
 
-        if ($currentEmail === "") {
-            flash_set("status", [
-                "variant" => "warning",
-                "title" => "Developer profile needs a named account",
-                "text" => "Create a named developer account before editing the profile details.",
-                "toast" => false,
-            ]);
-            regenerate_csrf_token();
-
-            return $this->redirect(route("developer.panel.access"));
-        }
-
         try {
-            $this->validate([
+            $validationPayload = [
                 "developer_profile_name" => $payload["developer_profile_name"],
                 "developer_profile_role" => $payload["developer_profile_role"],
                 "developer_profile_avatar" => $payload["developer_profile_avatar"],
-            ], [
+            ];
+            $validationRules = [
                 "developer_profile_name" => ["required", "string", "min:2", "max:100"],
                 "developer_profile_role" => ["required", "string"],
                 "developer_profile_avatar" => ["nullable", "string", "max:2048"],
-            ]);
+            ];
+
+            $this->validate($validationPayload, $validationRules);
         } catch (ValidationException $exception) {
             flash_set("errors", $exception->errors());
             flash_set("old", [
@@ -1450,6 +1454,18 @@ final class DeveloperAccessController extends Controller
             return $this->redirect(route("developer.panel.profile"));
         }
 
+        if ($currentEmail === "") {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Named developer account required",
+                "text" => "Password-only developer access is no longer supported. Activate a named developer account before editing profile details.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access"));
+        }
+
         $accounts = $developerAccess->updateAccountProfile($currentEmail, [
             "name" => $payload["developer_profile_name"],
             "role" => $payload["developer_profile_role"],
@@ -1459,17 +1475,14 @@ final class DeveloperAccessController extends Controller
 
         try {
             $environmentFileManager->write([
-                "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? $currentEmail,
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
+                "DEVELOPER_ACCESS_EMAIL" => $currentEmail,
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
             $environmentFileManager->apply([
-                "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? $currentEmail,
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
+                "DEVELOPER_ACCESS_EMAIL" => $currentEmail,
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -1483,7 +1496,7 @@ final class DeveloperAccessController extends Controller
         }
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
-            "email" => (string) ($accounts[0]["email"] ?? $currentEmail),
+            "email" => $currentEmail,
             "password" => "",
             "password_hash" => "",
             "users" => $serializedAccounts,
@@ -1601,16 +1614,13 @@ final class DeveloperAccessController extends Controller
         try {
             $environmentFileManager->write([
                 "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? $currentEmail,
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
             $environmentFileManager->apply([
                 "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? $currentEmail,
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -1654,7 +1664,20 @@ final class DeveloperAccessController extends Controller
             return $this->redirect(route("developer.panel.workspace"));
         }
 
-        $payload = $this->workspaceTaskPayload($request, $developerAccess->currentDeveloper());
+        try {
+            $payload = $this->workspaceTaskPayload($request, $developerAccess->currentDeveloper());
+            $payload = $this->withWorkspaceAttachmentFile($request, $payload, $developerAccess->currentDeveloper());
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Attachment upload failed",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.workspace"));
+        }
 
         if ($payload["title"] === "") {
             flash_set("status", [
@@ -1699,7 +1722,22 @@ final class DeveloperAccessController extends Controller
             return $this->redirect(route("developer.panel.workspace"));
         }
 
-        $workspace->update($taskId, $this->workspaceTaskPayload($request, $developerAccess->currentDeveloper()), $developerAccess->currentDeveloper());
+        try {
+            $payload = $this->workspaceTaskPayload($request, $developerAccess->currentDeveloper());
+            $payload = $this->withWorkspaceAttachmentFile($request, $payload, $developerAccess->currentDeveloper());
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Attachment upload failed",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.workspace"));
+        }
+
+        $workspace->update($taskId, $payload, $developerAccess->currentDeveloper());
         developer_activity()->record(
             "developer_workspace_task",
             "Workspace task updated",
@@ -1803,14 +1841,13 @@ final class DeveloperAccessController extends Controller
         $serializedAccounts = $developerAccess->serializeAccounts($accounts);
         $environmentValues = [
             "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? $payload["developer_account_email"],
-            "DEVELOPER_ACCESS_PASSWORD" => "",
-            "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
             "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
         ];
 
         try {
             $environmentFileManager->write($environmentValues);
             $environmentFileManager->apply($environmentValues);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -1878,16 +1915,13 @@ final class DeveloperAccessController extends Controller
         try {
             $environmentFileManager->write([
                 "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? "",
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
             $environmentFileManager->apply([
                 "DEVELOPER_ACCESS_EMAIL" => $accounts[0]["email"] ?? "",
-                "DEVELOPER_ACCESS_PASSWORD" => "",
-                "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
                 "DEVELOPER_ACCESS_USERS" => $serializedAccounts,
             ]);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -1925,6 +1959,200 @@ final class DeveloperAccessController extends Controller
         return $this->redirect(route("developer.panel.access"));
     }
 
+    public function saveCustomerAccount(
+        Request $request,
+        DeveloperAccessManager $developerAccess,
+        CustomerAccessManager $customerAccess,
+        EnvironmentFileManager $environmentFileManager,
+        Mailer $mailer
+    ): Response {
+        if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
+            return $this->redirect(route("developer.panel.access"));
+        }
+
+        $permissionOptions = $customerAccess->permissionOptions();
+        $permissions = [];
+
+        foreach (array_keys($permissionOptions) as $permission) {
+            if ((string) $request->input("customer_permission_" . $permission, "0") === "1") {
+                $permissions[] = $permission;
+            }
+        }
+
+        $payload = [
+            "customer_account_email" => strtolower(trim((string) $request->input("customer_account_email", ""))),
+            "customer_account_name" => trim((string) $request->input("customer_account_name", "Customer")),
+            "customer_account_company" => trim((string) $request->input("customer_account_company", "")),
+            "customer_account_send_invite" => (string) $request->input("customer_account_send_invite", "0") === "1",
+            "permissions" => $permissions,
+        ];
+
+        if ($payload["permissions"] === []) {
+            flash_set("old", [
+                "customer_account_email" => $payload["customer_account_email"],
+                "customer_account_name" => $payload["customer_account_name"],
+                "customer_account_company" => $payload["customer_account_company"],
+            ]);
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Customer account still needs attention",
+                "text" => "Choose at least one customer portal section.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        }
+
+        try {
+            $this->validate($payload, [
+                "customer_account_email" => ["required", "email", "max:160"],
+                "customer_account_name" => ["required", "string", "min:2", "max:100"],
+                "customer_account_company" => ["nullable", "string", "max:120"],
+            ]);
+        } catch (ValidationException $exception) {
+            flash_set("errors", $exception->errors());
+            flash_set("old", [
+                "customer_account_email" => $payload["customer_account_email"],
+                "customer_account_name" => $payload["customer_account_name"],
+                "customer_account_company" => $payload["customer_account_company"],
+            ]);
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Customer account still needs attention",
+                "text" => "Use a valid email and customer name before creating the portal invitation.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        }
+
+        $invitation = $customerAccess->createInvitation([
+            "email" => $payload["customer_account_email"],
+            "name" => $payload["customer_account_name"],
+            "company" => $payload["customer_account_company"],
+            "permissions" => $payload["permissions"],
+        ]);
+        $serializedAccounts = $customerAccess->serializeAccounts((array) ($invitation["accounts"] ?? []));
+
+        try {
+            $environmentFileManager->write([
+                "CUSTOMER_ACCESS_ENABLED" => true,
+                "CUSTOMER_ACCESS_PATH" => $customerAccess->path(),
+                "CUSTOMER_ACCESS_USERS" => $serializedAccounts,
+            ]);
+            $environmentFileManager->apply([
+                "CUSTOMER_ACCESS_ENABLED" => true,
+                "CUSTOMER_ACCESS_PATH" => $customerAccess->path(),
+                "CUSTOMER_ACCESS_USERS" => $serializedAccounts,
+            ]);
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Customer account could not be saved",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        }
+
+        config_set("customer_access", array_merge((array) config("customer_access", []), [
+            "enabled" => true,
+            "path" => $customerAccess->path(),
+            "users" => $serializedAccounts,
+        ]));
+
+        $mailStatus = "Invitation link is ready to copy.";
+
+        if ($payload["customer_account_send_invite"]) {
+            try {
+                $this->sendCustomerInvitationMail($mailer, (array) ($invitation["account"] ?? []), (string) ($invitation["url"] ?? ""), (string) ($invitation["expires_at_utc"] ?? ""));
+                $mailStatus = "Invitation email was sent with the first-login link.";
+            } catch (\RuntimeException $exception) {
+                $mailStatus = "Invitation link was created, but mail delivery failed: " . $exception->getMessage();
+            }
+        }
+
+        developer_activity()->record(
+            "customer_access",
+            "Customer portal invitation created",
+            "A customer account was added or rotated for the read-only project portal.",
+            $developerAccess->currentDeveloper()
+        );
+
+        flash_set("customer_access_invite", [
+            "email" => $payload["customer_account_email"],
+            "url" => (string) ($invitation["url"] ?? ""),
+            "expires_at_utc" => (string) ($invitation["expires_at_utc"] ?? ""),
+        ]);
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Customer access saved",
+            "text" => $mailStatus,
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+    }
+
+    public function deleteCustomerAccount(
+        Request $request,
+        DeveloperAccessManager $developerAccess,
+        CustomerAccessManager $customerAccess,
+        EnvironmentFileManager $environmentFileManager
+    ): Response {
+        if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
+            return $this->redirect(route("developer.panel.access"));
+        }
+
+        $email = strtolower(trim((string) $request->input("customer_account_email", "")));
+        $accounts = $customerAccess->removeAccount($email);
+        $serializedAccounts = $customerAccess->serializeAccounts($accounts);
+
+        try {
+            $environmentFileManager->write([
+                "CUSTOMER_ACCESS_USERS" => $serializedAccounts,
+            ]);
+            $environmentFileManager->apply([
+                "CUSTOMER_ACCESS_USERS" => $serializedAccounts,
+            ]);
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Customer account could not be deactivated",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        }
+
+        config_set("customer_access", array_merge((array) config("customer_access", []), [
+            "users" => $serializedAccounts,
+        ]));
+        developer_activity()->record(
+            "customer_access",
+            "Customer portal account deactivated",
+            "A customer account was removed from the project portal access list.",
+            $developerAccess->currentDeveloper()
+        );
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Customer access deactivated",
+            "text" => "The customer account was removed from the portal access list.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+    }
+
     public function updateNavigationMode(
         Request $request,
         DeveloperAccessManager $developerAccess,
@@ -1935,6 +2163,7 @@ final class DeveloperAccessController extends Controller
         }
 
         $payload = [
+            "developer_access_path" => $developerAccess->normalisePath((string) $request->input("developer_access_path", $developerAccess->path())),
             "developer_operations_nav_mode" => trim((string) $request->input("developer_operations_nav_mode", "hidden")),
             "developer_access_ttl_minutes" => (int) $request->input("developer_access_ttl_minutes", (int) config("developer_access.unlock_ttl_minutes", 120)),
             "developer_access_absolute_ttl_minutes" => (int) $request->input("developer_access_absolute_ttl_minutes", (int) config("developer_access.absolute_ttl_minutes", 480)),
@@ -1944,8 +2173,21 @@ final class DeveloperAccessController extends Controller
             $payload["developer_operations_nav_mode"] = "hidden";
         }
 
+        if (!$developerAccess->pathAllowed($payload["developer_access_path"])) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Developer entry URL still needs attention",
+                "text" => "Use one or two lowercase URL segments with letters, numbers and hyphens, and avoid public route names such as maintenance, api or docs.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.settings"));
+        }
+
         try {
             $this->validate($payload, [
+                "developer_access_path" => ["required", "string", "min:4", "max:100"],
                 "developer_operations_nav_mode" => ["required", "string"],
                 "developer_access_ttl_minutes" => ["required", "integer", "min:5", "max:240"],
                 "developer_access_absolute_ttl_minutes" => ["required", "integer", "min:5", "max:720"],
@@ -1977,11 +2219,13 @@ final class DeveloperAccessController extends Controller
 
         try {
             $environmentFileManager->write([
+                "DEVELOPER_ACCESS_PATH" => $payload["developer_access_path"],
                 "DEVELOPER_OPERATIONS_NAV_MODE" => $payload["developer_operations_nav_mode"],
                 "DEVELOPER_ACCESS_TTL_MINUTES" => (string) $payload["developer_access_ttl_minutes"],
                 "DEVELOPER_ACCESS_ABSOLUTE_TTL_MINUTES" => (string) $payload["developer_access_absolute_ttl_minutes"],
             ]);
             $environmentFileManager->apply([
+                "DEVELOPER_ACCESS_PATH" => $payload["developer_access_path"],
                 "DEVELOPER_OPERATIONS_NAV_MODE" => $payload["developer_operations_nav_mode"],
                 "DEVELOPER_ACCESS_TTL_MINUTES" => (string) $payload["developer_access_ttl_minutes"],
                 "DEVELOPER_ACCESS_ABSOLUTE_TTL_MINUTES" => (string) $payload["developer_access_absolute_ttl_minutes"],
@@ -1999,6 +2243,7 @@ final class DeveloperAccessController extends Controller
         }
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
+            "path" => $payload["developer_access_path"],
             "operations_nav_mode" => $payload["developer_operations_nav_mode"],
             "unlock_ttl_minutes" => $payload["developer_access_ttl_minutes"],
             "absolute_ttl_minutes" => $payload["developer_access_absolute_ttl_minutes"],
@@ -2007,19 +2252,19 @@ final class DeveloperAccessController extends Controller
         developer_activity()->record(
             "panel_settings",
             "Developer panel settings updated",
-            "Developer session windows or navigation visibility were changed.",
+            "Developer entry path, session windows or navigation visibility were changed.",
             $developerAccess->currentDeveloper()
         );
 
         flash_set("status", [
             "variant" => "success",
             "title" => "Developer panel settings saved",
-            "text" => "The developer entry, session window and private navigation preference were saved for this project.",
+            "text" => "The developer entry URL, session window and private navigation preference were saved for this project.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.settings"));
+        return $this->redirect($payload["developer_access_path"] . "/panel/settings");
     }
 
     private function projectSettings(?array $leadership = null): array
@@ -2032,8 +2277,34 @@ final class DeveloperAccessController extends Controller
         ];
     }
 
+    private function developerNotificationActionRedirect(Request $request): string
+    {
+        $candidate = trim((string) $request->input("developer_notification_redirect", ""));
+
+        if ($candidate === "" || str_contains($candidate, "\r") || str_contains($candidate, "\n")) {
+            return route("developer.panel.notifications");
+        }
+
+        $parts = parse_url($candidate);
+
+        if (!is_array($parts) || isset($parts["scheme"]) || isset($parts["host"])) {
+            return route("developer.panel.notifications");
+        }
+
+        $path = (string) ($parts["path"] ?? "");
+        $developerPanelPath = rtrim((string) developer_access()->path(), "/") . "/panel";
+
+        if ($path === $developerPanelPath || str_starts_with($path, $developerPanelPath . "/")) {
+            return $candidate;
+        }
+
+        return route("developer.panel.notifications");
+    }
+
     private function developerDashboard(array $developerAccess, array $maintenanceAccess, ?array $leadership = null): array
     {
+        $versions = $this->fnllaVersionFacts();
+
         return [
             "environment" => app_environment(),
             "project_name" => (string) config("app.name", "FNLLA Project"),
@@ -2045,14 +2316,42 @@ final class DeveloperAccessController extends Controller
             "developer_session_minutes" => (int) ($developerAccess["unlock_ttl_minutes"] ?? 120),
             "developer_absolute_minutes" => (int) ($developerAccess["absolute_ttl_minutes"] ?? 480),
             "developer_nav_mode" => (string) ($developerAccess["operations_nav_mode"] ?? "hidden"),
-            "framework_version" => $this->readVersionFile(base_path("VERSION")) ?? "unknown",
-            "runtime_version" => $this->readVersionFile(public_path("vendor/fnlla-runtime/VERSION")) ?? "unknown",
+            "framework_version" => $versions["framework_version"],
+            "runtime_version" => $versions["runtime_version"],
             "framework_lock" => is_file(base_path(".fnlla/framework-lock.json")),
             "storage_writable" => is_dir(storage_path()) && is_writable(storage_path()),
             "session_storage_writable" => is_dir(storage_path("framework/sessions")) && is_writable(storage_path("framework/sessions")),
             "queue_storage_writable" => is_dir(storage_path("framework/queue")) && is_writable(storage_path("framework/queue")),
             "observability_enabled" => (bool) config("observability.metrics.enabled", false),
         ];
+    }
+
+    /**
+     * @return array{framework_version: string, runtime_version: string}
+     */
+    private function fnllaVersionFacts(): array
+    {
+        return [
+            "framework_version" => $this->readVersionFile(base_path("VERSION")) ?? "unknown",
+            "runtime_version" => $this->readVersionFile(public_path("vendor/fnlla-runtime/VERSION")) ?? "unknown",
+        ];
+    }
+
+    /**
+     * @return array{framework_version: string, runtime_version: string, app_name: string, environment: string, maintainer: string, maintainer_url: string, official_url: string, repository: string, support_email: string, license: string}
+     */
+    private function fnllaInstallationFacts(): array
+    {
+        return array_merge($this->fnllaVersionFacts(), [
+            "app_name" => (string) config("app.name", "FNLLA"),
+            "environment" => app_environment(),
+            "maintainer" => (string) config("framework.maintainer_name", FrameworkIdentity::MAINTAINER_NAME),
+            "maintainer_url" => (string) config("framework.maintainer_url", FrameworkIdentity::MAINTAINER_URL),
+            "official_url" => (string) config("framework.official_url", FrameworkIdentity::OFFICIAL_URL),
+            "repository" => (string) config("framework.repository_web_url", FrameworkIdentity::REPOSITORY_WEB_URL),
+            "support_email" => (string) config("framework.support_email", FrameworkIdentity::SUPPORT_EMAIL),
+            "license" => "MIT",
+        ]);
     }
 
     private function normalizeProjectName(string $value): string
@@ -2112,6 +2411,14 @@ final class DeveloperAccessController extends Controller
         $developerControl = developer_control()->state();
         $developerDashboard = $this->developerDashboard($developerAccessState, $maintenanceAccessState, $projectLeadership);
         $developerHeaderNotifications = (new DeveloperNotificationCenter())->build($developerAccessState, $developerDashboard, [], $developerControl);
+        $customerAccessState = customer_access()->viewState();
+        $customerLinks = customer_access()->enabled() ? [
+            "customer_login" => route("customer.login"),
+            "customer_panel" => route("customer.panel"),
+            "customer_account" => route("developer.settings.customer_account"),
+            "customer_account_delete" => route("developer.settings.customer_account.delete"),
+        ] : [];
+
         return $this->view($view, array_merge([
             "pageTitle" => $pageTitle,
             "pageTitleSection" => $pageTitle === "Dashboard" ? "Developer Panel" : "Developer Panel",
@@ -2121,12 +2428,14 @@ final class DeveloperAccessController extends Controller
             "maintenanceAccess" => $maintenanceAccessState,
             "developerActivity" => developer_activity()->recent(),
             "developerControl" => $developerControl,
+            "customerAccess" => $customerAccessState,
             "developerHeaderNotifications" => $developerHeaderNotifications,
             "developerLinks" => [
                 "home" => route("home"),
                 "overview" => route("developer.panel"),
+                "setup_checklist" => route("developer.panel.project_identity") . "#developer-setup-checklist",
                 "identity" => route("developer.panel.project_identity"),
-                "project_settings" => route("developer.panel.project_settings"),
+                "project_settings" => route("developer.panel.project_identity") . "#developer-access-preview",
                 "access" => route("developer.panel.access"),
                 "profile" => route("developer.panel.profile"),
                 "security" => route("developer.panel.access"),
@@ -2135,6 +2444,7 @@ final class DeveloperAccessController extends Controller
                 "framework_updates" => route("developer.panel.framework_updates"),
                 "framework_updates_run" => route("developer.panel.framework_updates.run"),
                 "operations" => route("developer.panel.operations"),
+                "project_logs" => route("developer.panel.project_logs"),
                 "analytics" => route("developer.panel.analytics"),
                 "heatmap" => route("developer.panel.heatmap"),
                 "notifications" => route("developer.panel.notifications"),
@@ -2149,11 +2459,189 @@ final class DeveloperAccessController extends Controller
                 "audit_export_csv" => route("developer.panel.audit_export_csv"),
                 "project_leadership" => route("developer.settings.project_leadership"),
                 "project_leadership_confirmation" => route("developer.settings.project_leadership.confirmation"),
-            ],
+            ] + $customerLinks,
             "projectSettings" => $this->projectSettings($projectLeadership),
+            "projectSetupChecklist" => $this->projectSetupChecklist($developerAccessState, $maintenanceAccessState, $projectLeadership),
             "developerDashboard" => $developerDashboard,
             "developerNotice" => flash("developer_access_notice"),
         ], $extraData));
+    }
+
+    private function projectLogReport(array $events): array
+    {
+        $items = [];
+
+        foreach ($events as $event) {
+            if (!is_array($event)) {
+                continue;
+            }
+
+            $event["category"] = $this->projectLogCategory((string) ($event["action"] ?? ""));
+            $items[] = $event;
+        }
+
+        $today = gmdate("Y-m-d");
+        $todayCount = 0;
+        $categoryCounts = [];
+        $lastActor = "No activity yet";
+
+        foreach ($items as $index => $event) {
+            $time = (string) ($event["time"] ?? "");
+            $category = (string) ($event["category"] ?? "Project");
+            $categoryCounts[$category] = ($categoryCounts[$category] ?? 0) + 1;
+
+            if (substr($time, 0, 10) === $today) {
+                $todayCount++;
+            }
+
+            if ($index === 0) {
+                $developer = (array) ($event["developer"] ?? []);
+                $lastActor = (string) (($developer["name"] ?? "") ?: ($developer["email"] ?? "") ?: "Developer");
+            }
+        }
+
+        return [
+            "items" => $items,
+            "total" => count($items),
+            "today" => $todayCount,
+            "categories" => $categoryCounts,
+            "last_actor" => $lastActor,
+            "latest_time" => (string) ($items[0]["time"] ?? ""),
+        ];
+    }
+
+    private function projectLogCategory(string $action): string
+    {
+        $action = strtolower($action);
+
+        if (str_contains($action, "workspace") || str_contains($action, "task") || str_contains($action, "kanban") || str_contains($action, "attachment") || str_contains($action, "subtask")) {
+            return "Workspace";
+        }
+
+        if (str_contains($action, "project") || str_contains($action, "identity") || str_contains($action, "preview") || str_contains($action, "maintenance") || str_contains($action, "leadership")) {
+            return "Project setup";
+        }
+
+        if (str_contains($action, "developer") || str_contains($action, "security") || str_contains($action, "profile") || str_contains($action, "password") || str_contains($action, "totp")) {
+            return "Access";
+        }
+
+        if (str_contains($action, "framework") || str_contains($action, "release") || str_contains($action, "analytics") || str_contains($action, "heatmap") || str_contains($action, "integration") || str_contains($action, "notification")) {
+            return "Operations";
+        }
+
+        return "Project";
+    }
+
+    private function projectSetupChecklist(array $developerAccess, array $maintenanceAccess, array $leadership): array
+    {
+        $projectName = trim((string) config("app.name", ""));
+        $projectTagline = trim((string) config("app.tagline", ""));
+        $projectUrl = trim((string) config("app.base_url", ""));
+        $developerPath = trim((string) ($developerAccess["path"] ?? "/developer"));
+        $developerNavMode = trim((string) ($developerAccess["operations_nav_mode"] ?? "hidden"));
+        $security = is_array($developerAccess["security"] ?? null) ? (array) $developerAccess["security"] : [];
+        $securityHeaders = (array) config("http.security_headers", []);
+        $csp = trim((string) ($securityHeaders["Content-Security-Policy"] ?? ""));
+        $hsts = trim((string) ($securityHeaders["Strict-Transport-Security"] ?? ""));
+        $leadershipConfigured = (bool) ($leadership["configured"] ?? false);
+        $leadershipVisibility = (string) ($leadership["visibility"] ?? "disabled");
+        $leadershipStatus = (string) ($leadership["status"] ?? "pending");
+        $developerPathIsDefault = $developerPath === "/developer";
+        $maintenanceConfigured = (bool) ($maintenanceAccess["configured"] ?? false);
+        $maintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
+
+        $items = [
+            [
+                "label" => "Project name",
+                "status" => $projectName !== "" ? "ready" : "attention",
+                "status_label" => $projectName !== "" ? "Set" : "Missing",
+                "text" => $projectName !== "" ? $projectName : "Add the public project name.",
+                "href" => route("developer.panel.project_identity") . "#developer-project-identity",
+            ],
+            [
+                "label" => "Project slogan",
+                "status" => $projectTagline !== "" ? "ready" : "optional",
+                "status_label" => $projectTagline !== "" ? "Set" : "Optional",
+                "text" => $projectTagline !== "" ? $projectTagline : "Leave empty or add a browser-title suffix.",
+                "href" => route("developer.panel.project_identity") . "#developer-project-identity",
+            ],
+            [
+                "label" => "Public URL",
+                "status" => $projectUrl !== "" ? "ready" : "optional",
+                "status_label" => $projectUrl !== "" ? "Set" : "Local",
+                "text" => $projectUrl !== "" ? $projectUrl : "Add this when staging or production exists.",
+                "href" => route("developer.panel.project_identity") . "#developer-project-identity",
+            ],
+            [
+                "label" => "Developer account",
+                "status" => ((bool) ($developerAccess["configured"] ?? false) && (int) ($developerAccess["users_count"] ?? 0) > 0) ? "ready" : "attention",
+                "status_label" => (string) max(0, (int) ($developerAccess["users_count"] ?? 0)),
+                "text" => ((bool) ($developerAccess["configured"] ?? false)) ? "Named developer access is configured." : "Create at least one named developer account.",
+                "href" => route("developer.panel.access"),
+            ],
+            [
+                "label" => "Developer URL",
+                "status" => $developerPathIsDefault ? "review" : "ready",
+                "status_label" => $developerPathIsDefault ? "Default" : "Unique",
+                "text" => $developerPathIsDefault ? "Consider a unique private entry path." : $developerPath,
+                "href" => route("developer.panel.settings"),
+            ],
+            [
+                "label" => "Footer Developer link",
+                "status" => $developerNavMode === "developer_session_only" ? "ready" : "review",
+                "status_label" => $developerNavMode === "developer_session_only" ? "Hidden" : "Visible",
+                "text" => $developerNavMode === "developer_session_only" ? "Public footer stays clean." : "Footer link appears after developer setup.",
+                "href" => route("developer.panel.settings"),
+            ],
+            [
+                "label" => "Leadership visibility",
+                "status" => $leadershipVisibility === "public" && $leadershipStatus !== "confirmed" ? "review" : ($leadershipConfigured ? "ready" : "optional"),
+                "status_label" => $leadershipVisibility === "disabled" ? "Off" : ucfirst($leadershipVisibility),
+                "text" => $leadershipConfigured ? "Responsibility record is configured." : "Optional responsibility record is empty.",
+                "href" => route("developer.panel.project_identity") . "#project-leadership",
+            ],
+            [
+                "label" => "Client preview",
+                "status" => $maintenanceConfigured ? "ready" : "review",
+                "status_label" => $maintenanceEnabled ? "Locked" : ($maintenanceConfigured ? "Prepared" : "Open"),
+                "text" => $maintenanceConfigured ? "Preview password is configured." : "Add a preview password before sharing a private build.",
+                "href" => route("developer.panel.project_identity") . "#developer-access-preview",
+            ],
+            [
+                "label" => "Developer TOTP",
+                "status" => (bool) ($security["totp_enabled"] ?? false) ? "ready" : "review",
+                "status_label" => (bool) ($security["totp_enabled"] ?? false) ? "On" : "Off",
+                "text" => (bool) ($security["totp_enabled"] ?? false) ? "Authenticator challenge is enforced for this account." : "Enable TOTP before production handover.",
+                "href" => route("developer.panel.access"),
+            ],
+            [
+                "label" => "Security headers",
+                "status" => $csp !== "" && ($hsts !== "" || !str_starts_with(strtolower((string) config("app.base_url", "")), "https://")) ? "ready" : "review",
+                "status_label" => $csp !== "" ? "CSP" : "Review",
+                "text" => $csp !== "" ? "Browser security headers are configured." : "Add CSP/HSTS policy before production.",
+                "href" => route("developer.panel.release_readiness"),
+            ],
+        ];
+
+        $summary = [
+            "ready" => 0,
+            "review" => 0,
+            "attention" => 0,
+            "optional" => 0,
+        ];
+
+        foreach ($items as $item) {
+            $status = (string) ($item["status"] ?? "review");
+            $summary[$status] = ($summary[$status] ?? 0) + 1;
+        }
+
+        return [
+            "items" => $items,
+            "summary" => $summary,
+            "ready_count" => $summary["ready"],
+            "total_count" => count($items),
+        ];
     }
 
     private function readVersionFile(string $path): ?string
@@ -2195,6 +2683,9 @@ final class DeveloperAccessController extends Controller
     private function workspaceTaskPayload(Request $request, array $developer = []): array
     {
         $developerEmail = strtolower(trim((string) ($developer["email"] ?? "")));
+        $subtasksText = $request->input("developer_workspace_subtasks_text", null);
+        $subtasksDone = $request->input("developer_workspace_subtasks_done", []);
+        $subtasksColor = $request->input("developer_workspace_subtasks_color", []);
 
         return [
             "title" => trim((string) $request->input("developer_workspace_title", "")),
@@ -2208,7 +2699,11 @@ final class DeveloperAccessController extends Controller
             "estimate" => trim((string) $request->input("developer_workspace_estimate", "")),
             "position" => $request->input("developer_workspace_position", null),
             "blocked" => (string) $request->input("developer_workspace_blocked", "0") === "1",
+            "client_visible" => (string) $request->input("developer_workspace_client_visible", "0") === "1",
             "checklist" => trim((string) $request->input("developer_workspace_checklist", "")),
+            "subtasks_text" => is_array($subtasksText) ? $subtasksText : null,
+            "subtasks_done" => is_array($subtasksDone) ? $subtasksDone : [],
+            "subtasks_color" => is_array($subtasksColor) ? $subtasksColor : [],
             "subtask" => trim((string) $request->input("developer_workspace_subtask", "")),
             "subtask_color" => trim((string) $request->input("developer_workspace_subtask_color", "blue")),
             "toggle_subtask_index" => $request->input("developer_workspace_toggle_subtask_index", null),
@@ -2221,6 +2716,42 @@ final class DeveloperAccessController extends Controller
             "attachment_url" => trim((string) $request->input("developer_workspace_attachment_url", "")),
             "attachment_added_by" => $developerEmail,
         ];
+    }
+
+    private function withWorkspaceAttachmentFile(Request $request, array $payload, array $developer = []): array
+    {
+        $uploaded = $request->file("developer_workspace_attachment_file");
+
+        if (!$uploaded instanceof UploadedFile || $uploaded->error() === UPLOAD_ERR_NO_FILE) {
+            return $payload;
+        }
+
+        if (!$uploaded->isValid()) {
+            throw new \RuntimeException($this->uploadErrorMessage("Uploaded workspace attachment", $uploaded->error()));
+        }
+
+        $uploaded->validate(
+            max(1, (int) config("security.uploads.max_file_bytes", 5242880)),
+            (array) config("security.uploads.allowed_mime_types", [])
+        );
+
+        $mimeType = $uploaded->detectedMimeType();
+        $sizeBytes = $uploaded->size();
+        $storedPath = $uploaded->store("developer-workspace-attachments", "public");
+        $originalName = trim($uploaded->originalName());
+
+        $payload["attachment_file"] = [
+            "type" => "file",
+            "label" => $originalName !== "" ? $originalName : "Uploaded attachment",
+            "url" => "/uploads/" . trim($storedPath, "/"),
+            "added_by" => strtolower(trim((string) ($payload["attachment_added_by"] ?? $developer["email"] ?? "developer"))),
+            "created_at_utc" => gmdate(DATE_ATOM),
+            "original_name" => $originalName,
+            "mime_type" => $mimeType,
+            "size_bytes" => $sizeBytes,
+        ];
+
+        return $payload;
     }
 
     private function ensureDeveloperCapability(DeveloperAccessManager $developerAccess, string $capability): bool
@@ -2248,6 +2779,7 @@ final class DeveloperAccessController extends Controller
                 "fnlla_managed" => [
                     "Developer access, sessions, capability checks and local developer profiles.",
                     "Client-preview, maintenance and developer service-control contracts.",
+                    "Customer portal invitations, customer session lock flow and read-only delivery review routes.",
                     "Framework update checks, update audit, runtime validation and release readiness signals.",
                     "Privacy-light operational summaries, consent-aware integration hooks and reserved Fionn bridge policy.",
                     "The lightweight technical workspace used to coordinate framework/project setup tasks.",
@@ -2257,6 +2789,7 @@ final class DeveloperAccessController extends Controller
                     "Business domain models, database schema, customer records and product workflows.",
                     "Application admin panels, CRM, billing, bookings, documents, orders, dashboards and reports.",
                     "Business user roles, customer permissions, product-specific auth journeys and account policies.",
+                    "Customer portals that need writable records, CRM data, billing, support tickets or product-specific approvals.",
                     "Brand copy, client content, uploaded business files, production secrets and private operating knowledge.",
                     "Whether a client system exposes TechAyo or named-lead information publicly, privately or not at all.",
                     "External SaaS integrations after the project explicitly connects and audits them.",
@@ -2288,10 +2821,20 @@ final class DeveloperAccessController extends Controller
 
     private function resolveDeveloperAvatar(Request $request, array $payload): string
     {
+        if (($payload["developer_profile_remove_avatar"] ?? false) === true) {
+            $this->removeLocalDeveloperAvatar((string) ($payload["developer_profile_avatar"] ?? ""));
+
+            return "";
+        }
+
         $uploaded = $request->file("developer_profile_avatar_file");
 
+        if ($uploaded instanceof UploadedFile && $uploaded->error() !== UPLOAD_ERR_NO_FILE && !$uploaded->isValid()) {
+            throw new \RuntimeException($this->developerAvatarUploadErrorMessage($uploaded->error()));
+        }
+
         if ($uploaded instanceof UploadedFile && $uploaded->isValid()) {
-            $uploaded->validate(1048576, ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]);
+            $uploaded->validate(max(1, (int) config("security.uploads.max_file_bytes", 5242880)), ["image/jpeg", "image/png", "image/webp"]);
             $storedPath = $uploaded->store("developer-avatars", "public");
 
             return "/uploads/" . trim($storedPath, "/");
@@ -2302,6 +2845,72 @@ final class DeveloperAccessController extends Controller
         }
 
         return (string) ($payload["developer_profile_avatar"] ?? "");
+    }
+
+    private function removeLocalDeveloperAvatar(string $avatar): void
+    {
+        $relativePath = ltrim(str_replace("\\", "/", trim($avatar)), "/");
+
+        if (
+            !str_starts_with($relativePath, "uploads/developer-avatars/")
+            || str_contains($relativePath, "\0")
+            || str_contains($relativePath, "..")
+        ) {
+            return;
+        }
+
+        $absolutePath = public_path($relativePath);
+        $rootPath = public_path("uploads/developer-avatars");
+        $realRoot = realpath($rootPath);
+        $realFile = is_file($absolutePath) ? realpath($absolutePath) : false;
+
+        if (!is_string($realRoot) || !is_string($realFile)) {
+            return;
+        }
+
+        $normalisedRoot = rtrim(str_replace("\\", "/", $realRoot), "/") . "/";
+        $normalisedFile = str_replace("\\", "/", $realFile);
+
+        if (str_starts_with(strtolower($normalisedFile), strtolower($normalisedRoot))) {
+            @unlink($realFile);
+        }
+    }
+
+    private function developerAvatarUploadErrorMessage(int $error): string
+    {
+        return $this->uploadErrorMessage("Uploaded avatar", $error);
+    }
+
+    private function uploadErrorMessage(string $subject, int $error): string
+    {
+        return match ($error) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => $subject . " exceeds the configured upload size limit.",
+            UPLOAD_ERR_PARTIAL => $subject . " was only partially received.",
+            UPLOAD_ERR_NO_TMP_DIR => "The server upload directory is not available.",
+            UPLOAD_ERR_CANT_WRITE => $subject . " could not be written to storage.",
+            UPLOAD_ERR_EXTENSION => $subject . " was blocked by a server extension.",
+            default => $subject . " is not valid.",
+        };
+    }
+
+    private function sendCustomerInvitationMail(Mailer $mailer, array $account, string $url, string $expiresAt): void
+    {
+        $projectName = (string) config("app.name", "FNLLA Project");
+        $name = trim((string) ($account["name"] ?? "Customer"));
+        $email = strtolower(trim((string) ($account["email"] ?? "")));
+
+        if ($email === "" || $url === "") {
+            throw new \RuntimeException("Customer invitation email or URL is missing.");
+        }
+
+        $expiresLabel = $expiresAt !== "" ? $expiresAt : "the configured invitation window";
+        $html = "<p>Hello " . h($name) . ",</p>"
+            . "<p>You have been invited to the customer portal for " . h($projectName) . ".</p>"
+            . "<p><a href=\"" . h($url) . "\">Set your customer portal password</a></p>"
+            . "<p>This first-login link expires at " . h($expiresLabel) . ".</p>";
+        $text = "Hello {$name},\n\nYou have been invited to the customer portal for {$projectName}.\n\nSet your customer portal password:\n{$url}\n\nThis first-login link expires at {$expiresLabel}.";
+
+        $mailer->send($email, "Project access invitation for " . $projectName, $html, $text);
     }
 
     private function writeGeneratedDeveloperAvatar(string $name): string

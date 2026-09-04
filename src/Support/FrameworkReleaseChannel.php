@@ -26,9 +26,9 @@ use RuntimeException;
 
 final class FrameworkReleaseChannel
 {
-    public const OFFICIAL_REPOSITORY = "techayoDEV/fnlla";
-    public const OFFICIAL_CLONE_URL = "https://github.com/techayoDEV/fnlla.git";
-    public const OFFICIAL_API_BASE_URL = "https://api.github.com";
+    public const OFFICIAL_REPOSITORY = FrameworkIdentity::REPOSITORY;
+    public const OFFICIAL_CLONE_URL = FrameworkIdentity::REPOSITORY_URL;
+    public const OFFICIAL_API_BASE_URL = FrameworkIdentity::GITHUB_API_BASE_URL;
 
     public static function prepareReleaseSource(string $projectRoot, ?string $requestedTag = null): array
     {
@@ -162,6 +162,8 @@ final class FrameworkReleaseChannel
             "clone_url" => self::OFFICIAL_CLONE_URL,
             "html_url" => "https://github.com/" . self::OFFICIAL_REPOSITORY,
             "api_base_url" => self::OFFICIAL_API_BASE_URL,
+            "official_url" => (string) config("framework.official_url", FrameworkIdentity::OFFICIAL_URL),
+            "support_email" => (string) config("framework.support_email", FrameworkIdentity::SUPPORT_EMAIL),
         ];
     }
 
@@ -178,6 +180,8 @@ final class FrameworkReleaseChannel
             "version" => $version,
             "name" => trim((string) ($release["name"] ?? "")),
             "html_url" => trim((string) ($release["html_url"] ?? "")),
+            "official_url" => (string) config("framework.official_url", FrameworkIdentity::OFFICIAL_URL),
+            "support_email" => (string) config("framework.support_email", FrameworkIdentity::SUPPORT_EMAIL),
             "published_at_utc" => trim((string) ($release["published_at"] ?? "")),
             "current_version" => $currentVersion,
             "comparison" => $comparison === null ? "unknown" : ($comparison > 0 ? "newer" : ($comparison < 0 ? "older" : "same")),

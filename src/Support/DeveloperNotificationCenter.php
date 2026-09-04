@@ -17,6 +17,69 @@ namespace Fnlla\Php\Support;
 
 final class DeveloperNotificationCenter
 {
+    public static function sourceFor(array $item): string
+    {
+        $key = strtolower((string) ($item["key"] ?? ""));
+
+        if (self::containsAny($key, ["framework", "update"])) {
+            return "Framework updates";
+        }
+
+        if (self::containsAny($key, ["totp", "access", "security"])) {
+            return "Access & security";
+        }
+
+        if (self::containsAny($key, ["readiness", "backup", "audit"])) {
+            return "Readiness & health";
+        }
+
+        if (self::containsAny($key, ["analytics", "heatmap", "metric"])) {
+            return "Analytics";
+        }
+
+        if (self::containsAny($key, ["preview", "service", "leadership", "identity"])) {
+            return "Project setup";
+        }
+
+        return "Developer Panel";
+    }
+
+    public static function routeFor(array $item, array $developerLinks): string
+    {
+        $key = strtolower((string) ($item["key"] ?? ""));
+        $action = strtolower((string) ($item["action"] ?? ""));
+
+        if (self::containsAny($key, ["framework", "update"])) {
+            return (string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"));
+        }
+
+        if (self::containsAny($key, ["totp", "access", "security"])) {
+            return (string) ($developerLinks["security"] ?? route("developer.panel.access"));
+        }
+
+        if (self::containsAny($key, ["readiness", "backup", "audit"]) || str_contains($action, "readiness")) {
+            return (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"));
+        }
+
+        if (self::containsAny($key, ["analytics", "metrics"]) || str_contains($action, "analytics")) {
+            return (string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"));
+        }
+
+        if (str_contains($key, "heatmap")) {
+            return (string) ($developerLinks["heatmap"] ?? route("developer.panel.heatmap"));
+        }
+
+        if (self::containsAny($key, ["preview", "service"])) {
+            return (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_identity") . "#developer-access-preview");
+        }
+
+        if (self::containsAny($key, ["leadership", "identity"])) {
+            return (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity")) . "#project-leadership";
+        }
+
+        return (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"));
+    }
+
     public function build(array $developerAccess, array $developerDashboard, array $operationsReport, array $developerControl): array
     {
         $items = [];
@@ -139,6 +202,17 @@ final class DeveloperNotificationCenter
             "action" => $action,
             "time" => gmdate(DATE_ATOM),
         ];
+    }
+
+    private static function containsAny(string $value, array $needles): bool
+    {
+        foreach ($needles as $needle) {
+            if (str_contains($value, (string) $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function change(string $key, array $changes): void

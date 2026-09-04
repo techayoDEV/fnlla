@@ -33,11 +33,33 @@ $hasDeveloperPanelRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("de
 $hasDeveloperHealthRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("health") !== null;
 $hasFrameworkUpdateRoute = app(\Fnlla\Php\Routing\Router::class)->routeByName("maintenance.framework_update") !== null;
 $developerSessionActive = $developerAccess->isUnlocked() && $hasDeveloperPanelRoute;
-$developerEntryHref = $developerSessionActive && $hasDeveloperPanelRoute
-    ? route("developer.panel")
-    : ($hasDeveloperLoginRoute ? route("developer.login") : "");
+$developerFooterLinkVisible = $developerAccess->configured()
+    && $hasDeveloperLoginRoute
+    && $developerAccess->operationsNavMode() === "hidden";
+$developerEntryHref = "";
+
+if ($developerFooterLinkVisible) {
+    $developerEntryHref = $developerSessionActive && $hasDeveloperPanelRoute
+        ? route("developer.panel")
+        : route("developer.login");
+}
+
+/*
+Shell visibility contract:
+- maintenance lock hides ordinary public navigation unless a developer session
+  is already open
+- client-preview and developer-panel chrome deliberately skip public footer,
+  cookie banner and third-party-style public integrations
+*/
 $publicNavigationAvailable = !$isMaintenanceLocked || $developerSessionActive;
 $showCookieConsent = !$isClientPreviewChrome && !$isDeveloperPanelChrome && !$isMaintenanceLocked;
+
+/*
+Public integration contract:
+These values are serialized for the vendored runtime only when the page is safe
+for public instrumentation. Internal heatmap data remains first-party and local;
+external providers require explicit config before any script path can activate.
+*/
 $publicIntegrationConfig = [
     "ga4" => [
         "enabled" => (bool) config("integrations.ga4.enabled", false),
@@ -79,6 +101,16 @@ $pageMeta = page_meta([
     "tagline" => (string) ($pageTitleTagline ?? config("app.tagline", "")),
     "home" => (bool) ($pageTitleHome ?? false),
 ]);
+$projectBrandLogo = project_brand_logo_asset();
+$frameworkUpdateHref = $hasFrameworkUpdateRoute ? route("maintenance.framework_update") : "";
+$isFrameworkChrome = $isDeveloperPanelChrome || ($frameworkUpdateHref !== "" && is_current_path($frameworkUpdateHref));
+$documentThemeColor = $isFrameworkChrome ? framework_brand_color("blue", "#2563EB") : "#15304f";
+$documentFavicon = $isFrameworkChrome ? (framework_brand_asset("favicon") ?? $projectBrandLogo) : $projectBrandLogo;
+$documentAppleTouchIcon = $isFrameworkChrome ? (framework_brand_asset("apple_touch_icon") ?? $documentFavicon) : $projectBrandLogo;
+$documentWebManifest = $isFrameworkChrome ? framework_brand_asset("webmanifest") : null;
+$documentOpenGraphImage = $isFrameworkChrome ? framework_brand_asset("open_graph") : null;
+$documentFaviconPath = $documentFavicon !== null ? (string) (parse_url($documentFavicon, PHP_URL_PATH) ?: $documentFavicon) : "";
+$documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ? "image/svg+xml" : "image/png";
 ?>
 <!DOCTYPE html>
 <html
@@ -93,8 +125,22 @@ $pageMeta = page_meta([
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#15304f">
+  <meta name="theme-color" content="<?= h($documentThemeColor) ?>">
   <title><?= h($pageMeta["title"]) ?></title>
+  <?php if ($documentFavicon !== null): ?>
+  <link rel="icon" type="<?= h($documentFaviconType) ?>" href="<?= h($documentFavicon) ?>">
+  <?php endif; ?>
+  <?php if ($documentAppleTouchIcon !== null): ?>
+  <link rel="apple-touch-icon" href="<?= h($documentAppleTouchIcon) ?>">
+  <?php endif; ?>
+  <?php if ($documentWebManifest !== null): ?>
+  <link rel="manifest" href="<?= h($documentWebManifest) ?>">
+  <?php endif; ?>
+  <?php if ($documentOpenGraphImage !== null): ?>
+  <meta property="og:image" content="<?= h($documentOpenGraphImage) ?>">
+  <?php endif; ?>
+  <!-- Framework brand chrome contract: FNLLA assets are limited to private developer and framework operation screens. -->
+  <!-- Runtime CSS first, project shell CSS second. Project styles may theme the shell without editing the vendored runtime asset. -->
   <link rel="stylesheet" href="<?= h(asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css")) ?>">
   <link rel="stylesheet" href="<?= h(asset("assets/app.css")) ?>">
 </head>
@@ -105,7 +151,13 @@ $pageMeta = page_meta([
       <div class="container">
         <nav class="navbar" aria-label="Primary navigation">
           <a class="navbar-brand project-brand" href="<?= h(route("home")) ?>">
-            <span class="project-brand-mark" aria-hidden="true"><?= h(project_brand_mark()) ?></span>
+            <span class="project-brand-mark <?= $projectBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
+              <?php if ($projectBrandLogo !== null): ?>
+              <img src="<?= h($projectBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
+              <?php else: ?>
+              <?= h(project_brand_mark()) ?>
+              <?php endif; ?>
+            </span>
             <span class="project-brand-name"><?= h((string) config("app.name")) ?></span>
           </a>
           <button class="btn btn-outline btn-sm navbar-toggle" type="button" data-fnlla-nav-toggle aria-controls="primary-navigation-panel" aria-expanded="false" aria-label="Toggle navigation menu">Menu</button>
@@ -572,10 +624,67 @@ $pageMeta = page_meta([
         }
       }
 
+      function compactText(value, limit) {
+        value = String(value || "").replace(/\s+/g, " ").trim();
+
+        if (!value) {
+          return "";
+        }
+
+        return value.length > limit ? value.slice(0, limit - 1).trim() + "..." : value;
+      }
+
+      function elementContext(target) {
+        var element = target && target.closest ? target.closest("header,nav,main,footer,form,section,article,aside") : null;
+
+        if (!element) {
+          return "page";
+        }
+
+        if (element.tagName && element.tagName.toLowerCase() === "nav") {
+          return "navigation";
+        }
+
+        if (element.getAttribute) {
+          return compactText(element.getAttribute("aria-label") || element.id || element.className || element.tagName, 60).toLowerCase();
+        }
+
+        return "page";
+      }
+
+      function elementLabel(element) {
+        if (!element || !element.getAttribute) {
+          return "";
+        }
+
+        var tag = String(element.tagName || "").toLowerCase();
+        var label = element.getAttribute("aria-label") || element.getAttribute("data-analytics-label") || "";
+
+        if (!label && (tag === "a" || tag === "button" || tag === "summary" || tag === "label")) {
+          label = element.textContent || "";
+        }
+
+        if (!label && element.id) {
+          label = element.id;
+        }
+
+        return compactText(label, 80);
+      }
+
       function elementBucket(target) {
         var element = target && target.closest ? target.closest("button,a,input,select,textarea,label,summary") : null;
 
         return element ? String(element.tagName || "element").toLowerCase() : "page";
+      }
+
+      function elementDetails(target) {
+        var element = target && target.closest ? target.closest("button,a,input,select,textarea,label,summary") : null;
+
+        return {
+          element: elementBucket(target),
+          element_label: elementLabel(element),
+          element_context: elementContext(target)
+        };
       }
 
       function enableFnllaHeatmap(preferences) {
@@ -591,13 +700,12 @@ $pageMeta = page_meta([
           var maxX = Math.max(1, doc.scrollWidth || window.innerWidth || 1);
           var maxY = Math.max(1, doc.scrollHeight || window.innerHeight || 1);
 
-          sendFnllaBehaviorEvent("click", {
-            element: elementBucket(event.target),
+          sendFnllaBehaviorEvent("click", Object.assign(elementDetails(event.target), {
             position: {
               x_percent: Math.max(0, Math.min(100, ((event.pageX || 0) / maxX) * 100)),
               y_percent: Math.max(0, Math.min(100, ((event.pageY || 0) / maxY) * 100))
             }
-          }, preferences);
+          }), preferences);
         }, { passive: true });
 
         window.addEventListener("scroll", function () {

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $developerPanelTitle = "Heatmap";
-$developerPanelLead = "First-party click and scroll intelligence inspired by Microsoft Clarity, aggregated inside FNLLA.";
+$developerPanelLead = "First-party public-site click and scroll intelligence, aggregated inside FNLLA after analytics consent.";
 $report = is_array($heatmapReport ?? null) ? (array) $heatmapReport : [];
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
@@ -20,12 +20,18 @@ $renderBarList = static function (array $items, string $empty): void { ?>
           <?php else: ?>
           <div class="developer-analytics-bars">
             <?php foreach ($items as $item): ?>
-            <div class="developer-analytics-bar-row">
+            <?php
+                $label = (string) ($item["label"] ?? "");
+                $count = (string) ($item["count"] ?? 0);
+                $percent = max(2, (int) ($item["percent"] ?? 0));
+                $tooltip = trim($label . ": " . $count . " / " . $percent . "% of this chart");
+            ?>
+            <div class="developer-analytics-bar-row" data-fnlla-tooltip="<?= h($tooltip) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h($tooltip) ?>" tabindex="0">
               <div>
-                <strong><?= h((string) ($item["label"] ?? "")) ?></strong>
-                <span><?= h((string) ($item["count"] ?? 0)) ?></span>
+                <strong><?= h($label) ?></strong>
+                <span><?= h($count) ?></span>
               </div>
-              <i aria-hidden="true"><b style="width: <?= h((string) max(2, (int) ($item["percent"] ?? 0))) ?>%"></b></i>
+              <i aria-hidden="true"><b style="width: <?= h((string) $percent) ?>%"></b></i>
             </div>
             <?php endforeach; ?>
           </div>
@@ -37,9 +43,16 @@ $renderTimeline = static function (array $items, string $empty): void { ?>
           <?php else: ?>
           <div class="developer-analytics-timeline">
             <?php foreach ($items as $item): ?>
-            <span title="<?= h((string) ($item["full_label"] ?? $item["label"] ?? "")) ?>">
-              <i style="height: <?= h((string) max(4, (int) ($item["percent"] ?? 0))) ?>%"></i>
-              <small><?= h((string) ($item["label"] ?? "")) ?></small>
+            <?php
+                $label = (string) ($item["label"] ?? "");
+                $fullLabel = (string) ($item["full_label"] ?? $label);
+                $count = (string) ($item["count"] ?? 0);
+                $percent = max(4, (int) ($item["percent"] ?? 0));
+                $tooltip = trim($fullLabel . ": " . $count . " events / " . $percent . "% of this chart");
+            ?>
+            <span data-fnlla-tooltip="<?= h($tooltip) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h($tooltip) ?>" tabindex="0">
+              <i style="height: <?= h((string) $percent) ?>%"></i>
+              <small><?= h($label) ?></small>
             </span>
             <?php endforeach; ?>
           </div>
@@ -59,15 +72,36 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-analytics-commandbar">
             <div>
               <p class="feature-kicker">Heatmap command center</p>
-              <h2 class="developer-dashboard-section-title">FNLLA Heatmap</h2>
-              <p class="content-text mb-0">Click zones, scroll depth, page popularity and device mix are stored as aggregate project data after analytics consent.</p>
+              <h2 class="developer-dashboard-section-title">Public website heatmap</h2>
+              <p class="content-text mb-0">This report describes how visitors interact with the public website. FNLLA stores aggregate click zones, safe element labels, scroll depth, page popularity and device mix after analytics consent.</p>
             </div>
             <div class="developer-analytics-commandbar-panel">
-              <strong>Privacy contract <span class="developer-info-tip" tabindex="0" aria-label="No recordings, no text capture, no IP addresses and no raw user agents are stored.">i<span>No session replay, cursor trail, keystroke, raw IP, raw user-agent or fingerprint is stored.</span></span></strong>
+              <strong>Privacy contract <span class="developer-info-tip" tabindex="0" aria-label="No recordings, form values, IP addresses or raw user agents are stored.">i<span>Safe button/link labels may be counted, but session replay, cursor trail, form values, keystrokes, raw IP, raw user-agent and fingerprint data are not stored.</span></span></strong>
               <span><?= h((string) ($privacy["mode"] ?? "first-party aggregate heatmap")) ?></span>
               <span>Endpoint <?= h(route("fnlla.analytics.event")) ?></span>
             </div>
           </div>
+
+          <section class="developer-analytics-blueprint developer-analytics-blueprint-heatmap" aria-label="Heatmap blueprint">
+            <div class="developer-analytics-blueprint-grid" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="developer-analytics-blueprint-copy">
+              <p class="feature-kicker">Blueprint view</p>
+              <h3>Public page zones, scroll depth and device signals mapped before deeper review.</h3>
+              <p class="content-text mb-0">Heatmap blocks are grouped into first-party public-page zones, with safe button/link labels where available. Form values, keystrokes, replay and raw visitor identifiers stay out of the report.</p>
+            </div>
+            <div class="developer-analytics-blueprint-diagram" aria-hidden="true">
+              <span class="developer-analytics-blueprint-node is-source"></span>
+              <span class="developer-analytics-blueprint-node is-route"></span>
+              <span class="developer-analytics-blueprint-node is-performance"></span>
+              <span class="developer-analytics-blueprint-line is-main"></span>
+              <span class="developer-analytics-blueprint-line is-branch"></span>
+            </div>
+          </section>
 
           <div class="developer-analytics-metric-grid">
             <?php foreach ($metricCards as $card): ?>
@@ -85,12 +119,12 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Click intensity map">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Click intensity</h2>
+            <h2 class="developer-dashboard-section-title">Public click intensity</h2>
             <span class="developer-dashboard-refresh"><?= h($topPage) ?></span>
           </div>
           <div class="developer-heatmap-workbench">
             <article class="developer-dashboard-card developer-dashboard-card-wide">
-              <p class="feature-kicker">Top page click map</p>
+              <p class="feature-kicker">Top public page click map</p>
               <?php if ($gridRows === []): ?>
               <p class="content-text mb-0">No click heatmap events have been recorded yet.</p>
               <?php else: ?>
@@ -98,7 +132,7 @@ require __DIR__ . "/panel-header.php";
                 <?php foreach ($gridRows as $row): ?>
                   <?php foreach ((array) $row as $cell): ?>
                   <?php $count = (int) ($cell["count"] ?? 0); $intensity = max(0.08, min(1, $count / $gridMax)); ?>
-                  <span style="--heatmap-intensity: <?= h((string) $intensity) ?>;" title="<?= h((string) ($cell["zone"] ?? "")) ?>: <?= h((string) $count) ?>">
+                  <span style="--heatmap-intensity: <?= h((string) $intensity) ?>;" data-fnlla-tooltip="<?= h((string) ($cell["tooltip"] ?? (($cell["zone"] ?? "") . ": " . $count))) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h((string) ($cell["tooltip"] ?? (($cell["zone"] ?? "") . ": " . $count))) ?>" tabindex="0">
                     <?= h((string) $count) ?>
                   </span>
                   <?php endforeach; ?>

@@ -25,10 +25,10 @@ php scripts/build-docs.php --check
 php scripts/static-analysis.php
 php fnlla project:acceptance --json
 php fnlla ops:backup-plan --verify
-php fnlla upgrade:check --target=2.1.1
+php fnlla upgrade:check --target=2.1.3
 php fnlla app:map
-php fnlla ai:review-pack --target=2.1.1
-php fnlla release:prepare --major --target=2.1.1
+php fnlla ai:review-pack --target=2.1.3
+php fnlla release:prepare --major --target=2.1.3
 ```
 
 ## Performance

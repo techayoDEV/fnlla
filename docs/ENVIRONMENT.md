@@ -1,6 +1,6 @@
 # Environment Configuration
 
-FNLLA 2.1.1 uses two environment templates on purpose:
+FNLLA 2.1.3 uses two environment templates on purpose:
 
 - `.env.example` is the short starter for a new project.
 - `.env.full.example` is the complete reference for operators and maintainers.
@@ -40,6 +40,25 @@ environment.
 The real `.env` belongs to the target machine, hosting secret store or CI secret
 configuration. It must not be committed.
 
+## Official FNLLA Identity
+
+The framework has its own product identity that is separate from each
+downstream website or application:
+
+```dotenv
+FNLLA_OFFICIAL_DOMAIN=fnlla.com
+FNLLA_OFFICIAL_URL=https://fnlla.com
+FNLLA_SUPPORT_EMAIL=support@fnlla.com
+FNLLA_MAIL_FROM_ADDRESS=noreply@fnlla.com
+FNLLA_MAINTAINER_URL=https://techayo.co.uk
+```
+
+Use these keys only for framework metadata, documentation, update metadata and
+FNLLA-owned communication defaults. A downstream project should still set
+`APP_NAME`, `APP_URL`, `MAIL_FROM_ADDRESS` and `CONTACT_NOTIFICATION_EMAIL` to
+its own product, domain and mailbox. `make:project` keeps `APP_URL` empty and
+uses neutral mail placeholders until the project owner configures them.
+
 ## Configuration Layers
 
 FNLLA applications have three practical layers:
@@ -67,6 +86,7 @@ APP_ENV=development
 APP_DEBUG=true
 APP_NAME=FNLLA Project
 APP_TAGLINE=
+APP_BRAND_LOGO=auto
 APP_URL=http://127.0.0.1:8080
 SESSION_SECURE=false
 DB_HOST=127.0.0.1
@@ -99,6 +119,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_NAME=Example Business App
 APP_TAGLINE=Operations delivered clearly
+APP_BRAND_LOGO=auto
 APP_URL=https://example.com
 SESSION_SECURE=true
 TRUSTED_HOSTS=example.com,www.example.com
@@ -117,7 +138,12 @@ private keys, customer data, backup credentials or Fionn service tokens.
 
 `APP_TAGLINE` is optional and is appended only to browser document titles. For
 example, `Contact | Example Business App - Operations delivered clearly`. Leave
-it empty if the product already has a short enough project name.
+it empty if the product already has a short enough project name. `APP_BRAND_LOGO`
+points to the public asset used as the header and browser icon mark. The default
+`auto` value uses `assets/fnlla-logo.png` only while `APP_NAME` is still `FNLLA`;
+after the project is named, the public brand mark falls back to generated
+initials unless the project sets its own public asset path or URL. Set the value
+to `none` or leave it empty when no image mark should be rendered.
 
 ## Project Leadership
 
@@ -172,7 +198,7 @@ Developer access is separate from client preview. Client preview protects the
 public site for customer review. Developer access unlocks operational screens
 for the team maintaining the project.
 
-FNLLA 2.1.1 supports named developer accounts:
+FNLLA 2.1.3 supports named developer accounts:
 
 ```dotenv
 DEVELOPER_ACCESS_ENABLED=true
@@ -198,6 +224,7 @@ DEVELOPER_ACTIVITY_LOG_PATH=framework/developer/activity.jsonl
 DEVELOPER_ACCESS_TOTP_ISSUER="${APP_NAME}"
 DEVELOPER_WORKSPACE_DRIVER=file
 DEVELOPER_WORKSPACE_PATH=framework/developer/workspace.json
+DEVELOPER_NOTIFICATIONS_STATE_PATH=framework/developer/notifications-state.json
 ```
 
 For a production team that expects frequent developer-panel changes, switch the
@@ -216,6 +243,34 @@ DEVELOPER_ANALYTICS_EVENTS_TABLE=fnlla_developer_analytics_events
 These tables are still technical operations data. Business records, customer
 activity, product audit events and application admin workflows belong to the
 downstream application schema, not to FNLLA core.
+
+## Customer Portal Access
+
+Customer access is intentionally separate from Developer Panel access. A lead
+developer can create a customer account in **Access & Security**, copy the
+first-login link or send it through the configured mail driver. The customer
+sets their own password from that invitation and then signs in through the
+private customer URL.
+
+```dotenv
+CUSTOMER_ACCESS_ENABLED=true
+CUSTOMER_ACCESS_PATH=/client
+CUSTOMER_ACCESS_USERS=
+CUSTOMER_ACCESS_INVITE_TTL_HOURS=72
+CUSTOMER_ACCESS_TTL_MINUTES=240
+CUSTOMER_ACCESS_ABSOLUTE_TTL_MINUTES=720
+```
+
+`CUSTOMER_ACCESS_USERS` is managed by the panel after invitations are created.
+It stores the customer email, display name, optional company, allowed portal
+sections, a password hash after first login and a short-lived invitation hash.
+Do not hand-edit it unless you are rotating access during deployment.
+
+The customer portal is read-only. It can expose the client-visible Kanban
+cards, aggregate analytics, aggregate heatmap summaries and a public-preview
+link. Individual Kanban tasks can be hidden from the customer while remaining
+available to developers. The portal is not a CRM, billing system or general
+customer database.
 
 ## Local Developer Analytics
 

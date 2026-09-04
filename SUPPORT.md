@@ -4,6 +4,10 @@
 
 FNLLA is released publicly under the MIT License, so anyone may use it, fork it and build self-service projects on top of it.
 
+The official framework website is `https://fnlla.com`. Framework support
+contact metadata uses `support@fnlla.com`; that mailbox is not a guaranteed SLA
+or implementation contract.
+
 That permission does not create any obligation for TechAyo LTD to provide support, maintenance, implementation help, security review, custom development or release work for third-party projects.
 
 ## What TechAyo does and does not promise
@@ -35,7 +39,9 @@ Without such an agreement, the public repository, issues and documentation shoul
 
 ## Recommended public routing
 
-- Bug or regression reports: GitHub Issues
+- Framework website and product reference: `https://fnlla.com`
+- Bug or regression reports: GitHub Issues in `techayoDEV/fnlla`
+- Framework support mailbox: `support@fnlla.com`
 - Security reports: `SECURITY.md`
 - Repository conduct concerns: `CODE_OF_CONDUCT.md`
 - Business, partnership or commercial implementation requests: `https://techayo.co.uk`

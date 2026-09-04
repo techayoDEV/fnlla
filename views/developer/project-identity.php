@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Identity";
-$developerPanelLead = "Environment-owned identity used by browser titles, generated links and operational screens.";
+$developerPanelTitle = "Project Setup";
+$developerPanelLead = "Readiness checklist, project identity, leadership visibility and client preview controls.";
 $projectName = (string) ($projectSettings["name"] ?? config("app.name", "FNLLA Project"));
 $projectTagline = (string) ($projectSettings["tagline"] ?? "");
 $projectUrl = (string) ($projectSettings["url"] ?? "");
@@ -14,21 +14,95 @@ $projectLeadershipConfigured = (bool) ($projectLeadership["configured"] ?? false
 $projectLeadershipPublic = (bool) ($projectLeadership["public_visible"] ?? false);
 $projectLeadershipManager = new \Fnlla\Php\Support\ProjectLeadership();
 $projectLeadershipCanConfirm = $projectLeadershipManager->canConfirm($projectLeadership, (array) ($developerAccess["current_developer"] ?? []));
+$projectLeadershipVisibilityPreview = match ($projectLeadershipVisibility) {
+    "public" => $projectLeadershipPublic ? "Public visitors can see the confirmed responsibility record." : "Public visitors will not see this until the named person confirms it.",
+    "admin" => "Only developer-panel users can see the responsibility record.",
+    default => "Public visitors and developer-panel summaries treat leadership as disabled.",
+};
 $titlePreview = "Contact | " . $projectName . ($projectTagline !== "" ? " - " . $projectTagline : "");
+$checklist = is_array($projectSetupChecklist ?? null) ? (array) $projectSetupChecklist : [];
+$checklistItems = array_values((array) ($checklist["items"] ?? []));
+$summary = (array) ($checklist["summary"] ?? []);
+$readyCount = (int) ($checklist["ready_count"] ?? 0);
+$totalCount = max(1, (int) ($checklist["total_count"] ?? count($checklistItems)));
+$readyPercent = max(0, min(100, (int) round(($readyCount / $totalCount) * 100)));
+$developerControl ??= [
+    "disabled" => false,
+    "message" => (string) config("developer_control.disabled_message", ""),
+    "contact" => (string) config("developer_control.disabled_contact", ""),
+    "source" => "none",
+    "remote_enabled" => false,
+];
+$maintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
+$maintenanceConfigured = (bool) ($maintenanceAccess["configured"] ?? false);
+$serviceDisabled = (bool) ($developerControl["disabled"] ?? false);
+$remoteEnabled = (bool) ($developerControl["remote_enabled"] ?? false);
 require __DIR__ . "/panel-header.php";
 ?>
 
         <section class="developer-dashboard-section" id="developer-project-identity" aria-label="Project identity settings">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
-              <p class="feature-kicker">Project identity</p>
-              <h2 class="developer-dashboard-section-title">Keep the visible project name, slogan and canonical URL aligned with this environment.</h2>
-              <p class="content-text mb-0">These values are written to the environment file and reused by browser titles, generated links and developer-panel summaries.</p>
+              <p class="feature-kicker">Project setup</p>
+              <h2 class="developer-dashboard-section-title">One handover surface for checklist, identity and private client preview.</h2>
+              <p class="content-text mb-0">These project-level settings are usually reviewed together before sharing a build or moving toward release.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["overview"] ?? route("developer.panel"))) ?>">Dashboard</a>
+              <a class="btn btn-outline btn-sm" href="#developer-setup-checklist">Checklist</a>
+              <a class="btn btn-outline btn-sm" href="#developer-access-preview">Preview</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Security</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Open public site</a>
             </div>
+          </div>
+
+          <div class="developer-dashboard-status-grid" id="developer-setup-checklist">
+            <article class="developer-dashboard-status-card developer-setup-progress-card">
+              <div class="developer-dashboard-card-head"><strong>Setup progress</strong><span class="developer-dashboard-ok"><?= h((string) $readyPercent) ?>%</span></div>
+              <h3><?= h((string) $readyCount) ?> of <?= h((string) $totalCount) ?> ready</h3>
+              <div class="developer-setup-progress" aria-label="Setup progress">
+                <span style="width: <?= h((string) $readyPercent) ?>%;"></span>
+              </div>
+              <p>Review items can ship locally, but should be checked before client handover.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Ready</strong><span class="developer-dashboard-ok"><?= h((string) ($summary["ready"] ?? 0)) ?></span></div>
+              <h3>Configured</h3>
+              <p>Core setup items already have usable values.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Review</strong><span class="developer-dashboard-ok"><?= h((string) (($summary["review"] ?? 0) + ($summary["attention"] ?? 0))) ?></span></div>
+              <h3>Needs a decision</h3>
+              <p>These are usually security, preview or visibility choices.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Optional</strong><span class="developer-dashboard-ok"><?= h((string) ($summary["optional"] ?? 0)) ?></span></div>
+              <h3>Can stay empty</h3>
+              <p>Optional project details should stay blank unless they help this client build.</p>
+            </article>
+          </div>
+
+          <div class="developer-setup-checklist-grid">
+            <?php foreach ($checklistItems as $item): ?>
+            <?php
+            $status = (string) ($item["status"] ?? "review");
+            $statusClass = in_array($status, ["ready", "review", "attention", "optional"], true) ? $status : "review";
+            ?>
+            <article class="developer-setup-check-card is-<?= h($statusClass) ?>">
+              <div class="developer-dashboard-card-head">
+                <strong><?= h((string) ($item["label"] ?? "Setup item")) ?></strong>
+                <span class="developer-dashboard-ok"><?= h((string) ($item["status_label"] ?? ucfirst($statusClass))) ?></span>
+              </div>
+              <p><?= h((string) ($item["text"] ?? "")) ?></p>
+              <?php if ((string) ($item["href"] ?? "") !== ""): ?>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) $item["href"]) ?>">Open setting</a>
+              <?php endif; ?>
+            </article>
+            <?php endforeach; ?>
+          </div>
+
+          <div class="developer-dashboard-section-head mt-3">
+            <h2 class="developer-dashboard-section-title">Project identity</h2>
+            <span class="developer-dashboard-refresh">Environment metadata</span>
           </div>
 
           <div class="developer-dashboard-status-grid">
@@ -87,6 +161,7 @@ require __DIR__ . "/panel-header.php";
                 <div class="developer-dashboard-glance-row"><strong>Browser title</strong><span><?= h($titlePreview) ?></span></div>
                 <div class="developer-dashboard-glance-row"><strong>Public base URL</strong><span><?= h($projectUrl !== "" ? $projectUrl : "Not set for local build") ?></span></div>
                 <div class="developer-dashboard-glance-row"><strong>Panel label</strong><span><?= h($projectName) ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>Leadership visibility</strong><span><?= h($projectLeadershipVisibilityPreview) ?></span></div>
               </div>
               <div class="developer-panel-status-note">
                 <strong>Scope</strong>
@@ -123,6 +198,10 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-panel-fieldset-card">
               <p class="feature-kicker">Leadership form</p>
               <h2 class="content-title">Save responsibility details</h2>
+              <div class="developer-panel-status-note">
+                <strong>Visibility preview</strong>
+                <span><?= h($projectLeadershipVisibilityPreview) ?></span>
+              </div>
               <form class="form stack gap-md" action="<?= h((string) ($developerLinks["project_leadership"] ?? route("developer.settings.project_leadership"))) ?>" method="post" novalidate>
                 <?= csrf_field() ?>
                 <div class="form-group">
@@ -162,6 +241,97 @@ require __DIR__ . "/panel-header.php";
                 <div class="d-flex flex-wrap gap-md">
                   <button class="btn btn-primary" type="submit">Save leadership details</button>
                 </div>
+              </form>
+            </article>
+          </div>
+        </section>
+
+        <section class="developer-dashboard-section" id="developer-access-preview" aria-label="Access and preview settings">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Access & preview</h2>
+            <span class="developer-dashboard-refresh">Client preview and public-service controls</span>
+          </div>
+
+          <div class="developer-dashboard-status-grid">
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Preview mode</strong><span class="developer-dashboard-ok"><?= $maintenanceEnabled ? "LOCKED" : "OPEN" ?></span></div>
+              <h3><?= $maintenanceEnabled ? "Password required" : "Public routes open" ?></h3>
+              <p><?= $maintenanceEnabled
+                  ? "Maintenance mode is currently on. Public routes require the preview password."
+                  : "Maintenance mode is currently off. Save a password here when you want to prepare a private preview lock." ?></p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Password state</strong><span class="developer-dashboard-ok"><?= $maintenanceConfigured ? "READY" : "MISSING" ?></span></div>
+              <h3><?= $maintenanceConfigured ? "Prepared" : "Not prepared" ?></h3>
+              <p>Rotate it here before sharing a private build.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok"><?= $serviceDisabled ? "STOPPED" : "OPEN" ?></span></div>
+              <h3><?= $serviceDisabled ? "Public service disabled" : "Public service available" ?></h3>
+              <p>Source: <?= h((string) ($developerControl["source"] ?? "none")) ?>.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
+              <h3><?= $remoteEnabled ? "Remote control enabled" : "Local control only" ?></h3>
+              <p>Configure the adapter from Integrations.</p>
+            </article>
+          </div>
+
+          <div class="developer-panel-form-grid">
+            <article class="developer-panel-fieldset-card">
+              <p class="feature-kicker">Maintenance access</p>
+              <h2 class="content-title">Save maintenance settings</h2>
+              <form class="form stack gap-md" action="<?= h(route("developer.settings.maintenance")) ?>" method="post" novalidate>
+                <?= csrf_field() ?>
+                <div class="form-group">
+                  <label class="label" for="maintenance-access-password">Password</label>
+                  <div class="password-field">
+                    <input class="input" id="maintenance-access-password" name="maintenance_access_password" type="password" autocomplete="new-password" required>
+                    <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#maintenance-access-password" aria-label="Toggle password visibility">Show</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="maintenance-access-password-confirmation">Confirm password</label>
+                  <div class="password-field">
+                    <input class="input" id="maintenance-access-password-confirmation" name="maintenance_access_password_confirmation" type="password" autocomplete="new-password" required>
+                    <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#maintenance-access-password-confirmation" aria-label="Toggle password visibility">Show</button>
+                  </div>
+                </div>
+                <input type="hidden" name="maintenance_access_enabled" value="0">
+                <div class="form-group">
+                  <label class="label" for="maintenance-access-enabled">
+                    <input id="maintenance-access-enabled" name="maintenance_access_enabled" type="checkbox" value="1" <?= $maintenanceEnabled ? "checked" : "" ?>>
+                    <?= $maintenanceEnabled ? "Keep maintenance mode enabled after saving" : "Enable maintenance mode after saving" ?>
+                  </label>
+                  <p class="help-text">Leave this unchecked to store or rotate the maintenance password without locking the public routes yet.</p>
+                </div>
+                <button class="btn btn-primary" type="submit">Save maintenance settings</button>
+              </form>
+            </article>
+
+            <article class="developer-panel-fieldset-card">
+              <p class="feature-kicker">Service control</p>
+              <h2 class="content-title">Save service control</h2>
+              <p class="content-text">Use this when the website should be stopped immediately with a developer-owned message while the private developer panel remains available.</p>
+              <form class="form stack gap-md" action="<?= h(route("developer.settings.service_control")) ?>" method="post" novalidate>
+                <?= csrf_field() ?>
+                <input type="hidden" name="developer_control_disabled" value="0">
+                <div class="form-group">
+                  <label class="label" for="developer-control-disabled">
+                    <input id="developer-control-disabled" name="developer_control_disabled" type="checkbox" value="1" <?= $serviceDisabled ? "checked" : "" ?>>
+                    <?= $serviceDisabled ? "Keep public service disabled" : "Disable public service after saving" ?>
+                  </label>
+                  <p class="help-text">Current source: <?= h((string) ($developerControl["source"] ?? "none")) ?>. Remote control is <?= $remoteEnabled ? "enabled" : "disabled" ?>.</p>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-message">Public message</label>
+                  <textarea class="textarea" id="developer-control-message" name="developer_control_message" rows="3"><?= h((string) ($developerControl["message"] ?? config("developer_control.disabled_message", ""))) ?></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-contact">Developer contact</label>
+                  <input class="input" id="developer-control-contact" name="developer_control_contact" type="text" value="<?= h((string) ($developerControl["contact"] ?? config("developer_control.disabled_contact", ""))) ?>">
+                </div>
+                <button class="btn btn-primary" type="submit">Save service control</button>
               </form>
             </article>
           </div>

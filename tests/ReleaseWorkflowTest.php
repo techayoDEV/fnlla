@@ -100,7 +100,7 @@ final class ReleaseWorkflowTest extends TestCase
         $policy = json_decode((string) file_get_contents(base_path("resources/performance-baselines/2.1-policy.json")), true);
 
         self::assertStringContainsString("v2.0.3", $workflow);
-        self::assertStringContainsString("upgrade:check --target=2.1.1", $workflow);
+        self::assertStringContainsString("upgrade:check --target=2.1.3", $workflow);
         self::assertStringContainsString("project:acceptance --json", $workflow);
         self::assertSame("fnlla.performance_baseline_policy.v1", $policy["schema"] ?? null);
 

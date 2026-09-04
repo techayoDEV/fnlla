@@ -73,7 +73,7 @@ final class HardeningTest extends TestCase
     {
         $directory = $this->makeTempDirectory("fnlla-env-hardening-");
         $envPath = $directory . DIRECTORY_SEPARATOR . ".env";
-        file_put_contents($envPath, "APP_NAME=" . PHP_EOL . "DEVELOPER_ACCESS_PASSWORD_HASH=" . PHP_EOL);
+        file_put_contents($envPath, "APP_NAME=" . PHP_EOL . "RELEASE_SIGNING_KEY=" . PHP_EOL);
 
         config_set("maintenance.env_path", $envPath);
         config_set("maintenance.env_example_path", $directory . DIRECTORY_SEPARATOR . ".env.example");
@@ -81,7 +81,7 @@ final class HardeningTest extends TestCase
         $hash = '$2y$10$abcdefghijklmnopqrstuu8u5yOEPZgspmNwBl3Pq7BzFn5yGfl6m';
         (new EnvironmentFileManager())->write([
             "APP_NAME" => "Client Operations Hub",
-            "DEVELOPER_ACCESS_PASSWORD_HASH" => $hash,
+            "RELEASE_SIGNING_KEY" => $hash,
         ]);
 
         self::assertStringContainsString(
@@ -89,7 +89,7 @@ final class HardeningTest extends TestCase
             (string) file_get_contents($envPath)
         );
         self::assertStringContainsString(
-            "DEVELOPER_ACCESS_PASSWORD_HASH=" . $hash,
+            "RELEASE_SIGNING_KEY=" . $hash,
             (string) file_get_contents($envPath)
         );
     }
@@ -152,6 +152,15 @@ final class HardeningTest extends TestCase
         }
     }
 
+    public function testConfiguredRequestBodyLimitCoversUploadsWithMultipartOverhead(): void
+    {
+        $uploadLimit = (int) config("security.uploads.max_file_bytes", 0);
+        $bodyLimit = (int) config("security.request.max_body_bytes", 0);
+
+        self::assertTrue($uploadLimit > 0);
+        self::assertTrue($bodyLimit >= $uploadLimit + 1048576);
+    }
+
     public function testUploadedFileValidationRejectsUnexpectedMimeTypes(): void
     {
         $directory = $this->makeTempDirectory("fnlla-upload-hardening-");
@@ -161,6 +170,13 @@ final class HardeningTest extends TestCase
 
         $this->expectException(RuntimeException::class);
         $file->validate(100, ["application/pdf"]);
+    }
+
+    public function testUploadedFileExposesPhpUploadErrorCode(): void
+    {
+        $file = new UploadedFile("", "avatar.png", "image/png", 0, UPLOAD_ERR_INI_SIZE);
+
+        self::assertSame(UPLOAD_ERR_INI_SIZE, $file->error());
     }
 
     public function testResponseRejectsUnsafeHeaderValues(): void

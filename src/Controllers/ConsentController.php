@@ -66,6 +66,8 @@ final class ConsentController extends Controller
             "y_percent" => $payload["position"]["y_percent"] ?? 0,
             "depth_percent" => $payload["depth_percent"] ?? ($payload["depth"] ?? 0),
             "element" => (string) ($payload["element"] ?? "unknown"),
+            "element_label" => (string) ($payload["element_label"] ?? ""),
+            "element_context" => (string) ($payload["element_context"] ?? ""),
         ]);
 
         return Response::json([

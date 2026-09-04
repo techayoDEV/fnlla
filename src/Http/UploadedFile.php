@@ -64,6 +64,11 @@ final class UploadedFile
         return $this->size;
     }
 
+    public function error(): int
+    {
+        return $this->error;
+    }
+
     public function extension(): string
     {
         return strtolower(pathinfo($this->originalName, PATHINFO_EXTENSION));

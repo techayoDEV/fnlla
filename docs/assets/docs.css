@@ -168,6 +168,12 @@ body[data-fnlla-theme="dark"] .doc-wrapper {
   color: var(--fnlla-color-on-dark);
 }
 
+.doc-official-link,
+.doc-official-link:hover,
+.doc-official-link:focus-visible {
+  text-decoration: none;
+}
+
 .doc-header-grid {
   display: grid;
   gap: 0.9rem;

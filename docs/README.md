@@ -4,16 +4,44 @@ This directory is the long-form documentation set for FNLLA. The repository
 root `README.md` is intentionally short; this map points to the documents that
 carry the full technical, operational and release detail.
 
+## Official Framework Identity
+
+- Official website: [fnlla.com](https://fnlla.com).
+- Official source repository: [techayoDEV/fnlla](https://github.com/techayoDEV/fnlla).
+- Official framework support mailbox: `support@fnlla.com`.
+- Maintainer and legal owner: TechAyo LTD, documented through
+  [techayo.co.uk](https://techayo.co.uk).
+
+`FNLLA_OFFICIAL_URL` describes the framework website. It is not a replacement
+for a downstream project's `APP_URL`, public customer domain or project brand.
+
 ## Recommended Reading Order
 
 1. [STARTING-A-NEW-PROJECT.md](./STARTING-A-NEW-PROJECT.md) - how to create a real downstream product with `make:project`.
-2. [BUILDING-WITH-FNLLA.md](./BUILDING-WITH-FNLLA.md) - how to build routes, controllers, views, forms, persistence and protected areas.
+2. [BUILDING-WITH-FNLLA.md](./BUILDING-WITH-FNLLA.md) - how to build operated web products with routes, controllers, views, forms, persistence, protected areas and runtime AI.
 3. [PUBLIC-API.md](./PUBLIC-API.md) - which framework surfaces are stable across minor releases.
 4. [PRODUCTION-CHECKLIST.md](./PRODUCTION-CHECKLIST.md) - the production security, backup, restore and deployment gate.
 5. [ENVIRONMENT.md](./ENVIRONMENT.md) - the short `.env.example`, full `.env.full.example`, client preview and Fionn bridge contract.
-6. [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) - the technical workspace, security, analytics, TechAyo Remote Control adapter contract, storage and framework-vs-product boundary.
+6. [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) - the Developer Operations Panel, security, analytics, TechAyo Remote Control adapter contract, storage and framework-vs-product boundary.
 7. [RELEASE-AND-OPERATIONS.md](./RELEASE-AND-OPERATIONS.md) - release workflow, GitHub Actions, SBOM/checksum assets, restore evidence and operational commands.
 8. [PERFORMANCE.md](./PERFORMANCE.md) - CLI and HTTP performance profiling, baseline management and regression budgets.
+
+## Product Positioning
+
+FNLLA should be described as an AI-ready web product framework, not as another
+generic PHP framework. The claim is grounded in shipped surfaces:
+
+- local deterministic `runtime_ai()` for project knowledge and user guidance;
+- opt-in Fionn bridge contract with strict endpoint policy;
+- Developer Operations Panel for setup, preview, service control, customer
+  review, analytics, audit, notifications and release readiness;
+- project export, claim and acceptance commands;
+- release gate with tests, lint, metadata, static analysis, docs sync,
+  technical-debt snapshot and supply-chain artefacts.
+
+Do not claim that FNLLA includes a hosted AI service, a proprietary Fionn brain,
+automatic product generation or a finished CRM/CMS. Those belong to the
+downstream product or to an external adapter.
 
 ## Build A Commercial Application
 
@@ -52,7 +80,7 @@ for the first serious business application built on FNLLA.
 ### Operations And Security
 
 - [PRODUCTION-CHECKLIST.md](./PRODUCTION-CHECKLIST.md) is the deploy gate.
-- [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) defines the private technical workspace, security, analytics, TechAyo Remote Control adapter contract, storage and the line between FNLLA-managed operations and project-owned product code.
+- [DEVELOPER-PANEL.md](./DEVELOPER-PANEL.md) defines the private Developer Operations Panel, security, analytics, TechAyo Remote Control adapter contract, storage and the line between FNLLA-managed operations and project-owned product code.
 - [ENVIRONMENT.md](./ENVIRONMENT.md) explains environment layers, client preview and the Fionn bridge boundary.
 - [RELEASE-AND-OPERATIONS.md](./RELEASE-AND-OPERATIONS.md) documents release, restore, supply-chain and GitHub Actions workflows.
 - [PERFORMANCE.md](./PERFORMANCE.md) explains baselines and p95 budgets.

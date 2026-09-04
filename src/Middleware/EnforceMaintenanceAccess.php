@@ -64,7 +64,7 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
             return Response::redirect($this->freshSetupRedirectPath($request));
         }
 
-        if (!$this->access->enabled() || $this->access->isUnlocked() || developer_access()->isUnlocked() || $this->isAllowedWhileLocked($request)) {
+        if (!$this->access->enabled() || $this->access->isUnlocked() || developer_access()->isUnlocked() || customer_access()->isUnlocked() || $this->isAllowedWhileLocked($request)) {
             return $next($request);
         }
 
@@ -96,15 +96,12 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
             return true;
         }
 
-        $developerPath = developer_access()->path();
-
-        return $developerPath !== ""
-            && ($request->path() === $developerPath || str_starts_with($request->path(), $developerPath . "/"));
+        return $this->isDeveloperPath($request) || $this->isCustomerPath($request);
     }
 
     private function isAllowedDuringDeveloperDisable(Request $request): bool
     {
-        if (developer_access()->isUnlocked()) {
+        if (developer_access()->isUnlocked() || customer_access()->isUnlocked()) {
             return true;
         }
 
@@ -112,10 +109,23 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
             return true;
         }
 
+        return $this->isDeveloperPath($request) || $this->isCustomerPath($request);
+    }
+
+    private function isDeveloperPath(Request $request): bool
+    {
         $developerPath = developer_access()->path();
 
         return $developerPath !== ""
             && ($request->path() === $developerPath || str_starts_with($request->path(), $developerPath . "/"));
+    }
+
+    private function isCustomerPath(Request $request): bool
+    {
+        $customerPath = customer_access()->path();
+
+        return $customerPath !== ""
+            && ($request->path() === $customerPath || str_starts_with($request->path(), $customerPath . "/"));
     }
 
     private function shouldRedirectFreshSetup(Request $request): bool

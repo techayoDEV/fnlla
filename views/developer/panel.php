@@ -41,6 +41,38 @@ $atAGlance = [
     ["label" => "Operations", "value" => "Ready"],
     ["label" => "Developer session", "value" => $remainingLabel . " of " . (string) $sessionMinutes . "m"],
 ];
+$dashboardNotifications = is_array($developerHeaderNotifications ?? null) ? (array) $developerHeaderNotifications : [];
+$dashboardNotificationItems = array_values((array) ($dashboardNotifications["items"] ?? []));
+$dashboardNotificationCount = max(0, (int) ($dashboardNotifications["unread_count"] ?? 0));
+$dashboardNotificationSourceFor = static function (array $item): string {
+    $key = strtolower((string) ($item["key"] ?? ""));
+
+    if (str_contains($key, "framework") || str_contains($key, "update")) {
+        return "Framework updates";
+    }
+
+    if (str_contains($key, "totp") || str_contains($key, "access") || str_contains($key, "security")) {
+        return "Access & security";
+    }
+
+    if (str_contains($key, "readiness") || str_contains($key, "backup") || str_contains($key, "audit")) {
+        return "Readiness & health";
+    }
+
+    if (str_contains($key, "analytics") || str_contains($key, "heatmap") || str_contains($key, "metric")) {
+        return "Analytics";
+    }
+
+    if (str_contains($key, "preview") || str_contains($key, "service")) {
+        return "Project setup";
+    }
+
+    if (str_contains($key, "leadership") || str_contains($key, "identity")) {
+        return "Project setup";
+    }
+
+    return "Developer Panel";
+};
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -56,7 +88,7 @@ require __DIR__ . "/panel-header.php";
               <?php else: ?>
               <p class="content-text">No public browser-title slogan is configured yet.</p>
               <?php endif; ?>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Edit identity</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Open setup</a>
             </article>
 
             <article class="developer-dashboard-card">
@@ -66,7 +98,7 @@ require __DIR__ . "/panel-header.php";
               <p class="content-text"><?= $maintenanceConfigured
                   ? "A preview password is configured and can be rotated before client handoff."
                   : "No preview password is configured yet. Set one before sharing a private build." ?></p>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open settings</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open preview</a>
             </article>
 
             <article class="developer-dashboard-card">
@@ -84,6 +116,39 @@ require __DIR__ . "/panel-header.php";
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#project-leadership">Open leadership</a>
             </article>
           </div>
+        </section>
+
+        <section class="developer-dashboard-section" aria-label="Dashboard notifications">
+          <details class="developer-dashboard-notification-drawer">
+            <summary>
+              <span>
+                <strong>Notifications</strong>
+                <small><?= $dashboardNotificationCount > 0 ? h((string) $dashboardNotificationCount) . " active items need review" : "No open action items" ?></small>
+              </span>
+              <em><?= h((string) $dashboardNotificationCount) ?></em>
+            </summary>
+            <div class="developer-dashboard-notification-list">
+              <?php foreach (array_slice($dashboardNotificationItems, 0, 5) as $item): ?>
+              <?php
+                  $severity = strtoupper((string) ($item["severity"] ?? "info"));
+                  $title = trim((string) ($item["title"] ?? "Notification"));
+                  $text = trim((string) ($item["text"] ?? ""));
+              ?>
+              <article class="developer-dashboard-notification-item">
+                <span class="developer-notification-marker" aria-hidden="true"></span>
+                <div>
+                  <strong><?= h($title) ?></strong>
+                  <p><?= h($text !== "" ? $text : "No extra detail was provided by this alert source.") ?></p>
+                  <small><?= h($severity) ?> / <?= h($dashboardNotificationSourceFor((array) $item)) ?></small>
+                </div>
+              </article>
+              <?php endforeach; ?>
+              <?php if ($dashboardNotificationItems === []): ?>
+              <p class="content-text mb-0">The Developer Panel did not detect any action items for this project.</p>
+              <?php endif; ?>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open notification center</a>
+            </div>
+          </details>
         </section>
 
         <section class="developer-dashboard-section" aria-label="Environment status">
@@ -146,7 +211,7 @@ require __DIR__ . "/panel-header.php";
                 <strong>Maintenance access, preview lock and service disable</strong>
                 <p>Prepare client preview access or disable the public service with a developer contact message.</p>
               </div>
-              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open settings</a>
+              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open preview</a>
               <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">
@@ -171,14 +236,6 @@ require __DIR__ . "/panel-header.php";
                 <p>Use the update surface before pulling a newer FNLLA base into this application.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"))) ?>">Open update</a>
-              <span aria-hidden="true">-&gt;</span>
-            </article>
-            <article class="developer-dashboard-management-row">
-              <div>
-                <strong>Review operations, analytics and release readiness</strong>
-                <p>Use the privacy-light operations page for probes, audit events, integrations and launch checks.</p>
-              </div>
-              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["operations"] ?? route("developer.panel.operations"))) ?>">Open operations</a>
               <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">

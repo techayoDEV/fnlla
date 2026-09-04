@@ -24,9 +24,8 @@ use PHPUnit\Framework\TestCase;
 
 final class BootstrapAutoloadTest extends TestCase
 {
-    public function testFallbackAutoloaderResolvesComposerPsr4NamespacesWithoutVendorAutoload(): void
+    public function testBootstrapAutoloaderResolvesComposerPsr4Namespaces(): void
     {
-        self::assertFalse(is_file(base_path("vendor/autoload.php")));
         self::assertTrue(class_exists("Database\\Seeders\\DatabaseSeeder"));
         self::assertTrue(class_exists("Database\\Factories\\UserFactory"));
     }

@@ -46,13 +46,39 @@ final class DeveloperWorkspaceBoard
         "slate" => "Slate",
         "sky" => "Sky",
         "indigo" => "Indigo",
-        "neutral" => "Neutral",
+        "green" => "Green",
+        "red" => "Red",
+        "yellow" => "Yellow",
+        "orange" => "Orange",
     ];
 
     public function state(array $developer = []): array
     {
         $state = $this->read();
         $tasks = $this->normaliseTasks((array) ($state["tasks"] ?? []));
+
+        return $this->buildState($state, $tasks, $developer, "fnlla.developer_workspace.v1");
+    }
+
+    public function customerState(array $customer = []): array
+    {
+        $state = $this->read();
+        $tasks = array_values(array_filter(
+            $this->normaliseTasks((array) ($state["tasks"] ?? [])),
+            static fn (array $task): bool => (bool) ($task["client_visible"] ?? true)
+        ));
+
+        return array_merge($this->buildState($state, $tasks, [], "fnlla.customer_workspace.v1"), [
+            "customer" => [
+                "email" => strtolower(trim((string) ($customer["email"] ?? ""))),
+                "name" => trim((string) ($customer["name"] ?? "Customer")),
+            ],
+            "client_visible_tasks_count" => count($tasks),
+        ]);
+    }
+
+    private function buildState(array $state, array $tasks, array $developer, string $schema): array
+    {
         $currentEmail = strtolower(trim((string) ($developer["email"] ?? "")));
         $today = strtotime(gmdate("Y-m-d")) ?: time();
         $soon = strtotime("+7 days", $today) ?: $today;
@@ -93,7 +119,7 @@ final class DeveloperWorkspaceBoard
         }
 
         return [
-            "schema" => "fnlla.developer_workspace.v1",
+            "schema" => $schema,
             "updated_at_utc" => (string) ($state["updated_at_utc"] ?? ""),
             "columns" => self::COLUMNS,
             "priorities" => self::PRIORITIES,
@@ -131,9 +157,12 @@ final class DeveloperWorkspaceBoard
             "due_date" => $this->date((string) ($payload["due_date"] ?? "")),
             "estimate" => $this->clean((string) ($payload["estimate"] ?? ""), 24),
             "blocked" => (bool) ($payload["blocked"] ?? false),
+            "client_visible" => (bool) ($payload["client_visible"] ?? true),
             "checklist" => $this->checklist((string) ($payload["checklist"] ?? "")),
             "comments" => [],
-            "attachments" => [],
+            "attachments" => $this->attachmentsFromArray([
+                $this->fileAttachmentFromPayload($payload, $developer),
+            ]),
             "created_by" => strtolower(trim((string) ($developer["email"] ?? "developer"))),
             "updated_by" => strtolower(trim((string) ($developer["email"] ?? "developer"))),
             "created_at_utc" => $now,
@@ -157,9 +186,15 @@ final class DeveloperWorkspaceBoard
             $currentChecklist = $this->checklistFromArray((array) ($task["checklist"] ?? []));
             $currentChecklistText = $this->checklistText($currentChecklist);
             $incomingChecklistText = (string) ($payload["checklist"] ?? $currentChecklistText);
-            $checklist = $incomingChecklistText === $currentChecklistText
+            $checklist = is_array($payload["subtasks_text"] ?? null)
+                ? $this->checklistFromStructured(
+                    (array) ($payload["subtasks_text"] ?? []),
+                    (array) ($payload["subtasks_done"] ?? []),
+                    (array) ($payload["subtasks_color"] ?? [])
+                )
+                : ($incomingChecklistText === $currentChecklistText
                 ? $currentChecklist
-                : $this->checklist($incomingChecklistText);
+                : $this->checklist($incomingChecklistText));
             $subtask = $this->clean((string) ($payload["subtask"] ?? ""), 120);
 
             if ($subtask !== "") {
@@ -205,11 +240,17 @@ final class DeveloperWorkspaceBoard
             $attachmentUrl = trim((string) ($payload["attachment_url"] ?? ""));
             if ($attachmentLabel !== "" && filter_var($attachmentUrl, FILTER_VALIDATE_URL) !== false) {
                 $attachments[] = [
+                    "type" => "url",
                     "label" => $attachmentLabel,
                     "url" => $attachmentUrl,
                     "added_by" => strtolower(trim((string) ($payload["attachment_added_by"] ?? $developer["email"] ?? "developer"))),
                     "created_at_utc" => gmdate(DATE_ATOM),
                 ];
+            }
+
+            $fileAttachment = $this->fileAttachmentFromPayload($payload, $developer);
+            if ($fileAttachment !== null) {
+                $attachments[] = $fileAttachment;
             }
 
             $tasks[$index] = array_merge($task, [
@@ -224,6 +265,7 @@ final class DeveloperWorkspaceBoard
                 "due_date" => $this->date((string) ($payload["due_date"] ?? $task["due_date"] ?? "")),
                 "estimate" => $this->clean((string) ($payload["estimate"] ?? $task["estimate"] ?? ""), 24),
                 "blocked" => (bool) ($payload["blocked"] ?? $task["blocked"] ?? false),
+                "client_visible" => (bool) ($payload["client_visible"] ?? $task["client_visible"] ?? true),
                 "checklist" => array_slice($checklist, 0, 12),
                 "comments" => array_slice($comments, -20),
                 "attachments" => array_slice($attachments, -20),
@@ -302,6 +344,7 @@ final class DeveloperWorkspaceBoard
                 "due_date" => $this->date((string) ($task["due_date"] ?? "")),
                 "estimate" => $this->clean((string) ($task["estimate"] ?? ""), 24),
                 "blocked" => (bool) ($task["blocked"] ?? false),
+                "client_visible" => (bool) ($task["client_visible"] ?? true),
                 "checklist" => $this->checklistFromArray((array) ($task["checklist"] ?? [])),
                 "comments" => $this->commentsFromArray((array) ($task["comments"] ?? [])),
                 "attachments" => $this->attachmentsFromArray((array) ($task["attachments"] ?? [])),
@@ -387,6 +430,7 @@ final class DeveloperWorkspaceBoard
                 "due_date" => "",
                 "estimate" => "15m",
                 "blocked" => false,
+                "client_visible" => true,
                 "checklist" => [
                     ["text" => "Set app name", "done" => false, "color" => "blue"],
                     ["text" => "Set public URL", "done" => false, "color" => "blue"],
@@ -411,6 +455,7 @@ final class DeveloperWorkspaceBoard
                 "due_date" => "",
                 "estimate" => "30m",
                 "blocked" => false,
+                "client_visible" => true,
                 "checklist" => [
                     ["text" => "Set preview password", "done" => false, "color" => "sky"],
                     ["text" => "Confirm public lock policy", "done" => false, "color" => "sky"],
@@ -435,6 +480,7 @@ final class DeveloperWorkspaceBoard
                 "due_date" => "",
                 "estimate" => "45m",
                 "blocked" => false,
+                "client_visible" => false,
                 "checklist" => [
                     ["text" => "Run security audit", "done" => false, "color" => "indigo"],
                     ["text" => "Review backup status", "done" => false, "color" => "indigo"],
@@ -551,6 +597,31 @@ final class DeveloperWorkspaceBoard
         return $normalised;
     }
 
+    private function checklistFromStructured(array $texts, array $done, array $colors): array
+    {
+        $items = [];
+
+        foreach ($texts as $index => $value) {
+            $text = $this->clean((string) $value, 120);
+
+            if ($text === "") {
+                continue;
+            }
+
+            $items[$index] = [
+                "text" => $text,
+                "done" => array_key_exists($index, $done),
+                "color" => $this->color((string) ($colors[$index] ?? "blue")),
+            ];
+
+            if (count($items) >= 12) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
     private function checklistText(array $items): string
     {
         $lines = [];
@@ -615,18 +686,28 @@ final class DeveloperWorkspaceBoard
                 continue;
             }
 
-            $label = $this->clean((string) ($item["label"] ?? ""), 100);
             $url = trim((string) ($item["url"] ?? ""));
+            $type = (string) ($item["type"] ?? "url");
+            $originalName = $this->clean((string) ($item["original_name"] ?? ""), 160);
+            $label = $this->clean((string) ($item["label"] ?? ""), 100);
 
-            if ($label === "" || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            if ($type === "file" && $originalName !== "") {
+                $label = $this->clean($originalName, 100);
+            }
+
+            if ($label === "" || !$this->validAttachmentUrl($url)) {
                 continue;
             }
 
             $normalised[] = [
+                "type" => in_array($type, ["url", "file"], true) ? $type : "url",
                 "label" => $label,
                 "url" => $url,
                 "added_by" => strtolower(trim((string) ($item["added_by"] ?? "developer"))),
                 "created_at_utc" => $this->clean((string) ($item["created_at_utc"] ?? ""), 80),
+                "original_name" => $originalName,
+                "mime_type" => $this->clean((string) ($item["mime_type"] ?? ""), 120),
+                "size_bytes" => max(0, (int) ($item["size_bytes"] ?? 0)),
             ];
 
             if (count($normalised) >= 20) {
@@ -635,6 +716,41 @@ final class DeveloperWorkspaceBoard
         }
 
         return $normalised;
+    }
+
+    private function fileAttachmentFromPayload(array $payload, array $developer = []): ?array
+    {
+        $file = $payload["attachment_file"] ?? null;
+
+        if (!is_array($file)) {
+            return null;
+        }
+
+        $originalName = $this->clean((string) ($file["original_name"] ?? ""), 160);
+        $label = $originalName !== ""
+            ? $this->clean($originalName, 100)
+            : $this->clean((string) ($file["label"] ?? ""), 100);
+        $url = trim((string) ($file["url"] ?? ""));
+
+        if ($label === "" || !$this->validAttachmentUrl($url)) {
+            return null;
+        }
+
+        return [
+            "type" => "file",
+            "label" => $label,
+            "url" => $url,
+            "added_by" => strtolower(trim((string) ($file["added_by"] ?? $payload["attachment_added_by"] ?? $developer["email"] ?? "developer"))),
+            "created_at_utc" => $this->clean((string) ($file["created_at_utc"] ?? gmdate(DATE_ATOM)), 80),
+            "original_name" => $originalName,
+            "mime_type" => $this->clean((string) ($file["mime_type"] ?? ""), 120),
+            "size_bytes" => max(0, (int) ($file["size_bytes"] ?? 0)),
+        ];
+    }
+
+    private function validAttachmentUrl(string $url): bool
+    {
+        return filter_var($url, FILTER_VALIDATE_URL) !== false || str_starts_with($url, "/uploads/");
     }
 
     private function clean(string $value, int $maxLength): string

@@ -207,13 +207,12 @@ final class HomeController extends Controller
             $developerAccount = [
                 "email" => $payload["developer_setup_email"],
                 "name" => "Developer",
-                "role" => "admin",
+                "role" => "lead_developer",
                 "password_hash" => $developerPasswordHash,
             ];
             $environmentValues["DEVELOPER_ACCESS_ENABLED"] = "true";
+            $environmentValues["DEVELOPER_ACCESS_PATH"] = $developerAccess->path();
             $environmentValues["DEVELOPER_ACCESS_EMAIL"] = $payload["developer_setup_email"];
-            $environmentValues["DEVELOPER_ACCESS_PASSWORD"] = "";
-            $environmentValues["DEVELOPER_ACCESS_PASSWORD_HASH"] = "";
             $environmentValues["DEVELOPER_ACCESS_USERS"] = $developerAccess->serializeAccounts([$developerAccount]);
             $environmentValues["DEVELOPER_OPERATIONS_NAV_MODE"] = "hidden";
             $developerAccessCreated = true;
@@ -222,6 +221,7 @@ final class HomeController extends Controller
         try {
             $environmentFileManager->write($environmentValues);
             $environmentFileManager->apply($environmentValues);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -247,6 +247,7 @@ final class HomeController extends Controller
                 "email" => (string) $environmentValues["DEVELOPER_ACCESS_EMAIL"],
                 "password" => "",
                 "password_hash" => "",
+                "path" => (string) $environmentValues["DEVELOPER_ACCESS_PATH"],
                 "users" => (string) $environmentValues["DEVELOPER_ACCESS_USERS"],
                 "operations_nav_mode" => "hidden",
             ]));
@@ -265,7 +266,7 @@ final class HomeController extends Controller
             $maintenanceAccess->lock();
             flash_set("developer_access_notice", [
                 "title" => "Named developer account created",
-                "text" => "The developer session is ready at the standard /developer address and uses email plus password sign-in.",
+                "text" => "The developer session is ready at " . $developerAccess->path() . " and uses email plus password sign-in.",
             ]);
         }
 
@@ -357,7 +358,7 @@ final class HomeController extends Controller
         $developerAccount = [
             "email" => $payload["developer_setup_email"],
             "name" => "Developer",
-            "role" => "admin",
+            "role" => "lead_developer",
             "password_hash" => $developerPasswordHash,
         ];
         $environmentValues = [
@@ -375,9 +376,8 @@ final class HomeController extends Controller
             "PROJECT_LEADERSHIP_CONFIRMED_BY" => "",
             "PROJECT_LEADERSHIP_CONFIRMED_AT" => "",
             "DEVELOPER_ACCESS_ENABLED" => "true",
+            "DEVELOPER_ACCESS_PATH" => $developerAccess->path(),
             "DEVELOPER_ACCESS_EMAIL" => $payload["developer_setup_email"],
-            "DEVELOPER_ACCESS_PASSWORD" => "",
-            "DEVELOPER_ACCESS_PASSWORD_HASH" => "",
             "DEVELOPER_ACCESS_USERS" => $developerAccess->serializeAccounts([$developerAccount]),
             "DEVELOPER_OPERATIONS_NAV_MODE" => "hidden",
         ];
@@ -385,6 +385,7 @@ final class HomeController extends Controller
         try {
             $environmentFileManager->write($environmentValues);
             $environmentFileManager->apply($environmentValues);
+            $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -402,6 +403,7 @@ final class HomeController extends Controller
             "email" => $payload["developer_setup_email"],
             "password" => "",
             "password_hash" => "",
+            "path" => (string) $environmentValues["DEVELOPER_ACCESS_PATH"],
             "users" => (string) $environmentValues["DEVELOPER_ACCESS_USERS"],
             "operations_nav_mode" => "hidden",
         ]));

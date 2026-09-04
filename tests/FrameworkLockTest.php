@@ -73,6 +73,8 @@ final class FrameworkLockTest extends TestCase
             "node_modules/package/index.js",
             "output/report.html",
             "playwright-report/index.html",
+            "public/uploads/developer-avatars/avatar.jpg",
+            "public/uploads/developer-workspace-attachments/spec.pdf",
             "test-results/result.json",
             "tmp/browser-profile/Preferences",
             "vendor/autoload.php",
@@ -145,6 +147,10 @@ final class FrameworkLockTest extends TestCase
 
             self::assertFileExists($projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json");
             self::assertFalse(is_file($projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "legacy-framework-lock.json"));
+
+            $lock = json_decode((string) file_get_contents($projectRoot . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json"), true);
+            self::assertSame("https://fnlla.com", $lock["framework_base"]["framework"]["website"] ?? null);
+            self::assertSame("support@fnlla.com", $lock["framework_base"]["framework"]["support"] ?? null);
         } finally {
             $this->removeDirectory($projectRoot);
             $this->removeDirectory($sourceRoot);

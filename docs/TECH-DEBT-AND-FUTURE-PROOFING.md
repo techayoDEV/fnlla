@@ -4,6 +4,18 @@ This document tracks known future-facing improvement areas for the maintained
 FNLLA repository. It is not a release blocker list. It is a practical backlog
 for keeping the framework small while reducing long-term operational risk.
 
+The generated section at the end is maintained by:
+
+```bash
+php fnlla tech-debt:update
+php fnlla tech-debt:update --check
+```
+
+The command writes `storage/framework/cache/technical-debt-report.json` for
+local CI or release evidence and refreshes the bounded Markdown snapshot. Use
+`--check` in release gates when the documentation must already be current.
+The machine-readable report schema is `fnlla.technical_debt_report.v1`.
+
 ## Implemented Hardening
 
 - `ProcessRunner` now runs process commands with argv boundaries, timeout
@@ -82,6 +94,24 @@ There are no known release-blocking technical-debt items in this snapshot.
 Future work should be opened as explicit issues with owner, scope and acceptance
 criteria instead of staying as vague backlog text inside the repository.
 
+## Defect Triage Policy
+
+Confirmed framework defects should normally be fixed immediately when the scope
+is small and well understood. If a defect needs to be parked, track it as an
+explicit issue or in this document with:
+
+- status: open, fixed or deferred;
+- found in: maintainer source or downstream project;
+- area: export, routing, auth, docs, tests, runtime, release or security;
+- symptom and root cause;
+- action and evidence.
+
+Before recording framework debt, confirm that the issue reproduces on the
+maintained repository or on a clean `make:project` export, is not downstream
+product code, and has useful evidence from tests, lint, route output or a
+manual repro note. For security issues, use `SECURITY.md` until disclosure is
+appropriate.
+
 ## Documentation Debt Policy
 
 README is intentionally short. Detailed explanation belongs in `docs/*.md`,
@@ -106,3 +136,33 @@ Future documentation debt should be treated like code debt:
 - Framework and runtime updates reject local sources, fork repositories and
   repository overrides; downstream updates come only from the official
   `techayoDEV/fnlla` GitHub channel.
+
+<!-- FNLLA_TECH_DEBT_REPORT:BEGIN -->
+## Self-Checking Debt Snapshot
+
+Refresh this section with:
+
+```bash
+php fnlla tech-debt:update
+php fnlla tech-debt:update --check
+```
+
+The command rebuilds a machine-readable report, rewrites this bounded
+snapshot and returns a non-zero exit code when `--check` sees stale
+documentation.
+
+| Check | Status | Detail |
+| --- | --- | --- |
+| `explicit-debt-markers` | `pass` | No explicit debt markers found in release-facing source files. |
+| `runtime-residue` | `runtime` | Runtime residue is reported in the JSON report and must be cleared before tagging a source release. |
+| `generated-docs-sync` | `pass` | Generated HTML docs match Markdown sources. |
+| `release-documentation` | `pass` | Required release, AI, operations and technical-debt documents are present. |
+| `ai-product-runtime` | `pass` | Local runtime AI and the reserved Fionn bridge contract are present. |
+| `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
+
+Generated actions:
+
+- No generated remediation actions at this point.
+
+Snapshot summary: `5` pass, `0` warn, `0` fail, `1` info.
+<!-- FNLLA_TECH_DEBT_REPORT:END -->

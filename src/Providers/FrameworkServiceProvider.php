@@ -43,6 +43,7 @@ use Fnlla\Php\Exceptions\ExceptionHandler;
 use Fnlla\Php\Filesystem\StorageManager;
 use Fnlla\Php\Hashing\Hasher;
 use Fnlla\Php\Localization\Translator;
+use Fnlla\Php\Maintenance\CustomerAccessManager;
 use Fnlla\Php\Maintenance\DeveloperActivityLog;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
 use Fnlla\Php\Maintenance\DeveloperControlManager;
@@ -101,6 +102,7 @@ final class FrameworkServiceProvider extends ServiceProvider
         $this->container->singleton(Translator::class);
         $this->container->singleton(MaintenanceAccessManager::class);
         $this->container->singleton(DeveloperAccessManager::class);
+        $this->container->singleton(CustomerAccessManager::class);
         $this->container->singleton(DeveloperActivityLog::class);
         $this->container->singleton(DeveloperControlManager::class);
         $this->container->singleton(DeveloperAnalyticsReport::class);

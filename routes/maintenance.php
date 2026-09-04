@@ -20,64 +20,133 @@ Purpose:
   the full maintainer workspace.
 */
 
+use Fnlla\Php\Controllers\CustomerAccessController;
 use Fnlla\Php\Controllers\DeveloperAccessController;
 use Fnlla\Php\Controllers\FrameworkUpdateController;
 use Fnlla\Php\Controllers\HomeController;
 
-$router->get("/maintenance", [HomeController::class, "maintenanceHome"])->name("maintenance.home");
-$router->get("/developer-panel-setup", [HomeController::class, "developerSetupAlias"])->name("developer.setup");
-$router->post("/maintenance/setup-access", [HomeController::class, "setupMaintenanceAccess"])->middleware("csrf")->name("maintenance.setup_access");
-$router->post("/maintenance/setup-developer-access", [HomeController::class, "setupDeveloperAccess"])->middleware(["csrf", "developer-operations"])->name("maintenance.setup_developer_access");
-$router->post("/maintenance/unlock", [HomeController::class, "unlockMaintenance"])->middleware("csrf")->name("maintenance.unlock");
-$router->post("/maintenance/lock", [HomeController::class, "lockMaintenance"])->middleware(["csrf", "developer-operations"])->name("maintenance.lock");
-$router->get("/maintenance/health", [HomeController::class, "healthPage"])->middleware("developer-operations")->name("health");
-$router->get("/maintenance/framework-update", [FrameworkUpdateController::class, "show"])->middleware("developer-operations")->name("maintenance.framework_update");
-$router->post("/maintenance/framework-update/run", [FrameworkUpdateController::class, "run"])->middleware(["csrf", "developer-operations"])->throttle(5, 1)->name("maintenance.framework_update.run");
+/*
+Route-map convention:
+- keep framework-managed URLs declared as small data arrays
+- keep route names stable; views and tests rely on the named-route contract
+- put write routes behind CSRF and protected operator routes behind the matching
+  session middleware
+*/
+$registerRoute = static function (
+    string $method,
+    string $path,
+    string $controller,
+    string $action,
+    string $name,
+    array|string|null $middleware = null,
+    ?array $throttle = null,
+) use ($router): void {
+    $route = $router->{$method}($path, [$controller, $action]);
+
+    if ($middleware !== null) {
+        $route->middleware($middleware);
+    }
+
+    if ($throttle !== null) {
+        $route->throttle((int) $throttle[0], (int) ($throttle[1] ?? 1));
+    }
+
+    $route->name($name);
+};
+
+$maintenanceRoutes = [
+    ["get", "/maintenance", HomeController::class, "maintenanceHome", "maintenance.home"],
+    ["get", "/developer-panel-setup", HomeController::class, "developerSetupAlias", "developer.setup"],
+    ["post", "/maintenance/setup-access", HomeController::class, "setupMaintenanceAccess", "maintenance.setup_access", "csrf"],
+    ["post", "/maintenance/setup-developer-access", HomeController::class, "setupDeveloperAccess", "maintenance.setup_developer_access", ["csrf", "developer-operations"]],
+    ["post", "/maintenance/unlock", HomeController::class, "unlockMaintenance", "maintenance.unlock", "csrf"],
+    ["post", "/maintenance/lock", HomeController::class, "lockMaintenance", "maintenance.lock", ["csrf", "developer-operations"]],
+    ["get", "/maintenance/health", HomeController::class, "healthPage", "health", "developer-operations"],
+    ["get", "/maintenance/framework-update", FrameworkUpdateController::class, "show", "maintenance.framework_update", "developer-operations"],
+    ["post", "/maintenance/framework-update/run", FrameworkUpdateController::class, "run", "maintenance.framework_update.run", ["csrf", "developer-operations"], [5, 1]],
+];
+
+foreach ($maintenanceRoutes as $route) {
+    $registerRoute(...$route);
+}
 
 if (developer_access()->enabled()) {
-    $router->get("/developer", [DeveloperAccessController::class, "entry"])->name("developer.login");
-    $router->post("/developer/unlock", [DeveloperAccessController::class, "unlock"])->middleware("csrf")->name("developer.login.unlock");
-    $router->get("/developer/panel", [DeveloperAccessController::class, "show"])->middleware("developer-session")->name("developer.panel");
-    $router->get("/developer/panel/project-identity", [DeveloperAccessController::class, "projectIdentity"])->middleware("developer-session")->name("developer.panel.project_identity");
-    $router->get("/developer/panel/project-settings", [DeveloperAccessController::class, "projectSettingsPage"])->middleware("developer-session")->name("developer.panel.project_settings");
-    $router->get("/developer/panel/access", [DeveloperAccessController::class, "accessSettings"])->middleware("developer-session")->name("developer.panel.access");
-    $router->get("/developer/panel/profile", [DeveloperAccessController::class, "profile"])->middleware("developer-session")->name("developer.panel.profile");
-    $router->get("/developer/panel/security", [DeveloperAccessController::class, "security"])->middleware("developer-session")->name("developer.panel.security");
-    $router->get("/developer/panel/settings", [DeveloperAccessController::class, "panelSettings"])->middleware("developer-session")->name("developer.panel.settings");
-    $router->get("/developer/panel/health", [DeveloperAccessController::class, "health"])->middleware("developer-session")->name("developer.panel.health");
-    $router->get("/developer/panel/framework-updates", [DeveloperAccessController::class, "frameworkUpdates"])->middleware("developer-session")->name("developer.panel.framework_updates");
-    $router->get("/developer/panel/operations", [DeveloperAccessController::class, "operations"])->middleware("developer-session")->name("developer.panel.operations");
-    $router->get("/developer/panel/analytics", [DeveloperAccessController::class, "analytics"])->middleware("developer-session")->name("developer.panel.analytics");
-    $router->get("/developer/panel/heatmap", [DeveloperAccessController::class, "heatmap"])->middleware("developer-session")->name("developer.panel.heatmap");
-    $router->post("/developer/panel/heatmap/settings", [DeveloperAccessController::class, "updateHeatmapSettings"])->middleware(["csrf", "developer-session"])->name("developer.panel.heatmap.settings");
-    $router->post("/developer/panel/analytics/settings", [DeveloperAccessController::class, "updateAnalyticsSettings"])->middleware(["csrf", "developer-session"])->name("developer.panel.analytics.settings");
-    $router->get("/developer/panel/notifications", [DeveloperAccessController::class, "notifications"])->middleware("developer-session")->name("developer.panel.notifications");
-    $router->post("/developer/panel/notifications/action", [DeveloperAccessController::class, "updateNotification"])->middleware(["csrf", "developer-session"])->name("developer.panel.notifications.action");
-    $router->get("/developer/panel/release-readiness", [DeveloperAccessController::class, "releaseReadiness"])->middleware("developer-session")->name("developer.panel.release_readiness");
-    $router->get("/developer/panel/integrations", [DeveloperAccessController::class, "integrations"])->middleware("developer-session")->name("developer.panel.integrations");
-    $router->post("/developer/panel/integrations/settings", [DeveloperAccessController::class, "updateIntegrationSettings"])->middleware(["csrf", "developer-session"])->name("developer.panel.integrations.settings");
-    $router->get("/developer/panel/workspace", [DeveloperAccessController::class, "workspace"])->middleware("developer-session")->name("developer.panel.workspace");
-    $router->get("/developer/panel/policy", [DeveloperAccessController::class, "policy"])->middleware("developer-session")->name("developer.panel.policy");
-    $router->get("/developer/panel/documentation", [DeveloperAccessController::class, "documentation"])->middleware("developer-session")->name("developer.panel.documentation");
-    $router->get("/developer/panel/about", [DeveloperAccessController::class, "about"])->middleware("developer-session")->name("developer.panel.about");
-    $router->get("/developer/panel/operations/audit-export", [DeveloperAccessController::class, "exportAuditLog"])->middleware("developer-session")->name("developer.panel.audit_export");
-    $router->get("/developer/panel/operations/audit-export.csv", [DeveloperAccessController::class, "exportAuditLogCsv"])->middleware("developer-session")->name("developer.panel.audit_export_csv");
-    $router->post("/developer/panel/lock", [DeveloperAccessController::class, "lock"])->middleware(["csrf", "developer-session"])->name("developer.lock");
-    $router->post("/developer/panel/extend", [DeveloperAccessController::class, "extend"])->middleware(["csrf", "developer-session"])->name("developer.extend");
-    $router->post("/developer/panel/settings/project", [DeveloperAccessController::class, "updateProjectSettings"])->middleware(["csrf", "developer-session"])->name("developer.settings.project");
-    $router->post("/developer/panel/settings/project-leadership", [DeveloperAccessController::class, "updateProjectLeadership"])->middleware(["csrf", "developer-session"])->name("developer.settings.project_leadership");
-    $router->post("/developer/panel/settings/project-leadership/confirmation", [DeveloperAccessController::class, "confirmProjectLeadership"])->middleware(["csrf", "developer-session"])->name("developer.settings.project_leadership.confirmation");
-    $router->post("/developer/panel/settings/maintenance", [DeveloperAccessController::class, "updateMaintenanceCredentials"])->middleware(["csrf", "developer-session"])->name("developer.settings.maintenance");
-    $router->post("/developer/panel/settings/service-control", [DeveloperAccessController::class, "updateServiceControl"])->middleware(["csrf", "developer-session"])->name("developer.settings.service_control");
-    $router->post("/developer/panel/settings/password", [DeveloperAccessController::class, "updateDeveloperPassword"])->middleware(["csrf", "developer-session"])->name("developer.settings.password");
-    $router->post("/developer/panel/settings/developer-account", [DeveloperAccessController::class, "saveDeveloperAccount"])->middleware(["csrf", "developer-session"])->name("developer.settings.developer_account");
-    $router->post("/developer/panel/settings/developer-account/delete", [DeveloperAccessController::class, "deleteDeveloperAccount"])->middleware(["csrf", "developer-session"])->name("developer.settings.developer_account.delete");
-    $router->post("/developer/panel/profile", [DeveloperAccessController::class, "saveDeveloperProfile"])->middleware(["csrf", "developer-session"])->name("developer.profile.save");
-    $router->post("/developer/panel/security", [DeveloperAccessController::class, "updateDeveloperSecurity"])->middleware(["csrf", "developer-session"])->name("developer.security.save");
-    $router->post("/developer/panel/workspace/tasks", [DeveloperAccessController::class, "createWorkspaceTask"])->middleware(["csrf", "developer-session"])->name("developer.workspace.tasks.create");
-    $router->post("/developer/panel/workspace/tasks/update", [DeveloperAccessController::class, "updateWorkspaceTask"])->middleware(["csrf", "developer-session"])->name("developer.workspace.tasks.update");
-    $router->post("/developer/panel/workspace/tasks/delete", [DeveloperAccessController::class, "deleteWorkspaceTask"])->middleware(["csrf", "developer-session"])->name("developer.workspace.tasks.delete");
-    $router->post("/developer/panel/framework-updates/run", [DeveloperAccessController::class, "runFrameworkUpdate"])->middleware(["csrf", "developer-session"])->throttle(5, 1)->name("developer.panel.framework_updates.run");
-    $router->post("/developer/panel/settings/panel", [DeveloperAccessController::class, "updateNavigationMode"])->middleware(["csrf", "developer-session"])->name("developer.settings.panel");
-    $router->post("/developer/panel/settings/nav-mode", [DeveloperAccessController::class, "updateNavigationMode"])->middleware(["csrf", "developer-session"])->name("developer.settings.nav_mode");
+    $developerPath = developer_access()->path();
+    $developerPanelPath = $developerPath . "/panel";
+
+    $developerPanel = static fn (string $path = ""): string => $developerPanelPath . $path;
+    $developerRoutes = [
+        ["get", $developerPath, DeveloperAccessController::class, "entry", "developer.login"],
+        ["post", $developerPath . "/unlock", DeveloperAccessController::class, "unlock", "developer.login.unlock", "csrf"],
+        ["get", $developerPanel(), DeveloperAccessController::class, "show", "developer.panel", "developer-session"],
+        ["get", $developerPanel("/setup-checklist"), DeveloperAccessController::class, "setupChecklist", "developer.panel.setup_checklist", "developer-session"],
+        ["get", $developerPanel("/project-identity"), DeveloperAccessController::class, "projectIdentity", "developer.panel.project_identity", "developer-session"],
+        ["get", $developerPanel("/project-settings"), DeveloperAccessController::class, "projectSettingsPage", "developer.panel.project_settings", "developer-session"],
+        ["get", $developerPanel("/access"), DeveloperAccessController::class, "accessSettings", "developer.panel.access", "developer-session"],
+        ["get", $developerPanel("/profile"), DeveloperAccessController::class, "profile", "developer.panel.profile", "developer-session"],
+        ["get", $developerPanel("/security"), DeveloperAccessController::class, "security", "developer.panel.security", "developer-session"],
+        ["get", $developerPanel("/settings"), DeveloperAccessController::class, "panelSettings", "developer.panel.settings", "developer-session"],
+        ["get", $developerPanel("/health"), DeveloperAccessController::class, "health", "developer.panel.health", "developer-session"],
+        ["get", $developerPanel("/framework-updates"), DeveloperAccessController::class, "frameworkUpdates", "developer.panel.framework_updates", "developer-session"],
+        ["get", $developerPanel("/operations"), DeveloperAccessController::class, "operations", "developer.panel.operations", "developer-session"],
+        ["get", $developerPanel("/project-logs"), DeveloperAccessController::class, "projectLogs", "developer.panel.project_logs", "developer-session"],
+        ["get", $developerPanel("/analytics"), DeveloperAccessController::class, "analytics", "developer.panel.analytics", "developer-session"],
+        ["get", $developerPanel("/heatmap"), DeveloperAccessController::class, "heatmap", "developer.panel.heatmap", "developer-session"],
+        ["post", $developerPanel("/heatmap/settings"), DeveloperAccessController::class, "updateHeatmapSettings", "developer.panel.heatmap.settings", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/analytics/settings"), DeveloperAccessController::class, "updateAnalyticsSettings", "developer.panel.analytics.settings", ["csrf", "developer-session"]],
+        ["get", $developerPanel("/notifications"), DeveloperAccessController::class, "notifications", "developer.panel.notifications", "developer-session"],
+        ["post", $developerPanel("/notifications/action"), DeveloperAccessController::class, "updateNotification", "developer.panel.notifications.action", ["csrf", "developer-session"]],
+        ["get", $developerPanel("/release-readiness"), DeveloperAccessController::class, "releaseReadiness", "developer.panel.release_readiness", "developer-session"],
+        ["get", $developerPanel("/integrations"), DeveloperAccessController::class, "integrations", "developer.panel.integrations", "developer-session"],
+        ["post", $developerPanel("/integrations/settings"), DeveloperAccessController::class, "updateIntegrationSettings", "developer.panel.integrations.settings", ["csrf", "developer-session"]],
+        ["get", $developerPanel("/workspace"), DeveloperAccessController::class, "workspace", "developer.panel.workspace", "developer-session"],
+        ["get", $developerPanel("/policy"), DeveloperAccessController::class, "policy", "developer.panel.policy", "developer-session"],
+        ["get", $developerPanel("/documentation"), DeveloperAccessController::class, "documentation", "developer.panel.documentation", "developer-session"],
+        ["get", $developerPanel("/about"), DeveloperAccessController::class, "about", "developer.panel.about", "developer-session"],
+        ["get", $developerPanel("/operations/audit-export"), DeveloperAccessController::class, "exportAuditLog", "developer.panel.audit_export", "developer-session"],
+        ["get", $developerPanel("/operations/audit-export.csv"), DeveloperAccessController::class, "exportAuditLogCsv", "developer.panel.audit_export_csv", "developer-session"],
+        ["post", $developerPanel("/lock"), DeveloperAccessController::class, "lock", "developer.lock", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/extend"), DeveloperAccessController::class, "extend", "developer.extend", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/project"), DeveloperAccessController::class, "updateProjectSettings", "developer.settings.project", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/project-leadership"), DeveloperAccessController::class, "updateProjectLeadership", "developer.settings.project_leadership", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/project-leadership/confirmation"), DeveloperAccessController::class, "confirmProjectLeadership", "developer.settings.project_leadership.confirmation", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/maintenance"), DeveloperAccessController::class, "updateMaintenanceCredentials", "developer.settings.maintenance", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/service-control"), DeveloperAccessController::class, "updateServiceControl", "developer.settings.service_control", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/password"), DeveloperAccessController::class, "updateDeveloperPassword", "developer.settings.password", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/developer-account"), DeveloperAccessController::class, "saveDeveloperAccount", "developer.settings.developer_account", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/developer-account/delete"), DeveloperAccessController::class, "deleteDeveloperAccount", "developer.settings.developer_account.delete", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/customer-account"), DeveloperAccessController::class, "saveCustomerAccount", "developer.settings.customer_account", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/customer-account/delete"), DeveloperAccessController::class, "deleteCustomerAccount", "developer.settings.customer_account.delete", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/profile"), DeveloperAccessController::class, "saveDeveloperProfile", "developer.profile.save", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/security"), DeveloperAccessController::class, "updateDeveloperSecurity", "developer.security.save", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/workspace/tasks"), DeveloperAccessController::class, "createWorkspaceTask", "developer.workspace.tasks.create", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/workspace/tasks/update"), DeveloperAccessController::class, "updateWorkspaceTask", "developer.workspace.tasks.update", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/workspace/tasks/delete"), DeveloperAccessController::class, "deleteWorkspaceTask", "developer.workspace.tasks.delete", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/framework-updates/run"), DeveloperAccessController::class, "runFrameworkUpdate", "developer.panel.framework_updates.run", ["csrf", "developer-session"], [5, 1]],
+        ["post", $developerPanel("/settings/panel"), DeveloperAccessController::class, "updateNavigationMode", "developer.settings.panel", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/settings/nav-mode"), DeveloperAccessController::class, "updateNavigationMode", "developer.settings.nav_mode", ["csrf", "developer-session"]],
+    ];
+
+    foreach ($developerRoutes as $route) {
+        $registerRoute(...$route);
+    }
+}
+
+$customerPath = customer_access()->path();
+$customerPanelPath = $customerPath . "/panel";
+$customerPanel = static fn (string $path = ""): string => $customerPanelPath . $path;
+$customerRoutes = [
+    ["get", $customerPath, CustomerAccessController::class, "entry", "customer.login"],
+    ["post", $customerPath . "/unlock", CustomerAccessController::class, "unlock", "customer.login.unlock", "csrf"],
+    ["get", $customerPath . "/invite", CustomerAccessController::class, "invite", "customer.invite"],
+    ["post", $customerPath . "/invite/password", CustomerAccessController::class, "setInvitePassword", "customer.invite.password", "csrf"],
+    ["get", $customerPanel(), CustomerAccessController::class, "show", "customer.panel", "customer-session"],
+    ["get", $customerPanel("/kanban"), CustomerAccessController::class, "kanban", "customer.panel.kanban", "customer-session"],
+    ["get", $customerPanel("/analytics"), CustomerAccessController::class, "analytics", "customer.panel.analytics", "customer-session"],
+    ["get", $customerPanel("/heatmap"), CustomerAccessController::class, "heatmap", "customer.panel.heatmap", "customer-session"],
+    ["post", $customerPanel("/lock"), CustomerAccessController::class, "lock", "customer.lock", ["csrf", "customer-session"]],
+];
+
+foreach ($customerRoutes as $route) {
+    $registerRoute(...$route);
 }

@@ -61,76 +61,57 @@ if (count($developerNameParts) >= 2) {
     $developerMenuLabel = substr($developerMenuLabel, 0, 17) . ".";
 }
 
+$developerFrameworkVersionLines = is_file(base_path("VERSION")) ? file(base_path("VERSION"), FILE_IGNORE_NEW_LINES) : [];
+$developerFrameworkVersionLines = is_array($developerFrameworkVersionLines) ? $developerFrameworkVersionLines : [];
+$developerFrameworkVersion = trim((string) ($developerFrameworkVersionLines[0] ?? config("app.framework_version", "unknown")));
+$developerFrameworkVersion = $developerFrameworkVersion !== "" ? $developerFrameworkVersion : "unknown";
+$frameworkOfficialUrl = rtrim((string) config("framework.official_url", "https://fnlla.com"), "/");
+$frameworkMaintainerUrl = rtrim((string) config("framework.maintainer_url", "https://techayo.co.uk"), "/");
+$dashboardNavigationItem = ["label" => "Dashboard", "href" => (string) ($developerLinks["overview"] ?? route("developer.panel"))];
 $panelNavigationGroups = [
     "Workspace" => [
-        "overview" => ["label" => "Dashboard", "href" => (string) ($developerLinks["overview"] ?? route("developer.panel"))],
-        "workspace" => ["label" => "Project workspace", "href" => (string) ($developerLinks["workspace"] ?? route("developer.panel.workspace"))],
-        "notifications" => ["label" => "Notifications", "href" => (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))],
+        "workspace" => ["label" => "Project Kanban", "href" => (string) ($developerLinks["workspace"] ?? route("developer.panel.workspace"))],
     ],
     "Project setup" => [
-        "identity" => ["label" => "Project identity", "href" => (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))],
-        "analytics" => ["label" => "Analytics", "href" => (string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))],
-        "heatmap" => ["label" => "Heatmap", "href" => (string) ($developerLinks["heatmap"] ?? route("developer.panel.heatmap"))],
+        "identity" => ["label" => "Project setup", "href" => (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))],
     ],
     "Operations" => [
         "release-readiness" => ["label" => "Readiness & health", "href" => (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))],
-        "operations" => ["label" => "Operations hub", "href" => (string) ($developerLinks["operations"] ?? route("developer.panel.operations"))],
         "framework-updates" => ["label" => "Framework updates", "href" => (string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"))],
+        "project-logs" => ["label" => "Project logs", "href" => (string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))],
+        "analytics" => ["label" => "Analytics", "href" => (string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))],
+        "heatmap" => ["label" => "Heatmap", "href" => (string) ($developerLinks["heatmap"] ?? route("developer.panel.heatmap"))],
         "integrations" => ["label" => "Integrations", "href" => (string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))],
     ],
-    "Security & policy" => [
-        "project-settings" => ["label" => "Access & preview", "href" => (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))],
+    "Security" => [
         "access" => ["label" => "Access & security", "href" => (string) ($developerLinks["access"] ?? route("developer.panel.access"))],
         "settings" => ["label" => "Runtime & storage", "href" => (string) ($developerLinks["settings"] ?? route("developer.panel.settings"))],
-        "policy" => ["label" => "Policy boundary", "href" => (string) ($developerLinks["policy"] ?? route("developer.panel.policy"))],
-        "documentation" => ["label" => "Documentation", "href" => (string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))],
-        "about" => ["label" => "About", "href" => (string) ($developerLinks["about"] ?? route("developer.panel.about"))],
+    ],
+    "Reference" => [
+        "documentation" => ["label" => "Documentation & policy", "href" => (string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))],
     ],
 ];
 $headerNotifications = is_array($developerHeaderNotifications ?? null) ? (array) $developerHeaderNotifications : [];
 $headerNotificationItems = array_values((array) ($headerNotifications["items"] ?? []));
 $headerNotificationCount = max(0, (int) ($headerNotifications["unread_count"] ?? 0));
+$projectBrandLogo = project_brand_logo_asset();
 $notificationHref = static function (array $item) use ($developerLinks): string {
-    $key = (string) ($item["key"] ?? "");
-    $action = strtolower((string) ($item["action"] ?? ""));
-
-    if (str_contains($key, "totp") || str_contains($key, "security")) {
-        return (string) ($developerLinks["security"] ?? route("developer.panel.security"));
-    }
-
-    if (str_contains($key, "framework")) {
-        return (string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"));
-    }
-
-    if (str_contains($key, "backup") || str_contains($key, "audit") || str_contains($action, "readiness")) {
-        return (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"));
-    }
-
-    if (str_contains($key, "metrics") || str_contains($action, "analytics")) {
-        return (string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"));
-    }
-
-    if (str_contains($key, "service")) {
-        return (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"));
-    }
-
-    if (str_contains($key, "leadership")) {
-        return (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity")) . "#project-leadership";
-    }
-
-    return (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"));
+    return \Fnlla\Php\Support\DeveloperNotificationCenter::routeFor($item, $developerLinks);
 };
 ?>
 <section class="developer-workspace" aria-label="Developer workspace">
   <header class="developer-workspace-header">
     <div class="navbar-brand project-brand developer-workspace-brand">
       <a class="developer-workspace-brand-home" href="<?= h((string) ($developerLinks["overview"] ?? route("developer.panel"))) ?>">
-        <span class="project-brand-mark" aria-hidden="true"><?= h(project_brand_mark()) ?></span>
+        <span class="project-brand-mark <?= $projectBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
+          <?php if ($projectBrandLogo !== null): ?>
+          <img src="<?= h($projectBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
+          <?php else: ?>
+          <?= h(project_brand_mark()) ?>
+          <?php endif; ?>
+        </span>
         <span class="project-brand-name"><?= h((string) config("app.name")) ?></span>
       </a>
-      <span class="developer-workspace-brand-copy">
-        <small>FNLLA by <a class="developer-workspace-brand-link" href="https://techayo.co.uk" target="_blank" rel="noopener noreferrer">TechAyo</a> Limited</small>
-      </span>
     </div>
     <a class="btn btn-outline btn-sm developer-workspace-public-link" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Go to public website</a>
     <div class="developer-workspace-actions">
@@ -234,6 +215,12 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
     <aside class="developer-panel-sidebar" aria-label="Developer panel sections">
       <div class="developer-panel-sidebar-top">
         <nav class="developer-panel-sidebar-nav" aria-label="Developer panel sections">
+          <a class="developer-panel-sidebar-link developer-panel-sidebar-link-standalone <?= $developerPanelActive === "overview" ? "is-active" : "" ?>" href="<?= h((string) $dashboardNavigationItem["href"]) ?>" <?= $developerPanelActive === "overview" ? 'aria-current="page"' : "" ?>>
+            <span><?= h((string) $dashboardNavigationItem["label"]) ?></span>
+            <?php if ($developerPanelActive === "overview"): ?>
+            <span class="developer-panel-sidebar-state">NOW</span>
+            <?php endif; ?>
+          </a>
           <?php foreach ($panelNavigationGroups as $groupLabel => $items): ?>
           <div class="developer-panel-sidebar-group">
             <p><?= h((string) $groupLabel) ?></p>
@@ -248,6 +235,9 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
           </div>
           <?php endforeach; ?>
         </nav>
+      </div>
+      <div class="developer-panel-sidebar-bottom">
+        <small><a class="developer-workspace-brand-link" href="<?= h($frameworkOfficialUrl) ?>" target="_blank" rel="noopener noreferrer">FNLLA <?= h($developerFrameworkVersion) ?></a> by <a class="developer-workspace-brand-link" href="<?= h($frameworkMaintainerUrl) ?>" target="_blank" rel="noopener noreferrer">TechAyo Limited</a></small>
       </div>
 
     </aside>

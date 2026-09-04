@@ -170,8 +170,13 @@ final class OperationsTest extends TestCase
         self::assertTrue(in_array("project:acceptance", (array) ($payload["commands"] ?? []), true));
         self::assertTrue(in_array("developer:install-storage", (array) ($payload["commands"] ?? []), true));
         self::assertTrue(in_array("query_builder.paginate", (array) ($payload["data"] ?? []), true));
+        self::assertTrue(in_array("framework.identity", (array) ($payload["data"] ?? []), true));
         self::assertTrue(in_array("developer.analytics", (array) ($payload["data"] ?? []), true));
         self::assertTrue(in_array("developer.analytics_settings", (array) ($payload["data"] ?? []), true));
+        self::assertSame("fnlla.framework_identity.v1", $payload["framework_identity"]["schema"] ?? null);
+        self::assertSame("https://fnlla.com", $payload["framework_identity"]["official_url"] ?? null);
+        self::assertSame("support@fnlla.com", $payload["framework_identity"]["support_email"] ?? null);
+        self::assertSame("techayoDEV/fnlla", $payload["framework_identity"]["repository"] ?? null);
     }
 
     public function testDeveloperPanelStorageInstallerProvidesDatabaseContract(): void
@@ -250,6 +255,14 @@ final class OperationsTest extends TestCase
             "comment" => "Client handover needs a final browser pass.",
             "attachment_label" => "Release checklist",
             "attachment_url" => "https://example.test/release-checklist",
+            "attachment_file" => [
+                "label" => "Local QA notes",
+                "url" => "/uploads/developer-workspace-attachments/local-qa-notes.txt",
+                "added_by" => "lead@example.com",
+                "original_name" => "qa-notes.txt",
+                "mime_type" => "text/plain",
+                "size_bytes" => 128,
+            ],
             "attachment_added_by" => "lead@example.com",
         ], ["email" => "lead@example.com"]);
         $updatedState = $board->state(["email" => "dev@example.com"]);
@@ -274,7 +287,11 @@ final class OperationsTest extends TestCase
         self::assertSame("lead@example.com", $updatedTask["updated_by"] ?? null);
         self::assertSame(3, count((array) ($updatedTask["checklist"] ?? [])));
         self::assertSame(1, $updatedState["comments_count"] ?? null);
-        self::assertSame(1, $updatedState["attachments_count"] ?? null);
+        self::assertSame(2, $updatedState["attachments_count"] ?? null);
+        self::assertSame("file", $updatedTask["attachments"][1]["type"] ?? null);
+        self::assertSame("qa-notes.txt", $updatedTask["attachments"][1]["label"] ?? null);
+        self::assertSame("qa-notes.txt", $updatedTask["attachments"][1]["original_name"] ?? null);
+        self::assertSame(128, $updatedTask["attachments"][1]["size_bytes"] ?? null);
 
         @unlink(storage_path($path));
     }

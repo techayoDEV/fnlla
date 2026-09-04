@@ -13,7 +13,7 @@ php fnlla config:doctor
 php fnlla security:audit
 php fnlla ops:backup-plan
 php fnlla app:map
-php fnlla upgrade:check --target=2.1.1
+php fnlla upgrade:check --target=2.1.3
 php fnlla perf:profile --iterations=5
 ```
 
@@ -83,7 +83,7 @@ Run the full local release gate:
 
 ```bash
 php fnlla release:prepare
-php fnlla release:prepare --major --target=2.1.1
+php fnlla release:prepare --major --target=2.1.3
 ```
 
 The command runs:
@@ -191,6 +191,10 @@ manifest/version metadata, update code, security controls or runtime bundles.
 ## Framework Update Audit
 
 Downstream framework updates use only the official `techayoDEV/fnlla` GitHub release channel.
+The public framework website is `https://fnlla.com`; it is a product reference
+and documentation entrypoint, not an alternate update source. Update checks
+still validate the downloaded release manifest against the official GitHub
+repository before trusting cached source.
 
 Useful commands:
 

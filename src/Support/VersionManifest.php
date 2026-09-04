@@ -86,12 +86,15 @@ final class VersionManifest
         return [
             "schema_version" => 1,
             "product" => [
-                "name" => "FNLLA",
-                "slug" => "fnlla",
+                "name" => FrameworkIdentity::PRODUCT_NAME,
+                "slug" => FrameworkIdentity::PRODUCT_SLUG,
                 "version" => $frameworkVersion,
-                "owner" => "TechAyo LTD (techayo.co.uk)",
-                "origin" => "Finella Gardens in Dundee, UK",
-                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "owner" => FrameworkIdentity::DEFAULT_RUNTIME_CREATOR,
+                "origin" => FrameworkIdentity::ORIGIN,
+                "website" => FrameworkIdentity::OFFICIAL_URL,
+                "support" => FrameworkIdentity::SUPPORT_EMAIL,
+                "repository" => FrameworkIdentity::REPOSITORY_URL,
+                "repository_web" => FrameworkIdentity::REPOSITORY_WEB_URL,
                 "source_of_truth" => "github",
             ],
             "runtime" => [
@@ -105,7 +108,9 @@ final class VersionManifest
             "ui_runtime" => [
                 "name" => "Integrated FNLLA UI surface",
                 "slug" => "integrated-ui-surface",
-                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "website" => FrameworkIdentity::OFFICIAL_URL,
+                "repository" => FrameworkIdentity::REPOSITORY_URL,
+                "repository_web" => FrameworkIdentity::REPOSITORY_WEB_URL,
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
                 "distribution_path" => "public/vendor/fnlla-runtime",
@@ -183,10 +188,13 @@ final class VersionManifest
             ],
             "framework" => [
                 "name" => (string) $identity["runtime"],
-                "slug" => "fnlla",
+                "slug" => FrameworkIdentity::PRODUCT_SLUG,
                 "version" => $frameworkVersion,
                 "creator" => (string) $identity["runtime_creator"],
-                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "website" => FrameworkIdentity::OFFICIAL_URL,
+                "support" => FrameworkIdentity::SUPPORT_EMAIL,
+                "repository" => FrameworkIdentity::REPOSITORY_URL,
+                "repository_web" => FrameworkIdentity::REPOSITORY_WEB_URL,
                 "lock_file" => ".fnlla/framework-lock.json",
             ],
             "runtime" => [
@@ -200,7 +208,9 @@ final class VersionManifest
             "ui_runtime" => [
                 "name" => "Integrated FNLLA UI surface",
                 "slug" => "integrated-ui-surface",
-                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "website" => FrameworkIdentity::OFFICIAL_URL,
+                "repository" => FrameworkIdentity::REPOSITORY_URL,
+                "repository_web" => FrameworkIdentity::REPOSITORY_WEB_URL,
                 "source_of_truth" => "github",
                 "version_path" => self::UI_VERSION_FILE,
                 "distribution_path" => "public/vendor/fnlla-runtime",
@@ -287,12 +297,12 @@ final class VersionManifest
         );
         self::validateRequiredTextFile(
             self::ROOT_SUPPORT_FILE,
-            ["Support Policy", "MIT License", "TechAyo LTD", "does not promise", "release cadence"],
+            ["Support Policy", "MIT License", "TechAyo LTD", "fnlla.com", "does not promise", "release cadence"],
             $errors
         );
         self::validateRequiredTextFile(
             self::ROOT_TRADEMARKS_FILE,
-            ["Trademark Notice", "MIT License", "TechAyo LTD", "does not grant trademark rights", "official FNLLA project"],
+            ["Trademark Notice", "MIT License", "TechAyo LTD", "fnlla.com", "does not grant trademark rights", "official FNLLA project"],
             $errors
         );
 
@@ -454,12 +464,15 @@ final class VersionManifest
         return [
             "schema_version" => 1,
             "product" => [
-                "name" => "FNLLA",
-                "slug" => "fnlla",
+                "name" => FrameworkIdentity::PRODUCT_NAME,
+                "slug" => FrameworkIdentity::PRODUCT_SLUG,
                 "version" => $version,
-                "owner" => "TechAyo LTD (techayo.co.uk)",
-                "origin" => "Finella Gardens in Dundee, UK",
-                "repository" => "https://github.com/techayoDEV/fnlla.git",
+                "owner" => FrameworkIdentity::DEFAULT_RUNTIME_CREATOR,
+                "origin" => FrameworkIdentity::ORIGIN,
+                "website" => FrameworkIdentity::OFFICIAL_URL,
+                "support" => FrameworkIdentity::SUPPORT_EMAIL,
+                "repository" => FrameworkIdentity::REPOSITORY_URL,
+                "repository_web" => FrameworkIdentity::REPOSITORY_WEB_URL,
                 "source_of_truth" => "github",
             ],
             "distribution" => [
@@ -511,8 +524,8 @@ final class VersionManifest
             "system_owner" => (string) ($manifest["product"]["owner"]["name"] ?? ""),
             "developer" => (string) ($manifest["product"]["developer"]["name"] ?? ""),
             "maintainer" => (string) ($manifest["product"]["maintenance_provider"]["name"] ?? ($manifest["product"]["developer"]["name"] ?? "")),
-            "runtime" => (string) ($manifest["framework"]["name"] ?? "FNLLA"),
-            "runtime_creator" => (string) ($manifest["framework"]["creator"] ?? "TechAyo LTD (techayo.co.uk)"),
+            "runtime" => (string) ($manifest["framework"]["name"] ?? FrameworkIdentity::PRODUCT_NAME),
+            "runtime_creator" => (string) ($manifest["framework"]["creator"] ?? FrameworkIdentity::DEFAULT_RUNTIME_CREATOR),
         ];
     }
 

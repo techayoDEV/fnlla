@@ -32,6 +32,7 @@ final class FrameworkLock
     public const MIGRATION_LOCK_FILE = ".fnlla/legacy-framework-lock.json";
     private const PROJECT_SURFACE_MANAGED_PATHS = [
         "public/assets/app.css",
+        "public/assets/fnlla-logo.png",
         "routes/web.php",
         "src/Controllers/PageController.php",
         "views/layouts/app.php",
@@ -157,16 +158,19 @@ final class FrameworkLock
                     "package_slug" => $packageSlug,
                 ],
                 "framework" => [
-                    "name" => "FNLLA",
-                    "slug" => "fnlla",
+                    "name" => FrameworkIdentity::PRODUCT_NAME,
+                    "slug" => FrameworkIdentity::PRODUCT_SLUG,
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "VERSION"),
-                    "repository" => "https://github.com/techayoDEV/fnlla.git",
+                    "repository" => FrameworkIdentity::REPOSITORY_URL,
+                    "website" => FrameworkIdentity::OFFICIAL_URL,
+                    "support" => FrameworkIdentity::SUPPORT_EMAIL,
                 ],
                 "ui_runtime" => [
                     "name" => "Integrated FNLLA UI surface",
                     "slug" => "fnlla-runtime",
                     "version" => self::readVersion($sourceRoot . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "fnlla-runtime" . DIRECTORY_SEPARATOR . "VERSION"),
-                    "repository" => "https://github.com/techayoDEV/fnlla.git",
+                    "repository" => FrameworkIdentity::REPOSITORY_URL,
+                    "website" => FrameworkIdentity::OFFICIAL_URL,
                 ],
                 "lock_file" => self::lockFile(),
                 "managed_files" => self::managedFileHashes($projectRoot),
@@ -225,6 +229,7 @@ final class FrameworkLock
             "node_modules/",
             "output/",
             "playwright-report/",
+            "public/uploads/",
             "test-results/",
             "tmp/",
             "vendor/",
@@ -247,6 +252,10 @@ final class FrameworkLock
         }
 
         if (str_starts_with($relativePath, "views/developer/")) {
+            return true;
+        }
+
+        if (str_starts_with($relativePath, "views/customer/")) {
             return true;
         }
 

@@ -153,11 +153,35 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "DEVELOPER_ACCESS_PASSWORD_HASH=",
+            "DEVELOPER_ACCESS_USERS=",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            'APP_NAME="Project Test"',
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "APP_URL=",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
         );
         self::assertStringNotContainsString(
-            "DEVELOPER_ACCESS_PATH=",
+            "APP_URL=https://fnlla.com",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "FNLLA_OFFICIAL_URL=https://fnlla.com",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "MAIL_FROM_ADDRESS=no-reply@example.com",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringNotContainsString(
+            "DEVELOPER_ACCESS_PASSWORD_HASH=",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+        );
+        self::assertStringContainsString(
+            "DEVELOPER_ACCESS_PATH=/developer",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
         );
         self::assertStringContainsString(
@@ -215,6 +239,8 @@ final class MakeProjectCommandTest extends TestCase
             true
         );
         self::assertTrue(is_array($frameworkLock));
+        self::assertSame("https://fnlla.com", $frameworkLock["framework_base"]["framework"]["website"] ?? null);
+        self::assertSame("support@fnlla.com", $frameworkLock["framework_base"]["framework"]["support"] ?? null);
         self::assertArrayNotHasKey(
             "tests/BootstrapAutoloadTest.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
@@ -244,6 +270,14 @@ final class MakeProjectCommandTest extends TestCase
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
         self::assertArrayHasKey(
+            "views/customer/panel.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/customer/kanban.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
             "views/developer/project-settings.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
@@ -257,6 +291,10 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertArrayHasKey(
             "public/assets/app.css",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "public/assets/fnlla-logo.png",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
 
@@ -340,6 +378,8 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame("Developer LTD", $claimedManifest["product"]["developer"]["name"] ?? null);
         self::assertSame("Maintenance LTD", $claimedManifest["product"]["maintenance_provider"]["name"] ?? null);
         self::assertSame("TechAyo LTD (techayo.co.uk)", $claimedManifest["framework"]["creator"] ?? null);
+        self::assertSame("https://fnlla.com", $claimedManifest["framework"]["website"] ?? null);
+        self::assertSame("support@fnlla.com", $claimedManifest["framework"]["support"] ?? null);
         self::assertSame(".fnlla/framework-lock.json", $claimedManifest["framework"]["lock_file"] ?? null);
         $claimedFrameworkLock = json_decode(
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json"),

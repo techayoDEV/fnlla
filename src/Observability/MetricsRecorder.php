@@ -163,6 +163,10 @@ final class MetricsRecorder
         }
 
         $path = $this->safePath((string) ($payload["path"] ?? "/"));
+        if (!$this->isPublicBehaviorPath($path)) {
+            return;
+        }
+
         $device = $this->safeBucket((string) ($payload["device"] ?? "unknown"), ["desktop", "tablet", "mobile", "unknown"], "unknown");
         $viewportWidth = $this->intRange($payload["viewport_width"] ?? 0, 0, 10000);
         $viewportHeight = $this->intRange($payload["viewport_height"] ?? 0, 0, 10000);
@@ -181,15 +185,20 @@ final class MetricsRecorder
             $metrics["daily_behavior_events"] = $this->incrementMap((array) ($metrics["daily_behavior_events"] ?? []), $today);
 
             if ($type === "click") {
-                $xPercent = $this->floatRange($payload["x_percent"] ?? 0, 0.0, 100.0);
-                $yPercent = $this->floatRange($payload["y_percent"] ?? 0, 0.0, 100.0);
+                $position = is_array($payload["position"] ?? null) ? (array) $payload["position"] : [];
+                $xPercent = $this->floatRange($payload["x_percent"] ?? ($position["x_percent"] ?? 0), 0.0, 100.0);
+                $yPercent = $this->floatRange($payload["y_percent"] ?? ($position["y_percent"] ?? 0), 0.0, 100.0);
                 $zone = $this->heatmapZone($xPercent, $yPercent);
                 $tag = $this->safeMetricLabel(strtolower((string) ($payload["element"] ?? "unknown")), 40);
                 $tag = preg_match('/^[a-z0-9_-]+$/', $tag) === 1 ? $tag : "unknown";
+                $target = $this->clickTargetLabel($tag, (string) ($payload["element_label"] ?? ""), (string) ($payload["element_context"] ?? ""));
 
                 $metrics["heatmap_click_zones"] = (array) ($metrics["heatmap_click_zones"] ?? []);
                 $metrics["heatmap_click_zones"][$path] = $this->incrementMap((array) ($metrics["heatmap_click_zones"][$path] ?? []), $zone);
                 $metrics["heatmap_click_elements"] = $this->incrementMap((array) ($metrics["heatmap_click_elements"] ?? []), $tag);
+                $metrics["heatmap_click_targets"] = (array) ($metrics["heatmap_click_targets"] ?? []);
+                $metrics["heatmap_click_targets"][$path] = (array) ($metrics["heatmap_click_targets"][$path] ?? []);
+                $metrics["heatmap_click_targets"][$path][$zone] = $this->incrementMap((array) ($metrics["heatmap_click_targets"][$path][$zone] ?? []), $target);
             }
 
             if ($type === "scroll") {
@@ -211,6 +220,7 @@ final class MetricsRecorder
             $metrics = $this->trimTimeBuckets($metrics);
             $metrics["heatmap_click_zones"] = $this->trimNestedMaps((array) ($metrics["heatmap_click_zones"] ?? []), 50, 144);
             $metrics["heatmap_scroll_depth"] = $this->trimNestedMaps((array) ($metrics["heatmap_scroll_depth"] ?? []), 50, 5);
+            $metrics["heatmap_click_targets"] = $this->trimNestedMaps((array) ($metrics["heatmap_click_targets"] ?? []), 50, 144, 8);
             $metrics["heatmap_page_counts"] = $this->trimMap((array) ($metrics["heatmap_page_counts"] ?? []), 80);
             $metrics["heatmap_click_elements"] = $this->trimMap((array) ($metrics["heatmap_click_elements"] ?? []), 80);
 
@@ -401,6 +411,51 @@ final class MetricsRecorder
         return substr($path !== "" ? $path : "/", 0, 180);
     }
 
+    private function isPublicBehaviorPath(string $path): bool
+    {
+        $reserved = [
+            "/developer",
+            "/maintenance",
+            "/fnlla",
+            (string) config("developer_access.path", ""),
+            (string) config("customer_access.path", ""),
+        ];
+
+        foreach ($reserved as $reservedPath) {
+            $reservedPath = "/" . trim($reservedPath, "/");
+
+            if ($reservedPath === "/" || $reservedPath === "") {
+                continue;
+            }
+
+            if ($path === $reservedPath || str_starts_with($path, $reservedPath . "/")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function clickTargetLabel(string $element, string $label, string $context): string
+    {
+        $element = $this->safeMetricLabel(strtolower($element), 40);
+        $element = preg_match('/^[a-z0-9_-]+$/', $element) === 1 ? $element : "element";
+        $label = $this->safeMetricLabel($label, 80);
+        $context = $this->safeMetricLabel($context, 60);
+
+        $descriptor = $element;
+
+        if ($label !== "") {
+            $descriptor .= ": " . $label;
+        }
+
+        if ($context !== "" && $context !== "page") {
+            $descriptor .= " in " . $context;
+        }
+
+        return substr($descriptor, 0, 140);
+    }
+
     private function safeBucket(string $value, array $allowed, string $fallback): string
     {
         $value = strtolower(trim($value));
@@ -433,12 +488,25 @@ final class MetricsRecorder
         return array_slice($map, 0, max(1, $limit), true);
     }
 
-    private function trimNestedMaps(array $maps, int $outerLimit, int $innerLimit): array
+    private function trimNestedMaps(array $maps, int $outerLimit, int $innerLimit, ?int $leafLimit = null): array
     {
         $trimmed = [];
 
         foreach (array_slice($maps, -max(1, $outerLimit), null, true) as $key => $map) {
             if (is_array($map)) {
+                if ($leafLimit !== null) {
+                    $inner = [];
+
+                    foreach (array_slice($map, -max(1, $innerLimit), null, true) as $innerKey => $innerMap) {
+                        if (is_array($innerMap)) {
+                            $inner[$innerKey] = $this->trimMap($innerMap, $leafLimit);
+                        }
+                    }
+
+                    $trimmed[$key] = $inner;
+                    continue;
+                }
+
                 $trimmed[$key] = $this->trimMap($map, $innerLimit);
             }
         }

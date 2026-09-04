@@ -1,13 +1,19 @@
 # FNLLA AI Context
 
+FNLLA's AI position is deliberately practical: local, deterministic project
+guidance first; Fionn as a controlled opt-in bridge; no hidden external calls by
+default. That makes the framework AI-ready without pretending that a downstream
+product has already been built or that a private AI service is bundled inside
+the public repository.
+
 FNLLA includes a local, privacy-first AI context pack:
 
 ```bash
 php fnlla ai:context
 php fnlla ai:context --json
 php fnlla ai:context --output storage/framework/cache/my-ai-context.json
-php fnlla ai:review-pack --target=2.1.1
-php fnlla ai:upgrade-brief --target=2.1.1
+php fnlla ai:review-pack --target=2.1.3
+php fnlla ai:upgrade-brief --target=2.1.3
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 php fnlla ai:ask "How do I check release readiness?"
 php fnlla ai:triage --input="route 404 on controller" --json
@@ -96,7 +102,7 @@ php scripts/lint.php
 2. Generate a redacted review pack:
 
 ```bash
-php fnlla ai:review-pack --target=2.1.1
+php fnlla ai:review-pack --target=2.1.3
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 ```
 
@@ -258,3 +264,24 @@ The bridge deliberately forbids:
 Fionn is the only maintained external AI provider boundary for FNLLA. The
 built-in `local` driver remains the default deterministic project-knowledge
 runtime, while arbitrary third-party provider adapters are blocked by policy.
+
+## AI Product Worklist
+
+These are the next AI tasks that would strengthen FNLLA without overclaiming:
+
+1. Add a Developer Operations Panel screen that runs `ai:triage`, `ai:brief`,
+   `app:map`, `upgrade:check` and `tech-debt:update --check` together for a
+   release-candidate review.
+2. Add runtime AI eval coverage for customer-facing support answers, onboarding
+   guidance and policy explainers, with deterministic fixtures in
+   `resources/fnlla-ai-runtime/evals/`.
+3. Add a project-owned knowledge import command that accepts reviewed Markdown
+   or JSON and writes only sanitized local knowledge records.
+4. Add per-provider metering tests so every future external adapter reports
+   latency, token estimate, cost estimate and external-call policy.
+5. Add a Fionn bridge contract test suite using a local fake HTTP endpoint,
+   covering endpoint allowlists, redaction and rejected learning mutations.
+6. Add a UI flow for approved learning records so operators can review, accept,
+   reject and expire local knowledge without editing storage files.
+7. Add release-gate evidence that proves AI artifacts contain no raw `.env`,
+   source-file bodies, provider transcripts or private customer data.

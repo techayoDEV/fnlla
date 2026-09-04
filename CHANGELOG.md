@@ -3,6 +3,20 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.1.3 - 2026-09-04
+
+### Added
+
+- `tech-debt:update` for a self-checking technical-debt report, release-gate
+  freshness checks and a generated Markdown snapshot in
+  `docs/TECH-DEBT-AND-FUTURE-PROOFING.md`.
+
+### Changed
+
+- README and documentation now position FNLLA as an AI-ready web product
+  framework with a Developer Operations Panel, while keeping the AI claims
+  limited to the shipped local runtime, review commands and opt-in Fionn bridge.
+
 ## 2.1.2 - 2026-08-31
 
 ### Added

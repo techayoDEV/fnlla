@@ -111,6 +111,42 @@ final class EnvironmentFileManager
         }
     }
 
+    /**
+     * @param string[] $keys
+     */
+    public function remove(array $keys): void
+    {
+        $envPath = $this->envPath();
+
+        if (!is_file($envPath)) {
+            return;
+        }
+
+        if (!$this->isWritable()) {
+            throw new RuntimeException("The project .env file is not writable from this environment.");
+        }
+
+        $contents = (string) file_get_contents($envPath);
+
+        foreach ($keys as $key) {
+            if (!is_string($key) || $key === "") {
+                continue;
+            }
+
+            $contents = (string) preg_replace('/^' . preg_quote($key, '/') . '=.*(?:\R|$)/m', "", $contents);
+            putenv($key);
+            unset($_ENV[$key], $_SERVER[$key]);
+        }
+
+        if ($contents !== "" && !str_ends_with($contents, PHP_EOL)) {
+            $contents .= PHP_EOL;
+        }
+
+        if (file_put_contents($envPath, $contents) === false) {
+            throw new RuntimeException("Unable to write the project .env file.");
+        }
+    }
+
     private function ensureEnvFileExists(): void
     {
         $envPath = $this->envPath();

@@ -138,7 +138,43 @@ final class DeveloperAccessManager
 
     public function path(): string
     {
-        return "/developer";
+        $path = $this->normalisePath((string) config("developer_access.path", "/developer"));
+
+        return $this->pathAllowed($path) ? $path : "/developer";
+    }
+
+    public function normalisePath(string $path): string
+    {
+        $path = strtolower(trim($path));
+        $path = "/" . trim($path, "/ \t\n\r\0\x0B");
+        $path = (string) preg_replace('/\/+/', "/", $path);
+
+        return $path === "/" ? "/developer" : $path;
+    }
+
+    public function pathAllowed(string $path): bool
+    {
+        $path = $this->normalisePath($path);
+
+        if (preg_match('/^\/[a-z0-9][a-z0-9-]{2,48}(?:\/[a-z0-9][a-z0-9-]{2,48})?$/', $path) !== 1) {
+            return false;
+        }
+
+        $firstSegment = explode("/", trim($path, "/"))[0] ?? "";
+
+        return !in_array($firstSegment, [
+            "api",
+            "assets",
+            "contact",
+            "docs",
+            "fnlla",
+            "health",
+            "maintenance",
+            "privacy",
+            "services",
+            "terms",
+            "vendor",
+        ], true);
     }
 
     public function operationsNavMode(): string
@@ -212,6 +248,7 @@ final class DeveloperAccessManager
                 "success" => false,
                 "error" => "Developer access is not configured for this project yet.",
                 "retry_after" => 0,
+                "totp_required" => false,
             ];
         }
 
@@ -229,6 +266,7 @@ final class DeveloperAccessManager
                 "success" => false,
                 "error" => "Too many developer access attempts. " . $this->formatRetryAfter($retryAfter),
                 "retry_after" => $retryAfter,
+                "totp_required" => false,
             ];
         }
 
@@ -250,6 +288,7 @@ final class DeveloperAccessManager
                     "success" => false,
                     "error" => "Too many developer access attempts. " . $this->formatRetryAfter($lockoutSeconds),
                     "retry_after" => $lockoutSeconds,
+                    "totp_required" => false,
                 ];
             }
 
@@ -261,10 +300,11 @@ final class DeveloperAccessManager
 
             return [
                 "success" => false,
-                "error" => $this->emailRequired() && $email === ""
+                "error" => $email === ""
                     ? "Enter your developer email and password."
                     : "Incorrect developer credentials. Please try again.",
                 "retry_after" => max(0, $this->limiter->availableIn($rateLimitKey)),
+                "totp_required" => false,
             ];
         }
 
@@ -286,6 +326,7 @@ final class DeveloperAccessManager
                 "success" => false,
                 "error" => "Enter a valid six-digit authenticator code for this developer account.",
                 "retry_after" => max(0, $this->limiter->availableIn($rateLimitKey)),
+                "totp_required" => true,
             ];
         }
 
@@ -302,6 +343,7 @@ final class DeveloperAccessManager
             "success" => true,
             "error" => "",
             "retry_after" => 0,
+            "totp_required" => false,
         ];
     }
 
@@ -373,7 +415,7 @@ final class DeveloperAccessManager
             "absolute_ttl_minutes" => max(1, (int) config("developer_access.absolute_ttl_minutes", 480)),
             "operations_nav_mode" => $this->operationsNavMode(),
             "operations_nav_visible" => $this->operationsNavVisible(),
-            "email_required" => $this->emailRequired(),
+            "email_required" => true,
             "multi_developer_enabled" => count($this->accounts()) > 1,
             "users_count" => count($this->accounts()),
             "current_developer" => $this->currentDeveloper(),
@@ -401,9 +443,9 @@ final class DeveloperAccessManager
         }
 
         return $this->publicAccount($this->accounts()[0] ?? [
-            "email" => "legacy-developer",
+            "email" => "",
             "name" => "Developer",
-            "role" => "admin",
+            "role" => "lead_developer",
             "avatar" => "",
             "password_hash" => "",
         ]);
@@ -417,18 +459,7 @@ final class DeveloperAccessManager
             return $accounts;
         }
 
-        $password = $this->configuredPassword();
-
-        if ($password === "") {
-            return [];
-        }
-
-        return [[
-            "email" => $this->normaliseEmail((string) config("developer_access.email", "")),
-            "name" => "Developer",
-            "role" => "admin",
-            "password_hash" => $password,
-        ]];
+        return [];
     }
 
     public function serializeAccounts(array $accounts): string
@@ -651,11 +682,7 @@ final class DeveloperAccessManager
         foreach ($this->accounts() as $account) {
             $accountEmail = (string) ($account["email"] ?? "");
 
-            if ($this->emailRequired() && ($email === "" || !hash_equals($accountEmail, $email))) {
-                continue;
-            }
-
-            if (!$this->emailRequired() && $email !== "" && $accountEmail !== "" && !hash_equals($accountEmail, $email)) {
+            if ($email === "" || $accountEmail === "" || !hash_equals($accountEmail, $email)) {
                 continue;
             }
 
@@ -694,20 +721,6 @@ final class DeveloperAccessManager
         }
 
         return $accounts;
-    }
-
-    private function emailRequired(): bool
-    {
-        $accounts = $this->accounts();
-
-        return count($accounts) > 1 || (string) ($accounts[0]["email"] ?? "") !== "";
-    }
-
-    private function configuredPassword(): string
-    {
-        return trim((string) config("developer_access.password_hash", "")) !== ""
-            ? trim((string) config("developer_access.password_hash", ""))
-            : trim((string) config("developer_access.password", ""));
     }
 
     private function safeEquals(string $knownValue, string $providedValue): bool

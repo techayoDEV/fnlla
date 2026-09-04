@@ -5,11 +5,22 @@ declare(strict_types=1);
 $developerPanelTitle = "About FNLLA";
 $developerPanelLead = "Framework identity, runtime version and maintainer information for this project installation.";
 $about = is_array($aboutFnlla ?? null) ? (array) $aboutFnlla : [];
+$officialUrl = (string) ($about["official_url"] ?? config("framework.official_url", "https://fnlla.com"));
+$repositoryUrl = (string) ($about["repository"] ?? config("framework.repository_web_url", "https://github.com/techayoDEV/fnlla"));
+$supportEmail = (string) ($about["support_email"] ?? config("framework.support_email", "support@fnlla.com"));
+$maintainerUrl = (string) ($about["maintainer_url"] ?? config("framework.maintainer_url", "https://techayo.co.uk"));
+$frameworkBrandLockup = framework_brand_asset("lockup");
+$frameworkBrandMessage = (string) config("framework.brand.message", "Build from blueprint.");
+$frameworkBrandVersion = (string) config("framework.brand.version", "unknown");
 $facts = [
     "Application name" => (string) ($about["app_name"] ?? config("app.name", "FNLLA")),
     "Framework version" => (string) ($about["framework_version"] ?? config("app.framework_version", "unknown")),
+    "Brand system" => $frameworkBrandVersion,
     "Runtime version" => (string) ($about["runtime_version"] ?? config("fnlla_runtime.version", "unknown")),
     "Environment" => (string) ($about["environment"] ?? app_environment()),
+    "Official website" => $officialUrl,
+    "Source repository" => $repositoryUrl,
+    "Support email" => $supportEmail,
     "Maintainer" => (string) ($about["maintainer"] ?? "TechAyo Limited"),
     "License" => (string) ($about["license"] ?? "MIT"),
 ];
@@ -26,12 +37,20 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section" aria-label="About FNLLA">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
+              <?php if ($frameworkBrandLockup !== null): ?>
+              <div class="developer-framework-brand-lockup" aria-label="FNLLA brand system">
+                <img src="<?= h($frameworkBrandLockup) ?>" alt="FNLLA" width="1807" height="574" decoding="async">
+                <span><?= h($frameworkBrandMessage) ?></span>
+              </div>
+              <?php endif; ?>
               <p class="feature-kicker">Framework information</p>
               <h2 class="developer-dashboard-section-title">FNLLA by TechAyo Limited</h2>
-              <p class="content-text mb-0">FNLLA is the framework-managed base used to deliver the public project surface and private developer operations panel.</p>
+              <p class="content-text mb-0">FNLLA is the framework-managed base used to deliver the public project surface and private developer operations panel. The official framework website is <?= h($officialUrl) ?>.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="https://techayo.co.uk" target="_blank" rel="noopener noreferrer">TechAyo</a>
+              <a class="btn btn-outline btn-sm" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">FNLLA.com</a>
+              <a class="btn btn-outline btn-sm" href="<?= h($repositoryUrl) ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a class="btn btn-outline btn-sm" href="<?= h($maintainerUrl) ?>" target="_blank" rel="noopener noreferrer">TechAyo</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))) ?>">Documentation</a>
             </div>
           </div>
@@ -53,9 +72,9 @@ require __DIR__ . "/panel-header.php";
               <p>Application identity loaded from project configuration.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Maintainer</strong><span class="developer-dashboard-ok">MIT</span></div>
-              <h3><a class="developer-text-link" href="https://techayo.co.uk" target="_blank" rel="noopener noreferrer"><?= h((string) $facts["Maintainer"]) ?></a></h3>
-              <p>Maintained and distributed under the configured license.</p>
+              <div class="developer-dashboard-card-head"><strong>Official</strong><span class="developer-dashboard-ok">WEB</span></div>
+              <h3><a class="developer-text-link" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a></h3>
+              <p>Canonical framework website and product reference.</p>
             </article>
           </div>
         </section>
@@ -73,7 +92,7 @@ require __DIR__ . "/panel-header.php";
           <article class="developer-dashboard-card developer-dashboard-card-wide">
             <p class="feature-kicker">System information</p>
             <h3>No named leadership record</h3>
-            <p class="content-text mb-0">Add one from Project identity when the project needs a named person responsible for product direction, delivery or technical leadership.</p>
+            <p class="content-text mb-0">Add one from Project setup when the project needs a named person responsible for product direction, delivery or technical leadership.</p>
           </article>
           <?php endif; ?>
         </section>

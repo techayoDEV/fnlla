@@ -21,6 +21,7 @@ Purpose:
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Console\Command;
+use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\FrameworkLock;
 use Fnlla\Php\Support\ProcessRunner;
 use FilesystemIterator;
@@ -338,6 +339,7 @@ final class MakeProjectCommand extends Command
     {
         $this->sanitizeExportedStorage($targetRoot);
         $this->rewriteAppConfig($targetRoot, $appName);
+        $this->rewriteEnvTemplates($targetRoot, $appName, $packageSlug);
         $this->rewriteComposerMetadata($targetRoot, $appName, $packageSlug);
         $this->rewriteProjectReadme($targetRoot, $appName);
         $this->rewriteApplicationSurface($targetRoot, $appName);
@@ -384,6 +386,45 @@ final class MakeProjectCommand extends Command
         file_put_contents($path, $updated);
     }
 
+    private function rewriteEnvTemplates(string $targetRoot, string $appName, string $packageSlug): void
+    {
+        $projectIdentifier = strtoupper((string) preg_replace('/[^A-Z0-9]+/', "_", strtoupper($packageSlug)));
+        $projectIdentifier = trim($projectIdentifier, "_");
+        $projectIdentifier = $projectIdentifier !== "" ? $projectIdentifier : "FNLLA_PROJECT";
+
+        foreach ([".env.example", ".env.full.example"] as $filename) {
+            $path = $targetRoot . DIRECTORY_SEPARATOR . $filename;
+
+            if (!is_file($path)) {
+                continue;
+            }
+
+            $contents = (string) file_get_contents($path);
+            $values = [
+                "APP_NAME" => $appName,
+                "APP_URL" => "",
+                "PROJECT_ID" => $projectIdentifier,
+                "PROJECT_NAME" => $appName,
+                "PROJECT_RUNTIME" => FrameworkIdentity::PRODUCT_NAME,
+                "PROJECT_RUNTIME_CREATOR" => FrameworkIdentity::DEFAULT_RUNTIME_CREATOR,
+                "MAIL_FROM_ADDRESS" => "no-reply@example.com",
+                "MAIL_FROM_NAME" => $appName,
+                "CONTACT_NOTIFICATION_EMAIL" => "team@example.com",
+            ];
+
+            foreach ($values as $key => $value) {
+                $line = $key . "=" . $this->serializeEnvValue((string) $value);
+                $pattern = '/^' . preg_quote($key, '/') . '=.*$/m';
+
+                if (preg_match($pattern, $contents) === 1) {
+                    $contents = (string) preg_replace($pattern, $line, $contents, 1);
+                }
+            }
+
+            file_put_contents($path, rtrim($contents) . PHP_EOL);
+        }
+    }
+
     private function rewriteComposerMetadata(string $targetRoot, string $appName, string $packageSlug): void
     {
         $path = $targetRoot . DIRECTORY_SEPARATOR . "composer.json";
@@ -423,6 +464,7 @@ final class MakeProjectCommand extends Command
             "views/pages/legal.php",
             "views/partials/page-hero.php",
             "public/assets/app.css",
+            "public/assets/fnlla-logo.png",
         ]);
 
         $legacyProjectLaunchView = $targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php";
@@ -604,5 +646,14 @@ final class MakeProjectCommand extends Command
         $value = preg_replace('/[^a-z0-9]+/', "-", $value);
 
         return trim((string) $value, "-");
+    }
+
+    private function serializeEnvValue(string $value): string
+    {
+        if ($value === "" || preg_match('/^[A-Za-z0-9_.:\\/@-]+$/', $value) === 1) {
+            return $value;
+        }
+
+        return '"' . str_replace('"', '\"', $value) . '"';
     }
 }

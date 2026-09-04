@@ -23,6 +23,13 @@ use Fnlla\Php\Controllers\HomeController;
 use Fnlla\Php\Controllers\ConsentController;
 use Fnlla\Php\Controllers\PageController;
 
+/*
+Public route contract:
+- project-owned pages stay small and controller-backed
+- FNLLA telemetry endpoints are first-party, throttled and consent-aware
+- developer/customer/maintenance routes live in routes/maintenance.php so the
+  public surface remains easy to scan during handover
+*/
 if (has_local_docs_workspace()) {
     $router->get("/docs", [DocsController::class, "index"])->name("docs.home");
     $router->get("/docs/assets/docs.css", [DocsController::class, "stylesheet"])->name("docs.asset.stylesheet");

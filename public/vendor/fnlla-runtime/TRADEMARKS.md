@@ -2,7 +2,9 @@
 
 ## Brand ownership
 
-`FNLLA`, `FNLLA PHP` and related product branding are names associated with TechAyo LTD (techayo.co.uk).
+`FNLLA`, `FNLLA PHP` and related product branding are names associated with
+TechAyo LTD (techayo.co.uk). The official FNLLA product website is
+`https://fnlla.com`.
 
 Logos, product names, brand marks and presentation that identify an official FNLLA product or an official TechAyo-maintained release are not granted for unrestricted use by the MIT License.
 
@@ -31,7 +33,9 @@ Without prior written permission from TechAyo LTD, do not:
 
 ## Contact
 
-Trademark, branding and partnership questions should be directed through `https://techayo.co.uk`.
+Framework branding questions may reference `https://fnlla.com` or
+`support@fnlla.com`. Trademark, branding and partnership questions should be
+directed through `https://techayo.co.uk`.
 
 ## Related files
 

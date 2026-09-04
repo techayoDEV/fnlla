@@ -61,9 +61,10 @@ Use this table when choosing the right command during daily work:
 | Run project tests | `php scripts/test.php` |
 | Validate UI runtime contract | `php scripts/validate-fnlla-runtime.php` |
 | Check version metadata drift | `php scripts/validate-version-manifest.php` |
+| Refresh or check technical-debt posture | `php fnlla tech-debt:update --check` |
 | Compare performance against baseline | `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` |
 | Review upstream framework drift | `php fnlla framework:update --dry-run` |
-| Prepare upstream FNLLA release evidence | `php fnlla release:prepare --major --target=2.1.1` |
+| Prepare upstream FNLLA release evidence | `php fnlla release:prepare --major --target=2.1.3` |
 
 ## What each exported script does
 
@@ -353,7 +354,7 @@ Purpose:
 Typical example:
 
 ```bash
-php fnlla version:set 2.1.1
+php fnlla version:set 2.1.3
 php scripts/build-docs.php
 php scripts/test.php
 php scripts/lint.php

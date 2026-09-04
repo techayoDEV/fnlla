@@ -26,6 +26,7 @@ $sessionPath = trim((string) env("SESSION_PATH", "framework/sessions"));
 return [
     "name" => (string) env("APP_NAME", "FNLLA"),
     "tagline" => (string) env("APP_TAGLINE", ""),
+    "brand_logo" => trim((string) env("APP_BRAND_LOGO", "auto")),
     "environment" => $environment,
     "debug" => (bool) env("APP_DEBUG", $isDevelopment),
     "base_url" => rtrim((string) env("APP_URL", ""), "/"),

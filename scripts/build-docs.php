@@ -457,6 +457,7 @@ function render_docs_page(array $page): string
       <div class="doc-header-bar">
         <span class="doc-kicker">Application framework</span>
         <span class="doc-status">Stable {$version}</span>
+        <a class="doc-kicker doc-official-link" href="https://fnlla.com">fnlla.com</a>
       </div>
       <div class="doc-header-grid">
         <p class="doc-overline">Server-rendered delivery stack</p>
@@ -500,7 +501,7 @@ function render_docs_page(array $page): string
 {$contentHtml}
 
     <footer class="doc-footer" aria-label="FNLLA ownership notice">
-      <p class="content-text">FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
+      <p class="content-text">Official FNLLA website: <a href="https://fnlla.com">fnlla.com</a>. FNLLA &copy; 2026 TechAyo LTD (<a href="https://techayo.co.uk">techayo.co.uk</a>). Released under the MIT License.</p>
     </footer>
   </main>
 
@@ -666,7 +667,7 @@ views/</code></pre>
       <div class="doc-card-grid doc-card-grid-2">
         <article class="card">
           <h3 class="card-title">Export before delivery work</h3>
-          <p class="card-text">Treat this repository as the framework source of truth. Use <code>make:project</code> to start real downstream websites and apps in their own repositories.</p>
+          <p class="card-text">Treat this repository as the framework source of truth and <a href="https://fnlla.com">fnlla.com</a> as the official product website. Use <code>make:project</code> to start real downstream websites and apps in their own repositories.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Integrated UI runtime stays mandatory</h3>
@@ -979,7 +980,7 @@ SECURITY.md</code></pre>
       <div class="doc-mini-grid">
         <article class="card">
           <h3 class="card-title">Supported rule</h3>
-          <p class="card-text">Keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code> and sync it only from the official TechAyo-maintained source of truth.</p>
+          <p class="card-text">Keep the built-in runtime under <code>public/vendor/fnlla-runtime/</code> and sync it only from the official TechAyo-maintained <code>techayoDEV/fnlla</code> source of truth.</p>
         </article>
         <article class="card">
           <h3 class="card-title">Unsupported rule</h3>
@@ -1311,7 +1312,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --apply</code> for conflict-free official GitHub updates</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla ai:providers</code> for runtime AI provider readiness</li>
-            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.1</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.3</code></li>
           </ul>
         </article>
         <article class="card">
@@ -1344,7 +1345,7 @@ throttle</code></pre>
         </article>
         <article class="card">
           <h3 class="card-title">Source of truth</h3>
-          <p class="card-text">FNLLA is the public source of truth for the official stack maintained by TechAyo LTD. Third-party package registries are outside the official maintainer workflow.</p>
+          <p class="card-text"><a href="https://fnlla.com">fnlla.com</a> is the official product website, and <code>techayoDEV/fnlla</code> is the public source of truth for the stack maintained by TechAyo LTD. Third-party package registries are outside the official maintainer workflow.</p>
         </article>
       </div>
     </section>

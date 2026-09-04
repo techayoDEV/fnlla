@@ -8,6 +8,12 @@ $developerPath = (string) ($developerAccess["path"] ?? "/developer");
 $navMode = (string) ($developerAccess["operations_nav_mode"] ?? "hidden");
 $sessionMinutes = (int) ($developerAccess["unlock_ttl_minutes"] ?? 120);
 $absoluteMinutes = (int) ($developerAccess["absolute_ttl_minutes"] ?? 480);
+$developerFooterPreview = $navMode === "developer_session_only"
+    ? "Public footer: no Developer link. Developers must use the private entry URL directly."
+    : "Public footer: Developer link appears after a developer account exists.";
+$developerEntryPreview = $developerPath === "/developer"
+    ? "Entry URL uses the default path. Use a unique path for client handover."
+    : "Entry URL is project-specific and can be shared privately with developers.";
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -26,13 +32,13 @@ require __DIR__ . "/panel-header.php";
 
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Private entry</strong><span class="developer-dashboard-ok">FIXED</span></div>
+              <div class="developer-dashboard-card-head"><strong>Private entry</strong><span class="developer-dashboard-ok">URL</span></div>
               <h3><code><?= h($developerPath) ?></code></h3>
               <p>Locked users see sign-in; unlocked sessions return to the panel.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Navigation mode</strong><span class="developer-dashboard-ok"><?= h($navMode === "hidden" ? "FOOTER" : "SESSION") ?></span></div>
-              <h3><?= $navMode === "hidden" ? "Private entry visible" : "Session-only menu" ?></h3>
+              <div class="developer-dashboard-card-head"><strong>Footer link</strong><span class="developer-dashboard-ok"><?= h($navMode === "hidden" ? "VISIBLE" : "HIDDEN") ?></span></div>
+              <h3><?= $navMode === "hidden" ? "Shown after account setup" : "Hidden from public footer" ?></h3>
               <p>Client-facing navigation remains clean.</p>
             </article>
             <article class="developer-dashboard-status-card">
@@ -54,12 +60,17 @@ require __DIR__ . "/panel-header.php";
               <form class="form stack gap-md" action="<?= h(route("developer.settings.panel")) ?>" method="post" novalidate>
                 <?= csrf_field() ?>
                 <div class="form-group">
-                  <label class="label" for="developer-operations-nav-mode">Developer navigation mode</label>
+                  <label class="label" for="developer-access-path">Developer entry URL</label>
+                  <input class="input" id="developer-access-path" name="developer_access_path" type="text" value="<?= h($developerPath) ?>" maxlength="100" placeholder="/developer">
+                  <p class="help-text">Use a unique path such as <code>/project-team-access</code>; this reduces public discoverability but does not replace login security.</p>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-operations-nav-mode">Developer footer link</label>
                   <select class="select" id="developer-operations-nav-mode" name="developer_operations_nav_mode">
-                    <option value="hidden" <?= $navMode === "hidden" ? "selected" : "" ?>>Private entry and unlocked-session menu</option>
-                    <option value="developer_session_only" <?= $navMode === "developer_session_only" ? "selected" : "" ?>>Unlocked-session menu only</option>
+                    <option value="hidden" <?= $navMode === "hidden" ? "selected" : "" ?>>Show footer link after account setup</option>
+                    <option value="developer_session_only" <?= $navMode === "developer_session_only" ? "selected" : "" ?>>Hide footer link</option>
                   </select>
-                  <p class="help-text">Use session-only mode when the public footer should not advertise developer entry.</p>
+                  <p class="help-text">When hidden, developers must use the configured entry URL directly.</p>
                 </div>
                 <div class="developer-modal-form-grid">
                   <div class="form-group">
@@ -87,6 +98,20 @@ require __DIR__ . "/panel-header.php";
               <div class="developer-panel-status-note">
                 <strong>Production note</strong>
                 <span>File storage is portable for starter projects. Switch to database-backed storage after credentials, backups and migrations are in place.</span>
+              </div>
+            </article>
+
+            <article class="developer-panel-fieldset-card developer-panel-card-wide">
+              <p class="feature-kicker">Visibility preview</p>
+              <h2 class="content-title">Public navigation result</h2>
+              <div class="developer-dashboard-glance-table">
+                <div class="developer-dashboard-glance-row"><strong>Developer entry</strong><span><code><?= h($developerPath) ?></code></span></div>
+                <div class="developer-dashboard-glance-row"><strong>Entry signal</strong><span><?= h($developerEntryPreview) ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>Footer result</strong><span><?= h($developerFooterPreview) ?></span></div>
+              </div>
+              <div class="developer-panel-status-note">
+                <strong>Security note</strong>
+                <span>A unique URL reduces discoverability only. Named account login, session expiry and TOTP remain the real protection.</span>
               </div>
             </article>
           </div>

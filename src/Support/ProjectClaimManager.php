@@ -54,8 +54,8 @@ final class ProjectClaimManager
         $funder = $this->optional($input, "funder", $owner);
         $client = $this->optional($input, "client", $owner);
         $systemOwner = $this->optional($input, "system_owner", $owner);
-        $runtime = $this->optional($input, "runtime", "FNLLA");
-        $runtimeCreator = $this->optional($input, "runtime_creator", "TechAyo LTD (techayo.co.uk)");
+        $runtime = $this->optional($input, "runtime", FrameworkIdentity::PRODUCT_NAME);
+        $runtimeCreator = $this->optional($input, "runtime_creator", FrameworkIdentity::DEFAULT_RUNTIME_CREATOR);
         $summary = $this->optional($input, "summary", $productName . " built on FNLLA.");
 
         return [

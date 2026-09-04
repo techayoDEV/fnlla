@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaRuntimeVersion = "2.1.2";
+  var fnllaRuntimeVersion = "2.1.3";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];
@@ -1335,6 +1335,7 @@
     top = Math.max(8, Math.min(top, window.innerHeight - panelRect.height - 8));
     left = Math.max(8, Math.min(left, window.innerWidth - panelRect.width - 8));
 
+    panel.setAttribute("data-placement", placement);
     panel.style.top = top + "px";
     panel.style.left = left + "px";
   }

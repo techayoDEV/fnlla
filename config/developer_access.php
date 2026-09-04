@@ -21,9 +21,8 @@ Purpose:
 
 return [
     "enabled" => (bool) env("DEVELOPER_ACCESS_ENABLED", true),
+    "path" => trim((string) env("DEVELOPER_ACCESS_PATH", "/developer")),
     "email" => trim((string) env("DEVELOPER_ACCESS_EMAIL", "")),
-    "password" => (string) env("DEVELOPER_ACCESS_PASSWORD", ""),
-    "password_hash" => (string) env("DEVELOPER_ACCESS_PASSWORD_HASH", ""),
     "users" => trim((string) env("DEVELOPER_ACCESS_USERS", "")),
     "setup_ui_enabled" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_ENABLED", framework_detect_environment() !== "production"),
     "setup_ui_local_only" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_LOCAL_ONLY", true),

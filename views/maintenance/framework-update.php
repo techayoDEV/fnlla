@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+/*
+All controller-provided values are normalised up front. The template below can
+then stay mostly declarative: each section renders already-safe strings, arrays
+or booleans instead of repeating defensive casts inside the markup.
+*/
 $pageState = is_array($frameworkUpdatePageState ?? null) ? $frameworkUpdatePageState : [];
 $lock = is_array($frameworkUpdateLock ?? null) ? $frameworkUpdateLock : [];
 $report = is_array($frameworkUpdateReport ?? null) ? $frameworkUpdateReport : null;
@@ -46,6 +51,21 @@ $reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report
 $reportDryRunPath = trim((string) ($report["dry_run_report_path"] ?? ""));
 $frameworkUpdateRunRoute = (string) ($frameworkUpdateRunRoute ?? route("maintenance.framework_update.run"));
 $frameworkUpdateRefreshRoute = (string) ($frameworkUpdateRefreshRoute ?? route("maintenance.framework_update"));
+
+/*
+The update posture summary is deliberately data-driven. Adding a new row should
+only require another tuple here, which keeps the public copy, machine-like code
+label and rendered status in one auditable place.
+*/
+$frameworkUpdatePostureRows = [
+    ["code" => "ui.browser", "label" => "Browser UI", "value" => ($pageState["enabled"] ?? false) ? "Yes" : "No"],
+    ["code" => "policy.local_only", "label" => "Local-only mode", "value" => ($pageState["local_only"] ?? false) ? "Yes" : "No"],
+    ["code" => "apply.permission", "label" => "Apply from UI", "value" => ($pageState["can_apply"] ?? false) ? "Yes" : "No"],
+    ["code" => "source.github", "label" => "GitHub release channel", "value" => ($pageState["github_enabled"] ?? false) ? "Enabled" : "Disabled"],
+    ["code" => "request.origin", "label" => "Current request is local", "value" => ($pageState["is_local_request"] ?? false) ? "Yes" : "No"],
+    ["code" => "source.path", "label" => "Detected source path", "value" => $detectedSourcePath !== "" ? "Yes" : "No"],
+];
+
 $updateActionLabel = static function (array $update): string {
     $label = trim((string) ($update["label"] ?? ""));
 
@@ -61,9 +81,9 @@ $updateActionLabel = static function (array $update): string {
     };
 };
 ?>
-<section class="section">
+<section class="section framework-update-stage">
   <div class="container">
-    <div class="grid grid-4 gap-md">
+    <div class="grid grid-4 gap-md framework-update-status-grid">
       <article class="feature-card">
         <p class="feature-kicker">Current base</p>
         <h2 class="content-title mb-xs"><?= h((string) ($frameworkMeta["version"] ?? "unknown")) ?></h2>
@@ -194,13 +214,10 @@ $updateActionLabel = static function (array $update): string {
         <p class="contact-kicker">Update posture</p>
         <h2 class="contact-card-title">Run checks first, keep the source explicit and apply only after the report stays boring.</h2>
         <p class="contact-text"><?= h((string) ($pageState["message"] ?? "")) ?></p>
-        <ul class="contact-list framework-update-summary-list">
-          <li>Browser UI enabled: <strong><?= ($pageState["enabled"] ?? false) ? "Yes" : "No" ?></strong></li>
-          <li>Local-only mode: <strong><?= ($pageState["local_only"] ?? false) ? "Yes" : "No" ?></strong></li>
-          <li>Apply allowed from UI: <strong><?= ($pageState["can_apply"] ?? false) ? "Yes" : "No" ?></strong></li>
-          <li>GitHub release channel: <strong><?= ($pageState["github_enabled"] ?? false) ? "Enabled" : "Disabled" ?></strong></li>
-          <li>Current request is local: <strong><?= ($pageState["is_local_request"] ?? false) ? "Yes" : "No" ?></strong></li>
-          <li>Detected source path: <strong><?= $detectedSourcePath !== "" ? "Yes" : "No" ?></strong></li>
+        <ul class="contact-list project-blueprint-list framework-update-summary-list">
+          <?php foreach ($frameworkUpdatePostureRows as $postureRow): ?>
+          <li><code><?= h($postureRow["code"]) ?></code><span><?= h($postureRow["label"]) ?> <strong><?= h($postureRow["value"]) ?></strong></span></li>
+          <?php endforeach; ?>
         </ul>
         <div class="form-message framework-update-surface-note" role="status">
           <h3 class="form-message-title">What this page protects</h3>
@@ -211,7 +228,7 @@ $updateActionLabel = static function (array $update): string {
       <article class="cta-card contact-form-card">
         <form class="form contact-form" action="<?= h($frameworkUpdateRunRoute) ?>" method="post" novalidate data-framework-update-form data-fnlla-busy-form data-fnlla-busy-label="Preparing framework update">
           <?= csrf_field() ?>
-          <div class="grid grid-2 gap-md framework-update-channel-grid">
+          <div class="grid gap-md framework-update-channel-grid">
             <section class="feature-card framework-update-channel-card" aria-label="GitHub release channel controls">
               <div class="framework-update-card-header">
                 <div>
@@ -241,31 +258,11 @@ $updateActionLabel = static function (array $update): string {
               </div>
 
               <div class="grid grid-3 gap-md framework-update-actions-grid">
-                <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Check GitHub update</button>
-                <button class="btn btn-outline" type="submit" name="mode" value="github-dry-run" data-framework-update-progress-mode="github-dry-run" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Dry-run report</button>
-                <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Apply GitHub update</button>
+                <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 1: Check</button>
+                <button class="btn btn-outline" type="submit" name="mode" value="github-dry-run" data-framework-update-progress-mode="github-dry-run" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 2: Dry-run</button>
+                <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 3: Apply</button>
               </div>
             </section>
-
-            <section class="feature-card framework-update-channel-card" aria-label="Official update policy">
-              <div class="framework-update-card-header">
-                <div>
-                  <p class="contact-kicker">Hardening</p>
-                  <h2 class="contact-card-title">Official source only</h2>
-                </div>
-                <span class="framework-update-badge framework-update-badge-muted">Forks blocked</span>
-              </div>
-              <p class="contact-text">FNLLA rejects local source paths, fork repositories, custom clone URLs and non-standard GitHub API endpoints. The update cache is trusted only after the downloaded release manifest confirms <code>techayoDEV/fnlla</code>.</p>
-            </section>
-          </div>
-
-          <div class="form-message" role="status">
-            <h3 class="form-message-title">Recommended sequence</h3>
-            <ol class="framework-update-sequence mb-0">
-              <li>Check the latest GitHub release and let FNLLA cache it locally.</li>
-              <li>Review the dry-run report, safe changes, conflicts and release notes before touching apply.</li>
-              <li>Apply only when the report and post-install checks stay healthy.</li>
-            </ol>
           </div>
         </form>
       </article>
@@ -527,134 +524,146 @@ $updateActionLabel = static function (array $update): string {
 </div>
 
 <script>
-  window.addEventListener("DOMContentLoaded", function () {
-    var form = document.querySelector("[data-framework-update-form]");
-    var progressModal = document.querySelector("#framework-update-progress-modal");
-    var progressBar = document.querySelector("[data-framework-update-progress-bar]");
-    var progressLabel = document.querySelector("[data-framework-update-progress-label]");
-    var progressValue = document.querySelector("[data-framework-update-progress-value]");
-    var progressCopy = document.querySelector("[data-framework-update-progress-copy]");
-    var progressList = document.querySelector("[data-framework-update-progress-steps]");
-    var activeSubmitter = null;
-    var timerId = null;
+  (() => {
+    window.addEventListener("DOMContentLoaded", () => {
+      /*
+      Client-side progress is intentionally cosmetic. The authoritative result
+      is still the server-rendered report after the form submission completes.
+      */
+      const selectors = {
+        form: "[data-framework-update-form]",
+        modal: "#framework-update-progress-modal",
+        bar: "[data-framework-update-progress-bar]",
+        label: "[data-framework-update-progress-label]",
+        value: "[data-framework-update-progress-value]",
+        copy: "[data-framework-update-progress-copy]",
+        list: "[data-framework-update-progress-steps]"
+      };
+      const elements = Object.fromEntries(
+        Object.entries(selectors).map(([key, selector]) => [key, document.querySelector(selector)])
+      );
 
-    if (!form || !progressModal || !progressBar || !progressLabel || !progressValue || !progressCopy || !progressList) {
-      return;
-    }
+      if (Object.values(elements).some((element) => !element)) {
+        return;
+      }
 
-    var progressDefinitions = {
-      "github-check": {
-        copy: "FNLLA is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
-        steps: [
-          {
-            label: "Checking the latest published GitHub release metadata.",
-            meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
-          },
-          {
-            label: "Downloading or reusing the cached FNLLA release source.",
-            meta: "Prepares a local release snapshot so repeat checks stay fast and deterministic."
-          },
-          {
-            label: "Exporting a fresh project baseline from the cached release.",
-            meta: "Creates a clean framework reference that matches the published project contract."
-          },
-          {
-            label: "Comparing framework-managed files against the current application.",
-            meta: "Builds the operator report with release notes, drift details and actionable follow-up."
-          }
-        ]
-      },
-      "github-dry-run": {
-        copy: "FNLLA is preparing a dry-run file-change report from the official GitHub release cache without applying changes.",
-        steps: [
-          {
-            label: "Checking the latest published GitHub release metadata.",
-            meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
-          },
-          {
-            label: "Downloading or reusing the cached FNLLA release source.",
-            meta: "Prepares a local release snapshot so the dry-run compares against a validated source."
-          },
-          {
-            label: "Exporting a fresh project baseline from the cached release.",
-            meta: "Creates a clean framework reference that matches the published project contract."
-          },
-          {
-            label: "Writing the dry-run artefact with exact file actions.",
-            meta: "Records safe changes, conflicts and local-only changes without modifying framework-managed files."
-          }
-        ]
-      },
-      "github-apply": {
-        copy: "FNLLA is applying the cached GitHub-backed update and then running post-install validation checks.",
-        steps: [
-          {
-            label: "Checking the latest published GitHub release metadata.",
-            meta: "Confirms the release source and verifies that the cached baseline is still the correct target."
-          },
-          {
-            label: "Downloading or reusing the cached FNLLA release source.",
-            meta: "Prepares the same release snapshot used by the report so the apply run stays auditable."
-          },
-          {
-            label: "Applying safe framework-managed changes from the cached release.",
-            meta: "Updates only the framework-owned surfaces that the safe-apply contract allows."
-          },
-          {
-            label: "Running post-install checks for contract, tests, lint and version metadata.",
-            meta: "Collects the validation outcome that confirms whether the project stayed healthy after the update."
-          }
-        ]
-      },
-      "check": "github-check",
-      "dry-run": "github-dry-run",
-      "apply": "github-apply"
-    };
-
-    form.querySelectorAll("button[type='submit']").forEach(function (button) {
-      button.addEventListener("click", function () {
-        activeSubmitter = button;
+      const progressStops = Object.freeze([12, 38, 68, 92]);
+      const progressDefinitions = Object.freeze({
+        "github-check": {
+          copy: "FNLLA is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
+          steps: [
+            {
+              label: "Checking the latest published GitHub release metadata.",
+              meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
+            },
+            {
+              label: "Downloading or reusing the cached FNLLA release source.",
+              meta: "Prepares a local release snapshot so repeat checks stay fast and deterministic."
+            },
+            {
+              label: "Exporting a fresh project baseline from the cached release.",
+              meta: "Creates a clean framework reference that matches the published project contract."
+            },
+            {
+              label: "Comparing framework-managed files against the current application.",
+              meta: "Builds the operator report with release notes, drift details and actionable follow-up."
+            }
+          ]
+        },
+        "github-dry-run": {
+          copy: "FNLLA is preparing a dry-run file-change report from the official GitHub release cache without applying changes.",
+          steps: [
+            {
+              label: "Checking the latest published GitHub release metadata.",
+              meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
+            },
+            {
+              label: "Downloading or reusing the cached FNLLA release source.",
+              meta: "Prepares a local release snapshot so the dry-run compares against a validated source."
+            },
+            {
+              label: "Exporting a fresh project baseline from the cached release.",
+              meta: "Creates a clean framework reference that matches the published project contract."
+            },
+            {
+              label: "Writing the dry-run artefact with exact file actions.",
+              meta: "Records safe changes, conflicts and local-only changes without modifying framework-managed files."
+            }
+          ]
+        },
+        "github-apply": {
+          copy: "FNLLA is applying the cached GitHub-backed update and then running post-install validation checks.",
+          steps: [
+            {
+              label: "Checking the latest published GitHub release metadata.",
+              meta: "Confirms the release source and verifies that the cached baseline is still the correct target."
+            },
+            {
+              label: "Downloading or reusing the cached FNLLA release source.",
+              meta: "Prepares the same release snapshot used by the report so the apply run stays auditable."
+            },
+            {
+              label: "Applying safe framework-managed changes from the cached release.",
+              meta: "Updates only the framework-owned surfaces that the safe-apply contract allows."
+            },
+            {
+              label: "Running post-install checks for contract, tests, lint and version metadata.",
+              meta: "Collects the validation outcome that confirms whether the project stayed healthy after the update."
+            }
+          ]
+        },
+        check: "github-check",
+        "dry-run": "github-dry-run",
+        apply: "github-apply"
       });
-    });
+      let activeSubmitter = null;
+      let timerId = null;
 
-    form.addEventListener("submit", function (event) {
-      var submitter = event.submitter || activeSubmitter;
-      var mode = submitter ? submitter.getAttribute("data-framework-update-progress-mode") : "check";
-      var fallbackMode = progressDefinitions[mode] || "github-check";
-      var definition = typeof fallbackMode === "string" ? progressDefinitions[fallbackMode] : fallbackMode;
-      var steps = definition.steps.slice();
-      var progressStops = [12, 38, 68, 92];
-      var stepIndex = 0;
+      const resolveProgressDefinition = (mode) => {
+        const definition = progressDefinitions[mode] || progressDefinitions["github-check"];
 
-      progressCopy.textContent = definition.copy;
-      progressList.innerHTML = "";
+        return typeof definition === "string" ? progressDefinitions[definition] : definition;
+      };
 
-      steps.forEach(function (step, index) {
-        var item = document.createElement("li");
-        var label = document.createElement("p");
-        var meta = document.createElement("p");
+      const buildProgressSteps = (steps) => {
+        elements.list.replaceChildren();
 
-        item.className = "progress-step" + (index === 0 ? " is-active" : "");
-        label.className = "progress-step-label";
-        label.textContent = step.label;
-        meta.className = "progress-step-meta";
-        meta.textContent = step.meta;
-        item.appendChild(label);
-        item.appendChild(meta);
-        progressList.appendChild(item);
-      });
+        return steps.map((step, index) => {
+          const item = document.createElement("li");
+          const label = document.createElement("p");
+          const meta = document.createElement("p");
 
-      var stepItems = progressList.querySelectorAll(".progress-step");
+          item.className = "progress-step" + (index === 0 ? " is-active" : "");
+          label.className = "progress-step-label";
+          label.textContent = step.label;
+          meta.className = "progress-step-meta";
+          meta.textContent = step.meta;
+          item.append(label, meta);
+          elements.list.appendChild(item);
 
-      var applyProgressState = function (index) {
-        var percent = progressStops[Math.min(index, progressStops.length - 1)];
-        var step = steps[Math.min(index, steps.length - 1)];
+          return item;
+        });
+      };
 
-        progressBar.style.width = percent + "%";
-        progressValue.textContent = percent + "%";
-        progressLabel.textContent = step.label;
+      const openProgressModal = () => {
+        if (window.FNLLARUNTIME && typeof window.FNLLARUNTIME.showModal === "function") {
+          window.FNLLARUNTIME.showModal(selectors.modal);
+          return;
+        }
 
-        stepItems.forEach(function (item, itemIndex) {
+        elements.modal.hidden = false;
+        elements.modal.classList.add("is-open");
+      };
+
+      const applyProgressState = (steps, stepItems, index) => {
+        const percent = progressStops[Math.min(index, progressStops.length - 1)];
+        const step = steps[Math.min(index, steps.length - 1)];
+
+        elements.bar.style.width = percent + "%";
+        elements.value.textContent = percent + "%";
+        elements.label.textContent = step.label;
+
+        stepItems.forEach((item, itemIndex) => {
           item.classList.remove("is-active", "is-complete");
 
           if (itemIndex < index) {
@@ -668,28 +677,38 @@ $updateActionLabel = static function (array $update): string {
         });
       };
 
-      applyProgressState(stepIndex);
+      elements.form.querySelectorAll("button[type='submit']").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeSubmitter = button;
+        });
+      });
 
-      if (window.FNLLARUNTIME && typeof window.FNLLARUNTIME.showModal === "function") {
-        window.FNLLARUNTIME.showModal("#framework-update-progress-modal");
-      } else {
-        progressModal.hidden = false;
-        progressModal.classList.add("is-open");
-      }
+      elements.form.addEventListener("submit", (event) => {
+        const submitter = event.submitter || activeSubmitter;
+        const mode = submitter ? submitter.getAttribute("data-framework-update-progress-mode") : "check";
+        const definition = resolveProgressDefinition(mode);
+        const steps = [...definition.steps];
+        const stepItems = buildProgressSteps(steps);
+        let stepIndex = 0;
 
-      if (timerId) {
-        window.clearInterval(timerId);
-      }
+        elements.copy.textContent = definition.copy;
+        applyProgressState(steps, stepItems, stepIndex);
+        openProgressModal();
 
-      timerId = window.setInterval(function () {
-        if (stepIndex >= steps.length - 1) {
+        if (timerId) {
           window.clearInterval(timerId);
-          return;
         }
 
-        stepIndex += 1;
-        applyProgressState(stepIndex);
-      }, 1400);
+        timerId = window.setInterval(() => {
+          if (stepIndex >= steps.length - 1) {
+            window.clearInterval(timerId);
+            return;
+          }
+
+          stepIndex += 1;
+          applyProgressState(steps, stepItems, stepIndex);
+        }, 1400);
+      });
     });
-  });
+  })();
 </script>

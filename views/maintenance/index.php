@@ -228,24 +228,33 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
   </style>
 </noscript>
 <script>
-  window.addEventListener("DOMContentLoaded", function () {
-    var fallbackCard = document.querySelector("[data-maintenance-fallback]");
-    var modalLaunch = document.querySelector("[data-maintenance-modal-launch]");
+  (() => {
+    window.addEventListener("DOMContentLoaded", () => {
+      /*
+      The runtime modal is the preferred locked-screen experience. If the
+      vendored runtime cannot open it, the static fallback stays available.
+      */
+      const fallbackCard = document.querySelector("[data-maintenance-fallback]");
+      const modalLaunch = document.querySelector("[data-maintenance-modal-launch]");
+      const canUseRuntimeModal = Boolean(
+        window.FNLLARUNTIME && typeof window.FNLLARUNTIME.showModal === "function"
+      );
 
-    if (!window.FNLLARUNTIME || typeof window.FNLLARUNTIME.showModal !== "function") {
-      if (modalLaunch) {
-        modalLaunch.hidden = true;
+      if (!canUseRuntimeModal) {
+        if (modalLaunch) {
+          modalLaunch.hidden = true;
+        }
+
+        if (fallbackCard) {
+          fallbackCard.classList.add("is-active");
+        }
+
+        return;
       }
 
-      if (fallbackCard) {
-        fallbackCard.classList.add("is-active");
-      }
-
-      return;
-    }
-
-    window.FNLLARUNTIME.showModal("#maintenance-unlock-modal");
-  });
+      window.FNLLARUNTIME.showModal("#maintenance-unlock-modal");
+    });
+  })();
 </script>
 <?php endif; ?>
 <?php else: ?>
@@ -357,18 +366,18 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
           <p class="content-text"><?= $freshDeveloperOnboarding
               ? "This first local setup step saves the visible project name, optional public URL and a hashed password for the developer panel. The public site remains available until you deliberately enable maintenance or private client preview from the panel."
               : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
-          <ul class="project-note-list">
+          <ul class="project-note-list project-blueprint-list">
             <?php if ($freshDeveloperOnboarding): ?>
-            <li>The project name is used in browser titles, the header and framework operation screens.</li>
-            <li>The optional project slogan is appended to public browser titles after the site name.</li>
-            <li>The standard <code>/developer</code> route becomes the private entry point for technical project work.</li>
-            <li>Maintenance and client preview are not enabled automatically; choose that later when the project is ready to be protected.</li>
-            <li>The developer password is stored as a hash and can be rotated later from the developer panel.</li>
+            <li><code>identity.title</code><span>Browser title, header, operations.</span></li>
+            <li><code>identity.slogan?</code><span>Optional title suffix after the site name.</span></li>
+            <li><code>route.private</code><span><code>/developer</code> for technical project work.</span></li>
+            <li><code>protection.mode</code><span>Maintenance and preview stay off until enabled.</span></li>
+            <li><code>developer.password</code><span>Stored as a hash, rotated from the panel.</span></li>
             <?php else: ?>
-            <li>The standard <code>/developer</code> route becomes the long-term service entry after client handoff.</li>
-            <li>The public header stays plain. Developer tools appear only after a developer unlocks the panel.</li>
-            <li>An active developer session can still surface a private tools dropdown for easier navigation.</li>
-            <li>The new panel will let you rotate its password later.</li>
+            <li><code>route.private</code><span><code>/developer</code> stays the service entry after handoff.</span></li>
+            <li><code>public.chrome</code><span>Developer tools appear only after unlock.</span></li>
+            <li><code>session.tools</code><span>Unlocked sessions can show private navigation.</span></li>
+            <li><code>developer.password</code><span>Stored as a hash, rotated from the panel.</span></li>
             <?php endif; ?>
           </ul>
         </article>
@@ -393,42 +402,46 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               <input class="input" id="project-setup-url" name="project_url" type="url" value="<?= h((string) ($projectSetup["url"] ?? "")) ?>" inputmode="url" autocomplete="url" placeholder="https://example.com">
               <p class="help-text">Leave blank until the project has a real local, staging or production address.</p>
             </div>
-            <div class="developer-panel-status-note">
-              <strong>Optional system information</strong>
-              <span>Name the real product or delivery lead only when the person can confirm that responsibility from a matching developer account.</span>
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-organization">Delivery organisation <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="TechAyo Limited">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-person">Responsible person <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-person" name="project_leadership_person_name" type="text" maxlength="120" autocomplete="name" placeholder="Name Surname">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-email">Confirmation email <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-email" name="project_leadership_person_email" type="email" maxlength="160" autocomplete="email" placeholder="lead@example.com">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-role">Role or position <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-role" name="project_leadership_person_role" type="text" maxlength="120" placeholder="Director of TechAyo">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-responsibility">Responsibility scope <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-responsibility" name="project_leadership_responsibility" type="text" maxlength="240" placeholder="product direction, roadmap and technical delivery">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-profile">Profile or contact URL <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-leadership-profile" name="project_leadership_profile_url" type="url" maxlength="2048" inputmode="url" placeholder="https://example.com/contact">
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-leadership-visibility">Leadership visibility</label>
-              <select class="select" id="project-setup-leadership-visibility" name="project_leadership_visibility">
-                <option value="disabled">Disabled</option>
-                <option value="admin">Private panel and documentation</option>
-                <option value="public">Public after confirmation</option>
-              </select>
-            </div>
+            <details class="developer-optional-section">
+              <summary>
+                <strong>Optional responsibility information</strong>
+                <span>Name the real product or delivery lead only when the person can confirm that responsibility from a matching developer account.</span>
+              </summary>
+              <div class="developer-optional-section-body">
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-organization">Delivery organisation <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="TechAyo Limited">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-person">Responsible person <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-person" name="project_leadership_person_name" type="text" maxlength="120" autocomplete="name" placeholder="Name Surname">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-email">Confirmation email <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-email" name="project_leadership_person_email" type="email" maxlength="160" autocomplete="email" placeholder="lead@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-role">Role or position <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-role" name="project_leadership_person_role" type="text" maxlength="120" placeholder="Director of TechAyo">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-responsibility">Responsibility scope <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-responsibility" name="project_leadership_responsibility" type="text" maxlength="240" placeholder="product direction, roadmap and technical delivery">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-profile">Profile or contact URL <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-leadership-profile" name="project_leadership_profile_url" type="url" maxlength="2048" inputmode="url" placeholder="https://example.com/contact">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-leadership-visibility">Leadership visibility <span class="content-text">(optional)</span></label>
+                  <select class="select" id="project-setup-leadership-visibility" name="project_leadership_visibility">
+                    <option value="disabled">Disabled</option>
+                    <option value="admin">Private panel and documentation</option>
+                    <option value="public">Public after confirmation</option>
+                  </select>
+                </div>
+              </div>
+            </details>
             <?php endif; ?>
             <div class="form-group">
               <label class="label" for="developer-panel-activation-email">Developer email</label>

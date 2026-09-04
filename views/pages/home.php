@@ -6,10 +6,10 @@ declare(strict_types=1);
   <div class="container">
     <div class="starter-hero-grid">
       <div class="starter-hero-copy">
-        <p class="starter-kicker">FNLLA starter</p>
-        <h1 class="starter-hero-title">A server-rendered project base ready for the first real release.</h1>
+        <p class="starter-kicker">FNLLA framework</p>
+        <h1 class="starter-hero-title">An AI-ready framework for operated web products.</h1>
         <p class="starter-hero-text">
-          Shape this starter into the public pages, private workflows and maintenance-ready delivery surface your project actually needs.
+          Build public pages, private workflows and client-centred delivery with a Developer Operations Panel, local runtime AI, preview, maintenance and release checks already in the stack.
         </p>
         <div class="starter-hero-actions" aria-label="Primary actions">
           <a class="btn btn-primary" href="<?= h(route("contact")) ?>">Start the contact flow</a>
@@ -39,7 +39,7 @@ declare(strict_types=1);
   <div class="container">
     <section class="process-section" aria-label="Starter delivery approach">
       <div class="section-header mb-0">
-        <p class="process-kicker">How teams work on it</p>
+        <p class="process-kicker">How teams use it</p>
       </div>
       <div class="process-grid">
         <?php foreach ($proofPoints as $step): ?>
@@ -58,7 +58,7 @@ declare(strict_types=1);
   <div class="container">
     <section class="feature-section" aria-label="Starter tracks">
       <div class="section-header mb-0">
-        <p class="feature-kicker">Why this shape matters</p>
+        <p class="feature-kicker">Why the shape matters</p>
       </div>
       <div class="grid grid-3 gap-md">
         <?php foreach ($serviceTracks as $principle): ?>

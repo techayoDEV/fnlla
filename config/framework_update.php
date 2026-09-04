@@ -19,6 +19,8 @@ Purpose:
   enabled locally without exposing a production-wide command runner.
 */
 
+use Fnlla\Php\Support\FrameworkIdentity;
+
 $isDevelopment = framework_detect_environment() === "development";
 
 return [
@@ -26,10 +28,10 @@ return [
     "ui_local_only" => (bool) env("FRAMEWORK_UPDATE_UI_LOCAL_ONLY", true),
     "ui_apply_enabled" => (bool) env("FRAMEWORK_UPDATE_UI_APPLY_ENABLED", $isDevelopment),
     "github_enabled" => (bool) env("FRAMEWORK_UPDATE_GITHUB_ENABLED", true),
-    "official_repository" => "techayoDEV/fnlla",
-    "github_repository" => "techayoDEV/fnlla",
-    "github_clone_url" => "https://github.com/techayoDEV/fnlla.git",
-    "github_api_base_url" => "https://api.github.com",
+    "official_repository" => FrameworkIdentity::REPOSITORY,
+    "github_repository" => FrameworkIdentity::REPOSITORY,
+    "github_clone_url" => FrameworkIdentity::REPOSITORY_URL,
+    "github_api_base_url" => FrameworkIdentity::GITHUB_API_BASE_URL,
     "github_timeout_seconds" => max(5, (int) env("FRAMEWORK_UPDATE_GITHUB_TIMEOUT_SECONDS", 20)),
     "download_cache_path" => trim((string) env("FRAMEWORK_UPDATE_DOWNLOAD_CACHE_PATH", "framework/updates/fnlla")),
     "dry_run_report_enabled" => (bool) env("FRAMEWORK_UPDATE_DRY_RUN_REPORT_ENABLED", true),

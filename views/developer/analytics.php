@@ -20,12 +20,18 @@ $renderBarList = static function (array $items, string $empty): void { ?>
           <?php else: ?>
           <div class="developer-analytics-bars">
             <?php foreach ($items as $item): ?>
-            <div class="developer-analytics-bar-row">
+            <?php
+                $label = (string) ($item["label"] ?? "");
+                $count = (string) ($item["count"] ?? 0);
+                $percent = max(2, (int) ($item["percent"] ?? 0));
+                $tooltip = trim($label . ": " . $count . " / " . $percent . "% of this chart");
+            ?>
+            <div class="developer-analytics-bar-row" data-fnlla-tooltip="<?= h($tooltip) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h($tooltip) ?>" tabindex="0">
               <div>
-                <strong><?= h((string) ($item["label"] ?? "")) ?></strong>
-                <span><?= h((string) ($item["count"] ?? 0)) ?></span>
+                <strong><?= h($label) ?></strong>
+                <span><?= h($count) ?></span>
               </div>
-              <i aria-hidden="true"><b style="width: <?= h((string) max(2, (int) ($item["percent"] ?? 0))) ?>%"></b></i>
+              <i aria-hidden="true"><b style="width: <?= h((string) $percent) ?>%"></b></i>
             </div>
             <?php endforeach; ?>
           </div>
@@ -37,9 +43,16 @@ $renderTimeline = static function (array $items, string $empty): void { ?>
           <?php else: ?>
           <div class="developer-analytics-timeline">
             <?php foreach ($items as $item): ?>
-            <span title="<?= h((string) ($item["full_label"] ?? $item["label"] ?? "")) ?>">
-              <i style="height: <?= h((string) max(4, (int) ($item["percent"] ?? 0))) ?>%"></i>
-              <small><?= h((string) ($item["label"] ?? "")) ?></small>
+            <?php
+                $label = (string) ($item["label"] ?? "");
+                $fullLabel = (string) ($item["full_label"] ?? $label);
+                $count = (string) ($item["count"] ?? 0);
+                $percent = max(4, (int) ($item["percent"] ?? 0));
+                $tooltip = trim($fullLabel . ": " . $count . " events / " . $percent . "% of this chart");
+            ?>
+            <span data-fnlla-tooltip="<?= h($tooltip) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h($tooltip) ?>" tabindex="0">
+              <i style="height: <?= h((string) $percent) ?>%"></i>
+              <small><?= h($label) ?></small>
             </span>
             <?php endforeach; ?>
           </div>
@@ -97,6 +110,27 @@ require __DIR__ . "/panel-header.php";
               <span><?= h((string) ($privacy["mode"] ?? "privacy-light")) ?> / <?= ($settings["track_query_strings"] ?? false) ? "query strings tracked" : "query strings off" ?></span>
             </div>
           </div>
+
+          <section class="developer-analytics-blueprint" aria-label="Analytics blueprint">
+            <div class="developer-analytics-blueprint-grid" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="developer-analytics-blueprint-copy">
+              <p class="feature-kicker">Blueprint view</p>
+              <h3>Traffic, timing and consent signals mapped as an operating plan.</h3>
+              <p class="content-text mb-0">The charts below stay first-party and aggregate, with route movement, source shape and response time shown as readable project signals.</p>
+            </div>
+            <div class="developer-analytics-blueprint-diagram" aria-hidden="true">
+              <span class="developer-analytics-blueprint-node is-source"></span>
+              <span class="developer-analytics-blueprint-node is-route"></span>
+              <span class="developer-analytics-blueprint-node is-performance"></span>
+              <span class="developer-analytics-blueprint-line is-main"></span>
+              <span class="developer-analytics-blueprint-line is-branch"></span>
+            </div>
+          </section>
 
           <div class="developer-analytics-metric-grid">
             <?php foreach ($metricCards as $card): ?>

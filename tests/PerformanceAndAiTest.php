@@ -31,6 +31,7 @@ use Fnlla\Php\Console\Commands\PerfBaselineUpdateCommand;
 use Fnlla\Php\Console\Commands\PerfBudgetCommand;
 use Fnlla\Php\Console\Commands\PerfCompareCommand;
 use Fnlla\Php\Console\Commands\PerfProfileCommand;
+use Fnlla\Php\Console\Commands\TechDebtUpdateCommand;
 use Fnlla\Php\Console\Commands\UpgradeApplyCommand;
 use Fnlla\Php\Console\Commands\UpgradeCheckCommand;
 use Fnlla\Php\Console\Commands\UpgradePlanCommand;
@@ -45,6 +46,7 @@ use Fnlla\Php\Support\DeveloperAnalyticsReport;
 use Fnlla\Php\Support\DeveloperHeatmapReport;
 use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\PerformanceProfiler;
+use Fnlla\Php\Support\TechnicalDebtReportBuilder;
 use Fnlla\Php\Support\UpgradeAnalyzer;
 use PHPUnit\Framework\TestCase;
 
@@ -82,6 +84,10 @@ final class PerformanceAndAiTest extends TestCase
             }
         }
 
+        if (is_file(framework_technical_debt_report_path())) {
+            unlink(framework_technical_debt_report_path());
+        }
+
         foreach ($this->temporaryFiles as $path) {
             if (is_file($path)) {
                 unlink($path);
@@ -117,6 +123,8 @@ final class PerformanceAndAiTest extends TestCase
         self::assertTrue(($result["assets"] ?? 0) > 0);
         self::assertArrayHasKey("assets/app.css", $manifest);
         self::assertArrayHasKey("sha256", $manifest["assets/app.css"]);
+        self::assertArrayHasKey("assets/fnlla-logo.png", $manifest);
+        self::assertArrayHasKey("sha256", $manifest["assets/fnlla-logo.png"]);
     }
 
     public function testPerformanceProfilerProducesMachineReadableProfile(): void
@@ -288,6 +296,8 @@ final class PerformanceAndAiTest extends TestCase
             "path" => "/services",
             "device" => "desktop",
             "element" => "button",
+            "element_label" => "Request quote",
+            "element_context" => "main",
             "position" => ["x_percent" => 66, "y_percent" => 42],
         ]);
         $recorder->recordBehaviorEvent([
@@ -311,6 +321,10 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame(5, (int) ($report["charts"]["top_page_click_grid"]["columns"] ?? 0));
         self::assertSame(5, count((array) ($report["charts"]["top_page_click_grid"]["rows"] ?? [])));
         self::assertSame("button", $report["charts"]["click_elements"][0]["label"] ?? null);
+        self::assertSame("Center-right public page area", $report["charts"]["top_page_click_grid"]["rows"][2][3]["zone"] ?? null);
+        self::assertSame("button: Request quote in main", $report["charts"]["top_page_click_grid"]["rows"][2][3]["targets"][0]["label"] ?? null);
+        self::assertStringContainsString("Public page /services.", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
+        self::assertStringContainsString("Most clicked: button: Request quote in main (1).", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
         self::assertStringNotContainsString("token=hidden", $encoded);
         self::assertStringNotContainsString("Mozilla", $encoded);
         self::assertStringNotContainsString("203.0.113", $encoded);
@@ -399,6 +413,7 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame("ai:brief", (new AiBriefCommand($container))->name());
         self::assertSame("ai:explain-log", (new AiExplainLogCommand($container))->name());
         self::assertSame("ai:providers", (new AiProvidersCommand($container))->name());
+        self::assertSame("tech-debt:update", (new TechDebtUpdateCommand($container))->name());
     }
 
     public function testConfigDoctorCommandIsNamedForCli(): void
@@ -459,5 +474,21 @@ final class PerformanceAndAiTest extends TestCase
         self::assertArrayHasKey("app_map", $pack);
         self::assertArrayHasKey("upgrade", $pack);
         self::assertStringNotContainsString("do-not-leak", $encoded);
+    }
+
+    public function testTechnicalDebtReportBuildsMachineReadableReleaseSnapshot(): void
+    {
+        $builder = new TechnicalDebtReportBuilder();
+        $report = $builder->build();
+        $ids = array_map(static fn (array $check): string => (string) ($check["id"] ?? ""), (array) ($report["checks"] ?? []));
+        $snapshot = $builder->markdownSnapshot($report);
+
+        self::assertSame("fnlla.technical_debt_report.v1", $report["schema"] ?? null);
+        self::assertTrue(in_array("explicit-debt-markers", $ids, true));
+        self::assertTrue(in_array("runtime-residue", $ids, true));
+        self::assertTrue(in_array("generated-docs-sync", $ids, true));
+        self::assertTrue(in_array("ai-product-runtime", $ids, true));
+        self::assertStringContainsString("FNLLA_TECH_DEBT_REPORT:BEGIN", $snapshot);
+        self::assertStringContainsString("php fnlla tech-debt:update --check", $snapshot);
     }
 }

@@ -33,12 +33,13 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section" aria-label="Privacy-light analytics">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
-              <p class="feature-kicker">Operations hub</p>
+              <p class="feature-kicker">Operations overview</p>
               <h2 class="developer-dashboard-section-title">Daily operating view for traffic, probes, submissions, audit events and release posture.</h2>
-              <p class="content-text mb-0">Use the hub for quick triage, then open the specialized analytics, readiness or integrations view when a setting needs changing.</p>
+              <p class="content-text mb-0">Use this as a quick triage summary, then open the specialized analytics, readiness or integrations view when a setting needs changing.</p>
             </div>
             <div class="developer-panel-intro-actions">
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Analytics</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))) ?>">Project logs</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Readiness</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))) ?>">Integrations</a>
             </div>
@@ -126,11 +127,12 @@ require __DIR__ . "/panel-header.php";
             </article>
 
             <article class="developer-dashboard-card">
-              <p class="feature-kicker">Audit log</p>
+              <p class="feature-kicker">Project logs</p>
               <h3><?= h((string) count($auditLog)) ?> recent events</h3>
-              <p class="content-text">Maintenance, preview passwords, service control and env-facing settings are recorded for all developer sessions.</p>
+              <p class="content-text">Developer actions, project changes, preview access and workspace updates are tracked in one readable activity trail.</p>
               <div class="developer-inline-actions">
-                <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open settings</a>
+                <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))) ?>">Open project logs</a>
+                <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open preview</a>
                 <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["audit_export"] ?? route("developer.panel.audit_export"))) ?>">Export audit log</a>
                 <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["audit_export_csv"] ?? route("developer.panel.audit_export_csv"))) ?>">Export CSV</a>
               </div>

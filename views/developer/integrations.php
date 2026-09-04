@@ -142,7 +142,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">GA4</p>
                 <h2 class="content-title mb-0" id="developer-integration-ga4-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close GA4 settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close GA4 settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -171,7 +171,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">Microsoft Clarity</p>
                 <h2 class="content-title mb-0" id="developer-integration-clarity-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Clarity settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Clarity settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -200,7 +200,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">Heatmaps</p>
                 <h2 class="content-title mb-0" id="developer-integration-heatmaps-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close heatmap settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close heatmap settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -229,7 +229,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">Sentry</p>
                 <h2 class="content-title mb-0" id="developer-integration-sentry-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Sentry settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Sentry settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -262,7 +262,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">Generic API hooks</p>
                 <h2 class="content-title mb-0" id="developer-integration-api-hooks-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close API hooks settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close API hooks settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -291,7 +291,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">Fionn</p>
                 <h2 class="content-title mb-0" id="developer-integration-fionn-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Fionn settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Fionn settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -337,7 +337,7 @@ require __DIR__ . "/panel-header.php";
                 <p class="feature-kicker mb-2">TechAyo central control</p>
                 <h2 class="content-title mb-0" id="developer-integration-remote-control-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close remote control settings">Close</button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close remote control settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>

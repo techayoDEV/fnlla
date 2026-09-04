@@ -23,6 +23,7 @@ final class DeveloperHeatmapReport
     {
         $metrics = $this->readMetrics();
         $clickZones = (array) ($metrics["heatmap_click_zones"] ?? []);
+        $clickTargets = (array) ($metrics["heatmap_click_targets"] ?? []);
         $scrollDepth = (array) ($metrics["heatmap_scroll_depth"] ?? []);
         $topPage = $this->topPage((array) ($metrics["heatmap_page_counts"] ?? []));
 
@@ -54,7 +55,7 @@ final class DeveloperHeatmapReport
                 "events" => $this->topMap((array) ($metrics["behavior_event_counts"] ?? []), 6),
                 "click_elements" => $this->topMap((array) ($metrics["heatmap_click_elements"] ?? []), 8),
                 "daily_behavior_events" => $this->series((array) ($metrics["daily_behavior_events"] ?? []), 14),
-                "top_page_click_grid" => $this->clickGrid($topPage, (array) ($clickZones[$topPage] ?? [])),
+                "top_page_click_grid" => $this->clickGrid($topPage, (array) ($clickZones[$topPage] ?? []), (array) ($clickTargets[$topPage] ?? [])),
                 "top_page_scroll_depth" => $this->scrollDepth((array) ($scrollDepth[$topPage] ?? [])),
             ],
             "last_behavior_event" => (array) ($metrics["last_behavior_event"] ?? []),
@@ -77,7 +78,7 @@ final class DeveloperHeatmapReport
         return $page !== "" ? $page : "/";
     }
 
-    private function clickGrid(string $page, array $zones): array
+    private function clickGrid(string $page, array $zones, array $targets): array
     {
         $columns = max(1, min(12, (int) config("observability.heatmap.click_grid_columns", 5)));
         $rows = max(1, min(12, (int) config("observability.heatmap.click_grid_rows", 5)));
@@ -90,12 +91,17 @@ final class DeveloperHeatmapReport
             for ($column = 1; $column <= $columns; $column++) {
                 $key = "r{$row}c{$column}";
                 $count = max(0, (int) ($zones[$key] ?? 0));
+                $topTargets = $this->topMap((array) ($targets[$key] ?? []), 3, false);
+                $zoneLabel = $this->zoneLabel($row, $column, $rows, $columns);
                 $cells[] = [
                     "key" => $key,
-                    "zone" => $key,
+                    "zone" => $zoneLabel,
+                    "zone_key" => $key,
                     "row" => $row,
                     "column" => $column,
                     "count" => $count,
+                    "targets" => $topTargets,
+                    "tooltip" => $this->zoneTooltip($page, $zoneLabel, $count, $topTargets),
                     "intensity" => (int) round(($count / $max) * 100),
                 ];
             }
@@ -110,6 +116,57 @@ final class DeveloperHeatmapReport
             "max" => $max,
             "rows" => $gridRows,
         ];
+    }
+
+    private function zoneLabel(int $row, int $column, int $rows, int $columns): string
+    {
+        $vertical = $this->axisLabel($row, $rows, ["top", "upper-middle", "middle", "lower-middle", "bottom"]);
+        $horizontal = $this->axisLabel($column, $columns, ["left", "center-left", "center", "center-right", "right"]);
+
+        if ($vertical === "middle" && $horizontal === "center") {
+            return "Center of the public page";
+        }
+
+        if ($vertical === "middle") {
+            return ucfirst($horizontal . " public page area");
+        }
+
+        if ($horizontal === "center") {
+            return ucfirst($vertical . " public page area");
+        }
+
+        return ucfirst($vertical . "-" . $horizontal . " public page area");
+    }
+
+    /**
+     * @param array<int, string> $labels
+     */
+    private function axisLabel(int $index, int $total, array $labels): string
+    {
+        if ($total <= 1) {
+            return "middle";
+        }
+
+        $position = (int) round((($index - 1) / max(1, $total - 1)) * (count($labels) - 1));
+
+        return $labels[max(0, min(count($labels) - 1, $position))];
+    }
+
+    private function zoneTooltip(string $page, string $zoneLabel, int $count, array $targets): string
+    {
+        $clickLabel = $count === 1 ? "1 click" : "{$count} clicks";
+
+        if ($count <= 0) {
+            return "Public page {$page}. {$zoneLabel}: no clicks recorded yet.";
+        }
+
+        $targetLabels = array_map(
+            static fn (array $target): string => (string) ($target["label"] ?? "") . " (" . (string) ($target["count"] ?? 0) . ")",
+            array_filter($targets, static fn (mixed $target): bool => is_array($target))
+        );
+        $targetSummary = $targetLabels !== [] ? " Most clicked: " . implode(", ", $targetLabels) . "." : "";
+
+        return "Public page {$page}. {$zoneLabel}: {$clickLabel}.{$targetSummary}";
     }
 
     private function scrollDepth(array $depth): array

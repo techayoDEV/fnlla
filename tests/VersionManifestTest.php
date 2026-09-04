@@ -31,8 +31,12 @@ final class VersionManifestTest extends TestCase
 
         self::assertSame("FNLLA", $manifest["product"]["name"] ?? null);
         self::assertSame("fnlla", $manifest["product"]["slug"] ?? null);
+        self::assertSame("https://fnlla.com", $manifest["product"]["website"] ?? null);
+        self::assertSame("support@fnlla.com", $manifest["product"]["support"] ?? null);
+        self::assertSame("https://github.com/techayoDEV/fnlla", $manifest["product"]["repository_web"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["product"]["version"] ?? "")));
         self::assertSame("Integrated FNLLA UI surface", $manifest["ui_runtime"]["name"] ?? null);
+        self::assertSame("https://fnlla.com", $manifest["ui_runtime"]["website"] ?? null);
         self::assertTrue((bool) preg_match('/^\d+\.\d+\.\d+$/', (string) ($manifest["ui_runtime"]["version"] ?? "")));
         self::assertSame(
             $manifest["product"]["version"] ?? null,
@@ -69,6 +73,9 @@ final class VersionManifestTest extends TestCase
         self::assertSame("Delivery LTD", $manifest["product"]["developer"]["name"] ?? null);
         self::assertSame("Care LTD", $manifest["product"]["maintenance_provider"]["name"] ?? null);
         self::assertSame("FNLLA", $manifest["framework"]["name"] ?? null);
+        self::assertSame("https://fnlla.com", $manifest["framework"]["website"] ?? null);
+        self::assertSame("support@fnlla.com", $manifest["framework"]["support"] ?? null);
+        self::assertSame("https://github.com/techayoDEV/fnlla", $manifest["framework"]["repository_web"] ?? null);
         self::assertSame("TechAyo LTD (techayo.co.uk)", $manifest["framework"]["creator"] ?? null);
     }
 }

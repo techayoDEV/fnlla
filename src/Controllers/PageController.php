@@ -35,47 +35,47 @@ final class PageController extends Controller
             "pageTitleHome" => true,
             "heroStats" => [
                 [
-                    "value" => "PHP",
-                    "label" => "server-rendered delivery",
-                ],
-                [
-                    "value" => "FNLLA",
-                    "label" => "application foundation",
+                    "value" => "AI",
+                    "label" => "local runtime guidance",
                 ],
                 [
                     "value" => "OPS",
-                    "label" => "maintenance-ready",
+                    "label" => "developer operations panel",
+                ],
+                [
+                    "value" => "PHP",
+                    "label" => "server-rendered products",
                 ],
             ],
             "proofPoints" => [
                 [
                     "number" => "01",
-                    "title" => "Start from a real application",
-                    "text" => "The starter surface is meant to become the project itself, not a throwaway demo beside the production code.",
+                    "title" => "Start from an operated product base",
+                    "text" => "The exported project keeps public pages, private flows, customer review and operational controls in one inspectable PHP application.",
                 ],
                 [
                     "number" => "02",
-                    "title" => "Keep routes and views explicit",
-                    "text" => "Public pages, forms and operator flows stay readable through direct controllers, named routes and server-rendered templates.",
+                    "title" => "Use AI where it is accountable",
+                    "text" => "Runtime AI starts local and deterministic; Fionn is available only through an audited opt-in bridge instead of hidden external calls.",
                 ],
                 [
                     "number" => "03",
-                    "title" => "Leave operational paths in place",
-                    "text" => "Health checks, maintenance access, developer login and framework update screens are part of the baseline from day one.",
+                    "title" => "Keep the client close to delivery",
+                    "text" => "Preview access, customer review, maintenance controls, analytics, project logs and release readiness are available before the first handover.",
                 ],
             ],
             "serviceTracks" => [
                 [
-                    "title" => "Public websites",
-                    "text" => "Service pages, contact journeys and content structures that can be reshaped into the real project offer.",
+                    "title" => "Web product delivery",
+                    "text" => "Service pages, contact journeys, protected portals and product workflows can grow from the same server-rendered base.",
                 ],
                 [
-                    "title" => "Private tools",
-                    "text" => "Authenticated portals, admin panels and internal workflows can grow from the same server-rendered base.",
+                    "title" => "Developer operations",
+                    "text" => "Named developer access, setup, preview, service control, audit export, notifications, analytics and framework updates stay in the panel.",
                 ],
                 [
-                    "title" => "Long-lived delivery",
-                    "text" => "The framework keeps update checks, release metadata and validation scripts close to the application.",
+                    "title" => "AI-assisted maintenance",
+                    "text" => "Local AI context, triage, review packs, provider readiness and technical-debt checks help teams review changes without exposing secrets by default.",
                 ],
             ],
         ]);
@@ -84,11 +84,12 @@ final class PageController extends Controller
     public function about(Request $request): Response
     {
         return $this->view("pages/about", [
-            "pageTitle" => "About",
+            "pageTitle" => "About this project",
+            "pageTitleSection" => "Story, trust and delivery model",
             "pageHero" => [
                 "eyebrow" => "About",
-                "title" => "Use this page to explain the real organisation, product or service behind the project.",
-                "text" => "The starter copy is intentionally replaceable. Keep the section rhythm, then swap in the real narrative and trust markers.",
+                "title" => "Project story, trust markers and delivery model in one clear place.",
+                "text" => "Use this page to explain the real organisation, product or service behind the build, then back it with the proof visitors need before they move forward.",
                 "meta" => ["Project story", "Trust markers", "Delivery model"],
             ],
             "aboutPillars" => [
@@ -128,11 +129,12 @@ final class PageController extends Controller
     public function services(Request $request): Response
     {
         return $this->view("pages/services", [
-            "pageTitle" => "Services",
+            "pageTitle" => "Services and delivery paths",
+            "pageTitleSection" => "Offers, modules and workflows",
             "pageHero" => [
                 "eyebrow" => "Services",
-                "title" => "Turn these starter cards into the actual services, modules or workflows the project offers.",
-                "text" => "Use the page as a structured place for offers, product modules, internal capabilities or delivery tracks.",
+                "title" => "Useful services, modules and workflows shaped for the first real release.",
+                "text" => "Use this page to present what the project offers, how each path works and which next step a visitor or operator should take.",
                 "meta" => ["Service pages", "Product modules", "Workflow entry points"],
             ],
             "serviceCards" => [
@@ -176,11 +178,12 @@ final class PageController extends Controller
     public function contact(Request $request): Response
     {
         return $this->view("pages/contact", [
-            "pageTitle" => "Contact",
+            "pageTitle" => "Contact and enquiry flow",
+            "pageTitleSection" => "Working form, validation and follow-up",
             "pageHero" => [
                 "eyebrow" => "Contact",
-                "title" => "Start with a working contact form, then reshape it into the real enquiry flow.",
-                "text" => "This starter form already has CSRF protection, validation, old input, flash feedback, honeypot spam friction and mail/log delivery.",
+                "title" => "A working enquiry flow ready to become the project contact route.",
+                "text" => "Start with a real form that already handles CSRF, validation, old input, flash feedback, honeypot spam friction and mail/log delivery.",
                 "meta" => ["CSRF", "Validation", "Log mailer"],
                 "actions" => [
                     [

@@ -41,8 +41,12 @@ $requiredContains = [
         'docs/PRODUCTION-CHECKLIST.md',
         'docs/ENVIRONMENT.md',
         'resources/business-reference/2.1/',
+        'docs/TECH-DEBT-AND-FUTURE-PROOFING.md',
     ],
     'CHANGELOG.md' => [
+        '## 2.1.3 - 2026-09-04',
+        'tech-debt:update',
+        'Developer Operations Panel',
         '## 2.1.1 - 2026-08-28',
         '## 2.1.0 - 2026-08-28',
         'project:acceptance',
@@ -52,6 +56,7 @@ $requiredContains = [
     'docs/PUBLIC-API.md' => [
         'ops:backup-plan',
         'project:acceptance',
+        'tech-debt:update',
         'db()',
         'QueryBuilder::paginate()',
     ],
@@ -67,6 +72,16 @@ $requiredContains = [
         'ops:backup-plan',
         'project:acceptance --json',
         'APP_DEBUG=false',
+    ],
+    'docs/TECH-DEBT-AND-FUTURE-PROOFING.md' => [
+        'php fnlla tech-debt:update',
+        'fnlla.technical_debt_report.v1',
+        'FNLLA_TECH_DEBT_REPORT:BEGIN',
+    ],
+    'docs/PUBLIC-API.lock.json' => [
+        'tech-debt:update',
+        'fnlla.technical_debt_report.v1',
+        'fnlla.technical_debt_update.v1',
     ],
     'docs/ENVIRONMENT.md' => [
         '.env.full.example',

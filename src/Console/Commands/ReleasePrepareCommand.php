@@ -133,6 +133,7 @@ final class ReleasePrepareCommand extends Command
             "version manifest" => [PHP_BINARY, base_path("scripts/validate-version-manifest.php")],
             "release metadata" => [PHP_BINARY, base_path("scripts/validate-release-metadata.php")],
             "static analysis" => [PHP_BINARY, base_path("scripts/static-analysis.php")],
+            "technical debt snapshot" => [PHP_BINARY, base_path("fnlla"), "tech-debt:update", "--check"],
         ];
 
         if ($major) {
@@ -171,7 +172,7 @@ final class ReleasePrepareCommand extends Command
 
     private function clearRuntimeResidue(): void
     {
-        foreach ([framework_config_cache_path(), framework_route_cache_path(), framework_asset_manifest_path(), framework_preload_path()] as $path) {
+        foreach ([framework_config_cache_path(), framework_route_cache_path(), framework_asset_manifest_path(), framework_preload_path(), framework_technical_debt_report_path()] as $path) {
             if (is_file($path)) {
                 unlink($path);
             }
