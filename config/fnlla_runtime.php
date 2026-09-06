@@ -23,7 +23,8 @@ $isDevelopmentLike = $environment === "development";
 
 return [
     "enforce" => (bool) env("FNLLA_RUNTIME_ENFORCE", $isDevelopmentLike),
-    "auto_sync" => (bool) env("FNLLA_RUNTIME_AUTO_SYNC", $isDevelopmentLike),
+    "auto_sync" => (bool) env("FNLLA_RUNTIME_AUTO_SYNC", false),
+    "validate_application_markup" => (bool) env("FNLLA_RUNTIME_VALIDATE_MARKUP", !is_file(base_path(".fnlla/framework-lock.json"))),
     "check_interval_seconds" => max(0, (int) env("FNLLA_RUNTIME_SYNC_INTERVAL_SECONDS", 900)),
     "sync_script" => (string) env("FNLLA_RUNTIME_SYNC_SCRIPT", "scripts/sync-fnlla-runtime.ps1"),
     "state_path" => storage_path((string) env("FNLLA_RUNTIME_STATE_PATH", "framework/fnlla-runtime-guard.json")),

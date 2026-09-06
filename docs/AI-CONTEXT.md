@@ -213,10 +213,10 @@ auditable user guidance.
 FNLLA includes an opt-in provider boundary for a separate Fionn AI service. This
 is a bridge contract, not the Fionn brain.
 
-Fionn is treated as a separate TechAyo-owned intelligence system. FNLLA should
-not contain Fionn's memory, reviewed knowledge, model packages, evals, learning
-queue or private implementation. FNLLA connects to Fionn only through a
-controlled HTTP API boundary.
+The external provider owns its data, models and implementation. FNLLA ships only
+an explicit HTTP adapter and its validation policy. The fionn driver name and
+AI_FIONN_* configuration keys are retained as existing compatibility identifiers;
+they do not require a particular organization to operate the application.
 
 The bridge is `Fnlla\Php\Ai\FionnRuntimeBridge`. It only calls the configured
 chat endpoint, sends `learning_mode=false`, drops sensitive context keys and

@@ -1,5 +1,77 @@
 # FNLLA Developer Operations Panel
 
+## Optional Modules
+
+Project Setup and Panel Settings provide workspace, analytics, heatmap and customer
+portal checkboxes. Only developers with `panel.settings.write` can save panel
+configuration; POST and CSRF remain mandatory. All modules default to on in new full exports. The
+heatmap choice also enables analytics. Older settings submissions without module
+fields preserve their existing values. No switch deletes module code or data.
+
+### Debug Request History
+
+Operations / Debug can independently enable the toolbar and request history.
+Both require `APP_DEBUG=true`, a local/development/testing environment and an
+unlocked developer with `operations.view`. Configuration and clearing also require
+`panel.settings.write`, POST and CSRF. Guests and production requests are not
+recorded. Core/plain exports contain neither feature.
+
+History contains only UTC timestamp, normalized HTTP method, status, elapsed
+milliseconds and PHP peak memory. No URLs, route parameters, IDs, headers, SQL,
+credentials, cookies, payloads or exception text are retained. Default retention
+is 200 entries / one hour; configuration is clamped to 1000 entries / 24 hours.
+Expiration is lazy on reads/writes, not a background timer. Disabling history
+clears stored entries. Use Clear history before switching the deployment to
+production; an idle file is not removed automatically. Storage failure never
+changes the observed application's response. Private history uses the existing
+locked, atomic JSON store in `storage/framework/developer/request-history.json`.
+
+`DEBUG_REQUEST_HISTORY=false` is the default; the panel's saved switch overrides
+this default. The setting does not enable the toolbar or production profiling.
+See [starter diagnostics](framework/DEVELOPER-DIAGNOSTICS.md).
+
+Full projects can independently switch modules off in `config/modules.php` or `.env`:
+
+```dotenv
+FNLLA_MODULE_WORKSPACE=false
+FNLLA_MODULE_ANALYTICS=false
+FNLLA_MODULE_HEATMAP=false
+FNLLA_MODULE_CUSTOMER_PORTAL=false
+```
+
+Disabled endpoints return 404 before their controllers execute, including cached
+routes; corresponding main navigation entries disappear. Analytics and heatmap
+switches stop their collectors without disabling technical request metrics.
+Customer subpages also require the corresponding workspace/analytics/heatmap module.
+Existing full projects default to enabled for compatibility. Rebuild cached
+configuration with `php fnlla config:cache` after editing `.env` if caching is used.
+These switches do not remove code from disk. Use plain for physical exclusion.
+
+## Update Recovery
+
+Full updates snapshot all planned files and the framework lock, serialize installation
+and roll back on installation or post-check failure. An interrupted update journal
+blocks another installation. Stop application traffic and recover with:
+
+```powershell
+php scripts/rollback-framework-update.php
+```
+
+Recovery does not boot the application. Keep the journal/backups if recovery reports
+a checksum or filesystem error. Validate the project before restoring traffic.
+This restores framework files, not database migrations, `.env`, uploads, storage,
+external effects of tests, or an entire zero-downtime deployment.
+
+The current starter supports `--profile=plain` for a separate Composer core
+without panel code, maintenance, AI, analytics or the UI distribution.
+The full profile includes Technical debt and Debug sections, domain-specific
+controllers, separate panel CSS and collapsible mobile navigation. See
+[starter profiles and developer tools](./STARTING-A-NEW-PROJECT.md#full-or-plain-profile)
+for the safety policy, private storage, optional migrations and update boundary.
+
+The architecture review and remaining work are documented in
+[ARCHITECTURE-ROADMAP.md](./ARCHITECTURE-ROADMAP.md).
+
 The Developer Operations Panel is FNLLA's private technical workspace for
 projects created with `make:project`. The route and compatibility name remain
 Developer Panel, but the product role is broader: it is the operational control
@@ -58,8 +130,8 @@ FNLLA has three layers when a real product is built:
 2. **Application layer** - the exported project repository created with
    `make:project`; this owns business code, database schema, product roles,
    customer data and public/private product workflows.
-3. **External operations layer** - optional systems such as TechAyo central
-   control, Fionn, Sentry, GA4, Clarity, mail providers and deployment
+3. **External operations layer** - optional systems such as central
+   operations, AI providers, error reporting, analytics, mail and deployment
    platforms. FNLLA may expose a contract or adapter hook, but the private
    external system remains outside the public framework.
 
@@ -84,7 +156,7 @@ The following belong in FNLLA core:
   information` blocks for named responsibility records;
 - local and remote service-control contract;
 - the optional TechAyo Remote Control plugin contract for projects that should
-  be controllable from `https://techayo.co.uk/admin`;
+  be controllable from an explicitly configured external operations service;
 - framework update routes and audit;
 - health and release-readiness summaries;
 - privacy-light analytics summaries without raw IP storage;
@@ -113,7 +185,7 @@ Do not commit these to the public FNLLA repository:
 - `.env` secrets, API tokens, DB dumps, logs, uploads or client backups;
 - customer workflows or private operating procedures;
 - private Fionn prompts, memory, learned data, model weights, queues or evals;
-- TechAyo central admin business logic;
+- proprietary external operations logic;
 - industry-specific CRM/CMS/billing features;
 - default-enabled analytics, heatmaps or marketing trackers.
 
@@ -210,7 +282,7 @@ It is not a promotional author card. It stores the delivery organisation, person
 name, confirmation email, role or position, responsibility scope, optional
 profile URL, visibility and confirmation status.
 
-Use `admin` visibility for client systems where TechAyo or named-lead details
+Use `admin` visibility for client systems where organization or named-lead details
 should be visible only in private system information and documentation. Use
 `public` only when the public About page should show a small confirmed
 `Product leadership` block. Public display requires the named person to sign in
@@ -298,16 +370,17 @@ Rules:
 - external adapters belong to project configuration or a separate package, not
   hard-coded framework core.
 
-### TechAyo Remote Control Plugin
+### Remote Control Adapter
 
-The TechAyo Remote Control plugin is a public FNLLA-side contract, not a hidden
-private back office inside FNLLA. A project can opt in by setting:
+FNLLA exposes an optional remote-control contract, not an embedded external
+back office. The existing fnlla.techayo_remote_control_state.v1 identifier is
+retained for API compatibility. A project can opt in by setting:
 
 ```env
 DEVELOPER_CONTROL_REMOTE_ENABLED=true
-DEVELOPER_CONTROL_REMOTE_ENDPOINT=https://techayo.co.uk/admin/fnlla/projects/<project>/control.json
+DEVELOPER_CONTROL_REMOTE_ENDPOINT=https://operations.example.com/fnlla/projects/<project>/control.json
 DEVELOPER_CONTROL_REMOTE_PROJECT_ID=<project-id>
-DEVELOPER_CONTROL_REMOTE_TENANT=techayo
+DEVELOPER_CONTROL_REMOTE_TENANT=example-tenant
 DEVELOPER_CONTROL_REMOTE_TOKEN=<project-token>
 DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=<optional-hmac-secret>
 ```
@@ -328,18 +401,18 @@ The expected response schema is `fnlla.techayo_remote_control_state.v1`:
 {
   "schema": "fnlla.techayo_remote_control_state.v1",
   "disabled": false,
-  "title": "Service disabled by TechAyo Limited",
+  "title": "Service temporarily disabled",
   "message": "This service is temporarily disabled by the developer team.",
   "contact": "support@example.com",
   "updated_at": "2026-08-29T12:00:00+00:00",
-  "updated_by": "techayo-admin"
+  "updated_by": "authorized-operator"
 }
 ```
 
-The TechAyo admin system is responsible for operator login, project
+The external operations service is responsible for operator login, project
 authorization, central audit, billing/account policy and emergency decisions.
 FNLLA only consumes the resulting technical state. Customer data, private
-project workflows, Fionn memory and any proprietary TechAyo admin logic must
+project workflows, provider data and proprietary operator implementations must
 remain outside public FNLLA.
 
 ## Workspace Kanban
@@ -403,6 +476,24 @@ Fionn bridge. It does not bundle private Fionn memory, train models or call
 third-party providers by default.
 
 ## Functional Closure Criteria
+
+### Sign-In And Password Recovery
+
+The sign-in screen uses a two-column composition: FNLLA identity
+on the left and the account form on the right. On narrow screens the form comes
+first. Login and recovery retain the isolated runtime layout, without public
+application navigation, analytics or stylesheets.
+
+Forgotten passwords can be recovered using a queued, one-time email link or
+`php fnlla developer:recovery-link developer@example.com` from an authorized
+server shell. Recovery preserves MFA and revokes existing developer sessions.
+Production email requires a real mail transport and a regularly scheduled queue
+worker; the default log transport does not deliver mail.
+
+See [Developer Account Recovery](framework/DEVELOPER-RECOVERY.md) for setup,
+local testing, token lifetime, credential-cache behavior and deployment limits.
+
+### Panel Scope
 
 Developer Operations Panel should be considered functionally complete when it covers these
 technical workspace needs without becoming a business application:

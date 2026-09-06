@@ -20,10 +20,9 @@ Purpose:
 
 namespace Fnlla\Php\Console\Commands;
 
-use Fnlla\Php\Console\Command;
-use Fnlla\Php\Database\Migrations\Migrator;
+use Fnlla\Php\Console\MigrationCommand;
 
-final class MigrateStatusCommand extends Command
+final class MigrateStatusCommand extends MigrationCommand
 {
     public function name(): string
     {
@@ -37,7 +36,9 @@ final class MigrateStatusCommand extends Command
 
     public function handle(array $arguments): int
     {
-        $migrator = $this->container->make(Migrator::class);
+        $prepared = $this->prepare($arguments, false, false);
+        if ($prepared === null) { return 0; }
+        [$migrator] = $prepared;
 
         foreach ($migrator->status() as $migration) {
             $this->line(sprintf(

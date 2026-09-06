@@ -206,7 +206,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         $command = new MakeProjectCommand($container);
 
-        self::assertSame(0, $command->handle([$targetPath, $appName]));
+        self::assertSame(0, $command->handle([$targetPath, $appName, "--no-interaction"]));
         file_put_contents(
             $targetPath . DIRECTORY_SEPARATOR . ".env",
             "APP_ENV=development" . PHP_EOL

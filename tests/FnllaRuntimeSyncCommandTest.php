@@ -29,6 +29,18 @@ use RecursiveIteratorIterator;
 
 final class FnllaRuntimeSyncCommandTest extends TestCase
 {
+    public function testRuntimeDistributionPreservesCompactAndLegacyProfiles(): void
+    {
+        $shell = \Fnlla\Php\Support\ProcessRunner::findExecutable("pwsh")
+            ?? \Fnlla\Php\Support\ProcessRunner::findExecutable("powershell");
+        if ($shell === null) {
+            return;
+        }
+        $result = \Fnlla\Php\Support\ProcessRunner::run([$shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", base_path("scripts/test-runtime-distribution.ps1")], base_path());
+        self::assertSame(0, $result["exit_code"], $result["output"]);
+        self::assertStringContainsString("Runtime distribution tests passed.", $result["output"]);
+    }
+
     /** @var string[] */
     private array $tempPaths = [];
 
@@ -101,7 +113,7 @@ final class FnllaRuntimeSyncCommandTest extends TestCase
 
         $command = new MakeProjectCommand($container);
 
-        self::assertSame(0, $command->handle([$targetPath, $appName]));
+        self::assertSame(0, $command->handle([$targetPath, $appName, "--no-interaction"]));
 
         return $targetPath;
     }

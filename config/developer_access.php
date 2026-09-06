@@ -24,6 +24,8 @@ return [
     "path" => trim((string) env("DEVELOPER_ACCESS_PATH", "/developer")),
     "email" => trim((string) env("DEVELOPER_ACCESS_EMAIL", "")),
     "users" => trim((string) env("DEVELOPER_ACCESS_USERS", "")),
+    "recovery_enabled" => (bool) env("DEVELOPER_ACCESS_RECOVERY_ENABLED", true),
+    "recovery_ttl_minutes" => max(5, min(60, (int) env("DEVELOPER_ACCESS_RECOVERY_TTL_MINUTES", 30))),
     "setup_ui_enabled" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_ENABLED", framework_detect_environment() !== "production"),
     "setup_ui_local_only" => (bool) env("DEVELOPER_ACCESS_SETUP_UI_LOCAL_ONLY", true),
     "operations_nav_mode" => trim((string) env("DEVELOPER_OPERATIONS_NAV_MODE", "hidden")),

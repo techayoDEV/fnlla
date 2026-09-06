@@ -37,6 +37,7 @@ Keep the HTTP edge deliberately small. Service registration belongs in
 FrameworkServiceProvider; this bootstrap file only wires the global middleware
 that must run before route matching or controller execution.
 */
-$application->middleware(["trusted-hosts", "cors", "maintenance"]);
+$application->middleware(\Fnlla\Php\Support\ProjectProfile::hasPanel()
+    ? ["trusted-hosts", "cors", "maintenance"] : ["trusted-hosts", "cors"]);
 
 return $application;

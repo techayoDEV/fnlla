@@ -134,21 +134,15 @@ final class DocsController extends Controller
             "kind" => "Guide",
         ],
         [
+            "file" => "recovery.html",
+            "title" => "Recovery",
+            "summary" => "Application-neutral backup, restoration and external-effect reconciliation.",
+            "kind" => "Guide",
+        ],
+        [
             "file" => "migration.html",
             "title" => "Migration",
             "summary" => "Major-version migration workflow, contract review and downstream upgrade guidance.",
-            "kind" => "Guide",
-        ],
-        [
-            "file" => "upgrade-2-1.html",
-            "title" => "Upgrade 2.1",
-            "summary" => "Upgrade notes and verification workflow for downstream applications moving from 2.0.x to 2.1.0.",
-            "kind" => "Guide",
-        ],
-        [
-            "file" => "upgrade-2-1-1.html",
-            "title" => "Upgrade 2.1.1",
-            "summary" => "Patch upgrade notes for downstream applications moving from 2.1.0 to 2.1.1.",
             "kind" => "Guide",
         ],
         [
@@ -161,12 +155,6 @@ final class DocsController extends Controller
             "file" => "tech-debt-and-future-proofing.html",
             "title" => "Tech Debt And Future Proofing",
             "summary" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
-            "kind" => "Guide",
-        ],
-        [
-            "file" => "techayo-ecosystem.html",
-            "title" => "TechAyo Ecosystem",
-            "summary" => "Repository boundaries and ownership context for the TechAyo-managed FNLLA ecosystem.",
             "kind" => "Guide",
         ],
     ];

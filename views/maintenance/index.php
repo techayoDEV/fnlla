@@ -462,6 +462,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                 <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#developer-panel-activation-password-confirmation" aria-label="Toggle password visibility">Show</button>
               </div>
             </div>
+            <?php require dirname(__DIR__) . "/developer/module-options.php"; ?>
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit"><?= $freshDeveloperOnboarding ? "Save setup and open developer panel" : "Activate developer panel" ?></button>
             </div>

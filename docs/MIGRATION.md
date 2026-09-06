@@ -1,9 +1,68 @@
 # FNLLA Migration Guide
 
 This guide is the authoritative place for downstream projects moving between
-FNLLA major versions.
+FNLLA versions. Version history belongs in CHANGELOG; this guide consolidates
+compatibility and upgrade procedures rather than maintaining one file per release.
+
+## Compatibility Notes
+
+For 2.0.x installations adopting the 2.1 line, review environment templates,
+project identity/ownership, the public API lock, database helpers, pagination and
+release commands. Keep application routes, views, controllers and data intact.
+The 2.1.0 to 2.1.1 transition added project acceptance, verified backup planning
+and HTTP performance probes; it did not require a framework schema or route rewrite.
+
+```console
+php fnlla project:acceptance --json
+php fnlla ops:backup-plan --verify
+php fnlla perf:profile --iterations=5 --write-baseline
+php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
+```
+
+Create a baseline on a controlled environment, not on production during an update.
+For the pending 2.2.0 changes, follow [Runtime contracts](framework/RUNTIME-CONTRACTS.md):
+non-local migrations require --force, application auth revalidates account identity,
+cache writers preserve working files, forwarded protocol must be canonical, and
+new exports support application generators. Review and explicitly run only the
+migrations required by the application; never run migrations just to clear a checklist.
+Full file updates and package-mode updates have different contracts; do not migrate
+an existing installation by merely editing its profile or package marker.
+
+Persistent sessions now enforce idle and absolute time limits on the server.
+Review `SESSION_LIFETIME_MINUTES` and `SESSION_ABSOLUTE_LIFETIME_MINUTES` before
+deployment and expect a fresh login for expired or malformed legacy sessions.
+Start session-dependent workflows before emitting response output.
+New integrated exports enable all modules. Project Setup and Panel Settings can
+disable unwanted modules; updating an existing project's code preserves its settings.
+`make:project` no longer prompts automatically. Use `--interactive` for the retained
+advanced chooser or `--profile=plain` for an explicit core-only export.
+
+Back up before changes, test login/roles/CRUD/forms/uploads/queue/mail/health on a
+staging copy, and retain private recovery evidence following [Recovery](RECOVERY.md).
 
 ## Upgrade Categories
+
+### Upgrading A 2.1.3 Project
+
+After 2.2.0 is published, use the updater from its verified source distribution,
+not the old project's 2.1.3 updater. From the project directory:
+
+```console
+php ../fnlla-2.2.0/fnlla framework:update --project=. --release-tag=v2.2.0 --dry-run
+php ../fnlla-2.2.0/fnlla framework:update --project=. --release-tag=v2.2.0 --apply
+```
+
+The project target is explicit; local/fork release sources remain prohibited.
+Back up first and stop traffic. The updater tracks framework policy documents,
+VERSION and bundled UI files, using verified normalized 2.1.3 hashes for formerly
+untracked files. Local changes cause conflicts rather than silent replacement.
+Only unchanged, lock-hash-matched framework test fixtures are removed; modified
+tests and application tests are preserved. Reconcile any retained historical tests
+with the new documented behavior. Manifest refresh and metadata changes are inside
+the rollback journal. Application routes, public styles/views, uploads and `.env`
+remain application-owned, as does `config/app.php`. Claimed product identity is
+preserved when rebuilding the manifest. Old unused individual icon files are not automatically
+deleted because their ownership was not recorded by 2.1.3.
 
 - Patch release: should be low-risk and focused on fixes, hardening or
   additional tooling. Example: `2.1.0 -> 2.1.1`.

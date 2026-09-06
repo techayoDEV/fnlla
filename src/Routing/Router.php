@@ -252,6 +252,7 @@ final class Router
         $destination = function (Request $request) use ($definition): mixed {
             return $this->container->call($definition->handler(), [
                 "request" => $request,
+                Request::class => $request,
                 ...$request->routeParams(),
             ]);
         };

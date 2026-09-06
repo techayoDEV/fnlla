@@ -6,8 +6,13 @@
 # ==============================================================================
 
 /.env
+/.env.lock
+/.env-*
+/storage/framework/developer-recovery/
+/storage/mail/
 /vendor/
 /dist/
+/.fnlla/update-transaction/
 /framework/
 /storage/logs/*.log
 /storage/framework/cache/*
@@ -20,6 +25,8 @@
 /storage/framework/developer/*
 /storage/framework/updates/
 /storage/framework/testing/*
+/storage/framework/phpunit/
+/storage/framework/phpstan/
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore
 /contact*.html

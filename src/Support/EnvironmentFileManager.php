@@ -27,7 +27,7 @@ final class EnvironmentFileManager
 {
     public function envPath(): string
     {
-        return (string) config("maintenance.env_path", base_path(".env"));
+        return (string) config("maintenance.env_path", env_file_path());
     }
 
     public function envExamplePath(): string
@@ -55,6 +55,41 @@ final class EnvironmentFileManager
 
     public function write(array $values): void
     {
+        $this->writeCompared($values, []);
+    }
+
+    /** Reject stale credential updates while sharing the lock with ordinary writes. */
+    public function writeCompared(array $values, array $expected): void
+    {
+        $this->withLock(function () use ($values, $expected): void {
+            $contents = is_file($this->envPath()) ? (string) file_get_contents($this->envPath()) : "";
+            $current = [];
+            foreach (preg_split('/\R/', $contents) ?: [] as $line) {
+                $line = trim($line);
+                if ($line === "" || str_starts_with($line, "#")) {
+                    continue;
+                }
+                if (str_starts_with($line, "export ")) {
+                    $line = trim(substr($line, 7));
+                }
+                [$key, $value] = array_pad(explode("=", $line, 2), 2, "");
+                $key = trim($key);
+                if (array_key_exists($key, $current) && array_key_exists($key, $expected)) {
+                    throw new RuntimeException("Duplicate credential configuration. Resolve it before recovery.");
+                }
+                $current[$key] = Env::parseValue(trim($value));
+            }
+            foreach ($expected as $key => $value) {
+                if (!isset($current[$key]) || !hash_equals((string) $value, $current[$key])) {
+                    throw new RuntimeException("Configuration changed. Request a fresh recovery link.");
+                }
+            }
+            $this->writeUnlocked($values);
+        });
+    }
+
+    private function writeUnlocked(array $values): void
+    {
         $envPath = $this->envPath();
 
         if (!$this->isWritable()) {
@@ -70,7 +105,7 @@ final class EnvironmentFileManager
             }
 
             $serialized = $this->serializeValue($value);
-            $pattern = '/^' . preg_quote($key, '/') . '=.*$/m';
+            $pattern = '/^[\t ]*(?:export[\t ]+)?' . preg_quote($key, '/') . '[\t ]*=.*$/m';
 
             if (preg_match($pattern, $contents) === 1) {
                 $contents = (string) preg_replace_callback(
@@ -89,9 +124,7 @@ final class EnvironmentFileManager
             $contents .= $key . "=" . $serialized . PHP_EOL;
         }
 
-        if (file_put_contents($envPath, $contents) === false) {
-            throw new RuntimeException("Unable to write the project .env file.");
-        }
+        $this->replaceContents($contents);
     }
 
     public function apply(array $values): void
@@ -112,9 +145,14 @@ final class EnvironmentFileManager
     }
 
     /**
-     * @param string[] $keys
+     * @param array<array-key, mixed> $keys Values are validated before constructing the removal pattern.
      */
     public function remove(array $keys): void
+    {
+        $this->withLock(fn () => $this->removeUnlocked($keys));
+    }
+
+    private function removeUnlocked(array $keys): void
     {
         $envPath = $this->envPath();
 
@@ -142,8 +180,44 @@ final class EnvironmentFileManager
             $contents .= PHP_EOL;
         }
 
-        if (file_put_contents($envPath, $contents) === false) {
-            throw new RuntimeException("Unable to write the project .env file.");
+        $this->replaceContents($contents);
+    }
+
+    private function withLock(callable $action): void
+    {
+        $lock = fopen($this->envPath() . ".lock", "c+b");
+        if ($lock === false) {
+            throw new RuntimeException("Cannot open environment lock.");
+        }
+        try {
+            if (!flock($lock, LOCK_EX)) {
+                throw new RuntimeException("Cannot lock environment configuration.");
+            }
+            $action();
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    private function replaceContents(string $contents): void
+    {
+        $path = $this->envPath();
+        $temporary = tempnam(dirname($path), ".env-");
+        if ($temporary === false) {
+            throw new RuntimeException("Cannot stage environment configuration.");
+        }
+        try {
+            $permissions = fileperms($path);
+            if (!chmod($temporary, $permissions === false ? 0600 : ($permissions & 0777))
+                || file_put_contents($temporary, $contents) !== strlen($contents)
+                || !rename($temporary, $path)) {
+                throw new RuntimeException("Unable to atomically write the project .env file.");
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
         }
     }
 

@@ -55,6 +55,18 @@ jobs:
         shell: pwsh
         run: php -v
 
+      - name: Install locked development dependencies
+        shell: pwsh
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Audit locked dependencies
+        shell: pwsh
+        run: composer audit --locked
+
+      - name: Run full framework acceptance
+        shell: pwsh
+        run: php vendor/phpunit/phpunit/phpunit --testsuite framework --fail-on-skipped
+
       - name: Validate docs sync
         shell: pwsh
         run: php ./scripts/build-docs.php --check

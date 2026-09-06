@@ -26,6 +26,7 @@ return [
     "driver" => (string) env("SESSION_DRIVER", "file"),
     "name" => (string) env("SESSION_NAME", "fnlla_session"),
     "lifetime_minutes" => $sessionLifetimeMinutes,
+    "absolute_lifetime_minutes" => max(1, (int) env("SESSION_ABSOLUTE_LIFETIME_MINUTES", 720)),
     "cookie_lifetime" => $sessionLifetimeMinutes * 60,
     "path" => (string) env("SESSION_PATH_SCOPE", "/"),
     "domain" => env("SESSION_DOMAIN"),
@@ -42,5 +43,7 @@ return [
         "database" => (int) env("REDIS_SESSION_DB", 3),
         "timeout" => (float) env("REDIS_TIMEOUT", 1.5),
         "prefix" => (string) env("REDIS_SESSION_PREFIX", "fnlla:session:"),
+        "lock_ttl_seconds" => max(1, (int) env("REDIS_SESSION_LOCK_TTL_SECONDS", 60)),
+        "lock_wait_milliseconds" => max(0, min(30000, (int) env("REDIS_SESSION_LOCK_WAIT_MILLISECONDS", 2000))),
     ],
 ];

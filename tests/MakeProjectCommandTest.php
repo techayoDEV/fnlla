@@ -60,6 +60,39 @@ final class MakeProjectCommandTest extends TestCase
         rmdir($this->targetPath);
     }
 
+    public function testPlainExportHasNoPanelAndPassesRuntimeAndHttpChecks(): void
+    {
+        $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+        self::assertSame(0, $command->handle([$this->targetPath, "Plain test", "--profile=plain"]));
+        $this->assertExportBudget(400000, 160);
+        foreach (["views/developer", "views/customer", "views/maintenance", "routes/maintenance.php", "src/Controllers/DeveloperAccessController.php", "public/assets/developer-panel.css"] as $path) {
+            self::assertFalse(file_exists($this->targetPath . "/" . $path), $path);
+        }
+        self::assertSame("plain", trim((string) file_get_contents($this->targetPath . "/.fnlla/project-profile")));
+        foreach (["public/vendor", "src", "config/ai.php", "config/developer_access.php", "packages/fnlla-core/src/Maintenance",
+            "packages/fnlla-core/src/Ai", "packages/fnlla-core/src/Support/optional_helpers.php", "MANIFEST.json", ".env.full.example"] as $path) {
+            self::assertFalse(file_exists($this->targetPath . "/" . $path), $path);
+        }
+        $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true);
+        self::assertArrayHasKey("techayodev/fnlla-core", $composer["require"]);
+        self::assertSame("app/", $composer["autoload"]["psr-4"]["App\\"]);
+        foreach (["scripts/test.php", "scripts/lint.php"] as $script) {
+            [$exit, $output] = $this->runPhpScript($this->targetPath . "/" . $script);
+            self::assertSame(0, $exit, $output);
+        }
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
+        self::assertSame(0, $exit, $output);
+        self::assertStringNotContainsString("developer", $output);
+        foreach (["route:cache", "route:cache", "route:list"] as $action) {
+            [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", [$action]);
+            self::assertSame(0, $exit, $output);
+        }
+        $cached = require $this->targetPath . "/storage/framework/cache/routes.php";
+        self::assertSame("plain", $cached["profile"]);
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["cache:clear"]);
+        self::assertSame(0, $exit, $output);
+    }
+
     public function testExportedProjectIncludesProjectSurfaceWithoutMaintainerResidue(): void
     {
         $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
@@ -67,10 +100,11 @@ final class MakeProjectCommandTest extends TestCase
 
         $command = new MakeProjectCommand($container);
 
-        self::assertSame(0, $command->handle([$this->targetPath, "Project Test"]));
+        self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
+        $this->assertExportBudget(4000000, 430);
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "LICENSE.md");
-        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "SUPPORT.md");
-        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "TRADEMARKS.md");
+        self::assertFileExists($this->targetPath . "/docs/framework/SUPPORT.md");
+        self::assertFileExists($this->targetPath . "/docs/framework/TRADEMARKS.md");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "VERSION");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "MANIFEST.json");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json");
@@ -84,14 +118,14 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "maintenance.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "framework-update.php");
-        self::assertFalse(is_dir($this->targetPath . DIRECTORY_SEPARATOR . "docs"));
+        self::assertFalse(is_file($this->targetPath . "/docs/index.html"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "build-docs.php"));
         self::assertFalse(is_dir($this->targetPath . DIRECTORY_SEPARATOR . "resources" . DIRECTORY_SEPARATOR . "project-templates"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "factories" . DIRECTORY_SEPARATOR . "UserFactory.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "migrations" . DIRECTORY_SEPARATOR . "20260627180000_create_users_table.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "migrations" . DIRECTORY_SEPARATOR . "20260627200000_add_role_to_users_table.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Controllers" . DIRECTORY_SEPARATOR . "AuthController.php"));
-        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Console" . DIRECTORY_SEPARATOR . "Commands" . DIRECTORY_SEPARATOR . "MakeCommandCommand.php"));
+        self::assertFileExists($this->targetPath . "/src/Console/Commands/MakeCommandCommand.php");
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Console" . DIRECTORY_SEPARATOR . "Commands" . DIRECTORY_SEPARATOR . "MakeProjectCommand.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "MakeProjectCommandTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "FnllaRuntimeSyncCommandTest.php"));
@@ -170,7 +204,7 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertStringContainsString(
             "FNLLA_OFFICIAL_URL=https://fnlla.com",
-            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.example")
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.full.example")
         );
         self::assertStringContainsString(
             "MAIL_FROM_ADDRESS=no-reply@example.com",
@@ -245,7 +279,7 @@ final class MakeProjectCommandTest extends TestCase
             "tests/BootstrapAutoloadTest.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
+        self::assertArrayNotHasKey(
             "routes/web.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
@@ -253,7 +287,7 @@ final class MakeProjectCommandTest extends TestCase
             "src/Controllers/HomeController.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
+        self::assertArrayNotHasKey(
             "src/Controllers/PageController.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
@@ -281,22 +315,19 @@ final class MakeProjectCommandTest extends TestCase
             "views/developer/project-settings.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
+        self::assertArrayNotHasKey(
             "views/pages/home.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
+        self::assertArrayNotHasKey(
             "views/pages/api-health.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
+        self::assertArrayNotHasKey(
             "public/assets/app.css",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
-        self::assertArrayHasKey(
-            "public/assets/fnlla-logo.png",
-            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
-        );
+        self::assertFalse(is_file($this->targetPath . "/public/assets/fnlla-logo.png"));
 
         [$exitCode, $output] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "validate-version-manifest.php"
@@ -316,8 +347,8 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("project:acceptance", $listOutput);
         self::assertStringContainsString("project:claim", $listOutput);
         self::assertFalse(str_contains($listOutput, "make:project"));
-        self::assertFalse(str_contains($listOutput, "make:controller"));
-        self::assertFalse(str_contains($listOutput, "make:migration"));
+        self::assertStringContainsString("make:controller", $listOutput);
+        self::assertStringContainsString("make:migration", $listOutput);
 
         [$claimExitCode, $claimOutput] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "fnlla",
@@ -460,6 +491,169 @@ final class MakeProjectCommandTest extends TestCase
         }
 
         self::assertStringNotContainsString("<<<", (string) file_get_contents(base_path("src/Console/Commands/MakeProjectCommand.php")));
+    }
+
+    public function testExplicitExportDoesNotCopyRuntimeOrUnlistedSourceFiles(): void
+    {
+        $suffix = "export-fixture-" . bin2hex(random_bytes(6));
+        $paths = ["storage/framework/developer/" . $suffix, "storage/framework/updates/" . $suffix,
+            "storage/app/" . $suffix, "storage/uploads/" . $suffix, "public/uploads/" . $suffix,
+            "scripts/" . $suffix . ".php", "src/Support/" . $suffix . ".php", ".env." . $suffix];
+        try {
+            foreach ($paths as $path) {
+                if (!is_dir(dirname(base_path($path)))) {
+                    mkdir(dirname(base_path($path)), 0777, true);
+                }
+                file_put_contents(base_path($path), "synthetic export fixture\n");
+            }
+            $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+            self::assertSame(0, $command->handle([$this->targetPath, "Clean Export", "--no-interaction"]));
+            foreach ($paths as $path) {
+                self::assertFalse(is_file($this->targetPath . "/" . $path), $path);
+            }
+            foreach (["benchmark.php", "publish-fnlla-runtime.ps1", "audit-fnlla-ecosystem.ps1", "validate-release-metadata.php"] as $file) {
+                self::assertFalse(is_file($this->targetPath . "/scripts/" . $file));
+            }
+            self::assertFileExists($this->targetPath . "/tests/ProjectTest.php");
+            foreach (["ApplicationSurfaceTest.php", "RuntimeAiTest.php", "PerformanceAndAiTest.php", "OperationsTest.php"] as $file) {
+                self::assertFalse(is_file($this->targetPath . "/tests/" . $file));
+            }
+            self::assertSame("sprite", trim((string) file_get_contents($this->targetPath . "/.fnlla/ui-distribution")));
+            self::assertFalse(is_file($this->targetPath . "/.fnlla/modules-opt-in"));
+            [$configExit, $configOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["config:doctor", "--json"]);
+            self::assertSame(0, $configExit, $configOutput);
+            foreach (["WORKSPACE", "ANALYTICS", "HEATMAP", "CUSTOMER_PORTAL"] as $module) {
+                self::assertStringContainsString("FNLLA_MODULE_" . $module . "=true", (string) file_get_contents($this->targetPath . "/.env.example"));
+            }
+            self::assertSame(4, count(glob($this->targetPath . "/public/vendor/fnlla-runtime/assets/icons/*") ?: []));
+            self::assertFileExists($this->targetPath . "/public/uploads/.gitignore");
+
+            $queuePath = $this->targetPath . "/storage/framework/queue/" . $suffix;
+            $sessionPath = $this->targetPath . "/storage/framework/sessions/" . $suffix;
+            file_put_contents($queuePath, "queued synthetic work");
+            file_put_contents($sessionPath, "synthetic session");
+            [$exitCode, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["release:prepare", "--skip-tests", "--json"]);
+            self::assertSame(0, $exitCode, $output);
+            $report = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+            self::assertSame("unknown", $report["risk"]);
+            self::assertSame("skipped", $report["validation"]);
+            self::assertSame("queued synthetic work", file_get_contents($queuePath));
+            self::assertSame("synthetic session", file_get_contents($sessionPath));
+        } finally {
+            foreach ($paths as $path) {
+                if (is_file(base_path($path))) {
+                    unlink(base_path($path));
+                }
+            }
+        }
+    }
+
+    private function assertExportBudget(int $maxBytes, int $maxFiles): void
+    {
+        $bytes = 0;
+        $count = 0;
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->targetPath, RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
+            if ($file->isFile()) {
+                $bytes += $file->getSize();
+                $count++;
+            }
+        }
+        self::assertTrue($bytes <= $maxBytes, "Export exceeds its byte budget: " . $bytes . " > " . $maxBytes);
+        self::assertTrue($count <= $maxFiles, "Export exceeds its file budget: " . $count . " > " . $maxFiles);
+    }
+
+    public function testFailedCacheRebuildsPreservePreviouslyWorkingExports(): void
+    {
+        $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+        self::assertSame(0, $command->handle([$this->targetPath, "Cache test", "--profile=full", "--no-interaction"]));
+        $configPath = $this->targetPath . "/storage/framework/cache/bootstrap-config.php";
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["config:cache"]);
+        self::assertSame(0, $exit, $output);
+        $oldConfig = hash_file("sha256", $configPath);
+        file_put_contents($this->targetPath . "/config/failure-fixture.php", "<?php return new stdClass();");
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["config:cache"]);
+        self::assertSame(1, $exit, $output);
+        self::assertSame($oldConfig, hash_file("sha256", $configPath));
+        unlink($this->targetPath . "/config/failure-fixture.php");
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:cache"]);
+        self::assertSame(0, $exit, $output);
+        $routePath = $this->targetPath . "/storage/framework/cache/routes.php";
+        $oldRoutes = hash_file("sha256", $routePath);
+        $original = (string) file_get_contents($this->targetPath . "/routes/web.php");
+        file_put_contents($this->targetPath . "/routes/web.php", $original . "\n" . '$router->get("/uncacheable", static fn (): string => "fixture");');
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:cache"]);
+        self::assertSame(1, $exit, $output);
+        self::assertSame($oldRoutes, hash_file("sha256", $routePath));
+        self::assertStringContainsString("closure", $output);
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
+        self::assertSame(0, $exit, $output);
+        self::assertStringNotContainsString("uncacheable", $output);
+        file_put_contents($this->targetPath . "/routes/web.php", $original);
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:cache"]);
+        self::assertSame(0, $exit, $output);
+        self::assertSame($oldRoutes, hash_file("sha256", $routePath));
+    }
+
+    public function testCompletePackagePreviewUsesTheSameCoreInventoryAndBootsOffline(): void
+    {
+        $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+        self::assertSame(0, $command->handle([$this->targetPath, "Package test", "--profile=full", "--packages", "--no-interaction"]));
+        $metadata = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey("techayodev/fnlla-core", $metadata["require"]);
+        self::assertArrayHasKey("techayodev/fnlla-complete", $metadata["require"]);
+        $core = json_decode((string) file_get_contents(base_path("resources/project-templates/v1/core-files.json")), true, 512, JSON_THROW_ON_ERROR);
+        foreach ($core["files"] as $path) {
+            self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/packages/fnlla-core/" . $path), $path);
+        }
+        self::assertFalse(is_file($this->targetPath . "/src/Application.php"));
+        self::assertFileExists($this->targetPath . "/src/Controllers/PageController.php");
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
+        self::assertSame(0, $exit, $output);
+        self::assertStringContainsString("developer.panel", $output);
+    }
+
+    public function testGeneratorsWorkInBothPresetsAndPackagePreview(): void
+    {
+        foreach (["plain", "full", "packages"] as $profile) {
+            $root = $this->targetPath . "/" . $profile;
+            $options = $profile === "packages" ? ["--profile=full", "--packages"] : ["--profile=" . $profile];
+            $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+            self::assertSame(0, $command->handle([$root, "Generator test", ...$options]));
+            $generated = ["controller" => "app/Controllers/ExampleController.php",
+                "middleware" => "app/Middleware/ExampleMiddleware.php", "command" => "app/Console/Commands/ExampleCommand.php",
+                "factory" => "database/factories/ExampleFactory.php", "seeder" => "database/seeders/ExampleSeeder.php"];
+            foreach ($generated as $kind => $path) {
+                [$exit, $output] = $this->runPhpScript($root . "/fnlla", ["make:" . $kind, "Example"]);
+                self::assertSame(0, $exit, $profile . ": " . $output);
+                self::assertFileExists($root . "/" . $path);
+                $hash = hash_file("sha256", $root . "/" . $path);
+                [$exit, $output] = $this->runPhpScript($root . "/fnlla", ["make:" . $kind, "Example"]);
+                self::assertSame(1, $exit, $output);
+                self::assertSame($hash, hash_file("sha256", $root . "/" . $path));
+            }
+            [$exit, $output] = $this->runPhpScript($root . "/fnlla", ["make:migration", "create_examples"]);
+            self::assertSame(0, $exit, $output);
+            self::assertSame(1, count(glob($root . "/database/migrations/*_create_examples.php") ?: []));
+            foreach (["../Escape", "Foo/Bar", "Foo\\Bar", "Controller", "--typo", ""] as $name) {
+                [$exit, $output] = $this->runPhpScript($root . "/fnlla", ["make:controller", $name]);
+                self::assertSame(1, $exit, $output);
+            }
+            $probe = $root . "/generator-probe.php";
+            file_put_contents($probe, '<?php require __DIR__ . "/bootstrap/common.php"; foreach (["App\\\\Controllers\\\\ExampleController", "App\\\\Middleware\\\\ExampleMiddleware", "App\\\\Console\\\\Commands\\\\ExampleCommand", "Database\\\\Factories\\\\ExampleFactory", "Database\\\\Seeders\\\\ExampleSeeder"] as $class) { if (!class_exists($class)) { throw new RuntimeException($class); } }');
+            [$exit, $output] = $this->runPhpScript($probe);
+            self::assertSame(0, $exit, $profile . ": " . $output);
+            unlink($probe);
+            [$exit, $output] = $this->runPhpScript($root . "/scripts/lint.php");
+            self::assertSame(0, $exit, $profile . ": " . $output);
+            $composer = json_decode((string) file_get_contents($root . "/composer.json"), true);
+            foreach (["../outside/", "vendor/custom/", "packages/fnlla-core/src/"] as $unsafe) {
+                $composer["autoload"]["psr-4"]["App\\"] = $unsafe;
+                file_put_contents($root . "/composer.json", json_encode($composer));
+                [$exit, $output] = $this->runPhpScript($root . "/fnlla", ["make:controller", "Unsafe"]);
+                self::assertSame(1, $exit, $output);
+                self::assertStringContainsString("application-owned", $output);
+            }
+        }
     }
 
     private function runPhpScript(string $scriptPath, array $arguments = []): array

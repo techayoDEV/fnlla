@@ -22,6 +22,7 @@ namespace Fnlla\Php\Database;
 
 use PDO;
 use RuntimeException;
+use Fnlla\Php\Observability\QueryTelemetry;
 
 final class QueryBuilder
 {
@@ -62,13 +63,33 @@ final class QueryBuilder
 
     public function where(string $column, mixed $operatorOrValue, mixed $value = null): self
     {
-        $operator = $value === null ? "=" : $this->normalizeOperator((string) $operatorOrValue);
-        $resolvedValue = $value === null ? $operatorOrValue : $value;
+        $shortForm = func_num_args() === 2;
+        $operator = $shortForm ? "=" : $this->normalizeOperator((string) $operatorOrValue);
+        $resolvedValue = $shortForm ? $operatorOrValue : $value;
+        if ($resolvedValue === null) {
+            return match ($operator) {
+                "=" => $this->whereNull($column),
+                "!=", "<>" => $this->whereNotNull($column),
+                default => throw new RuntimeException("NULL comparisons support only equality and inequality."),
+            };
+        }
         $parameter = "where_" . count($this->bindings);
 
         $this->wheres[] = sprintf("%s %s :%s", $this->quoteIdentifier($column), $operator, $parameter);
         $this->bindings[$parameter] = $resolvedValue;
 
+        return $this;
+    }
+
+    public function whereNull(string $column): self
+    {
+        $this->wheres[] = $this->quoteIdentifier($column) . " IS NULL";
+        return $this;
+    }
+
+    public function whereNotNull(string $column): self
+    {
+        $this->wheres[] = $this->quoteIdentifier($column) . " IS NOT NULL";
         return $this;
     }
 
@@ -123,7 +144,7 @@ final class QueryBuilder
     {
         [$sql, $bindings] = $this->compileSelect();
         $statement = $this->pdo->prepare($sql);
-        $statement->execute($bindings);
+        QueryTelemetry::execute($statement, $bindings);
 
         return $statement->fetchAll();
     }
@@ -154,7 +175,7 @@ final class QueryBuilder
 
         $statement = $this->pdo->prepare($sql);
 
-        return $statement->execute($values);
+        return QueryTelemetry::execute($statement, $values);
     }
 
     public function insertGetId(array $values): int
@@ -182,7 +203,7 @@ final class QueryBuilder
         $sql = sprintf("UPDATE %s SET %s%s", $this->table, implode(", ", $assignments), $this->compileWhereClause());
         $statement = $this->pdo->prepare($sql);
 
-        return $statement->execute($bindings);
+        return QueryTelemetry::execute($statement, $bindings);
     }
 
     public function delete(): bool
@@ -190,7 +211,7 @@ final class QueryBuilder
         $sql = sprintf("DELETE FROM %s%s", $this->table, $this->compileWhereClause());
         $statement = $this->pdo->prepare($sql);
 
-        return $statement->execute($this->bindings);
+        return QueryTelemetry::execute($statement, $this->bindings);
     }
 
     public function count(string $column = "*"): int
@@ -200,7 +221,7 @@ final class QueryBuilder
             : $this->quoteIdentifier($column);
         $sql = sprintf("SELECT COUNT(%s) AS aggregate FROM %s%s", $aggregateColumn, $this->table, $this->compileWhereClause());
         $statement = $this->pdo->prepare($sql);
-        $statement->execute($this->bindings);
+        QueryTelemetry::execute($statement, $this->bindings);
         $result = $statement->fetch();
 
         return (int) ($result["aggregate"] ?? 0);

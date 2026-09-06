@@ -120,7 +120,7 @@ final class ApplicationProbe
         })($container);
 
         $this->application = new Application($router, $container, $container->make(ExceptionHandler::class));
-        $this->application->middleware(["cors", "maintenance"]);
+        $this->application->middleware(ProjectProfile::hasPanel() ? ["cors", "maintenance"] : ["cors"]);
 
         return $this->application;
     }

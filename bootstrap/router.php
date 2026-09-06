@@ -35,7 +35,7 @@ if (!isset($container) || !$container instanceof Container) {
     throw new RuntimeException("Container must be available before loading routes.");
 }
 
-$router = $container->make(Router::class);
+$router = ($rebuildRouteCache ?? false) ? new Router($container) : $container->make(Router::class);
 $router->middleware("csrf", VerifyCsrfToken::class);
 $router->middleware("auth", Authenticate::class);
 $router->middleware("authorize", Authorize::class);
@@ -49,16 +49,12 @@ $router->middleware("trusted-hosts", EnforceTrustedHosts::class);
 
 $routeCachePath = framework_route_cache_path();
 
-if (is_file($routeCachePath)) {
-    $cachedRoutes = require $routeCachePath;
-
-    if (!is_array($cachedRoutes)) {
-        throw new RuntimeException("Cached route file must return an array.");
-    }
-
+$cachedRoutes = ($rebuildRouteCache ?? false) ? null
+    : \Fnlla\Php\Support\PhpArrayCache::routes($routeCachePath, \Fnlla\Php\Support\ProjectProfile::name());
+if ($cachedRoutes !== null) {
     $router->loadCachedRoutes($cachedRoutes);
 } else {
-    if (is_file(APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php")) {
+    if (\Fnlla\Php\Support\ProjectProfile::hasPanel() && is_file(APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php")) {
         require APP_ROOT . DIRECTORY_SEPARATOR . "routes" . DIRECTORY_SEPARATOR . "maintenance.php";
     }
 

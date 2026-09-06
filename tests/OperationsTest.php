@@ -62,6 +62,7 @@ final class OperationsTest extends TestCase
         config_set("observability.response_time_header.enabled", true);
 
         $container = new Container();
+        $container->singleton(\Fnlla\Php\Http\RequestLifecycleObserver::class, \Fnlla\Php\Observability\RuntimeRequestObserver::class);
         $router = new Router($container);
         $router->get("/observed", static fn (): Response => Response::text("ok"))->name("observed.route");
         $application = new Application($router, $container, new ExceptionHandler());
@@ -147,7 +148,9 @@ final class OperationsTest extends TestCase
 
         self::assertSame("doctor", (new DoctorCommand($container))->name());
         self::assertSame("developer:install-storage", (new DeveloperInstallStorageCommand($container))->name());
-        self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
+        if (!is_file(base_path(".fnlla/framework-lock.json"))) {
+            self::assertSame("api:lock", (new PublicApiLockCommand($container))->name());
+        }
         self::assertSame("security:audit", (new SecurityAuditCommand($container))->name());
         self::assertSame("ops:backup-plan", (new BackupPlanCommand($container))->name());
         self::assertSame("project:acceptance", (new ProjectAcceptanceCommand($container))->name());

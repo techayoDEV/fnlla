@@ -284,46 +284,7 @@ function Assert-SafeCloneReset {
     }
 }
 
-function Sync-RuntimeExport {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$SourceRuntimePath,
-        [Parameter(Mandatory = $true)]
-        [string]$DestinationRuntimePath
-    )
-
-    $isWindowsPlatform = [System.IO.Path]::DirectorySeparatorChar -eq "\"
-
-    if ($isWindowsPlatform) {
-        $robocopyCommand = Get-Command -Name "robocopy" -ErrorAction SilentlyContinue
-        if ($null -ne $robocopyCommand) {
-            if (Test-Path -LiteralPath $DestinationRuntimePath) {
-                Remove-Item -LiteralPath $DestinationRuntimePath -Recurse -Force
-            }
-
-            New-Item -ItemType Directory -Path $DestinationRuntimePath | Out-Null
-
-            & $robocopyCommand.Source $SourceRuntimePath $DestinationRuntimePath /MIR /NFL /NDL /NJH /NJS /NP
-            $exitCode = $LASTEXITCODE
-
-            if ($exitCode -gt 7) {
-                throw "robocopy failed with exit code $exitCode."
-            }
-
-            return
-        }
-    }
-
-    if (Test-Path -LiteralPath $DestinationRuntimePath) {
-        Remove-Item -LiteralPath $DestinationRuntimePath -Recurse -Force
-    }
-
-    New-Item -ItemType Directory -Path $DestinationRuntimePath | Out-Null
-
-    foreach ($item in Get-ChildItem -LiteralPath $SourceRuntimePath -Force) {
-        Copy-Item -LiteralPath $item.FullName -Destination $DestinationRuntimePath -Recurse -Force
-    }
-}
+. (Join-Path $PSScriptRoot "copy-fnlla-runtime.ps1")
 
 $projectRoot = Resolve-AbsolutePath -Path (Join-Path $PSScriptRoot "..")
 $targetRuntimePath = Resolve-AbsolutePath -Path (Join-Path $projectRoot "public/vendor/fnlla-runtime")
@@ -383,7 +344,7 @@ try {
     $sourceVersionPath = Join-Path $sourceRuntimePath "VERSION"
     $targetVersionPath = Join-Path $targetRuntimePath "VERSION"
 
-    Sync-RuntimeExport -SourceRuntimePath $sourceRuntimePath -DestinationRuntimePath $targetRuntimePath
+    Copy-FnllaUiRuntime -SourceRuntimePath $sourceRuntimePath -ProjectRoot $projectRoot
 
     $sourceVersion = (Get-Content -LiteralPath $sourceVersionPath -TotalCount 1).Trim()
     $targetVersion = (Get-Content -LiteralPath $targetVersionPath -TotalCount 1).Trim()

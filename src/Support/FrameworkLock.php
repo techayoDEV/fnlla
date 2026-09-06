@@ -30,7 +30,8 @@ final class FrameworkLock
 {
     public const LOCK_FILE = ".fnlla/framework-lock.json";
     public const MIGRATION_LOCK_FILE = ".fnlla/legacy-framework-lock.json";
-    private const PROJECT_SURFACE_MANAGED_PATHS = [
+    private const PROJECT_OWNED_PATHS = [
+        "config/app.php",
         "public/assets/app.css",
         "public/assets/fnlla-logo.png",
         "routes/web.php",
@@ -145,7 +146,7 @@ final class FrameworkLock
 
         $lock = self::readLockFile($sourcePath);
 
-        file_put_contents($targetPath, self::encode($lock, "framework lock"));
+        FrameworkUpdateTransaction::replace($targetPath, self::encode($lock, "framework lock"));
     }
 
     public static function build(string $projectRoot, string $sourceRoot, string $appName, string $packageSlug): array
@@ -173,6 +174,7 @@ final class FrameworkLock
                     "website" => FrameworkIdentity::OFFICIAL_URL,
                 ],
                 "lock_file" => self::lockFile(),
+                "profile" => ProjectProfile::name($projectRoot),
                 "managed_files" => self::managedFileHashes($projectRoot),
                 "generated_at_utc" => gmdate(DATE_ATOM),
             ],
@@ -188,7 +190,7 @@ final class FrameworkLock
         );
 
         foreach ($iterator as $item) {
-            if (!$item->isFile()) {
+            if (!$item->isFile() || $item->isLink()) {
                 continue;
             }
 
@@ -201,7 +203,7 @@ final class FrameworkLock
 
             $hash = hash_file("sha256", $path);
 
-            if (!is_string($hash) || $hash === "") {
+            if ($hash === false) {
                 throw new RuntimeException("Unable to hash framework-managed file: " . $path);
             }
 
@@ -218,9 +220,28 @@ final class FrameworkLock
         return self::LEGACY_UNTRACKED_MANAGED_HASHES[$frameworkVersion] ?? [];
     }
 
+    public static function legacyNormalizedHashes(string $frameworkVersion): array
+    {
+        if ($frameworkVersion !== "2.1.3") { return []; }
+        $path = base_path("resources/update-baselines/2.1.3.json");
+        if (!is_file($path)) { return []; }
+        $baseline = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        return (array) ($baseline["normalized_sha256"] ?? []);
+    }
+
     public static function isFrameworkManagedPath(string $relativePath): bool
     {
         $relativePath = self::normalizeSeparators($relativePath);
+        if (!self::isSafeRelativePath($relativePath)) {
+            return false;
+        }
+        if (str_starts_with($relativePath, ".env") || $relativePath === "src/Controllers/PlainHomeController.php") {
+            return false;
+        }
+        if ($relativePath === "VERSION" || str_starts_with($relativePath, "docs/framework/")
+            || str_starts_with($relativePath, "public/vendor/fnlla-runtime/")) {
+            return true;
+        }
 
         foreach ([
             ".git/",
@@ -231,6 +252,7 @@ final class FrameworkLock
             "playwright-report/",
             "public/uploads/",
             "test-results/",
+            "tests/",
             "tmp/",
             "vendor/",
         ] as $ignoredPrefix) {
@@ -243,7 +265,11 @@ final class FrameworkLock
             return false;
         }
 
-        if (in_array($relativePath, self::PROJECT_SURFACE_MANAGED_PATHS, true)) {
+        if (in_array($relativePath, self::PROJECT_OWNED_PATHS, true)) {
+            return false;
+        }
+
+        if (in_array($relativePath, ["views/layouts/developer.php", "public/assets/app-base.css", "public/assets/developer-panel.css", "public/assets/developer-panel.js", "public/assets/developer-tools.css", "public/assets/debug-toolbar.css"], true)) {
             return true;
         }
 
@@ -290,6 +316,12 @@ final class FrameworkLock
         ], true);
     }
 
+    public static function isSafeRelativePath(string $path): bool
+    {
+        return preg_match('~^(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+$~D', $path) === 1
+            && !in_array("..", explode("/", $path), true) && !in_array(".", explode("/", $path), true);
+    }
+
     private static function existingPath(string $projectRoot): ?string
     {
         $path = self::path($projectRoot);
@@ -331,6 +363,11 @@ final class FrameworkLock
     private static function normalize(array $decoded): array
     {
         if (isset($decoded["framework_base"]) && is_array($decoded["framework_base"])) {
+            foreach ((array) ($decoded["framework_base"]["managed_files"] ?? []) as $path => $hash) {
+                if (!is_string($path) || !self::isSafeRelativePath($path) || !is_string($hash)) {
+                    throw new RuntimeException("Framework lock contains an unsafe managed-file entry.");
+                }
+            }
             return $decoded;
         }
 

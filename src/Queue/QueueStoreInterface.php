@@ -26,6 +26,7 @@ interface QueueStoreInterface
     public function push(string $jobClass, array $payload = []): string;
 
     /**
+     * Reserve, do not destructively dequeue. Built-in stores recover expired leases.
      * @return array{id:string,job:string,payload:array,source:mixed}|null
      */
     public function pop(): ?array;

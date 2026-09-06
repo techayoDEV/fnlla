@@ -47,6 +47,28 @@ unless a release note promotes it.
 
 ## Compatibility Policy
 
+`framework:update --project=PATH` selects an explicit downstream project when
+running a newer updater outside it. Check/dry-run/apply still use the official
+release channel; this option does not permit local or fork release sources.
+Follow [Migration](MIGRATION.md) for projects whose old updater predates the
+2.2.0 ownership and metadata migration.
+
+The shared generator, migration, application identity v1 and cache behavior is
+specified in [CLI And Runtime Contracts](framework/RUNTIME-CONTRACTS.md). These
+changes are prepared for 2.2.0, not a declaration of publication. Application
+identity verification now rejects removed/mismatched accounts. Non-local migration
+writes require explicit `--force`; update deployment automation before upgrading.
+
+Both presets expose `make:controller`, `make:middleware`, `make:command`,
+`make:factory`, `make:seeder`, `make:migration`, `migrate`, `migrate:rollback`,
+`migrate:status`, `config:cache`, `route:cache` and command help.
+
+`release:prepare --skip-tests` prepares artifacts, not a validated release. Its
+JSON reports `validation: skipped` and `risk: unknown`. `ok` describes command
+success, not publication readiness. A validated local run reports `validation:
+passed`; failed validation reports `failed`. Remote and publication acceptance
+must still be checked separately.
+
 Within the same major version, FNLLA treats this document as the compatibility
 contract for downstream projects. Patch and minor releases may add public
 surface area, improve validation and tighten unsafe behaviour, but they should
@@ -80,6 +102,13 @@ AI driver. The default driver is `local`. The maintained external boundary is
 ## Stable Data Surface
 
 - `DatabaseManager::table(string $table)` for creating a query builder.
+- `DatabaseManager::forConnection(string $name): DatabaseManager` selects a
+  cached named manager without changing the default connection.
+- `DatabaseManager::connection(?string $name = null): PDO` resolves the selected
+  connection lazily; an unknown name fails instead of falling back.
+- `registerConnection(string $name, PDO $pdo)` installs an explicitly supplied
+  connection; `purge(?string $name = null)` releases the manager's cached PDO
+  reference and rejects active transactions. External PDO references are not closed.
 - `DatabaseManager::transaction(callable $callback)` for atomic application
   writes.
 - `QueryBuilder::select()`, `where()`, `orderBy()`, `limit()`, `offset()`,
@@ -87,6 +116,36 @@ AI driver. The default driver is `local`. The maintained external boundary is
   `count()`, `exists()` and `paginate()`.
 - `QueryBuilder::paginate()` returns an array with `data` and `meta`. The meta
   keys are `current_page`, `per_page`, `total`, `last_page`, `from` and `to`.
+
+## Named Database Connections
+
+Add MySQL connection definitions under `database.connections` in
+`config/database.php`; `DB_CONNECTION` selects the default key (default `mysql`).
+Keep credentials in environment variables, not source. Configure before resolving
+the manager; after changing configuration, explicitly purge an existing connection.
+Names accept letters followed by letters, digits, hyphens or underscores (64
+characters maximum). There is no automatic read replica routing, distributed
+transaction or ORM identity map.
+
+```php
+$audit = db()->forConnection("audit");
+$rows = $audit->table("events")->where("processed", 0)->get();
+$migrator = new \Fnlla\Php\Database\Migrations\Migrator(
+    $audit,
+    base_path("database/audit-migrations")
+);
+$migrator->migrate();
+$migrator->status();
+$migrator->rollback();
+```
+
+The migrator binds both `up()` / `down()` and its ledger to its selected manager,
+regardless of the manager supplied by a migration file's constructor. Put database
+work in `up()` / `down()`, not migration constructors. Existing CLI migration
+commands continue to target the configured default connection. MySQL DDL may
+implicitly commit; a failed migration is not recorded as complete but may leave
+schema changes that require an application-specific repair. Run migrations under
+one deployment owner; concurrent migration execution is not serialized here.
 
 ## Stable Operational Schemas
 

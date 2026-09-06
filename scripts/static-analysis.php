@@ -26,7 +26,7 @@ $phpstan = $root . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" 
 $psalm = $root . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . (DIRECTORY_SEPARATOR === "\\" ? "psalm.bat" : "psalm");
 
 if (is_file($phpstan)) {
-    passthru(escapeshellarg($phpstan) . " analyse src bootstrap routes config scripts tests --no-progress", $exitCode);
+    passthru(escapeshellarg(PHP_BINARY) . " " . escapeshellarg($root . "/vendor/phpstan/phpstan/phpstan") . " analyse --configuration=" . escapeshellarg($root . "/phpstan.neon") . " --no-progress --memory-limit=1G", $exitCode);
     exit((int) $exitCode);
 }
 
@@ -36,7 +36,12 @@ if (is_file($psalm)) {
 }
 
 $errors = [];
-$files = php_source_files($root . DIRECTORY_SEPARATOR . "src");
+$files = [];
+foreach (["src", "app", "packages"] as $sourceDirectory) {
+    if (is_dir($root . "/" . $sourceDirectory)) {
+        $files = array_merge($files, php_source_files($root . "/" . $sourceDirectory));
+    }
+}
 
 foreach ($files as $file) {
     $contents = file_get_contents($file);

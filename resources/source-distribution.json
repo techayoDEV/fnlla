@@ -1,0 +1,22 @@
+{
+  "schema": "fnlla.source_distribution.v1",
+  "excluded_prefixes": [
+    ".git/",
+    ".fnlla/",
+    ".idea/",
+    ".vscode/",
+    "framework/",
+    "backups/",
+    "coverage/",
+    "test-results/",
+    "playwright-report/",
+    "branding/",
+    "dist/",
+    "vendor/",
+    "node_modules/",
+    "storage/",
+    "public/uploads/"
+  ],
+  "excluded_names": ["auth.json", ".npmrc", ".pypirc", "id_rsa", "id_ed25519", ".DS_Store", "Thumbs.db"],
+  "excluded_extensions": ["key", "pem", "p12", "pfx", "sql", "sqlite", "sqlite3", "bak", "log", "tmp", "zip"]
+}

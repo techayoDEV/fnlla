@@ -209,7 +209,7 @@ final class UpgradeAnalyzer
 
         foreach ([
             "docs/MIGRATION.md",
-            "docs/UPGRADE-2.1.md",
+            "docs/MIGRATION.md",
             "docs/PRODUCTION-CHECKLIST.md",
             "docs/BUSINESS-APP-REFERENCE.md",
             "CHANGELOG.md",
@@ -392,7 +392,7 @@ final class UpgradeAnalyzer
 
             $relativePath = str_replace("\\", "/", substr($item->getPathname(), strlen(base_path()) + 1));
 
-            if (preg_match('#^(\.git|dist|storage|vendor)/#', $relativePath) === 1) {
+            if (preg_match('#^(\.git|dist|storage|vendor|\.fnlla/update-transaction)/#', $relativePath) === 1) {
                 continue;
             }
 

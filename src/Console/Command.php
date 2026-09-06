@@ -34,6 +34,17 @@ abstract class Command
 
     abstract public function handle(array $arguments): int;
 
+    public function usage(): string
+    {
+        return $this->name() . " [arguments]";
+    }
+
+    public function printHelp(): void
+    {
+        $this->line($this->description());
+        $this->line("Usage: php fnlla " . $this->usage());
+    }
+
     public function hidden(): bool
     {
         return false;

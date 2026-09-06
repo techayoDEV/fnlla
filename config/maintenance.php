@@ -31,6 +31,6 @@ return [
     "session_key" => "maintenance.access_unlocked",
     "unlocked_at_key" => "maintenance.access_unlocked_at",
     "expires_at_key" => "maintenance.access_expires_at",
-    "env_path" => base_path(".env"),
+    "env_path" => env_file_path(),
     "env_example_path" => base_path(".env.example"),
 ];

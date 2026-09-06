@@ -2,7 +2,7 @@
 
 ![FNLLA framework cover](./docs/assets/brand/fnlla-cover.jpg)
 
-[![Version](https://img.shields.io/badge/version-2.1.3-0f766e?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-2.2.0-0f766e?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/PERFORMANCE.md)
 [![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
@@ -70,6 +70,10 @@ Read the full workflow in
 
 ## Essential Commands
 
+Developer tooling and architecture: [Framework development](docs/ARCHITECTURE-ROADMAP.md).
+After `composer install`, use `composer test:unit` for PHPUnit and `composer analyse`
+for PHPStan level 5. `php scripts/test.php` remains the dependency-free smoke runner.
+
 ```bash
 php fnlla list
 php fnlla doctor
@@ -80,7 +84,7 @@ php fnlla app:map --json
 php fnlla tech-debt:update --check
 php fnlla perf:profile --iterations=5
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
-php fnlla release:prepare --major --target=2.1.3
+php fnlla release:prepare --major --target=2.2.0
 ```
 
 Command responsibilities and downstream boundaries are documented in
@@ -97,7 +101,7 @@ documentation set:
 - [`docs/PRODUCTION-CHECKLIST.md`](./docs/PRODUCTION-CHECKLIST.md) for
   deployment and security gates.
 - [`docs/DEVELOPER-PANEL.md`](./docs/DEVELOPER-PANEL.md) for the private
-  technical workspace, security, analytics, TechAyo Remote Control adapter
+  technical workspace, security, analytics, remote-control adapter
   contract, storage and framework-vs-product boundary.
 - [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
   `.env.full.example`, client preview and the Fionn bridge boundary.
@@ -139,15 +143,16 @@ php scripts/build-docs.php --check
 
 ## Release State
 
-Current repository version: **2.1.3**.
+Current source candidate: **2.2.0**. Last public release: **2.1.3**.
 
-The latest release-gate record described here is `v2.1.1`, which passed the
-FNLLA release gate on Ubuntu, macOS and Windows, including strict security
-audit, project acceptance, verified backup plan generation, performance budget
-and export/update regression.
+The next stable target is **2.2.0**, currently unreleased. Matching source/runtime
+version markers identify the candidate, not completed publication acceptance.
+Historical CI results do not validate the current candidate. See
+[modernization status](./docs/MODERNIZATION-STATUS.md) for outstanding acceptance
+and [release operations](./docs/RELEASE-AND-OPERATIONS.md) for publication gates.
 
 See [`CHANGELOG.md`](./CHANGELOG.md) and
-[`docs/UPGRADE-2.1.1.md`](./docs/UPGRADE-2.1.1.md) for release notes.
+[`docs/MIGRATION.md`](./docs/MIGRATION.md) for consolidated upgrade guidance.
 
 ## Governance
 

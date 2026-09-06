@@ -31,12 +31,16 @@ final class ExceptionHandler
 {
     public function report(Throwable $exception, Request $request): void
     {
-        Logger::exception($exception, [
-            "request_id" => $request->requestId(),
-            "method" => $request->method(),
-            "path" => $request->path(),
-            "ip" => $request->ip(),
-        ]);
+        try {
+            Logger::exception($exception, [
+                "request_id" => $request->requestId(),
+                "method" => $request->method(),
+                "path" => $request->path(),
+                "ip" => $request->ip(),
+            ]);
+        } catch (Throwable) {
+            @error_log("FNLLA exception reporting failed; check log storage permissions.");
+        }
     }
 
     public function render(Throwable $exception, Request $request): Response
@@ -57,12 +61,12 @@ final class ExceptionHandler
             ], 500);
         }
 
-        return Response::html(View::render("pages/error", [
+        return $this->renderHtml([
             "pageTitle" => "Application Error",
             "headline" => "Something went wrong",
             "message" => $debugMessage,
             "requestReference" => $request->requestId(),
-        ]), 500);
+        ], 500, $request);
     }
 
     private function renderHttpException(HttpException $exception, Request $request): Response
@@ -83,11 +87,22 @@ final class ExceptionHandler
             ], $status);
         }
 
-        return Response::html(View::render("pages/error", [
+        return $this->renderHtml([
             "pageTitle" => $headline,
             "headline" => $headline,
             "message" => $message,
             "requestReference" => $request->requestId(),
-        ]), $status);
+        ], $status, $request);
+    }
+
+    private function renderHtml(array $data, int $status, Request $request): Response
+    {
+        try {
+            return Response::html(View::render("pages/error", $data), $status);
+        } catch (Throwable $renderError) {
+            $this->report($renderError, $request);
+            return Response::text("The application could not render this request.", 500)
+                ->withHeader("Cache-Control", "no-store");
+        }
     }
 }

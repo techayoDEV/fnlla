@@ -37,7 +37,14 @@ And the application now keeps one browser-facing maintenance page on purpose:
 - `/maintenance/framework-update`
 
 The exported project also keeps only a lean downstream smoke-test subset under `tests/`.
-Framework-internal export coverage and the `make:*` scaffolding commands stay in the upstream `techayoDEV/fnlla` repository.
+Framework-internal export tests and make:project stay in the maintainer repository.
+Full exports include focused ProjectTest and BootstrapAutoloadTest cases rather
+than copies of framework analytics, operations and demonstration-panel suites.
+All application tests are project-owned during updates. The complete framework
+suite still runs upstream, including clean-export acceptance.
+Application generators (controller, middleware, command, migration, factory and
+seeder) are included in both presets. Full-only runtime/panel operations in this
+guide do not apply to plain. See [Runtime contracts](framework/RUNTIME-CONTRACTS.md).
 
 The maintainer-only docs builder stays in the framework repository:
 

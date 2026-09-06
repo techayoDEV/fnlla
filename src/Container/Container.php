@@ -31,9 +31,11 @@ final class Container
 {
     private array $bindings = [];
     private array $instances = [];
+    private array $resolving = [];
 
     public function bind(string $abstract, Closure|string|null $concrete = null, bool $shared = false): void
     {
+        unset($this->instances[$abstract]);
         $this->bindings[$abstract] = [
             "concrete" => $concrete ?? $abstract,
             "shared" => $shared,
@@ -65,15 +67,21 @@ final class Container
 
         $binding = $this->bindings[$abstract] ?? null;
         $concrete = $binding["concrete"] ?? $abstract;
-        $object = $concrete instanceof Closure
-            ? $concrete($this, $parameters)
-            : $this->build($concrete, $parameters);
-
-        if (($binding["shared"] ?? false) === true) {
-            $this->instances[$abstract] = $object;
+        if (in_array($abstract, $this->resolving, true)) {
+            throw new RuntimeException("Circular dependency: " . implode(" -> ", [...$this->resolving, $abstract]));
         }
-
-        return $object;
+        $this->resolving[] = $abstract;
+        try {
+            $object = $concrete instanceof Closure
+                ? $concrete($this, $parameters)
+                : $this->build($concrete, $parameters);
+            if (($binding["shared"] ?? false) === true) {
+                $this->instances[$abstract] = $object;
+            }
+            return $object;
+        } finally {
+            array_pop($this->resolving);
+        }
     }
 
     public function call(callable|array $callable, array $parameters = []): mixed
@@ -126,6 +134,15 @@ final class Container
         foreach ($reflectionParameters as $parameter) {
             $name = $parameter->getName();
 
+            if ($parameter->isVariadic()) {
+                $values = array_key_exists($name, $provided) ? $provided[$name] : $positional;
+                if (!is_array($values)) {
+                    throw new RuntimeException("Variadic parameter [{$name}] expects an array of arguments.");
+                }
+                array_push($resolved, ...array_values($values));
+                continue;
+            }
+
             if (array_key_exists($name, $provided)) {
                 $resolved[] = $provided[$name];
                 continue;
@@ -139,7 +156,17 @@ final class Container
             $type = $parameter->getType();
 
             if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                $resolved[] = $this->make($type->getName());
+                $dependency = $type->getName();
+                if (array_key_exists($dependency, $provided)) {
+                    $resolved[] = $provided[$dependency];
+                    continue;
+                }
+                if ($parameter->isDefaultValueAvailable()
+                    && !array_key_exists($dependency, $this->bindings) && !array_key_exists($dependency, $this->instances)) {
+                    $resolved[] = $parameter->getDefaultValue();
+                    continue;
+                }
+                $resolved[] = $this->make($dependency);
                 continue;
             }
 

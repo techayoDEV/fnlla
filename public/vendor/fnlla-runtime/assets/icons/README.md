@@ -20,6 +20,8 @@ Contents:
 
 - individual SVG files in the root of this directory
 - `sprite.svg` local SVG sprite
+- duplicate symbols share geometry through local references; all public icon IDs remain available
+- compact starters include the sprite with every icon name (including aliases), without individual SVG files
 - `LICENSE` original Lucide ISC license plus embedded Feather/MIT notice where applicable
 - `NOTICE.md` FNLLA integrated UI surface rebrand and attribution notice
 
@@ -35,6 +37,7 @@ Integration rule for the integrated FNLLA UI surface:
 When the icon bundle changes:
 
 - keep `LICENSE` and `NOTICE.md` with the copied assets
+- rebuild the sprite using `Write-FnllaIconSprite` in `scripts/copy-fnlla-runtime.ps1` after updating individual icons in the maintainer checkout
 - verify icons render from local runtime paths
 - run `php scripts/validate-fnlla-runtime.php`
 - do not add remote font, script or CDN dependencies

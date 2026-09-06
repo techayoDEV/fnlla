@@ -64,6 +64,10 @@ final class ProjectAcceptanceReportBuilder
         ];
         $checks = [];
 
+        if (!ProjectProfile::hasPanel()) {
+            unset($required["routes.maintenance"]);
+        }
+
         foreach ($required as $id => $relativePath) {
             $checks[] = $this->check(
                 $id,

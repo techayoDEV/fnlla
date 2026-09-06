@@ -101,20 +101,22 @@ final class FnllaRuntimeGuard
     {
         /* Validation checks focus on local repository shape, required runtime files and unsupported UI drift. */
         self::assertRuntimeFilesExist((array) ($config["required_runtime_files"] ?? []));
-        self::assertLayoutContract(
-            (string) ($config["layout_path"] ?? base_path("views/layouts/app.php")),
-            (array) ($config["required_layout_markers"] ?? [])
-        );
-        self::assertPageContracts(
-            (string) ($config["page_view_glob"] ?? base_path("views/pages/*.php")),
-            (array) ($config["required_page_markers"] ?? [])
-        );
+        if ((bool) ($config["validate_application_markup"] ?? true)) {
+            self::assertLayoutContract(
+                (string) ($config["layout_path"] ?? base_path("views/layouts/app.php")),
+                (array) ($config["required_layout_markers"] ?? [])
+            );
+            self::assertPageContracts(
+                (string) ($config["page_view_glob"] ?? base_path("views/pages/*.php")),
+                (array) ($config["required_page_markers"] ?? [])
+            );
+            self::assertForbiddenMarkers(
+                (array) ($config["forbidden_markers"] ?? []),
+                (array) ($config["scan_paths"] ?? [])
+            );
+        }
         self::assertRequiredTextMarkers((array) ($config["required_text_markers"] ?? []));
         self::assertForbiddenTextMarkers((array) ($config["forbidden_text_markers"] ?? []));
-        self::assertForbiddenMarkers(
-            (array) ($config["forbidden_markers"] ?? []),
-            (array) ($config["scan_paths"] ?? [])
-        );
     }
 
     private static function syncIfDue(array $config, bool $force): void

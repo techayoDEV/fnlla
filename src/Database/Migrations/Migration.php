@@ -32,6 +32,12 @@ abstract class Migration
 
     abstract public function up(): void;
 
+    /** The migrator owns the connection for both schema changes and its ledger. */
+    final public function useDatabase(DatabaseManager $database): void
+    {
+        $this->database = $database;
+    }
+
     public function down(): void
     {
     }

@@ -19,7 +19,8 @@ final class BackupPlanBuilder
 {
     public function build(): array
     {
-        $connection = (array) config("database.connections.mysql", []);
+        $connections = (array) config("database.connections", []);
+        $connection = (array) ($connections[(string) config("database.default", "mysql")] ?? []);
         $storageRoot = storage_path();
 
         return [

@@ -72,6 +72,15 @@ $rootPages = [
 
 $guidePages = [
     [
+        "label" => "Recovery",
+        "href" => "recovery.html",
+        "source" => "docs/RECOVERY.md",
+        "source_name" => "RECOVERY.md",
+        "title" => "Recovery",
+        "document_title" => "Recovery - FNLLA Documentation",
+        "lead" => "Application-neutral backup, restoration and external-effect reconciliation.",
+    ],
+    [
         "label" => "Documentation Map",
         "href" => "readme.html",
         "source" => "docs/README.md",
@@ -189,24 +198,6 @@ $guidePages = [
         "lead" => "Major-version migration workflow, public contract review and AI-assisted upgrade guidance.",
     ],
     [
-        "label" => "Upgrade 2.1",
-        "href" => "upgrade-2-1.html",
-        "source" => "docs/UPGRADE-2.1.md",
-        "source_name" => "UPGRADE-2.1.md",
-        "title" => "Upgrade 2.1",
-        "document_title" => "Upgrade 2.1 - FNLLA Documentation",
-        "lead" => "Upgrade notes and verification workflow for downstream applications moving from 2.0.x to 2.1.0.",
-    ],
-    [
-        "label" => "Upgrade 2.1.1",
-        "href" => "upgrade-2-1-1.html",
-        "source" => "docs/UPGRADE-2.1.1.md",
-        "source_name" => "UPGRADE-2.1.1.md",
-        "title" => "Upgrade 2.1.1",
-        "document_title" => "Upgrade 2.1.1 - FNLLA Documentation",
-        "lead" => "Patch upgrade notes for downstream applications moving from 2.1.0 to 2.1.1.",
-    ],
-    [
         "label" => "Major Release Checklist",
         "href" => "major-release-checklist.html",
         "source" => "docs/MAJOR-RELEASE-CHECKLIST.md",
@@ -224,18 +215,10 @@ $guidePages = [
         "document_title" => "Tech Debt And Future Proofing - FNLLA Documentation",
         "lead" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
     ],
-    [
-        "label" => "TechAyo Ecosystem",
-        "href" => "techayo-ecosystem.html",
-        "source" => "docs/TECHAYO-ECOSYSTEM.md",
-        "source_name" => "TECHAYO-ECOSYSTEM.md",
-        "title" => "TechAyo Ecosystem",
-        "document_title" => "TechAyo Ecosystem - FNLLA Documentation",
-        "lead" => "Repository boundaries and ownership context for the TechAyo-managed FNLLA ecosystem.",
-    ],
 ];
 
 $guideLinkMap = [
+    "./RECOVERY.md" => "./recovery.html",
     "./README.md" => "./readme.html",
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
@@ -249,11 +232,8 @@ $guideLinkMap = [
     "./PERFORMANCE.md" => "./performance.html",
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
-    "./UPGRADE-2.1.md" => "./upgrade-2-1.html",
-    "./UPGRADE-2.1.1.md" => "./upgrade-2-1-1.html",
     "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
     "./TECH-DEBT-AND-FUTURE-PROOFING.md" => "./tech-debt-and-future-proofing.html",
-    "./TECHAYO-ECOSYSTEM.md" => "./techayo-ecosystem.html",
 ];
 
 $pagesToWrite = [

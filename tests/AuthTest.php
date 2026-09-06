@@ -64,4 +64,55 @@ final class AuthTest extends TestCase
         self::assertTrue($auth->check());
         self::assertSame(1, $auth->id());
     }
+
+    public function testDeletedMismatchedAndCorruptIdentitiesFailClosed(): void
+    {
+        $provider = new class implements UserProviderInterface {
+            public ?array $user = ["id" => 7, "role" => "admin"];
+            public function findById(string|int $id): ?array { return $this->user; }
+            public function findByCredentials(array $credentials): ?array { return null; }
+        };
+        $session = new SessionStore();
+        $auth = new AuthManager($session, $provider, new Hasher());
+        $key = (string) config("auth.session_key", "auth.user_id");
+        $auth->login(["id" => 7]);
+        self::assertTrue($auth->check());
+        $provider->user = null;
+        self::assertTrue($auth->guest());
+        self::assertSame(null, $auth->id());
+        $session->put($key, 7);
+        $provider->user = ["id" => 8];
+        self::assertSame(null, $auth->user());
+        self::assertSame(null, $auth->id());
+        foreach ([[], new \stdClass(), true, 1.5, "", "  "] as $id) {
+            $session->put($key, $id);
+            self::assertSame(null, $auth->id());
+            self::assertFalse($session->has($key));
+        }
+        $provider->user = ["id" => "7", "role" => "reader"];
+        $auth->login(["id" => 7]);
+        self::assertSame("reader", $auth->user()["role"]);
+        $provider->user["role"] = "editor";
+        self::assertSame("editor", $auth->user()["role"]);
+        $session->put("cart", [1]);
+        $auth->logout();
+        self::assertSame(null, $auth->id());
+        self::assertSame([1], $session->get("cart"));
+        $session->invalidate();
+        self::assertFalse($session->has("cart"));
+    }
+
+    public function testLoginRejectsInvalidProviderIdentityWithoutReplacingCurrentUser(): void
+    {
+        $provider = new class implements UserProviderInterface {
+            public function findById(string|int $id): ?array { return ["id" => $id]; }
+            public function findByCredentials(array $credentials): ?array { return null; }
+        };
+        $auth = new AuthManager(new SessionStore(), $provider, new Hasher());
+        $auth->login(["id" => 7]);
+        foreach ([[], ["id" => null], ["id" => []], ["id" => ""], ["id" => false]] as $user) {
+            try { $auth->login($user); self::fail("Invalid identity accepted."); }
+            catch (\InvalidArgumentException) { self::assertSame(7, $auth->id()); }
+        }
+    }
 }

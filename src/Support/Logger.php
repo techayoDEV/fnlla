@@ -58,7 +58,7 @@ final class Logger
             "context" => self::redact($context),
         ];
 
-        $encoded = json_encode($entry, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $encoded = json_encode($entry, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR);
 
         if ($encoded === false) {
             $encoded = sprintf(
@@ -88,8 +88,9 @@ final class Logger
         ]));
     }
 
-    private static function redact(mixed $value, ?string $key = null): mixed
+    private static function redact(mixed $value, ?string $key = null, int $depth = 0): mixed
     {
+        if ($depth >= 10) { return "[depth limit]"; }
         $redactKeys = (array) config("logging.redact_keys", []);
         $normalizedKey = is_string($key) ? strtolower($key) : "";
 
@@ -103,12 +104,19 @@ final class Logger
             $redacted = [];
 
             foreach ($value as $childKey => $childValue) {
-                $redacted[$childKey] = self::redact($childValue, is_string($childKey) ? $childKey : null);
+                if (count($redacted) >= 200) { $redacted["_truncated"] = true; break; }
+                $redacted[$childKey] = self::redact($childValue, is_string($childKey) ? $childKey : null, $depth + 1);
             }
 
             return $redacted;
         }
 
+        // Do not invoke arbitrary serializers or expose private object properties in logs.
+        if ($value instanceof Throwable) {
+            return ["type" => $value::class, "message" => $value->getMessage(), "code" => $value->getCode()];
+        }
+        if (is_object($value)) { return ["type" => $value::class]; }
+        if (is_resource($value)) { return "[resource]"; }
         return $value;
     }
 

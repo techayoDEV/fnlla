@@ -55,17 +55,15 @@ final class SessionStore
         framework_start_session_if_needed();
         $_SESSION = [];
 
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_regenerate_id(true);
-        }
+        $this->regenerate();
     }
 
     public function regenerate(): void
     {
         framework_start_session_if_needed();
 
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_regenerate_id(true);
+        if (session_status() === PHP_SESSION_ACTIVE && !session_regenerate_id(true)) {
+            throw new \RuntimeException("Session identifier could not be rotated.");
         }
     }
 }

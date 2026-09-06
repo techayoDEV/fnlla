@@ -60,7 +60,18 @@ final class Request
         $requestData = $request ?? $_POST;
         $cookieData = $cookies ?? $_COOKIE;
         $fileData = self::normalizeFiles($files ?? $_FILES);
-        $resolvedRawBody = $rawBody ?? (string) file_get_contents("php://input");
+        self::assertBodySizeAllowed($serverData, "");
+        if ($rawBody === null) {
+            $stream = fopen("php://input", "rb");
+            if ($stream === false) { throw new HttpException(400, "Cannot read request body."); }
+            try {
+                $resolvedRawBody = self::readBoundedBody($stream);
+            } finally {
+                fclose($stream);
+            }
+        } else {
+            $resolvedRawBody = $rawBody;
+        }
         self::assertBodySizeAllowed($serverData, $resolvedRawBody);
         $headers = self::captureHeaders($serverData);
         $jsonPayload = self::parseJsonPayload($headers, $resolvedRawBody);
@@ -71,9 +82,7 @@ final class Request
 
         if ($requestData === [] && self::isFormUrlEncoded($headers)) {
             parse_str($resolvedRawBody, $parsedBody);
-            if (is_array($parsedBody)) {
-                $requestData = $parsedBody;
-            }
+            $requestData = $parsedBody;
         }
 
         $requestUri = $serverData["REQUEST_URI"] ?? "/";
@@ -335,13 +344,30 @@ final class Request
 
     private static function assertBodySizeAllowed(array $server, string $rawBody): void
     {
-        $maxBytes = max(1, (int) config("security.request.max_body_bytes", 1048576));
-        $contentLength = (int) ($server["CONTENT_LENGTH"] ?? $server["HTTP_CONTENT_LENGTH"] ?? 0);
+        $maxBytes = self::bodyLimit();
+        $declared = $server["CONTENT_LENGTH"] ?? $server["HTTP_CONTENT_LENGTH"] ?? "0";
+        if ((!is_string($declared) && !is_int($declared)) || preg_match('/^[0-9]+$/D', (string) $declared) !== 1) {
+            throw new HttpException(400, "Invalid Content-Length.");
+        }
+        $contentLength = (int) $declared;
         $actualLength = strlen($rawBody);
 
         if ($contentLength > $maxBytes || $actualLength > $maxBytes) {
             throw new HttpException(413, "Request body is too large.");
         }
+    }
+
+    private static function bodyLimit(): int
+    {
+        return max(1, min(PHP_INT_MAX - 1, (int) config("security.request.max_body_bytes", 1048576)));
+    }
+
+    private static function readBoundedBody($stream): string
+    {
+        $body = stream_get_contents($stream, self::bodyLimit() + 1);
+        if ($body === false) { throw new HttpException(400, "Cannot read request body."); }
+        self::assertBodySizeAllowed([], $body);
+        return $body;
     }
 
     private static function isFormUrlEncoded(array $headers): bool

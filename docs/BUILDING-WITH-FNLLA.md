@@ -11,7 +11,7 @@ It is written for the official stack:
 - PHP 8.3
 - MySQL
 
-If you follow the patterns below, your project will stay aligned with the current framework contract and with the intended TechAyo LTD delivery style.
+The patterns below describe the FNLLA application contract without prescribing a particular organization or delivery process.
 
 Before using this guide for a real delivery, read [`STARTING-A-NEW-PROJECT.md`](./STARTING-A-NEW-PROJECT.md). That document explains the official project-export workflow and when not to build directly inside the maintained `techayoDEV/fnlla` repository.
 

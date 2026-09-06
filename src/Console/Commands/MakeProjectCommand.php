@@ -23,97 +23,11 @@ namespace Fnlla\Php\Console\Commands;
 use Fnlla\Php\Console\Command;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\FrameworkLock;
-use Fnlla\Php\Support\ProcessRunner;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
 
 final class MakeProjectCommand extends Command
 {
-    private const EXPORT_ROOT_ENTRIES = [
-        ".editorconfig",
-        ".env.example",
-        ".env.full.example",
-        ".gitattributes",
-        ".gitignore",
-        "LICENSE.md",
-        "MANIFEST.json",
-        "SUPPORT.md",
-        "TRADEMARKS.md",
-        "VERSION",
-        "bootstrap",
-        "composer.json",
-        "config",
-        "database",
-        "fnlla",
-        "fnlla.cmd",
-        "lang",
-        "public",
-        "resources",
-        "routes",
-        "scripts",
-        "src",
-        "storage",
-        "tests",
-        "update-fnlla-runtime.cmd",
-        "views",
-    ];
-
-    private const FAST_COPY_DIRECTORIES = [
-        "public",
-        "public/vendor/fnlla-runtime",
-    ];
-
-    private const SKIP_PREFIXES = [
-        "docs/",
-        "resources/project-templates/",
-        "storage/database/",
-        "storage/logs/",
-        "storage/framework/cache/",
-        "storage/framework/queue/",
-        "storage/framework/sessions/",
-    ];
-
-    private const SKIP_EXACT_PATHS = [
-        "docs",
-        "database/factories/UserFactory.php",
-        "database/migrations/20260627180000_create_users_table.php",
-        "database/migrations/20260627200000_add_role_to_users_table.php",
-        "resources/project-templates",
-        "scripts/apply-techayo-metadata.ps1",
-        "scripts/build-docs.php",
-        "src/Console/Commands/MakeCommandCommand.php",
-        "src/Console/Commands/MakeControllerCommand.php",
-        "src/Console/Commands/MakeFactoryCommand.php",
-        "src/Console/Commands/MakeMiddlewareCommand.php",
-        "src/Console/Commands/MakeMigrationCommand.php",
-        "src/Console/Commands/MakeProjectCommand.php",
-        "src/Console/Commands/MakeSeederCommand.php",
-        "src/Console/Commands/VersionSetCommand.php",
-        "src/Controllers/AuthController.php",
-        "storage/framework/fnlla-runtime-guard.json",
-        "test-fnlla.cmd",
-        "lint-fnlla.cmd",
-        "tests/ApplicationTest.php",
-        "tests/AuthTest.php",
-        "tests/EnvironmentConfigTest.php",
-        "tests/FnllaRuntimeGuardTest.php",
-        "tests/FnllaRuntimeSyncCommandTest.php",
-        "tests/FrameworkExtensionsTest.php",
-        "tests/FrameworkUpdateCommandTest.php",
-        "tests/MakeProjectCommandTest.php",
-        "tests/PageMetaTest.php",
-        "tests/ReleaseWorkflowTest.php",
-        "tests/RequestTest.php",
-        "tests/RouterTest.php",
-        "tests/ValidationTest.php",
-        "views/pages/admin.php",
-        "views/pages/dashboard.php",
-        "views/pages/login.php",
-        "views/pages/platform.php",
-    ];
-
+    private string $profile = "full";
     public function name(): string
     {
         return "make:project";
@@ -126,11 +40,26 @@ final class MakeProjectCommand extends Command
 
     public function handle(array $arguments): int
     {
+        if (in_array("--help", $arguments, true) || in_array("-h", $arguments, true)) {
+            $this->line("Usage: make:project <target-path> [App Name] [--profile=full|plain] [--packages] [--interactive|--no-interaction]");
+            $this->line("Creates the integrated FNLLA starter by default. Use --profile=plain for core only; --interactive opens advanced installation options.");
+            return 0;
+        }
+        try {
+            $packages = in_array("--packages", $arguments, true);
+            $arguments = array_values(array_filter($arguments, static fn (string $argument): bool => $argument !== "--packages"));
+            $selection = \Fnlla\Php\Support\StarterProfileSelection::resolve($arguments);
+        } catch (RuntimeException $exception) {
+            $this->error($exception->getMessage());
+            return 1;
+        }
+        $this->profile = $selection["profile"];
+        $arguments = $selection["arguments"];
         $targetArgument = trim((string) ($arguments[0] ?? ""));
         $appNameArgument = trim(implode(" ", array_slice($arguments, 1)));
 
         if ($targetArgument === "") {
-            $this->error("Usage: make:project <target-path> [App Name]");
+            $this->error("Usage: make:project <target-path> [App Name] [--profile=full|plain]");
 
             return 1;
         }
@@ -161,8 +90,18 @@ final class MakeProjectCommand extends Command
 
         try {
             $this->prepareTargetDirectory($targetPath);
+            if ($this->profile === "plain") {
+                (new \Fnlla\Php\Support\PlainProjectExporter())->export($targetPath, $appName, $packageSlug);
+                $this->line("Exported plain FNLLA core project to: " . $targetPath);
+                $this->line("Copy .env.example to .env, then run composer install, php scripts/test.php and php fnlla route:list.");
+                return 0;
+            }
             $this->copyProjectTree($sourceRoot, $targetPath);
             $this->customizeExport($targetPath, $appName, $packageSlug);
+            if ($packages) {
+                (new \Fnlla\Php\Support\CompletePackageExporter())->convert($targetPath);
+                $this->line("Composer package preview enabled. Read docs/framework/PACKAGES.md before upgrading.");
+            }
         } catch (RuntimeException $exception) {
             $this->error($exception->getMessage());
 
@@ -171,6 +110,7 @@ final class MakeProjectCommand extends Command
 
         $this->line("Exported FNLLA project base to: " . $targetPath);
         $this->line("Application name: " . $appName);
+        $this->line("Project profile: " . $this->profile);
         $this->line("");
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
@@ -214,131 +154,49 @@ final class MakeProjectCommand extends Command
 
     private function copyProjectTree(string $sourceRoot, string $targetRoot): void
     {
-        $iterator = new FilesystemIterator($sourceRoot, FilesystemIterator::SKIP_DOTS);
+        $manifest = json_decode((string) file_get_contents(base_path("resources/project-templates/v1/export-files.json")), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($manifest) || ($manifest["schema"] ?? "") !== "fnlla.project_export.v1" || !is_array($manifest["files"] ?? null)) {
+            throw new RuntimeException("Invalid project export manifest.");
+        }
 
-        foreach ($iterator as $fileInfo) {
-            $name = $fileInfo->getFilename();
-
-            if (!$this->shouldExportRootEntry($name)) {
-                continue;
+        // Validate every source before copying. Directory traversal never defines the export.
+        $sources = [];
+        foreach ($manifest["files"] as $relativePath) {
+            if (!is_string($relativePath) || preg_match('~^(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+$~D', $relativePath) !== 1
+                || in_array("..", explode("/", $relativePath), true) || str_starts_with($relativePath, "storage/")
+                || str_starts_with($relativePath, "public/uploads/") || str_starts_with($relativePath, ".git/")
+                || (str_starts_with($relativePath, ".env.") && !in_array($relativePath, [".env.example", ".env.full.example"], true))
+                || $relativePath === ".env") {
+                throw new RuntimeException("Unsafe project export path.");
             }
 
-            $sourcePath = $fileInfo->getPathname();
-            $targetPath = $targetRoot . DIRECTORY_SEPARATOR . $name;
-
-            $this->copyPath($sourcePath, $targetPath);
-        }
-    }
-
-    private function shouldExportRootEntry(string $name): bool
-    {
-        return in_array($name, self::EXPORT_ROOT_ENTRIES, true);
-    }
-
-    private function copyPath(string $sourcePath, string $targetPath): void
-    {
-        if (is_dir($sourcePath)) {
-            $relativePath = $this->normalizeSeparators(substr($sourcePath, strlen(base_path()) + 1));
-
-            if ($this->copyDirectoryFastIfSupported($sourcePath, $targetPath, $relativePath)) {
-                return;
+            $sourcePath = $sourceRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
+            $resolved = realpath($sourcePath);
+            if ($resolved === false || !is_file($resolved) || !$this->isChildPath($this->normalizePath($resolved), $sourceRoot)
+                || !$this->pathsEqual($this->normalizePath($resolved), $this->normalizePath($sourcePath))) {
+                throw new RuntimeException("Project export source is missing or outside the repository: " . $relativePath);
             }
+            $sources[$relativePath] = $resolved;
+        }
 
-            if (!is_dir($targetPath) && !mkdir($targetPath, 0777, true) && !is_dir($targetPath)) {
-                throw new RuntimeException("Unable to create directory during export: " . $targetPath);
+        foreach ($sources as $relativePath => $sourcePath) {
+            $targetPath = $targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
+            $directory = dirname($targetPath);
+            if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+                throw new RuntimeException("Unable to create project export directory: " . $directory);
             }
-
-            $iterator = new FilesystemIterator($sourcePath, FilesystemIterator::SKIP_DOTS);
-
-            foreach ($iterator as $fileInfo) {
-                $name = $fileInfo->getFilename();
-                $childSource = $fileInfo->getPathname();
-                $childTarget = $targetPath . DIRECTORY_SEPARATOR . $name;
-                $relativeSource = $this->normalizeSeparators(substr($childSource, strlen(base_path()) + 1));
-
-                if ($this->shouldSkipRelativeEntry($relativeSource)) {
-                    continue;
-                }
-
-                $this->copyPath($childSource, $childTarget);
-            }
-
-            return;
-        }
-
-        if (!copy($sourcePath, $targetPath)) {
-            throw new RuntimeException("Unable to copy file during export: " . $sourcePath);
-        }
-    }
-
-    private function copyDirectoryFastIfSupported(string $sourcePath, string $targetPath, string $relativePath): bool
-    {
-        if (!$this->canFastCopyDirectory($relativePath)) {
-            return false;
-        }
-
-        $robocopy = $this->findRobocopy();
-
-        if ($robocopy === null) {
-            return false;
-        }
-
-        if (!is_dir($targetPath) && !mkdir($targetPath, 0777, true) && !is_dir($targetPath)) {
-            throw new RuntimeException("Unable to create directory during export: " . $targetPath);
-        }
-
-        $result = ProcessRunner::run([
-            $robocopy,
-            $sourcePath,
-            $targetPath,
-            "/E",
-            "/NFL",
-            "/NDL",
-            "/NJH",
-            "/NJS",
-            "/NP",
-        ]);
-
-        if ($result["exit_code"] > 7) {
-            throw new RuntimeException("Fast directory copy failed for {$relativePath}: " . $result["output"]);
-        }
-
-        return true;
-    }
-
-    private function canFastCopyDirectory(string $relativePath): bool
-    {
-        return in_array($relativePath, self::FAST_COPY_DIRECTORIES, true);
-    }
-
-    private function findRobocopy(): ?string
-    {
-        if (DIRECTORY_SEPARATOR !== "\\" || !function_exists("proc_open")) {
-            return null;
-        }
-
-        return ProcessRunner::findExecutable("robocopy");
-    }
-
-    private function shouldSkipRelativeEntry(string $relativePath): bool
-    {
-        if (in_array($relativePath, self::SKIP_EXACT_PATHS, true)) {
-            return true;
-        }
-
-        foreach (self::SKIP_PREFIXES as $prefix) {
-            if (str_starts_with($relativePath, $prefix)) {
-                return basename($relativePath) !== ".gitignore";
+            if (!copy($sourcePath, $targetPath)) {
+                throw new RuntimeException("Unable to export: " . $relativePath);
             }
         }
-
-        return false;
     }
 
     private function customizeExport(string $targetRoot, string $appName, string $packageSlug): void
     {
         $this->sanitizeExportedStorage($targetRoot);
+        $this->writeProjectTemplate($targetRoot, ".fnlla/ui-distribution");
         $this->rewriteAppConfig($targetRoot, $appName);
+        $this->writeProjectTemplate($targetRoot, ".env.example");
         $this->rewriteEnvTemplates($targetRoot, $appName, $packageSlug);
         $this->rewriteComposerMetadata($targetRoot, $appName, $packageSlug);
         $this->rewriteProjectReadme($targetRoot, $appName);
@@ -347,12 +205,47 @@ final class MakeProjectCommand extends Command
         $this->rewriteProjectTests($targetRoot);
         $this->rewriteConsoleLaunchers($targetRoot);
         $this->rewriteProjectLaunchers($targetRoot);
+        file_put_contents($targetRoot . "/.fnlla/project-profile", $this->profile . "\n");
+        $this->organizeProjectFiles($targetRoot);
         FrameworkLock::write($targetRoot, base_path(), $appName, $packageSlug);
+    }
+
+    private function organizeProjectFiles(string $targetRoot): void
+    {
+        $directory = $targetRoot . "/docs/framework";
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new RuntimeException("Cannot create framework documentation directory.");
+        }
+        foreach (["SUPPORT.md", "TRADEMARKS.md"] as $file) {
+            if (is_file($targetRoot . "/" . $file) && !rename($targetRoot . "/" . $file, $directory . "/" . $file)) {
+                throw new RuntimeException("Cannot relocate framework reference: " . $file);
+            }
+        }
+        $manifestPath = $targetRoot . "/MANIFEST.json";
+        $manifest = json_decode((string) file_get_contents($manifestPath), true, 512, JSON_THROW_ON_ERROR);
+        $manifest["release"]["state_files"] = array_map(
+            static fn (string $path): string => in_array($path, ["SUPPORT.md", "TRADEMARKS.md"], true) ? "docs/framework/" . $path : $path,
+            $manifest["release"]["state_files"]
+        );
+        file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+        $migration = "20260829120000_create_developer_panel_storage_tables.php";
+        if (is_file($targetRoot . "/database/migrations/" . $migration)) {
+            $optional = $targetRoot . "/database/optional/developer-panel";
+            if (!is_dir($optional)) {
+                mkdir($optional, 0755, true);
+            }
+            if (!rename($targetRoot . "/database/migrations/" . $migration, $optional . "/" . $migration)) {
+                throw new RuntimeException("Cannot isolate optional Developer Panel migration.");
+            }
+        }
     }
 
     private function sanitizeExportedStorage(string $targetRoot): void
     {
         $keepFiles = [
+            "storage/app/.gitignore" => "*\n!.gitignore\n",
+            "storage/uploads/.gitignore" => "*\n!.gitignore\n",
+            "public/uploads/.gitignore" => "*\n!.gitignore\n",
             "storage/database/.gitignore" => "*\n!.gitignore\n",
             "storage/framework/cache/.gitignore" => "# Keep the cache directory in the repository while ignoring runtime cache files.\n*\n!.gitignore\n",
             "storage/framework/queue/.gitignore" => "# Keep the queue directory in the repository while ignoring runtime queue files.\n*\n!.gitignore\n",
@@ -410,6 +303,7 @@ final class MakeProjectCommand extends Command
                 "MAIL_FROM_ADDRESS" => "no-reply@example.com",
                 "MAIL_FROM_NAME" => $appName,
                 "CONTACT_NOTIFICATION_EMAIL" => "team@example.com",
+                "DEVELOPER_ACCESS_ENABLED" => "true",
             ];
 
             foreach ($values as $key => $value) {
@@ -436,6 +330,9 @@ final class MakeProjectCommand extends Command
 
         $decoded["name"] = "project/" . $packageSlug;
         $decoded["description"] = $appName . " built on FNLLA and its integrated UI surface.";
+        unset($decoded["autoload-dev"]);
+        $decoded["autoload"]["psr-4"]["App\\"] = "app/";
+        $decoded["require-dev"] = ["phpstan/phpstan" => "^2.1", "phpunit/phpunit" => "^12.5"];
 
         file_put_contents(
             $path,
@@ -447,6 +344,7 @@ final class MakeProjectCommand extends Command
     {
         $this->writeProjectTemplate($targetRoot, "README.md", [
             "{{APP_NAME}}" => $appName,
+            "{{FNLLA_VERSION}}" => trim((string) strtok((string) file_get_contents(base_path("VERSION")), "\r\n")),
         ]);
     }
 
@@ -464,7 +362,6 @@ final class MakeProjectCommand extends Command
             "views/pages/legal.php",
             "views/partials/page-hero.php",
             "public/assets/app.css",
-            "public/assets/fnlla-logo.png",
         ]);
 
         $legacyProjectLaunchView = $targetRoot . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "project-launch.php";
@@ -512,6 +409,9 @@ final class MakeProjectCommand extends Command
     private function rewriteProjectTests(string $targetRoot): void
     {
         $this->writeProjectTemplate($targetRoot, "tests/BootstrapAutoloadTest.php");
+        $this->writeProjectTemplate($targetRoot, "tests/ProjectTest.php");
+        $this->writeProjectTemplate($targetRoot, "phpunit.xml");
+        $this->writeProjectTemplate($targetRoot, "phpstan.neon");
     }
 
     private function rewriteConsoleLaunchers(string $targetRoot): void
@@ -614,20 +514,21 @@ final class MakeProjectCommand extends Command
         return ($isAbsolute ? DIRECTORY_SEPARATOR : "") . $normalized;
     }
 
-    private function normalizeSeparators(string $path): string
-    {
-        return str_replace("\\", "/", $path);
-    }
-
     private function pathsEqual(string $left, string $right): bool
     {
-        return strcasecmp(rtrim($left, "\\/"), rtrim($right, "\\/")) === 0;
+        $left = rtrim($left, "\\/");
+        $right = rtrim($right, "\\/");
+        return DIRECTORY_SEPARATOR === "\\" ? strcasecmp($left, $right) === 0 : $left === $right;
     }
 
     private function isChildPath(string $childPath, string $parentPath): bool
     {
-        $child = rtrim(strtolower($childPath), "\\/");
-        $parent = rtrim(strtolower($parentPath), "\\/");
+        $child = rtrim($childPath, "\\/");
+        $parent = rtrim($parentPath, "\\/");
+        if (DIRECTORY_SEPARATOR === "\\") {
+            $child = strtolower($child);
+            $parent = strtolower($parent);
+        }
 
         return str_starts_with($child, $parent . DIRECTORY_SEPARATOR);
     }

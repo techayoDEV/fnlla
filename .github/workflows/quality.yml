@@ -1,0 +1,88 @@
+name: FNLLA Core Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        php: ['8.3', '8.4', '8.5']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, mbstring, dom, xml
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer audit --locked
+      - run: composer test:unit -- --testsuite framework "--log-junit=${{ runner.temp }}/junit-framework.xml"
+      - run: composer analyse
+      - run: php scripts/check-modernization.php
+      - run: php scripts/build-docs.php --check
+      - run: php scripts/check-docs.php
+      - run: composer lint
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: framework-${{ matrix.os }}-php-${{ matrix.php }}
+          path: ${{ runner.temp }}/junit-framework.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  services:
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: integration-only
+          MYSQL_DATABASE: fnlla_test_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pintegration-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7.4
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      FNLLA_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=fnlla_test_ci;charset=utf8mb4
+      FNLLA_TEST_MYSQL_USER: root
+      FNLLA_TEST_MYSQL_PASSWORD: integration-only
+      FNLLA_TEST_REDIS_HOST: 127.0.0.1
+      FNLLA_TEST_REDIS_PORT: 6379
+      FNLLA_TEST_PREVIOUS_SOURCE: ${{ runner.temp }}/fnlla-previous
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, redis, mbstring, dom, xml
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer audit --locked
+      - run: git clone --depth 1 --branch v2.1.3 https://github.com/techayoDEV/fnlla.git "${{ runner.temp }}/fnlla-previous"
+      - run: composer test:unit -- --testsuite integration --fail-on-skipped "--log-junit=${{ runner.temp }}/junit-integration.xml"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mysql-redis-integration-php-${{ matrix.php }}
+          path: ${{ runner.temp }}/junit-integration.xml
+          if-no-files-found: warn
+          retention-days: 14

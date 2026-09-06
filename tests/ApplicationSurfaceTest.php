@@ -44,9 +44,23 @@ final class ApplicationSurfaceTest extends TestCase
     private mixed $appConfigBackup;
     private mixed $mailConfigBackup;
     private ?string $temporaryEnvironmentDirectory = null;
+    private array $cacheConfigBackup;
+    private string $temporaryCacheDirectory;
+    private array $modulesConfigBackup;
+    private array $moduleEnvironmentBackup;
 
     protected function setUp(): void
     {
+        $this->modulesConfigBackup = (array) config("modules");
+        $this->moduleEnvironmentBackup = [];
+        foreach (\Fnlla\Php\Support\DeveloperModules::OPTIONS as $module => $label) {
+            $key = "FNLLA_MODULE_" . strtoupper($module);
+            $this->moduleEnvironmentBackup[$key] = [getenv($key), $_ENV[$key] ?? null, $_SERVER[$key] ?? null];
+        }
+        $this->cacheConfigBackup = (array) config("cache");
+        $this->temporaryCacheDirectory = sys_get_temp_dir() . "/fnlla-surface-cache-" . bin2hex(random_bytes(8));
+        config_set("cache.default", "file");
+        config_set("cache.stores.file.path", $this->temporaryCacheDirectory);
         $this->containerBackup = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
         $this->sessionBackup = $_SESSION ?? [];
         $this->maintenanceConfigBackup = config("maintenance");
@@ -99,6 +113,19 @@ final class ApplicationSurfaceTest extends TestCase
 
     protected function tearDown(): void
     {
+        config_set("modules", $this->modulesConfigBackup);
+        foreach ($this->moduleEnvironmentBackup as $key => [$environment, $env, $server]) {
+            putenv($environment === false ? $key : $key . "=" . $environment);
+            if ($env === null) { unset($_ENV[$key]); } else { $_ENV[$key] = $env; }
+            if ($server === null) { unset($_SERVER[$key]); } else { $_SERVER[$key] = $server; }
+        }
+        config_set("cache", $this->cacheConfigBackup);
+        if (is_dir($this->temporaryCacheDirectory)) {
+            foreach (glob($this->temporaryCacheDirectory . "/*") ?: [] as $file) {
+                if (is_file($file)) { unlink($file); }
+            }
+            rmdir($this->temporaryCacheDirectory);
+        }
         $GLOBALS["fnlla_container"] = $this->containerBackup;
         $GLOBALS["fnlla_php_container"] = $this->containerBackup;
         $_SESSION = $this->sessionBackup;
@@ -171,6 +198,23 @@ final class ApplicationSurfaceTest extends TestCase
         }
     }
 
+    public function testPublicPagesDoNotLoadDeveloperPanelStyles(): void
+    {
+        config_set("developer_access.path", "/developer");
+        config_set("developer_access.email", "style-test@example.test");
+        config_set("developer_access.users", developer_access()->serializeAccounts([
+            ["email" => "style-test@example.test", "name" => "Style test", "role" => "admin",
+                "password_hash" => password_hash("synthetic-style-secret", PASSWORD_DEFAULT)],
+        ]));
+        $application = $this->makeApplication();
+        $public = $application->handle(new Request("GET", "/about"));
+        self::assertSame(200, $public->status());
+        self::assertStringNotContainsString("assets/developer-panel.css", $public->body());
+        $private = $application->handle(new Request("GET", "/developer"));
+        self::assertSame(200, $private->status());
+        self::assertStringContainsString("assets/developer-panel.css", $private->body());
+    }
+
     public function testHomePageRendersProjectOwnedContent(): void
     {
         $application = $this->makeApplication();
@@ -181,7 +225,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        if (strcasecmp($this->expectedProjectName(), "FNLLA") === 0) {
+        if (strcasecmp($this->expectedProjectName(), "FNLLA") === 0 && is_file(public_path("assets/fnlla-logo.png"))) {
             self::assertStringContainsString("rel=\"icon\" type=\"image/png\" href=\"/assets/fnlla-logo.png?v=", $response->body());
             self::assertStringContainsString("project-brand-mark is-logo\" aria-hidden=\"true\">", $response->body());
             self::assertStringContainsString("src=\"/assets/fnlla-logo.png?v=", $response->body());
@@ -218,7 +262,7 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testFooterNavigationStylesKeepCookieSettingsAlignedWithLinks(): void
     {
-        $css = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
 
         self::assertStringContainsString(".project-footer-links a,\n.project-footer-cookie-link {\n  color: var(--fnlla-color-primary);\n  text-decoration: none;\n}", $css);
         self::assertStringContainsString(".project-footer-links a:hover,\n.project-footer-links a:focus-visible,\n.project-footer-cookie-link:hover,\n.project-footer-cookie-link:focus-visible {\n  color: var(--fnlla-color-secondary);\n  text-decoration: none;\n  outline: none;\n}", $css);
@@ -227,7 +271,7 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testPasswordVisibilityToggleUsesLighterLabelWeight(): void
     {
-        $css = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
 
         self::assertStringContainsString(".password-field .password-toggle {\n  position: absolute;", $css);
         self::assertStringContainsString("font-size: 0.74rem;\n  font-weight: 600;\n  line-height: 1;", $css);
@@ -236,7 +280,7 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testProjectButtonsUseLighterLabelWeight(): void
     {
-        $css = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
 
         self::assertStringContainsString(".btn {\n  font-weight: 600;\n}", $css);
         self::assertSame(0, preg_match('/\.btn\s*\{[^}]*font-weight:\s*var\(--fnlla-font-weight-bold\)/s', $css));
@@ -249,7 +293,7 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testProjectSetupNotesUseBlueprintListStyle(): void
     {
-        $css = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
 
         self::assertStringContainsString("--fnlla-brand-font: \"Space Grotesk\"", $css);
         self::assertStringContainsString("--fnlla-brand-mono: \"JetBrains Mono\"", $css);
@@ -335,6 +379,8 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $developerResponse->status());
+        self::assertStringNotContainsString('/assets/app.css', $developerResponse->body());
+        self::assertStringNotContainsString('data-fnlla-cookie-banner', $developerResponse->body());
         self::assertStringContainsString("<meta name=\"theme-color\" content=\"#2563EB\">", $developerResponse->body());
         self::assertStringContainsString("rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/brand/fnlla/favicon.svg?v=", $developerResponse->body());
         self::assertStringContainsString("rel=\"manifest\" href=\"/assets/brand/fnlla/site.webmanifest?v=", $developerResponse->body());
@@ -346,7 +392,7 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testDeveloperGuidanceCommentsDocumentCoreSurfaceContracts(): void
     {
-        $css = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         $layout = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(base_path("views/layouts/app.php")));
         $webRoutes = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(base_path("routes/web.php")));
         $maintenanceRoutes = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(base_path("routes/maintenance.php")));
@@ -598,6 +644,8 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $response->status());
         self::assertStringContainsString("<title>Project Setup | Developer Onboarding | FNLLA</title>", $response->body());
+        self::assertStringNotContainsString("assets/app.css", $response->body());
+        self::assertStringNotContainsString("data-fnlla-cookie-consent", $response->body());
         self::assertStringContainsString("Project name", $response->body());
         self::assertStringContainsString("Public URL", $response->body());
         self::assertStringContainsString("Set the project identity and private developer entry", $response->body());
@@ -608,6 +656,25 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("The project name is used in browser titles, the header and framework operation screens.", $response->body());
         self::assertStringContainsString("Optional responsibility information", $response->body());
         self::assertStringNotContainsString("Optional system information", $response->body());
+
+        $entry = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer", "REQUEST_METHOD" => "GET", "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        self::assertSame(302, $entry->status());
+        self::assertSame("/#developer-panel-setup", $entry->headers()["Location"] ?? null);
+        self::assertStringNotContainsString("Unlock developer session", $entry->body());
+
+        $remoteEntry = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer", "REQUEST_METHOD" => "GET", "REMOTE_ADDR" => "203.0.113.99",
+        ]));
+        self::assertSame(404, $remoteEntry->status());
+
+        config_set("developer_access.setup_ui_enabled", false);
+        $disabledEntry = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer", "REQUEST_METHOD" => "GET", "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        self::assertSame(404, $disabledEntry->status());
+        config_set("developer_access.setup_ui_enabled", true);
 
         $setupResponse = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/developer-panel-setup",
@@ -1328,7 +1395,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-workspace-layout", $developerResponse->body());
         self::assertStringContainsString("developer-workspace-header", $developerResponse->body());
         self::assertStringContainsString("project-navbar-actions", $developerResponse->body());
-        self::assertFileExists(public_path("assets/fnlla-logo.png"));
+        self::assertFileExists(public_path("assets/brand/fnlla/favicon.svg"));
         self::assertStringNotContainsString("src=\"/assets/fnlla-logo.png", $developerResponse->body());
         self::assertStringContainsString("project-brand-mark is-initials\" aria-hidden=\"true\">", $developerResponse->body());
         self::assertStringNotContainsString("DEV OPERATIONS", $developerResponse->body());
@@ -1350,7 +1417,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("Session locks in", $developerResponse->body());
         self::assertStringNotContainsString("developer-panel-brand", $developerResponse->body());
         self::assertStringContainsString("developer-panel-page-head", $developerResponse->body());
-        $developerPanelCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $developerPanelCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         self::assertStringContainsString(".project-brand-mark.is-logo", $developerPanelCss);
         self::assertStringContainsString(".project-brand-mark img", $developerPanelCss);
         self::assertStringContainsString("align-items: start;\n  min-height: auto;", $developerPanelCss);
@@ -1681,7 +1748,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("action=\"/developer/panel/heatmap/settings\"", $heatmapResponse->body());
         self::assertStringContainsString("/fnlla/analytics/event", $heatmapResponse->body());
         self::assertStringContainsString("No external calls by default", $heatmapResponse->body());
-        $developerCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+        $developerCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         self::assertStringContainsString("body.developer-workspace-layout {\n  position: relative;\n  min-height: 100vh;", $developerCss);
         self::assertStringContainsString("radial-gradient(circle at top right", $developerCss);
         self::assertStringContainsString("content: var(--fnlla-workbench-binary-field);", $developerCss);
@@ -2509,7 +2576,8 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_access_password" => "operator-pass",
         ]));
 
-        self::assertSame(404, $entryResponse->status());
+        self::assertSame(302, $entryResponse->status());
+        self::assertSame("/#developer-panel-setup", $entryResponse->headers()["Location"] ?? null);
         self::assertSame(404, $unlockResponse->status());
         self::assertFalse($_SESSION["developer.access_unlocked"] ?? false);
     }
@@ -2582,6 +2650,8 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_setup_email" => "setup-dev@example.test",
             "developer_setup_password" => "developer-secret",
             "developer_setup_password_confirmation" => "developer-secret",
+            "fnlla_modules_present" => "1",
+            "fnlla_module_workspace" => "1",
         ]));
 
         self::assertSame(302, $activationResponse->status());
@@ -2589,6 +2659,10 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertStringContainsString("DEVELOPER_ACCESS_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_EMAIL=setup-dev@example.test", (string) file_get_contents($envPath));
+        self::assertStringContainsString("FNLLA_MODULE_WORKSPACE=true", (string) file_get_contents($envPath));
+        self::assertStringContainsString("FNLLA_MODULE_ANALYTICS=false", (string) file_get_contents($envPath));
+        self::assertTrue(config("modules.workspace"));
+        self::assertFalse(config("modules.analytics"));
         self::assertStringContainsString("DEVELOPER_ACCESS_USERS=setup-dev@example.test|", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD_HASH=", (string) file_get_contents($envPath));
@@ -2998,6 +3072,8 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_operations_nav_mode" => "developer_session_only",
             "developer_access_ttl_minutes" => "45",
             "developer_access_absolute_ttl_minutes" => "180",
+            "fnlla_modules_present" => "1",
+            "fnlla_module_workspace" => "1",
         ]));
 
         self::assertSame(302, $response->status());
@@ -3010,6 +3086,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame("developer_session_only", config("developer_access.operations_nav_mode"));
         self::assertSame(45, config("developer_access.unlock_ttl_minutes"));
         self::assertSame(180, config("developer_access.absolute_ttl_minutes"));
+        self::assertStringContainsString("FNLLA_MODULE_WORKSPACE=true", (string) file_get_contents($envPath));
+        self::assertStringContainsString("FNLLA_MODULE_CUSTOMER_PORTAL=false", (string) file_get_contents($envPath));
+        self::assertFalse(config("modules.customer_portal"));
     }
 
     public function testLeadDeveloperCreatesCustomerInvitationAndCustomerPortalStaysReadOnly(): void
@@ -3396,5 +3475,16 @@ final class ApplicationSurfaceTest extends TestCase
         $application->middleware(["cors", "maintenance"]);
 
         return $application;
+    }
+
+    private function stylesheetSource(): string
+    {
+        $css = "";
+        foreach (["app-base.css", "app.css", "developer-panel.css"] as $file) {
+            if (is_file(public_path("assets/" . $file))) {
+                $css .= (string) file_get_contents(public_path("assets/" . $file));
+            }
+        }
+        return $css;
     }
 }

@@ -1,0 +1,4 @@
+:root { color-scheme: light dark; font: 16px/1.6 system-ui, sans-serif; letter-spacing: 0; }
+body { margin: 0; }
+main { width: min(100% - 40px, 1120px); margin: 40px auto; }
+h1 { font-size: 32px; overflow-wrap: anywhere; }

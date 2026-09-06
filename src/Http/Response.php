@@ -74,7 +74,7 @@ final class Response
 
     public function withHeader(string $name, string $value): self
     {
-        $clone = clone $this;
+        $clone = $this->withoutHeader($name);
         self::assertHeaderName($name);
         self::assertHeaderValue($value);
         $clone->headers[$name] = $value;
@@ -124,6 +124,24 @@ final class Response
         $clone = clone $this;
         $clone->body = "";
 
+        return $clone;
+    }
+
+    public function withBody(string $body): self
+    {
+        $clone = clone $this;
+        $clone->body = $body;
+        return $clone;
+    }
+
+    public function withoutHeader(string $name): self
+    {
+        $clone = clone $this;
+        foreach (array_keys($clone->headers) as $key) {
+            if (strcasecmp($key, $name) === 0) {
+                unset($clone->headers[$key]);
+            }
+        }
         return $clone;
     }
 

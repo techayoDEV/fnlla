@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/phpunit-bootstrap.php" cacheDirectory="storage/framework/phpunit"
+         failOnRisky="true" failOnWarning="true" failOnDeprecation="true">
+    <testsuites>
+        <testsuite name="framework">
+            <directory suffix="Test.php">tests</directory>
+            <exclude>tests/PHPUnit</exclude>
+            <exclude>tests/Integration</exclude>
+        </testsuite>
+        <testsuite name="integration">
+            <directory suffix="Test.php">tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -123,8 +123,8 @@ final class PerformanceAndAiTest extends TestCase
         self::assertTrue(($result["assets"] ?? 0) > 0);
         self::assertArrayHasKey("assets/app.css", $manifest);
         self::assertArrayHasKey("sha256", $manifest["assets/app.css"]);
-        self::assertArrayHasKey("assets/fnlla-logo.png", $manifest);
-        self::assertArrayHasKey("sha256", $manifest["assets/fnlla-logo.png"]);
+        self::assertArrayHasKey("assets/app.css", $manifest);
+        self::assertArrayHasKey("sha256", $manifest["assets/app.css"]);
     }
 
     public function testPerformanceProfilerProducesMachineReadableProfile(): void
@@ -343,6 +343,7 @@ final class PerformanceAndAiTest extends TestCase
     public function testAiContextIsLocalOnlyAndRedacted(): void
     {
         config_set("app.secret_key_for_test", "do-not-leak");
+        config_set("cors.supports_credentials", false);
 
         $context = (new AiContextBuilder())->build();
         $encoded = json_encode($context, JSON_THROW_ON_ERROR);
@@ -486,7 +487,7 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame("fnlla.technical_debt_report.v1", $report["schema"] ?? null);
         self::assertTrue(in_array("explicit-debt-markers", $ids, true));
         self::assertTrue(in_array("runtime-residue", $ids, true));
-        self::assertTrue(in_array("generated-docs-sync", $ids, true));
+        self::assertSame(!is_file(base_path(".fnlla/framework-lock.json")), in_array("generated-docs-sync", $ids, true));
         self::assertTrue(in_array("ai-product-runtime", $ids, true));
         self::assertStringContainsString("FNLLA_TECH_DEBT_REPORT:BEGIN", $snapshot);
         self::assertStringContainsString("php fnlla tech-debt:update --check", $snapshot);

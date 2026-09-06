@@ -37,14 +37,12 @@ final class ConfigCacheCommand extends Command
 
     public function handle(array $arguments): int
     {
+        $input = \Fnlla\Php\Console\Input::parse($arguments);
+        if ($input->option("help", false)) { $this->printHelp(); return 0; }
         $path = framework_config_cache_path();
 
-        if (is_file($path)) {
-            unlink($path);
-        }
-
         $config = $this->loadFreshConfig(base_path("config"));
-        $this->writePhpArray($path, $config);
+        \Fnlla\Php\Support\PhpArrayCache::write($path, $config);
         $this->line("Configuration cached: " . $path);
 
         return 0;
@@ -74,14 +72,4 @@ final class ConfigCacheCommand extends Command
         return $config;
     }
 
-    private function writePhpArray(string $path, array $payload): void
-    {
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        file_put_contents($path, "<?php\n\nreturn " . var_export($payload, true) . ";\n", LOCK_EX);
-    }
 }

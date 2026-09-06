@@ -22,6 +22,10 @@ $pageStatus = flash("status");
 $layoutChromeMode = (string) ($layoutChromeMode ?? "default");
 $isClientPreviewChrome = $layoutChromeMode === "client-preview";
 $isDeveloperPanelChrome = $layoutChromeMode === "developer-panel";
+$routeName = (string) ($_SERVER["FNLLA_ROUTE_NAME"] ?? "");
+$needsDeveloperStyles = $isDeveloperPanelChrome || $isClientPreviewChrome || isset($developerSetup)
+    || str_starts_with($routeName, "developer.") || str_starts_with($routeName, "customer.")
+    || str_starts_with($routeName, "maintenance.") || $routeName === "health";
 $currentPath = current_path();
 $hasDocumentationWorkspace = has_local_docs_workspace();
 $isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
@@ -80,6 +84,8 @@ $publicIntegrationConfig = [
 ];
 $internalHeatmapConfig = [
     "enabled" => (bool) config("observability.metrics.enabled", false)
+        && \Fnlla\Php\Support\DeveloperModules::enabled("analytics")
+        && \Fnlla\Php\Support\DeveloperModules::enabled("heatmap")
         && (bool) config("observability.analytics.enabled", true)
         && (bool) config("observability.heatmap.enabled", true),
     "endpoint" => route("fnlla.analytics.event"),
@@ -142,7 +148,11 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
   <!-- Framework brand chrome contract: FNLLA assets are limited to private developer and framework operation screens. -->
   <!-- Runtime CSS first, project shell CSS second. Project styles may theme the shell without editing the vendored runtime asset. -->
   <link rel="stylesheet" href="<?= h(asset("vendor/fnlla-runtime/assets/css/fnlla-runtime.css")) ?>">
+  <link rel="stylesheet" href="<?= h(asset("assets/app-base.css")) ?>">
   <link rel="stylesheet" href="<?= h(asset("assets/app.css")) ?>">
+  <?php if ($needsDeveloperStyles): ?>
+  <link rel="stylesheet" href="<?= h(asset("assets/developer-panel.css")) ?>">
+  <?php endif; ?>
 </head>
 <body data-fnlla-theme="default"<?= $isClientPreviewChrome ? ' class="client-preview-layout"' : ($isDeveloperPanelChrome ? ' class="developer-workspace-layout"' : "") ?>>
   <?php if (!$isClientPreviewChrome && !$isDeveloperPanelChrome): ?>

@@ -18,6 +18,23 @@
     "require": {
         "php": "^8.3"
     },
+    "require-dev": {
+        "nyholm/psr7": "^1.8",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0",
+        "symfony/mailer": "^7.4",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.5",
+        "psr/container": "^2.0",
+        "psr/log": "^3.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fnlla\\Smtp\\": "packages/fnlla-smtp/src/",
+            "Fnlla\\Deploy\\": "packages/fnlla-deploy/src/",
+            "Fnlla\\Psr\\": "packages/fnlla-psr/src/"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Fnlla\\Php\\": "src/",
@@ -28,6 +45,7 @@
     "scripts": {
         "console": "@php fnlla",
         "test": "@php scripts/test.php",
+        "test:unit": "@php vendor/phpunit/phpunit/phpunit",
         "analyse": "@php scripts/static-analysis.php",
         "doctor": "@php fnlla doctor",
         "ai:context": "@php fnlla ai:context",
@@ -46,6 +64,7 @@
         ]
     },
     "config": {
+        "platform": {"php": "8.3.0"},
         "sort-packages": true
     }
 }

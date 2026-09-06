@@ -1,7 +1,90 @@
 # FNLLA Release And Operations
 
+## Target 2.2.0 Acceptance
+
+2.2.0 is the selected stable target, not a published version. Consult
+`MODERNIZATION-STATUS.md` and the canonical modernization ledger before advancing
+VERSION or creating a tag. The current working tree is not a substitute for an
+immutable, tested release artifact.
+
+Review `framework/RUNTIME-CONTRACTS.md` before upgrading: non-local migrations now
+require explicit `--force`, proxy protocol must be canonical, application auth
+revalidates accounts, and cache publication requires secure CLI/PHP permissions.
+
+`release:prepare --skip-tests` only builds artifacts. Its `ok` means the command
+succeeded; `validation: skipped` and `risk: unknown` explicitly mean validation was
+not performed. Even `validation: passed` covers local commands only. Confirm the
+remote PHP/OS/MySQL/Redis matrix, installation from actual release artifacts,
+upgrade/rollback evidence and security review separately before publication.
+
+Maintainer validation requires installed PHPUnit and runs the framework suite with
+`--fail-on-skipped`; the offline smoke harness is not a release certification.
+Run `composer install` first. Project exports keep their local project runner.
+Release preparation never clears application caches, pending jobs, sessions or
+logs. Distribution exclusions produce a clean artifact without destroying local
+state. Remove obsolete files from `dist` only after confirming they are generated
+output, not backups or evidence that must be retained privately.
+
+The quality workflow audits the installed lock file with `composer audit --locked`
+and uploads JUnit reports for each PHP/OS and integration job, retained for 14 days.
+Reports live in the runner temporary directory, not the source artifact. Check
+that every job belongs to the exact candidate commit; retain release evidence
+outside temporary CI retention before approving a stable release.
+
 This document describes the operational commands that keep FNLLA release-ready,
 observable and easier to audit in business deployments.
+
+## Documentation Before Every Release
+
+Before approving any GitHub release, review the changed behavior and update its
+Markdown instructions, examples, environment reference, CLI/API contracts,
+migration notes and security/operational limitations. Include first-run setup
+and account recovery when access behavior changes. Update release notes for the
+approved version, and keep unresolved architecture work in the JSON ledger.
+Do not replace evidence with checked boxes or delete active acceptance criteria.
+
+```sh
+php scripts/build-docs.php
+php scripts/build-docs.php --check
+php scripts/check-docs.php
+php scripts/check-modernization.php
+php fnlla release:prepare
+```
+
+All maintainer releases require synchronized documentation, documentation hygiene
+and a valid modernization ledger, including non-major releases and `--skip-tests`
+invocations. The quality workflow checks documentation too. Hygiene checks detect
+broken relative Markdown links, workstation paths and known credential patterns;
+they report locations without echoing matched secrets. These checks do not prove
+prose completeness, absence of every possible secret or completion of unfinished work.
+`--require-complete` is a separate architecture acceptance gate, not a requirement
+to pretend every roadmap item is finished before an incremental release.
+Exported application projects do not run maintainer-only documentation scripts.
+Publication, tags and remote pushes still require explicit release approval.
+
+## Clean Source Archives
+
+`scripts/build-source-archive.ps1` requires PowerShell, Git and PHP on PATH. It
+checks documentation hygiene before packaging the current working tree and refuses
+to overwrite an existing archive. A working-tree archive is for inspection, not
+proof that a tagged release passed CI.
+
+```powershell
+./scripts/build-source-archive.ps1 -OutputPath ./dist/fnlla-source-review.zip
+```
+
+The shared policy in `resources/source-distribution.json` excludes runtime state,
+uploads, dependencies, editor state, previous build output, editable brand masters,
+credential files, private keys, database dumps and nested archives. SBOM/checksum
+generation applies the same sensitive-file exclusions; `.gitattributes` also
+protects Git archives. Environment examples remain included. These rules exclude
+files from distribution, not from the application's filesystem or backup policy.
+Use PHP migrations rather than shipping SQL dumps as source fixtures.
+
+Inspect the archive before publication, including its Markdown and generated HTML.
+Public instructions must describe FNLLA with neutral examples. Keep application
+recovery evidence, account details, local paths and deployment reports in private
+storage. Preserve license attribution and documented public API identifiers.
 
 ## Daily Readiness
 
@@ -13,7 +96,7 @@ php fnlla config:doctor
 php fnlla security:audit
 php fnlla ops:backup-plan
 php fnlla app:map
-php fnlla upgrade:check --target=2.1.3
+php fnlla upgrade:check --target=2.2.0
 php fnlla perf:profile --iterations=5
 ```
 
@@ -83,7 +166,7 @@ Run the full local release gate:
 
 ```bash
 php fnlla release:prepare
-php fnlla release:prepare --major --target=2.1.3
+php fnlla release:prepare --major --target=2.2.0
 ```
 
 The command runs:

@@ -160,7 +160,7 @@ final class DeveloperAccessManager
             return false;
         }
 
-        $firstSegment = explode("/", trim($path, "/"))[0] ?? "";
+        $firstSegment = explode("/", trim($path, "/"))[0];
 
         return !in_array($firstSegment, [
             "api",
@@ -353,7 +353,22 @@ final class DeveloperAccessManager
             return;
         }
 
-        $developer ??= $this->accounts()[0] ?? null;
+        if ($developer === null) {
+            $identity = $this->session->get($this->identityKey());
+            if ($identity !== null) {
+                $email = is_array($identity) ? ($identity["email"] ?? null) : null;
+                foreach ($this->accounts() as $account) {
+                    if (is_string($email) && $email !== "" && $account["email"] === $email) {
+                        $developer = $account;
+                        break;
+                    }
+                }
+                // Refreshing settings must never switch to the first (often owner) account.
+                if ($developer === null) { $this->lock(); return; }
+            } else {
+                $developer = $this->accounts()[0] ?? null;
+            }
+        }
 
         if (!is_array($developer)) {
             return;

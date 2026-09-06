@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$container = require __DIR__ . "/bootstrap/common.php";
+$console = $container->make(\Fnlla\Php\Console\Application::class);
+foreach (["RouteList", "RouteCache", "ConfigCache", "CacheClear", "Migrate", "MigrateRollback", "MigrateStatus", "Seed", "QueueWork", "MakeController", "MakeMiddleware", "MakeCommand", "MakeFactory", "MakeSeeder", "MakeMigration"] as $command) {
+    $console->register("Fnlla\\Php\\Console\\Commands\\" . $command . "Command");
+}
+exit($console->run($_SERVER["argv"] ?? []));

@@ -266,7 +266,7 @@ final class FrameworkReleaseChannel
         $tags = [];
 
         foreach (preg_split('/\R/', $result["output"]) ?: [] as $line) {
-            if (!is_string($line) || !preg_match('/refs\/tags\/(v?\d+\.\d+\.\d+)$/', $line, $matches)) {
+            if (!preg_match('/refs\/tags\/(v?\d+\.\d+\.\d+)$/', $line, $matches)) {
                 continue;
             }
 

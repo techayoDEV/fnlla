@@ -38,6 +38,17 @@ final class Mailer
         $fromName = $this->normaliseHeaderPhrase((string) config("mail.from.name", "FNLLA"));
         $replyTo = trim((string) config("mail.reply_to.address", ""));
 
+        if ($driver === "adapter") {
+            app(MailTransportInterface::class)->send([
+                "schema" => "fnlla.mail.message.v1", "to" => $recipients,
+                "from" => ["address" => $from, "name" => $fromName],
+                "reply_to" => $replyTo !== "" ? $this->normaliseAddress($replyTo) : null,
+                "subject" => $subject, "html" => $html,
+                "text" => $text !== "" ? $text : $this->htmlToText($html),
+            ]);
+            return;
+        }
+
         if ($driver === "log") {
             $directory = storage_path((string) config("mail.log_path", "mail"));
 
@@ -229,8 +240,9 @@ final class Mailer
                 "timeout" => max(1, (int) config("mail.http.timeout_seconds", 10)),
             ],
         ]);
+        $http_response_header = [];
         $response = @file_get_contents($endpoint, false, $context);
-        $status = $this->httpStatusCode($http_response_header ?? []);
+        $status = $this->httpStatusCode($http_response_header);
 
         if ($response === false || $status < 200 || $status >= 300) {
             throw new RuntimeException("HTTP mail transport failed with status " . ($status > 0 ? (string) $status : "unknown") . ".");

@@ -25,7 +25,9 @@ final class PublicApiLockCommand extends Command
         $payload = [
             "schema" => "fnlla.public_api_lock.v1",
             "helpers" => ["config", "env", "base_path", "public_path", "storage_path", "url", "asset", "route", "csrf_token", "csrf_field", "csp_nonce", "auth", "db", "cache", "queue", "runtime_ai", "project_leadership", "customer_access", "stream_request_body_to_file"],
-            "commands" => ["doctor", "config:doctor", "security:audit", "ops:backup-plan", "project:acceptance", "developer:install-storage", "app:map", "upgrade:check", "perf:budget", "release:prepare", "release:manifest", "tech-debt:update", "ai:ask", "ai:triage", "ai:explain-log", "ai:brief", "ai:providers"],
+            "commands" => ["doctor", "config:doctor", "security:audit", "ops:backup-plan", "project:acceptance", "developer:install-storage", "app:map", "upgrade:check", "perf:budget", "release:prepare", "release:manifest", "tech-debt:update", "ai:ask", "ai:triage", "ai:explain-log", "ai:brief", "ai:providers",
+                "make:controller", "make:middleware", "make:command", "make:factory", "make:seeder", "make:migration",
+                "migrate", "migrate:rollback", "migrate:status", "config:cache", "route:cache"],
             "schemas" => [
                 "fnlla.technical_debt_report.v1",
                 "fnlla.technical_debt_update.v1",
@@ -33,6 +35,8 @@ final class PublicApiLockCommand extends Command
             "data" => [
                 "framework.identity",
                 "database.transaction",
+                "database.named_connections",
+                "auth.identity.v1",
                 "query_builder.offset",
                 "query_builder.paginate",
                 "developer.activity_export",

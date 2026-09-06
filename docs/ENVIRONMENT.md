@@ -1,6 +1,6 @@
 # Environment Configuration
 
-FNLLA 2.1.3 uses two environment templates on purpose:
+FNLLA uses two environment templates:
 
 - `.env.example` is the short starter for a new project.
 - `.env.full.example` is the complete reference for operators and maintainers.
@@ -10,6 +10,17 @@ maintainers and teams enabling optional adapters should review
 `.env.full.example` and this document before deployment.
 
 ## Why The Starter Is Short
+
+New integrated exports leave `FNLLA_MODULE_WORKSPACE`, `FNLLA_MODULE_ANALYTICS`,
+`FNLLA_MODULE_HEATMAP` and `FNLLA_MODULE_CUSTOMER_PORTAL` true. Project Setup and
+Panel Settings can disable unwanted modules without installing a second framework.
+Selecting heatmaps also enables analytics; disabling modules preserves data.
+Updates preserve explicit settings and the opt-in marker used by earlier exports.
+Enabling modules does not bypass authentication, privacy consent or debug guards.
+
+Persistent sessions enforce idle expiry via `SESSION_LIFETIME_MINUTES` (120) and
+absolute expiry via `SESSION_ABSOLUTE_LIFETIME_MINUTES` (720). Expiry clears every
+session identity and transient session data. See [runtime contracts](framework/RUNTIME-CONTRACTS.md).
 
 A new FNLLA application should not begin with a wall of advanced switches. The
 first decisions are usually:
@@ -312,9 +323,8 @@ When enabled locally, public routes return a service-disabled screen and API
 requests return `503` JSON. Developer routes stay reachable so the team can
 recover the site.
 
-The remote control keys are only a contract for a future central operations
-system such as TechAyo admin at `https://techayo.co.uk/admin`. Public FNLLA
-contains no private TechAyo control logic and no Fionn brain. A remote control
+The remote control keys describe an optional external operations contract.
+FNLLA does not include an external operator's business logic or private data. A remote control
 endpoint must be HTTPS, token protected and host-allowlisted before
 `security:audit --strict` accepts it. When enabled, FNLLA sends the project id,
 tenant, schema, timestamp, bearer token and optional HMAC signature headers,

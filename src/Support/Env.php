@@ -59,7 +59,7 @@ final class Env
         }
     }
 
-    private static function parseValue(string $value): string
+    public static function parseValue(string $value): string
     {
         $firstCharacter = $value[0] ?? "";
         $lastCharacter = $value[strlen($value) - 1] ?? "";

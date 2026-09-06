@@ -22,7 +22,7 @@ namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Cache\CacheStoreInterface;
 use Fnlla\Php\Console\Command;
-use Fnlla\Php\Observability\MetricsRecorder;
+use Fnlla\Php\Events\Dispatcher;
 
 final class CacheClearCommand extends Command
 {
@@ -38,14 +38,10 @@ final class CacheClearCommand extends Command
 
     public function handle(array $arguments): int
     {
-        $this->container->make(CacheStoreInterface::class)->clear();
-        $this->container->make(MetricsRecorder::class)->clear();
-
-        foreach ([framework_ai_context_path(), framework_ai_review_pack_path(), framework_ai_upgrade_brief_path(), framework_app_map_path(), framework_upgrade_plan_path()] as $path) {
-            if (is_file($path)) {
-                unlink($path);
-            }
+        if (!$this->container->make(CacheStoreInterface::class)->clear()) {
+            throw new \RuntimeException("The cache store could not be cleared.");
         }
+        $this->container->make(Dispatcher::class)->dispatch("cache.cleared");
 
         $this->line("Cache cleared.");
 

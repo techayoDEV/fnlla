@@ -156,8 +156,8 @@ final class DeveloperNotificationCenter
             "generated_at_utc" => gmdate(DATE_ATOM),
             "items" => $active,
             "archived_items" => $archived,
-            "unread_count" => count(array_filter($active, static fn (array $item): bool => ($item["severity"] ?? "") !== "success" && (string) ($item["acknowledged_at"] ?? "") === "")),
-            "acknowledged_count" => count(array_filter($active, static fn (array $item): bool => (string) ($item["acknowledged_at"] ?? "") !== "")),
+            "unread_count" => count(array_filter($active, static fn (array $item): bool => ($item["severity"] ?? "") !== "success" && $item["acknowledged_at"] === "")),
+            "acknowledged_count" => count(array_filter($active, static fn (array $item): bool => $item["acknowledged_at"] !== "")),
             "archived_count" => count($archived),
         ];
     }
@@ -223,13 +223,32 @@ final class DeveloperNotificationCenter
             return;
         }
 
-        $state = $this->state();
-        $state[$key] = array_merge(is_array($state[$key] ?? null) ? (array) $state[$key] : [], $changes, [
-            "key" => $key,
-            "updated_at" => gmdate(DATE_ATOM),
-        ]);
-
-        $this->write($state);
+        $merge = fn (array $record): array => $this->normaliseRecord(array_merge($record, $changes, [
+            "key" => $key, "updated_at" => gmdate(DATE_ATOM),
+        ]));
+        if ($this->driver() === "database") {
+            $this->ensureDatabaseTable();
+            db()->transaction(function () use ($key, $merge): void {
+                $table = $this->quoteIdentifier($this->table());
+                db()->statement("INSERT INTO {$table} (notification_key, severity, title, payload) VALUES (:key, 'state', :title, '{}')"
+                    . " ON DUPLICATE KEY UPDATE notification_key = notification_key", ["key" => $key, "title" => $key]);
+                $rows = db()->select("SELECT payload FROM {$table} WHERE notification_key = :key FOR UPDATE", ["key" => $key]);
+                $record = json_decode((string) $rows[0]["payload"], true, 512, JSON_THROW_ON_ERROR);
+                if (!is_array($record)) {
+                    throw new \RuntimeException("Invalid notification state; refusing to overwrite it.");
+                }
+                $this->writeDatabase([$key => $merge($record)]);
+            });
+            return;
+        }
+        (new LockedJsonStore($this->path()))->update(static function (array $document) use ($key, $merge): array {
+            $records = $document["records"] ?? [];
+            if (!is_array($records) || (isset($records[$key]) && !is_array($records[$key]))) {
+                throw new \RuntimeException("Invalid notification state; refusing to overwrite it.");
+            }
+            $records[$key] = $merge($records[$key] ?? []);
+            return ["schema" => "fnlla.developer_notification_state.v1", "updated_at_utc" => gmdate(DATE_ATOM), "records" => $records];
+        });
     }
 
     private function state(): array
@@ -244,8 +263,11 @@ final class DeveloperNotificationCenter
             return [];
         }
 
-        $decoded = json_decode((string) file_get_contents($path), true);
-        $records = is_array($decoded) ? (array) ($decoded["records"] ?? []) : [];
+        $decoded = (new LockedJsonStore($path))->read();
+        $records = $decoded["records"] ?? [];
+        if (!is_array($records)) {
+            throw new \RuntimeException("Invalid notification records.");
+        }
         $state = [];
 
         foreach ($records as $key => $record) {
@@ -257,39 +279,6 @@ final class DeveloperNotificationCenter
         return array_filter($state, static fn (array $record, string $key): bool => $key !== "", ARRAY_FILTER_USE_BOTH);
     }
 
-    private function write(array $state): void
-    {
-        $normalised = [];
-
-        foreach ($state as $key => $record) {
-            if (is_array($record)) {
-                $cleanKey = $this->cleanKey((string) $key);
-
-                if ($cleanKey !== "") {
-                    $normalised[$cleanKey] = $this->normaliseRecord($record);
-                }
-            }
-        }
-
-        if ($this->driver() === "database") {
-            $this->writeDatabase($normalised);
-            return;
-        }
-
-        $path = $this->path();
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        file_put_contents($path, json_encode([
-            "schema" => "fnlla.developer_notification_state.v1",
-            "updated_at_utc" => gmdate(DATE_ATOM),
-            "records" => $normalised,
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL, LOCK_EX);
-    }
-
     private function readDatabase(): array
     {
         $this->ensureDatabaseTable();
@@ -298,7 +287,7 @@ final class DeveloperNotificationCenter
 
         foreach ($rows as $row) {
             $key = $this->cleanKey((string) ($row["notification_key"] ?? ""));
-            $decoded = json_decode((string) ($row["payload"] ?? ""), true);
+            $decoded = json_decode((string) ($row["payload"] ?? ""), true, 512, JSON_THROW_ON_ERROR);
 
             if ($key !== "" && is_array($decoded)) {
                 $state[$key] = $this->normaliseRecord($decoded);
@@ -315,7 +304,7 @@ final class DeveloperNotificationCenter
         foreach ($state as $key => $record) {
             $record = $this->normaliseRecord((array) $record);
             db()->statement(
-                "REPLACE INTO " . $this->quoteIdentifier($this->table()) . " (notification_key, severity, title, payload, acknowledged_at, archived_at, updated_by) VALUES (:notification_key, :severity, :title, :payload, :acknowledged_at, :archived_at, :updated_by)",
+                "UPDATE " . $this->quoteIdentifier($this->table()) . " SET severity = :severity, title = :title, payload = :payload, acknowledged_at = :acknowledged_at, archived_at = :archived_at, updated_by = :updated_by WHERE notification_key = :notification_key",
                 [
                     "notification_key" => $key,
                     "severity" => "state",
@@ -331,6 +320,9 @@ final class DeveloperNotificationCenter
 
     private function ensureDatabaseTable(): void
     {
+        if (db()->connection()->inTransaction()) {
+            return;
+        }
         $table = $this->quoteIdentifier($this->table());
         db()->statement(
             "CREATE TABLE IF NOT EXISTS {$table} (

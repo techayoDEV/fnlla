@@ -89,6 +89,6 @@ final class EnforceTrustedHosts implements MiddlewareInterface
             return $end === false ? "" : substr($host, 0, $end + 1);
         }
 
-        return explode(":", $host, 2)[0] ?? "";
+        return explode(":", $host, 2)[0];
     }
 }

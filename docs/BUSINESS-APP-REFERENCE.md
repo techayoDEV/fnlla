@@ -12,7 +12,7 @@ Start from a normal project export:
 ```bash
 php fnlla make:project ../fnlla-business-reference "FNLLA Business Reference"
 cd ../fnlla-business-reference
-php fnlla project:claim --product "FNLLA Business Reference" --owner "Example LTD" --developer "TechAyo LTD"
+php fnlla project:claim --product "FNLLA Business Reference" --owner "Example LTD" --developer "Developer LTD"
 php fnlla project:acceptance --json
 ```
 

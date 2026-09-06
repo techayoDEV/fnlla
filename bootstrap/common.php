@@ -83,9 +83,10 @@ if (is_file($composerAutoload)) {
     });
 }
 
-require APP_ROOT . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "helpers.php";
+$engineRoot = defined("FNLLA_ENGINE_ROOT") ? FNLLA_ENGINE_ROOT : APP_ROOT;
+require_once $engineRoot . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Support" . DIRECTORY_SEPARATOR . "helpers.php";
 
-Env::load(base_path(".env"));
+Env::load(env_file_path());
 $GLOBALS["fnlla_config"] = load_config_directory(base_path("config"));
 $GLOBALS["fnlla_php_config"] = $GLOBALS["fnlla_config"];
 
@@ -96,7 +97,7 @@ Development guard note:
 - the guard is skipped only for specific maintainer repair flows that need to
   fix a broken UI contract from the CLI itself
 */
-if (!defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD")) {
+if (!defined("FNLLA_RUNTIME_SKIP_AUTO_GUARD") && class_exists(FnllaRuntimeGuard::class)) {
     FnllaRuntimeGuard::enforce();
 }
 

@@ -38,7 +38,18 @@
         "ai:triage",
         "ai:explain-log",
         "ai:brief",
-        "ai:providers"
+        "ai:providers",
+        "make:controller",
+        "make:middleware",
+        "make:command",
+        "make:factory",
+        "make:seeder",
+        "make:migration",
+        "migrate",
+        "migrate:rollback",
+        "migrate:status",
+        "config:cache",
+        "route:cache"
     ],
     "schemas": [
         "fnlla.technical_debt_report.v1",
@@ -47,6 +58,8 @@
     "data": [
         "framework.identity",
         "database.transaction",
+        "database.named_connections",
+        "auth.identity.v1",
         "query_builder.offset",
         "query_builder.paginate",
         "developer.activity_export",

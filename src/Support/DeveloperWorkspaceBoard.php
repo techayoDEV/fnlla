@@ -140,7 +140,11 @@ final class DeveloperWorkspaceBoard
 
     public function create(array $payload, array $developer = []): array
     {
-        $state = $this->read();
+        return $this->mutate(fn (array $state): array => $this->createTask($state, $payload, $developer));
+    }
+
+    private function createTask(array $state, array $payload, array $developer): array
+    {
         $tasks = $this->normaliseTasks((array) ($state["tasks"] ?? []));
         $now = gmdate(DATE_ATOM);
 
@@ -169,14 +173,17 @@ final class DeveloperWorkspaceBoard
             "updated_at_utc" => $now,
         ];
 
-        $this->write($tasks);
-
         return $tasks;
     }
 
     public function update(string $id, array $payload, array $developer = []): array
     {
-        $tasks = $this->normaliseTasks((array) ($this->read()["tasks"] ?? []));
+        return $this->mutate(fn (array $state): array => $this->updateTask($state, $id, $payload, $developer));
+    }
+
+    private function updateTask(array $state, string $id, array $payload, array $developer): array
+    {
+        $tasks = $this->normaliseTasks((array) ($state["tasks"] ?? []));
 
         foreach ($tasks as $index => $task) {
             if (($task["id"] ?? "") !== $id) {
@@ -188,7 +195,7 @@ final class DeveloperWorkspaceBoard
             $incomingChecklistText = (string) ($payload["checklist"] ?? $currentChecklistText);
             $checklist = is_array($payload["subtasks_text"] ?? null)
                 ? $this->checklistFromStructured(
-                    (array) ($payload["subtasks_text"] ?? []),
+                    $payload["subtasks_text"],
                     (array) ($payload["subtasks_done"] ?? []),
                     (array) ($payload["subtasks_color"] ?? [])
                 )
@@ -276,21 +283,40 @@ final class DeveloperWorkspaceBoard
             break;
         }
 
-        $this->write($tasks);
-
         return $tasks;
     }
 
     public function delete(string $id): array
     {
-        $tasks = array_values(array_filter(
-            $this->normaliseTasks((array) ($this->read()["tasks"] ?? [])),
+        return $this->mutate(fn (array $state): array => array_values(array_filter(
+            $this->normaliseTasks((array) ($state["tasks"] ?? [])),
             static fn (array $task): bool => ($task["id"] ?? "") !== $id
-        ));
+        )));
+    }
 
-        $this->write($tasks);
-
-        return $tasks;
+    private function mutate(callable $change): array
+    {
+        if ($this->driver() === "database") {
+            $this->ensureDatabaseTable();
+            return db()->transaction(function () use ($change): array {
+                // The upsert serializes first writers too, when the state row is absent.
+                db()->statement("INSERT INTO " . $this->quoteIdentifier($this->table())
+                    . " (state_key, payload) VALUES (:state_key, :payload) ON DUPLICATE KEY UPDATE state_key = state_key",
+                    ["state_key" => "default", "payload" => json_encode(["schema" => "fnlla.developer_workspace.v1",
+                        "tasks" => $this->starterTasks()], JSON_THROW_ON_ERROR)]);
+                $tasks = $this->normaliseTasks($change($this->readDatabase(true)));
+                $this->writeDatabase($tasks);
+                return $tasks;
+            });
+        }
+        $state = (new LockedJsonStore($this->path()))->update(function (array $state) use ($change): array {
+            if ($state === []) {
+                $state = ["tasks" => $this->starterTasks()];
+            }
+            return ["schema" => "fnlla.developer_workspace.v1", "updated_at_utc" => gmdate(DATE_ATOM),
+                "tasks" => $this->normaliseTasks($change($state))];
+        });
+        return $state["tasks"];
     }
 
     private function groupByStatus(array $tasks): array
@@ -356,16 +382,16 @@ final class DeveloperWorkspaceBoard
         }
 
         usort($normalised, static function (array $left, array $right): int {
-            $statusComparison = strcmp((string) ($left["status"] ?? ""), (string) ($right["status"] ?? ""));
+            $statusComparison = strcmp($left["status"], $right["status"]);
             if ($statusComparison !== 0) {
                 return $statusComparison;
             }
 
-            $positionComparison = ((float) ($left["position"] ?? 0.0)) <=> ((float) ($right["position"] ?? 0.0));
+            $positionComparison = $left["position"] <=> $right["position"];
 
             return $positionComparison !== 0
                 ? $positionComparison
-                : strcmp((string) ($right["updated_at_utc"] ?? ""), (string) ($left["updated_at_utc"] ?? ""));
+                : strcmp($right["updated_at_utc"], $left["updated_at_utc"]);
         });
 
         return $normalised;
@@ -386,30 +412,7 @@ final class DeveloperWorkspaceBoard
             ];
         }
 
-        $decoded = json_decode((string) file_get_contents($path), true);
-
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    private function write(array $tasks): void
-    {
-        if ($this->driver() === "database") {
-            $this->writeDatabase($tasks);
-            return;
-        }
-
-        $path = $this->path();
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        file_put_contents($path, json_encode([
-            "schema" => "fnlla.developer_workspace.v1",
-            "updated_at_utc" => gmdate(DATE_ATOM),
-            "tasks" => $this->normaliseTasks($tasks),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL, LOCK_EX);
+        return (new LockedJsonStore($path))->read();
     }
 
     private function starterTasks(): array
@@ -565,7 +568,7 @@ final class DeveloperWorkspaceBoard
             }
         }
 
-        return array_values(array_filter($items, static fn (array $item): bool => ($item["text"] ?? "") !== ""));
+        return array_values(array_filter($items, static fn (array $item): bool => $item["text"] !== ""));
     }
 
     private function checklistFromArray(array $items): array
@@ -772,16 +775,18 @@ final class DeveloperWorkspaceBoard
             : "file";
     }
 
-    private function readDatabase(): array
+    private function readDatabase(bool $forUpdate = false): array
     {
         $this->ensureDatabaseTable();
         $rows = db()->select(
-            "SELECT payload FROM " . $this->quoteIdentifier($this->table()) . " WHERE state_key = :state_key LIMIT 1",
+            "SELECT payload FROM " . $this->quoteIdentifier($this->table()) . " WHERE state_key = :state_key LIMIT 1" . ($forUpdate ? " FOR UPDATE" : ""),
             ["state_key" => "default"]
         );
-        $decoded = json_decode((string) ($rows[0]["payload"] ?? ""), true);
-
-        if (is_array($decoded)) {
+        if ($rows !== []) {
+            $decoded = json_decode((string) $rows[0]["payload"], true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($decoded) || !is_array($decoded["tasks"] ?? null)) {
+                throw new \RuntimeException("Invalid workspace state; refusing to overwrite it.");
+            }
             return $decoded;
         }
 
@@ -795,7 +800,7 @@ final class DeveloperWorkspaceBoard
     {
         $this->ensureDatabaseTable();
         db()->statement(
-            "REPLACE INTO " . $this->quoteIdentifier($this->table()) . " (state_key, payload, updated_at) VALUES (:state_key, :payload, NOW())",
+            "UPDATE " . $this->quoteIdentifier($this->table()) . " SET payload = :payload, updated_at = NOW() WHERE state_key = :state_key",
             [
                 "state_key" => "default",
                 "payload" => json_encode([
@@ -809,6 +814,10 @@ final class DeveloperWorkspaceBoard
 
     private function ensureDatabaseTable(): void
     {
+        // MySQL DDL commits implicitly. A caller-owned transaction requires a migrated table.
+        if (db()->connection()->inTransaction()) {
+            return;
+        }
         $table = $this->quoteIdentifier($this->table());
         db()->statement(
             "CREATE TABLE IF NOT EXISTS {$table} (

@@ -67,7 +67,7 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("/docs/public-api.html", $response->body());
         self::assertStringContainsString("/docs/production-checklist.html", $response->body());
         self::assertStringContainsString("/docs/environment.html", $response->body());
-        self::assertStringContainsString("/docs/upgrade-2-1.html", $response->body());
+        self::assertStringContainsString("/docs/recovery.html", $response->body());
         self::assertStringNotContainsString("/docs/enterprise-todo.html", $response->body());
     }
 
@@ -218,7 +218,8 @@ final class DocumentationRouteTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        self::assertStringContainsString("FNLLA 2.1.3 uses two environment templates", $response->body());
+        self::assertStringContainsString("FNLLA uses two environment templates", $response->body());
+        self::assertStringContainsString("SESSION_ABSOLUTE_LIFETIME_MINUTES", $response->body());
         self::assertStringContainsString("FNLLA_OFFICIAL_URL", $response->body());
         self::assertStringContainsString("https://fnlla.com", $response->body());
         self::assertStringContainsString(".env.full.example", $response->body());

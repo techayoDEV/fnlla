@@ -3,6 +3,59 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## Unreleased
+
+Target release: `2.2.0` (stable, not yet published). The architecture
+changes and unfinished acceptance are tracked in `docs/MODERNIZATION-STATUS.md`.
+This target replaces the proposed beta. Do not advertise this workspace as a
+new stable release until the supported release scope passes its acceptance gates.
+
+- Atomic config/route cache publication preserving working files on failure;
+  route/profile metadata now travels together, with legacy cache read support.
+- Shared, validated application generators in Core, Complete and package preview;
+  new exports use App namespaces and refuse existing or unsafe destinations.
+- Strict migration options, named CLI connections and explicit non-local `--force`.
+- Removed/mismatched application accounts no longer pass authentication checks;
+  corrupt identities fail closed and login installs identity only after rotation.
+- Bounded request capture, strict Content-Length and nearest-untrusted-hop proxy
+  resolution; forwarded protocol must be a single canonical value.
+- Release preparation labels skipped validation as unknown risk, not low risk.
+- Integrated starter creation no longer prompts automatically; the advanced
+  chooser and explicit core-only export remain compatible.
+- Full projects include all modules enabled by default. Project Setup and Panel
+  Settings can disable unwanted modules without changing existing projects.
+- Persistent sessions enforce server-side idle and absolute expiry, reject invalid
+  timestamp state and fail when persistent storage cannot start.
+- Redis sessions validate IDs and serialize reads/writes with expiring token-owned
+  locks; stale owners cannot overwrite, delete or refresh successor state.
+- Upgrade regression starts from the official 2.1.3 release. Framework policy
+  documents and UI assets are tracked; metadata refresh joins the rollback journal.
+  Only unchanged, hash-matched legacy framework tests are retired; application
+  tests and locally modified test files remain untouched.
+- Developer session refresh preserves the named account instead of selecting the
+  first configured account; removed accounts cannot inherit another identity.
+- Maintainer release checks require real PHPUnit; preparation no longer deletes
+  queues, sessions, logs or caches from a working application.
+- Full exports ship focused application smoke tests instead of framework-internal
+  suites. Runtime updates preserve application tests, and README examples use the
+  exported version rather than a hard-coded historical release number.
+- Consolidated architecture, migration and recovery documentation with neutral
+  examples; removed obsolete stage reports and application-specific instructions.
+- Release and CI documentation hygiene checks detect broken Markdown links,
+  workstation paths and common credential patterns without printing matched values.
+- Source archive, SBOM and checksum filters exclude nested environment secrets,
+  private keys, database dumps and generated artifacts.
+
+- Named database managers with explicit PDO registration, transaction-safe
+  purge, and migration schema/ledger binding verified against real MySQL.
+- Opt-in, bounded developer request history with redaction, retention,
+  permissions and CSRF protection; excluded from Core/plain.
+- Private layout and base stylesheet are now framework-owned during upgrades;
+  public application views, styles, routes, `.env` and data remain project-owned.
+- Upgrade source scanning skips the active transaction journal/lock.
+- Offline file-recovery drill with integrity verification and explicit RPO/RTO;
+  synthetic checks are distinct from application-owned production recovery.
+
 ## 2.1.3 - 2026-09-04
 
 ### Added

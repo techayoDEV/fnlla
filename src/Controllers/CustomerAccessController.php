@@ -27,6 +27,11 @@ use Fnlla\Php\Validation\ValidationException;
 
 final class CustomerAccessController extends Controller
 {
+    protected function view(string $template, array $data = [], int $status = 200, ?string $layout = "layouts/developer"): Response
+    {
+        return parent::view($template, $data, $status, $layout);
+    }
+
     public function entry(Request $request, CustomerAccessManager $customerAccess): Response
     {
         if (!$customerAccess->enabled() || !$customerAccess->configured()) {

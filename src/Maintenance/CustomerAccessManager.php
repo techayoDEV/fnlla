@@ -38,7 +38,8 @@ final class CustomerAccessManager
 
     public function enabled(): bool
     {
-        return (bool) config("customer_access.enabled", true);
+        return \Fnlla\Php\Support\DeveloperModules::enabled("customer_portal")
+            && (bool) config("customer_access.enabled", true);
     }
 
     public function configured(): bool
@@ -70,7 +71,7 @@ final class CustomerAccessManager
             return false;
         }
 
-        $firstSegment = explode("/", trim($path, "/"))[0] ?? "";
+        $firstSegment = explode("/", trim($path, "/"))[0];
 
         return !in_array($firstSegment, [
             "api",

@@ -68,29 +68,9 @@ $developerFrameworkVersion = $developerFrameworkVersion !== "" ? $developerFrame
 $frameworkOfficialUrl = rtrim((string) config("framework.official_url", "https://fnlla.com"), "/");
 $frameworkMaintainerUrl = rtrim((string) config("framework.maintainer_url", "https://techayo.co.uk"), "/");
 $dashboardNavigationItem = ["label" => "Dashboard", "href" => (string) ($developerLinks["overview"] ?? route("developer.panel"))];
-$panelNavigationGroups = [
-    "Workspace" => [
-        "workspace" => ["label" => "Project Kanban", "href" => (string) ($developerLinks["workspace"] ?? route("developer.panel.workspace"))],
-    ],
-    "Project setup" => [
-        "identity" => ["label" => "Project setup", "href" => (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))],
-    ],
-    "Operations" => [
-        "release-readiness" => ["label" => "Readiness & health", "href" => (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))],
-        "framework-updates" => ["label" => "Framework updates", "href" => (string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"))],
-        "project-logs" => ["label" => "Project logs", "href" => (string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))],
-        "analytics" => ["label" => "Analytics", "href" => (string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))],
-        "heatmap" => ["label" => "Heatmap", "href" => (string) ($developerLinks["heatmap"] ?? route("developer.panel.heatmap"))],
-        "integrations" => ["label" => "Integrations", "href" => (string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))],
-    ],
-    "Security" => [
-        "access" => ["label" => "Access & security", "href" => (string) ($developerLinks["access"] ?? route("developer.panel.access"))],
-        "settings" => ["label" => "Runtime & storage", "href" => (string) ($developerLinks["settings"] ?? route("developer.panel.settings"))],
-    ],
-    "Reference" => [
-        "documentation" => ["label" => "Documentation & policy", "href" => (string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))],
-    ],
-];
+$panelNavigationGroups = \Fnlla\Php\Support\DeveloperNavigation::groups(
+    (array) ($developerAccess["current_capabilities"] ?? []), static fn (string $name): string => route($name)
+);
 $headerNotifications = is_array($developerHeaderNotifications ?? null) ? (array) $developerHeaderNotifications : [];
 $headerNotificationItems = array_values((array) ($headerNotifications["items"] ?? []));
 $headerNotificationCount = max(0, (int) ($headerNotifications["unread_count"] ?? 0));
@@ -100,7 +80,11 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
 };
 ?>
 <section class="developer-workspace" aria-label="Developer workspace">
+  <script src="<?= h(asset("assets/developer-panel.js")) ?>" defer></script>
   <header class="developer-workspace-header">
+    <button class="developer-mobile-menu" type="button" data-panel-menu aria-controls="developer-panel-navigation" aria-expanded="false" aria-label="Navigation" title="Navigation">
+      <svg width="20" height="20" aria-hidden="true"><use href="<?= h(asset("vendor/fnlla-runtime/assets/icons/sprite.svg")) ?>#menu"></use></svg>
+    </button>
     <div class="navbar-brand project-brand developer-workspace-brand">
       <a class="developer-workspace-brand-home" href="<?= h((string) ($developerLinks["overview"] ?? route("developer.panel"))) ?>">
         <span class="project-brand-mark <?= $projectBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
@@ -212,7 +196,7 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
   </header>
 
   <div class="developer-workspace-body">
-    <aside class="developer-panel-sidebar" aria-label="Developer panel sections">
+    <aside id="developer-panel-navigation" class="developer-panel-sidebar" aria-label="Developer panel sections">
       <div class="developer-panel-sidebar-top">
         <nav class="developer-panel-sidebar-nav" aria-label="Developer panel sections">
           <a class="developer-panel-sidebar-link developer-panel-sidebar-link-standalone <?= $developerPanelActive === "overview" ? "is-active" : "" ?>" href="<?= h((string) $dashboardNavigationItem["href"]) ?>" <?= $developerPanelActive === "overview" ? 'aria-current="page"' : "" ?>>

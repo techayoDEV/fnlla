@@ -81,7 +81,6 @@ final class FrameworkUpdateController extends Controller
             return $this->runUpgradeWorkflow($request, $mode, $pageState);
         }
 
-        $usesGitHub = true;
         $releaseTag = trim((string) $request->input("release_tag", ""));
         flash_set("old", [
             "source_path" => "",
@@ -120,7 +119,7 @@ final class FrameworkUpdateController extends Controller
             return $this->redirect($this->redirectRoute($request));
         }
 
-        if ($usesGitHub && ((bool) config("framework_update.github_enabled", true)) !== true) {
+        if (((bool) config("framework_update.github_enabled", true)) !== true) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "GitHub release channel is disabled",
@@ -136,8 +135,7 @@ final class FrameworkUpdateController extends Controller
             $report = match ($mode) {
                 "github-check" => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
                 "github-dry-run" => FrameworkUpdater::dryRunLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
-                "github-apply" => FrameworkUpdater::applyLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
-                default => FrameworkUpdater::checkLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
+                default => FrameworkUpdater::applyLatestRelease(base_path(), (string) config("app.name"), $releaseTag !== "" ? $releaseTag : null),
             };
 
             $report = array_merge($report, [

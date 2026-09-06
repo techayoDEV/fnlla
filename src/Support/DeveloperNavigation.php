@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fnlla\Php\Support;
+
+/** Navigation visibility mirrors read permissions; controllers still enforce every request. */
+final class DeveloperNavigation
+{
+    private const ITEMS = [
+        ["Workspace", "workspace", "Project Kanban", "workspace", null, "workspace"],
+        ["Workspace", "technical-debt", "Technical debt", "technical_debt", "operations.view", null],
+        ["Project setup", "identity", "Project setup", "project_identity", null, null],
+        ["Operations", "debug", "Debug", "debug", "operations.view", null],
+        ["Operations", "release-readiness", "Readiness & health", "release_readiness", "operations.view", null],
+        ["Operations", "framework-updates", "Framework updates", "framework_updates", null, null],
+        ["Operations", "project-logs", "Project logs", "project_logs", "operations.view", null],
+        ["Operations", "analytics", "Analytics", "analytics", "operations.view", "analytics"],
+        ["Operations", "heatmap", "Heatmap", "heatmap", "operations.view", "heatmap"],
+        ["Operations", "integrations", "Integrations", "integrations", "operations.view", null],
+        ["Security", "access", "Access & security", "access", null, null],
+        ["Security", "settings", "Runtime & storage", "settings", null, null],
+        ["Reference", "documentation", "Documentation & policy", "documentation", "policy.view", null],
+    ];
+
+    public static function groups(array $capabilities, callable $url): array
+    {
+        $groups = [];
+        foreach (self::ITEMS as [$group, $key, $label, $route, $capability, $module]) {
+            if ($capability !== null && !in_array($capability, $capabilities, true)) { continue; }
+            if ($module !== null && !DeveloperModules::enabled($module)) { continue; }
+            $groups[$group][$key] = ["label" => $label, "href" => $url("developer.panel." . $route)];
+        }
+        return $groups;
+    }
+}

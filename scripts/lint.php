@@ -24,6 +24,8 @@ $rootFiles = [
     "fnlla",
 ];
 $paths = [
+    "app",
+    "packages",
     "bootstrap",
     "config",
     "database",

@@ -134,6 +134,8 @@ final class FrameworkUpdater
     public static function apply(string $projectRoot, string $source, ?string $appName = null): array
     {
         self::extendExecutionTime();
+        $transaction = new FrameworkUpdateTransaction($projectRoot);
+        $transaction->assertReady();
         [$report, $workspace, $exportRoot] = self::prepare($projectRoot, $source, $appName);
 
         try {
@@ -141,15 +143,19 @@ final class FrameworkUpdater
                 throw new RuntimeException(self::APPLY_CONFLICT_MESSAGE);
             }
 
-            $appliedChanges = self::applyReport($report, $projectRoot, $exportRoot);
-            FrameworkLock::syncFromExport($exportRoot, $projectRoot);
-            $report["applied_changes"] = $appliedChanges;
-            $report["post_install_checks"] = (bool) config("framework_update.post_install_checks", true)
-                ? self::runPostInstallChecks($projectRoot)
-                : self::skippedPostInstallChecks();
-            $report["post_install_ok"] = self::postInstallChecksPassed((array) $report["post_install_checks"]);
-
-            return $report;
+            return $transaction->run(array_merge(array_keys($report["updates"]), [FrameworkLock::lockFile(), "MANIFEST.json"]),
+                static function () use ($report, $projectRoot, $exportRoot): array {
+                    $report["applied_changes"] = self::applyReport($report, $projectRoot, $exportRoot);
+                    FrameworkLock::syncFromExport($exportRoot, $projectRoot);
+                    self::refreshProjectManifest($projectRoot);
+                    $report["post_install_checks"] = (bool) config("framework_update.post_install_checks", true)
+                        ? self::runPostInstallChecks($projectRoot) : self::skippedPostInstallChecks();
+                    $report["post_install_ok"] = self::postInstallChecksPassed((array) $report["post_install_checks"]);
+                    if (!$report["post_install_ok"]) {
+                        throw new RuntimeException("Post-install validation failed: " . json_encode($report["post_install_checks"]));
+                    }
+                    return $report;
+                });
         } finally {
             self::removeDirectory($workspace);
         }
@@ -174,7 +180,7 @@ final class FrameworkUpdater
 
         try {
             $exportRoot = $workspace . DIRECTORY_SEPARATOR . "source-export";
-            self::exportSourceProject($sourceRoot, $exportRoot, $resolvedAppName);
+            self::exportSourceProject($sourceRoot, $exportRoot, $resolvedAppName, ProjectProfile::name($projectRoot));
             $sourceLock = FrameworkLock::load($exportRoot);
             $report = self::buildReport($currentLock, $sourceLock, $projectRoot, $exportRoot);
             $report["source_root"] = $sourceRoot;
@@ -224,7 +230,7 @@ final class FrameworkUpdater
         return $workspace;
     }
 
-    private static function exportSourceProject(string $sourceRoot, string $targetRoot, string $appName): void
+    private static function exportSourceProject(string $sourceRoot, string $targetRoot, string $appName, string $profile = "full"): void
     {
         self::extendExecutionTime();
 
@@ -238,6 +244,7 @@ final class FrameworkUpdater
             "make:project",
             $targetRoot,
             $appName,
+            "--profile=" . $profile,
         ]);
 
         if ($result["exit_code"] !== 0) {
@@ -261,6 +268,7 @@ final class FrameworkUpdater
         $legacyManagedFiles = FrameworkLock::legacyUntrackedManagedHashes(
             (string) ($currentLock["framework_base"]["framework"]["version"] ?? "")
         );
+        $normalizedLegacy = FrameworkLock::legacyNormalizedHashes((string) ($currentLock["framework_base"]["framework"]["version"] ?? ""));
         $paths = array_values(array_unique(array_merge(
             array_keys($baseManagedFiles),
             array_keys($sourceManagedFiles),
@@ -273,13 +281,33 @@ final class FrameworkUpdater
         $localOnlyChanges = [];
 
         foreach ($paths as $path) {
+            if (self::isLegacyFrameworkTest((string) $path) && !isset($sourceManagedFiles[$path]) && isset($baseManagedFiles[$path])) {
+                self::assertContainedPath($projectRoot, (string) $path);
+                $hash = self::hashIfFileExists($projectRoot . "/" . $path);
+                if ($hash === $baseManagedFiles[$path]) {
+                    $updates[$path] = ["action" => "remove", "label" => "Retire unchanged framework test",
+                        "base_hash" => $hash, "current_hash" => $hash, "source_hash" => null,
+                        "reason" => "Unmodified framework tests belong to the framework repository, not the application."];
+                }
+                continue;
+            }
+            // Ownership changes retire old lock entries without deleting application files.
+            if (!FrameworkLock::isFrameworkManagedPath((string) $path)
+                || (!ProjectProfile::hasPanel($projectRoot) && ProjectProfile::isPanelFile((string) $path))) {
+                continue;
+            }
             $baseHash = $baseManagedFiles[$path] ?? ($legacyManagedFiles[$path] ?? null);
+            self::assertContainedPath($projectRoot, (string) $path);
+            self::assertContainedPath($sourceExportRoot, (string) $path);
             $sourceHash = $sourceManagedFiles[$path] ?? null;
             $projectFilePath = $projectRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
             $sourceFilePath = $sourceExportRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
             $currentHash = self::hashIfFileExists($projectFilePath);
             $currentComparableHash = self::comparableHashIfFileExists($projectFilePath);
             $sourceComparableHash = self::comparableHashIfFileExists($sourceFilePath);
+            if ($baseHash === null && isset($normalizedLegacy[$path]) && $currentComparableHash === $normalizedLegacy[$path]) {
+                $baseHash = $currentHash;
+            }
 
             if ($sourceHash === $baseHash) {
                 if ($currentHash !== $baseHash) {
@@ -371,7 +399,25 @@ final class FrameworkUpdater
     {
         $changes = 0;
 
+        // Revalidate the complete plan before the first write, including drift since preview.
         foreach ($report["updates"] as $path => $update) {
+            if ((!FrameworkLock::isFrameworkManagedPath((string) $path) && !self::isRetiredTestUpdate((string) $path, $update))
+                || (!ProjectProfile::hasPanel($projectRoot) && ProjectProfile::isPanelFile((string) $path))) {
+                throw new RuntimeException("Update attempted to modify a project-owned or excluded file: " . $path);
+            }
+            self::assertContainedPath($projectRoot, (string) $path);
+            self::assertContainedPath($sourceExportRoot, (string) $path);
+            if (self::hashIfFileExists($projectRoot . "/" . $path) !== ($update["current_hash"] ?? null)
+                || self::hashIfFileExists($sourceExportRoot . "/" . $path) !== ($update["source_hash"] ?? null)) {
+                throw new RuntimeException("Update files changed after planning; run the check again: " . $path);
+            }
+        }
+
+        foreach ($report["updates"] as $path => $update) {
+            if ((!FrameworkLock::isFrameworkManagedPath((string) $path) && !self::isRetiredTestUpdate((string) $path, $update))
+                || (!ProjectProfile::hasPanel($projectRoot) && ProjectProfile::isPanelFile((string) $path))) {
+                throw new RuntimeException("Update attempted to modify a project-owned or excluded file: " . $path);
+            }
             $targetPath = $projectRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
             $sourcePath = $sourceExportRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $path);
 
@@ -390,14 +436,66 @@ final class FrameworkUpdater
                 throw new RuntimeException("Unable to create directory for framework update: " . $directory);
             }
 
-            if (!copy($sourcePath, $targetPath)) {
-                throw new RuntimeException("Unable to copy framework-managed file during update: " . $path);
-            }
+            FrameworkUpdateTransaction::replace($targetPath, (string) file_get_contents($sourcePath));
 
             $changes++;
         }
 
         return $changes;
+    }
+
+    private static function isLegacyFrameworkTest(string $path): bool
+    {
+        return in_array($path, array_map(static fn (string $name): string => "tests/" . $name . "Test.php", [
+            "ApplicationSurface", "AssetUrlNormalizer", "AssetUrl", "AuthorizationGate", "DatabaseSnapshot",
+            "DocumentationRoute", "FrameworkLock", "Hardening", "MailAndEdgeHardening", "Operations",
+            "PerformanceAndAi", "PublicRouter", "QueryBuilderSecurity", "RuntimeAi", "VersionManifest", "WorkspaceChrome",
+        ]), true);
+    }
+
+    private static function isRetiredTestUpdate(string $path, array $update): bool
+    {
+        return self::isLegacyFrameworkTest($path) && ($update["action"] ?? "") === "remove"
+            && is_string($update["base_hash"] ?? null) && $update["base_hash"] === ($update["current_hash"] ?? null)
+            && ($update["source_hash"] ?? null) === null;
+    }
+
+    private static function refreshProjectManifest(string $projectRoot): void
+    {
+        if (!ProjectProfile::hasPanel($projectRoot)) { return; }
+        $code = 'define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true); require "bootstrap/common.php"; '
+            . '\\Fnlla\\Php\\Support\\VersionManifest::syncProjectManifest();';
+        $result = ProcessRunner::run([PHP_BINARY, "-r", $code], $projectRoot);
+        if ($result["exit_code"] !== 0) { throw new RuntimeException("Project manifest refresh failed: " . $result["output"]); }
+    }
+
+    private static function assertContainedPath(string $root, string $relative): void
+    {
+        if (!FrameworkLock::isSafeRelativePath($relative)) {
+            throw new RuntimeException("Unsafe framework update path.");
+        }
+        $resolvedRoot = realpath($root);
+        if ($resolvedRoot === false) {
+            throw new RuntimeException("Framework update root does not exist.");
+        }
+        $prefix = rtrim(str_replace("\\", "/", $resolvedRoot), "/") . "/";
+        $candidate = $resolvedRoot;
+        foreach (explode("/", $relative) as $segment) {
+            $candidate .= DIRECTORY_SEPARATOR . $segment;
+            if (is_link($candidate)) {
+                throw new RuntimeException("Framework updates cannot traverse symbolic links: " . $relative);
+            }
+            $resolved = realpath($candidate);
+            if ($resolved !== false) {
+                $normalized = str_replace("\\", "/", $resolved);
+                $inside = DIRECTORY_SEPARATOR === "\\"
+                    ? str_starts_with(strtolower($normalized), strtolower($prefix))
+                    : str_starts_with($normalized, $prefix);
+                if (!$inside) {
+                    throw new RuntimeException("Framework update path leaves its project root: " . $relative);
+                }
+            }
+        }
     }
 
     public static function buildDryRunReport(array $report): array
@@ -658,7 +756,7 @@ final class FrameworkUpdater
 
         $hash = hash_file("sha256", $path);
 
-        if (!is_string($hash) || $hash === "") {
+        if ($hash === false) {
             throw new RuntimeException("Unable to hash project file while checking framework drift: " . $path);
         }
 

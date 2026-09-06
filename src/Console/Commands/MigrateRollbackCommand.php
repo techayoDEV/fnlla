@@ -20,10 +20,9 @@ Purpose:
 
 namespace Fnlla\Php\Console\Commands;
 
-use Fnlla\Php\Console\Command;
-use Fnlla\Php\Database\Migrations\Migrator;
+use Fnlla\Php\Console\MigrationCommand;
 
-final class MigrateRollbackCommand extends Command
+final class MigrateRollbackCommand extends MigrationCommand
 {
     public function name(): string
     {
@@ -37,8 +36,9 @@ final class MigrateRollbackCommand extends Command
 
     public function handle(array $arguments): int
     {
-        $steps = isset($arguments[0]) ? max(1, (int) $arguments[0]) : 1;
-        $migrator = $this->container->make(Migrator::class);
+        $prepared = $this->prepare($arguments, true);
+        if ($prepared === null) { return 0; }
+        [$migrator, $steps] = $prepared;
         $rolledBack = $migrator->rollback($steps);
 
         if ($rolledBack === []) {

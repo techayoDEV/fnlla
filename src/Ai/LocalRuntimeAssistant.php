@@ -163,7 +163,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
 
         $directory = $this->runtimeDirectory($config);
 
-        if ($directory === null || !is_dir($directory)) {
+        if (!is_dir($directory)) {
             return [];
         }
 
@@ -209,7 +209,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         return is_array($payload) ? $payload : [];
     }
 
-    private function runtimeDirectory(array $config): ?string
+    private function runtimeDirectory(array $config): string
     {
         $relativePath = trim((string) ($config["runtime_path"] ?? "resources/fnlla-ai-runtime"));
         $relativePath = str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $relativePath);
@@ -223,7 +223,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         $baseRoot = realpath(base_path()) ?: base_path();
         $targetDirectory = realpath($path) ?: $path;
 
-        if (!str_starts_with($targetDirectory, $baseRoot)) {
+        if ($targetDirectory !== $baseRoot && !str_starts_with($targetDirectory, rtrim($baseRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR)) {
             throw new RuntimeException("Runtime AI path must stay inside the project repository.");
         }
 
@@ -361,7 +361,7 @@ final class LocalRuntimeAssistant implements RuntimeAiProviderInterface
         $value = strtolower($value);
         preg_match_all('/[a-z0-9][a-z0-9_-]{1,}/', $value, $matches);
 
-        return array_values(array_unique($matches[0] ?? []));
+        return array_values(array_unique($matches[0]));
     }
 
     private function safeContext(array $context): array

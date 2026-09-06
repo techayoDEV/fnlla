@@ -27,9 +27,9 @@ use Fnlla\Php\View\View;
 
 abstract class Controller
 {
-    protected function view(string $template, array $data = [], int $status = 200): Response
+    protected function view(string $template, array $data = [], int $status = 200, ?string $layout = "layouts/app"): Response
     {
-        return Response::html(View::render($template, $data), $status);
+        return Response::html(View::render($template, $data, $layout), $status);
     }
 
     protected function redirect(string $location, int $status = 302): Response

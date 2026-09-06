@@ -52,10 +52,10 @@ final class QueueManager
             }
 
             try {
-                $jobClass = $queuedJob["job"] ?? null;
-                $parameters = is_array($queuedJob["payload"] ?? null) ? $queuedJob["payload"] : [];
+                $jobClass = $queuedJob["job"];
+                $parameters = $queuedJob["payload"];
 
-                if (!is_string($jobClass) || !class_exists($jobClass)) {
+                if (!class_exists($jobClass)) {
                     throw new RuntimeException("Queued job class is invalid: " . (string) $jobClass);
                 }
 
@@ -66,17 +66,19 @@ final class QueueManager
                 }
 
                 $job->handle();
-                $this->store->complete($queuedJob);
-                $processed++;
             } catch (Throwable $exception) {
                 $queuedJob["last_error"] = $exception->getMessage();
                 $failedPath = $this->store->fail($queuedJob);
 
                 Logger::exception($exception, [
-                    "queue_job_id" => $queuedJob["id"] ?? null,
+                    "queue_job_id" => $queuedJob["id"],
                     "queue_failed_job_file" => $failedPath,
                 ]);
+                continue;
             }
+            // A failed acknowledgement must not turn a successful side effect into a failed job.
+            $this->store->complete($queuedJob);
+            $processed++;
         }
 
         return $processed;
@@ -84,10 +86,12 @@ final class QueueManager
 
     private function resolveConfiguredStore(): QueueStoreInterface
     {
-        try {
+        if (app()->has(QueueStoreInterface::class)) {
             return app(QueueStoreInterface::class);
-        } catch (RuntimeException) {
-            return new FileQueueStore(storage_path((string) config("queue.connections.file.path", "framework/queue")));
         }
+        if ((string) config("queue.default", "file") !== "file") {
+            throw new RuntimeException("Configured queue store is not registered. Refusing to silently fall back to local files.");
+        }
+        return new FileQueueStore(storage_path((string) config("queue.connections.file.path", "framework/queue")));
     }
 }

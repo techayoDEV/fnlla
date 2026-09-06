@@ -82,6 +82,7 @@ require __DIR__ . "/panel-header.php";
                     <input class="input" id="developer-access-absolute-ttl-minutes" name="developer_access_absolute_ttl_minutes" type="number" min="5" max="720" step="1" value="<?= h((string) $absoluteMinutes) ?>" required>
                   </div>
                 </div>
+                <?php require __DIR__ . "/module-options.php"; ?>
                 <button class="btn btn-primary" type="submit">Save panel settings</button>
               </form>
             </article>

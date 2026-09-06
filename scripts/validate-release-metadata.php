@@ -89,13 +89,9 @@ $requiredContains = [
         'Fionn Bridge',
         'AI_FIONN_ENDPOINT',
     ],
-    'docs/UPGRADE-2.1.1.md' => [
-        '2.1.0 to 2.1.1',
+    'docs/MIGRATION.md' => [
         'project:acceptance --json',
         'ops:backup-plan --verify',
-    ],
-    'docs/UPGRADE-2.1.md' => [
-        '2.0.x to 2.1.0',
         'framework:update --dry-run',
         'ops:backup-plan',
     ],

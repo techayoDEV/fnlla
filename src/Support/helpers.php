@@ -25,7 +25,7 @@ function env(string $key, mixed $default = null): mixed
 {
     $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
 
-    if ($value === false || $value === null) {
+    if ($value === false) {
         return $default;
     }
 
@@ -50,7 +50,7 @@ function framework_detect_environment(): string
         return trim($explicit);
     }
 
-    return is_file(base_path(".env")) ? "production" : "development";
+    return is_file(env_file_path()) ? "production" : "development";
 }
 
 function framework_trusted_proxies(): array
@@ -93,7 +93,7 @@ function framework_request_comes_from_trusted_proxy(array $server): bool
             [$network, $prefixLength] = array_pad(explode("/", $trustedProxy, 2), 2, "");
             $networkPacked = inet_pton(trim($network));
             $addressPacked = inet_pton($remoteAddr);
-            $prefix = is_numeric($prefixLength) ? (int) $prefixLength : -1;
+            $prefix = preg_match('/^[0-9]+$/D', $prefixLength) === 1 ? (int) $prefixLength : -1;
 
             if ($networkPacked === false || $addressPacked === false || strlen($networkPacked) !== strlen($addressPacked)) {
                 continue;
@@ -143,19 +143,24 @@ function framework_trusted_forwarded_ip(array $server, array $headers = []): ?st
 
     $forwardedFor = $headers["x-forwarded-for"] ?? $server["HTTP_X_FORWARDED_FOR"] ?? "";
 
-    if (!is_string($forwardedFor) || trim($forwardedFor) === "") {
+    if (!is_string($forwardedFor) || trim($forwardedFor) === "" || strlen($forwardedFor) > 8192) {
         return null;
     }
 
-    foreach (explode(",", $forwardedFor) as $candidate) {
+    $chain = explode(",", $forwardedFor);
+    if (count($chain) > 64) { return null; }
+    $lastTrusted = null;
+    // Only the suffix supplied by trusted proxies is authoritative, never a client-supplied prefix.
+    foreach (array_reverse($chain) as $candidate) {
         $candidate = trim($candidate);
-
-        if (filter_var($candidate, FILTER_VALIDATE_IP) !== false) {
+        if (filter_var($candidate, FILTER_VALIDATE_IP) === false) { return null; }
+        if (!framework_request_comes_from_trusted_proxy(["REMOTE_ADDR" => $candidate])) {
             return $candidate;
         }
+        $lastTrusted = $candidate;
     }
 
-    return null;
+    return $lastTrusted;
 }
 
 function framework_request_ip(array $server, array $headers = []): string
@@ -168,16 +173,10 @@ function app_request_is_secure(): bool
     if (framework_request_comes_from_trusted_proxy($_SERVER)) {
         $forwardedProto = $_SERVER["HTTP_X_FORWARDED_PROTO"] ?? null;
 
-        if (is_string($forwardedProto) && trim($forwardedProto) !== "") {
-            $firstProto = strtolower(trim(explode(",", $forwardedProto)[0] ?? ""));
-
-            if ($firstProto === "https") {
-                return true;
-            }
-
-            if ($firstProto === "http") {
-                return false;
-            }
+        if ($forwardedProto !== null) {
+            // Trusted ingress must overwrite this header with one canonical scheme.
+            // Ambiguous chains cannot establish transport security.
+            return is_string($forwardedProto) && strtolower(trim($forwardedProto)) === "https";
         }
 
         if (strtolower((string) ($_SERVER["HTTP_X_FORWARDED_SSL"] ?? "")) === "on") {
@@ -259,6 +258,12 @@ function load_config_directory(string $directory): array
         $config = require $cachedConfig;
 
         if (is_array($config)) {
+            // Credentials must not outlive a password rotation in the bootstrap cache.
+            $accessConfigPath = rtrim($directory, "\\/") . DIRECTORY_SEPARATOR . "developer_access.php";
+            if (isset($config["developer_access"]) && is_file($accessConfigPath)) {
+                $accessConfig = require $accessConfigPath;
+                $config["developer_access"]["users"] = is_array($accessConfig) ? (string) ($accessConfig["users"] ?? "") : "";
+            }
             return $config;
         }
     }
@@ -288,6 +293,9 @@ function load_config_directory(string $directory): array
 
 function framework_cache_path(string $path = ""): string
 {
+    if (defined("FNLLA_CACHE_ROOT")) {
+        return FNLLA_CACHE_ROOT . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : "");
+    }
     return storage_path("framework/cache" . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : ""));
 }
 
@@ -316,35 +324,11 @@ function framework_performance_baseline_path(): string
     return framework_cache_path("performance-baseline.json");
 }
 
-function framework_ai_context_path(): string
-{
-    return framework_cache_path("ai-context.json");
-}
 
-function framework_ai_review_pack_path(): string
-{
-    return framework_cache_path("ai-review-pack.json");
-}
 
-function framework_ai_upgrade_brief_path(): string
-{
-    return framework_cache_path("ai-upgrade-brief.md");
-}
 
-function framework_app_map_path(): string
-{
-    return framework_cache_path("app-map.json");
-}
 
-function framework_upgrade_plan_path(): string
-{
-    return framework_cache_path("upgrade-plan.json");
-}
 
-function framework_technical_debt_report_path(): string
-{
-    return framework_cache_path("technical-debt-report.json");
-}
 
 function base_path(string $path = ""): string
 {
@@ -353,12 +337,22 @@ function base_path(string $path = ""): string
 
 function public_path(string $path = ""): string
 {
+    $relative = str_replace("\\", "/", ltrim($path, "\\/"));
+    if (defined("FNLLA_SHARED_PUBLIC_ROOT") && ($relative === "uploads" || str_starts_with($relative, "uploads/"))) {
+        return FNLLA_SHARED_PUBLIC_ROOT . "/" . $relative;
+    }
     return PUBLIC_ROOT . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : "");
 }
 
 function storage_path(string $path = ""): string
 {
-    return APP_ROOT . DIRECTORY_SEPARATOR . "storage" . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : "");
+    $root = defined("FNLLA_STORAGE_ROOT") ? FNLLA_STORAGE_ROOT : APP_ROOT . DIRECTORY_SEPARATOR . "storage";
+    return $root . ($path !== "" ? DIRECTORY_SEPARATOR . ltrim($path, "\\/") : "");
+}
+
+function env_file_path(): string
+{
+    return defined("FNLLA_ENV_PATH") ? FNLLA_ENV_PATH : base_path(".env");
 }
 
 function url(string $path = ""): string
@@ -377,6 +371,9 @@ function asset(string $path = ""): string
 {
     $normalizedPath = ltrim(str_replace("\\", "/", $path), "/");
     $assetBaseUrl = (string) config("app.asset_url", "");
+    if ($assetBaseUrl === "" && defined("FNLLA_RELEASE_ASSET_URL") && !str_starts_with($normalizedPath, "uploads/")) {
+        $assetBaseUrl = FNLLA_RELEASE_ASSET_URL;
+    }
     $assetUrl = ($assetBaseUrl !== "" ? $assetBaseUrl : "") . "/" . $normalizedPath;
     $manifestPath = framework_asset_manifest_path();
 
@@ -487,10 +484,6 @@ function project_brand_logo_asset(?string $path = null): ?string
     return asset($normalizedPath);
 }
 
-function project_leadership(string $context = "admin"): array
-{
-    return (new \Fnlla\Php\Support\ProjectLeadership())->state($context);
-}
 
 function route(string $name, array $parameters = []): string
 {
@@ -558,30 +551,34 @@ function framework_start_session_if_needed(): void
     }
 
     if (headers_sent()) {
-        $_SESSION = is_array($_SESSION ?? null) ? $_SESSION : [];
-        framework_bootstrap_session_state();
-        return;
+        throw new RuntimeException("Cannot start a persistent session after response output.");
     }
 
     $sessionConfig = config("session", []);
     $sessionPath = (string) config("app.session_path");
-
-    if (!is_dir($sessionPath)) {
-        mkdir($sessionPath, 0777, true);
+    $driver = (string) ($sessionConfig["driver"] ?? "file");
+    if (!in_array($driver, ["file", "redis"], true)) {
+        throw new RuntimeException("Unsupported session driver.");
+    }
+    if ($driver === "file") {
+        if (!is_dir($sessionPath) && !mkdir($sessionPath, 0700, true) && !is_dir($sessionPath)) {
+            throw new RuntimeException("Cannot create session storage.");
+        }
+        if (ini_set("session.save_handler", "files") === false) { throw new RuntimeException("Cannot configure file session storage."); }
+        session_save_path($sessionPath);
     }
 
-    session_save_path($sessionPath);
     session_name((string) ($sessionConfig["name"] ?? "fnlla_session"));
     ini_set("session.use_strict_mode", !empty($sessionConfig["strict_mode"]) ? "1" : "0");
     ini_set("session.use_only_cookies", !empty($sessionConfig["use_only_cookies"]) ? "1" : "0");
     ini_set("session.cookie_httponly", !empty($sessionConfig["http_only"]) ? "1" : "0");
     ini_set("session.cookie_secure", !empty($sessionConfig["secure"]) ? "1" : "0");
     ini_set("session.gc_maxlifetime", (string) ($sessionConfig["cookie_lifetime"] ?? 7200));
-    if ((string) ($sessionConfig["driver"] ?? "file") === "redis") {
-        session_set_save_handler(new RedisSessionHandler(
+    if ($driver === "redis") {
+        if (!session_set_save_handler(new RedisSessionHandler(
             (array) ($sessionConfig["redis"] ?? []),
             (int) ($sessionConfig["cookie_lifetime"] ?? 7200)
-        ), true);
+        ), true)) { throw new RuntimeException("Cannot configure Redis session storage."); }
     }
 
     session_set_cookie_params([
@@ -592,7 +589,9 @@ function framework_start_session_if_needed(): void
         "httponly" => !empty($sessionConfig["http_only"]),
         "samesite" => (string) ($sessionConfig["same_site"] ?? "Lax"),
     ]);
-    session_start();
+    if (!session_start()) {
+        throw new RuntimeException("Cannot start persistent session storage.");
+    }
     framework_bootstrap_session_state();
 }
 
@@ -606,28 +605,44 @@ function framework_bootstrap_session_state(): void
 
     $_SESSION = is_array($_SESSION ?? null) ? $_SESSION : [];
     $sessionConfig = config("session", []);
+    $now = time();
+    $persistent = session_status() === PHP_SESSION_ACTIVE;
+    $meta = $_SESSION["_meta"] ?? null;
+    $started = is_array($meta) ? ($meta["started_at"] ?? null) : null;
+    // Old sessions have no activity timestamp; their last rotation is a bounded fallback.
+    $lastActivity = is_array($meta) ? ($meta["last_activity_at"] ?? $meta["last_regenerated_at"] ?? null) : null;
+    $idleSeconds = max(1, (int) ($sessionConfig["lifetime_minutes"] ?? 120)) * 60;
+    $absoluteSeconds = max(1, (int) ($sessionConfig["absolute_lifetime_minutes"] ?? 720)) * 60;
+    if ($persistent && (!is_int($started) || !is_int($lastActivity)
+        || $started <= 0 || $lastActivity < $started || $started > $now || $lastActivity > $now
+        || $now - $lastActivity >= $idleSeconds || $now - $started >= $absoluteSeconds)) {
+        // Expiry revokes every identity domain and CSRF state before accepting this request.
+        $_SESSION = [];
+    }
 
     if (!isset($_SESSION["_meta"]) || !is_array($_SESSION["_meta"])) {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_regenerate_id(true);
+        if ($persistent && !session_regenerate_id(true)) {
+            throw new RuntimeException("Session identifier could not be initialized.");
         }
 
         $_SESSION["_meta"] = [
-            "started_at" => time(),
-            "last_regenerated_at" => time(),
+            "started_at" => $now,
+            "last_regenerated_at" => $now,
         ];
     } else {
         $rotationWindow = max(1, (int) ($sessionConfig["rotate_after_minutes"] ?? 30)) * 60;
         $lastRegeneratedAt = (int) ($_SESSION["_meta"]["last_regenerated_at"] ?? 0);
 
-        if ($lastRegeneratedAt <= 0 || (time() - $lastRegeneratedAt) >= $rotationWindow) {
-            if (session_status() === PHP_SESSION_ACTIVE) {
-                session_regenerate_id(true);
+        if ($lastRegeneratedAt <= 0 || $lastRegeneratedAt > $now || ($now - $lastRegeneratedAt) >= $rotationWindow) {
+            if ($persistent && !session_regenerate_id(true)) {
+                $_SESSION = [];
+                throw new RuntimeException("Session identifier could not be rotated.");
             }
 
-            $_SESSION["_meta"]["last_regenerated_at"] = time();
+            $_SESSION["_meta"]["last_regenerated_at"] = $now;
         }
     }
+    $_SESSION["_meta"]["last_activity_at"] = $now;
 
     /*
     Flash data normally moves from `_flash` to `_flash_old` at the beginning of
@@ -765,7 +780,7 @@ function verify_csrf_token(?string $token): bool
 
     $knownToken = csrf_token();
 
-    return is_string($knownToken) && hash_equals($knownToken, $token);
+    return hash_equals($knownToken, $token);
 }
 
 function auth(): \Fnlla\Php\Auth\AuthManager
@@ -788,30 +803,10 @@ function gate(): \Fnlla\Php\Auth\Authorization\Gate
     return app(\Fnlla\Php\Auth\Authorization\Gate::class);
 }
 
-function maintenance_access(): \Fnlla\Php\Maintenance\MaintenanceAccessManager
-{
-    return app(\Fnlla\Php\Maintenance\MaintenanceAccessManager::class);
-}
 
-function developer_access(): \Fnlla\Php\Maintenance\DeveloperAccessManager
-{
-    return app(\Fnlla\Php\Maintenance\DeveloperAccessManager::class);
-}
 
-function customer_access(): \Fnlla\Php\Maintenance\CustomerAccessManager
-{
-    return app(\Fnlla\Php\Maintenance\CustomerAccessManager::class);
-}
 
-function developer_activity(): \Fnlla\Php\Maintenance\DeveloperActivityLog
-{
-    return app(\Fnlla\Php\Maintenance\DeveloperActivityLog::class);
-}
 
-function developer_control(): \Fnlla\Php\Maintenance\DeveloperControlManager
-{
-    return app(\Fnlla\Php\Maintenance\DeveloperControlManager::class);
-}
 
 function cache(): \Fnlla\Php\Cache\CacheStoreInterface
 {
@@ -848,34 +843,7 @@ function mailer(): \Fnlla\Php\Mail\Mailer
     return app(\Fnlla\Php\Mail\Mailer::class);
 }
 
-function framework_runtime_ai_provider(?Container $container = null): \Fnlla\Php\Ai\RuntimeAiProviderInterface
-{
-    $driver = trim((string) config("ai.runtime.driver", "local")) ?: "local";
-    $providers = (array) config("ai.runtime.providers", []);
-    $provider = (array) ($providers[$driver] ?? []);
-    $class = (string) ($provider["class"] ?? \Fnlla\Php\Ai\LocalRuntimeAssistant::class);
 
-    if ($class === "" || !class_exists($class) || !is_subclass_of($class, \Fnlla\Php\Ai\RuntimeAiProviderInterface::class)) {
-        throw new RuntimeException("Runtime AI provider is not configured for driver: " . $driver);
-    }
-
-    if ($container instanceof Container && $container->has($class)) {
-        return $container->make($class);
-    }
-
-    return new $class();
-}
-
-function runtime_ai(): \Fnlla\Php\Ai\RuntimeAiProviderInterface
-{
-    $container = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
-
-    if ($container instanceof Container && $container->has(\Fnlla\Php\Ai\RuntimeAiProviderInterface::class)) {
-        return $container->make(\Fnlla\Php\Ai\RuntimeAiProviderInterface::class);
-    }
-
-    return framework_runtime_ai_provider($container instanceof Container ? $container : null);
-}
 
 function queue(): \Fnlla\Php\Queue\QueueManager
 {
@@ -923,4 +891,8 @@ function stream_request_body_to_file(string $destination, int $maxBytes): array
         "bytes" => $bytes,
         "sha256" => hash_file("sha256", $destination),
     ];
+}
+
+if (is_file(__DIR__ . '/optional_helpers.php')) {
+    require_once __DIR__ . '/optional_helpers.php';
 }

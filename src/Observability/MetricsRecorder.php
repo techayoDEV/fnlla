@@ -48,7 +48,8 @@ final class MetricsRecorder
                 $metrics["route_counts"] = $this->incrementMap((array) ($metrics["route_counts"] ?? []), $routeName);
             }
 
-            $analyticsEnabled = (bool) config("observability.analytics.enabled", true);
+            $analyticsEnabled = \Fnlla\Php\Support\DeveloperModules::enabled("analytics")
+                && (bool) config("observability.analytics.enabled", true);
             $analyticsSampled = $analyticsEnabled && $this->withinSampleRate();
             $routeKey = $this->routeKey($request, $routeName);
 
@@ -148,7 +149,9 @@ final class MetricsRecorder
 
     public function recordBehaviorEvent(array $payload): void
     {
-        if (!$this->enabled() || !(bool) config("observability.analytics.enabled", true) || !(bool) config("observability.heatmap.enabled", true)) {
+        if (!\Fnlla\Php\Support\DeveloperModules::enabled("analytics")
+            || !\Fnlla\Php\Support\DeveloperModules::enabled("heatmap")
+            || !$this->enabled() || !(bool) config("observability.analytics.enabled", true) || !(bool) config("observability.heatmap.enabled", true)) {
             return;
         }
 
@@ -424,7 +427,7 @@ final class MetricsRecorder
         foreach ($reserved as $reservedPath) {
             $reservedPath = "/" . trim($reservedPath, "/");
 
-            if ($reservedPath === "/" || $reservedPath === "") {
+            if ($reservedPath === "/") {
                 continue;
             }
 

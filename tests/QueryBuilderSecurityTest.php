@@ -41,4 +41,20 @@ final class QueryBuilderSecurityTest extends TestCase
         $this->expectException(RuntimeException::class);
         $builder->where("email", "or 1=1 --", "x");
     }
+
+    public function testNullComparisonsDoNotBindOperatorsAsValues(): void
+    {
+        $builder = (new QueryBuilder($this->pdo, "users"))->where("deleted_at", null)
+            ->where("email", "!=", null)->where("name", "Ada");
+        [$sql, $bindings] = (new \ReflectionMethod($builder, "compileSelect"))->invoke($builder);
+        self::assertStringContainsString("`deleted_at` IS NULL", $sql);
+        self::assertStringContainsString("`email` IS NOT NULL", $sql);
+        self::assertSame(["where_0" => "Ada"], $bindings);
+    }
+
+    public function testInvalidNullOrderingComparisonIsRejected(): void
+    {
+        $this->expectException(RuntimeException::class);
+        (new QueryBuilder($this->pdo, "users"))->where("id", ">", null);
+    }
 }

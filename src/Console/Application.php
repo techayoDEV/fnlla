@@ -42,6 +42,19 @@ final class Application
         $name = $argv[1] ?? "list";
         $arguments = array_slice($argv, 2);
 
+        if (in_array($name, ["--help", "-h"], true) || ($name === "help" && $arguments === [])) {
+            $this->listCommands();
+            return 0;
+        }
+        if ($name === "help") {
+            $name = (string) array_shift($arguments);
+            if ($arguments !== []) {
+                fwrite(STDERR, "Usage: php fnlla help <command>" . PHP_EOL);
+                return 1;
+            }
+            $arguments = ["--help"];
+        }
+
         if ($name === "list") {
             $this->listCommands();
 
@@ -58,6 +71,13 @@ final class Application
         }
 
         try {
+            foreach ($arguments as $argument) {
+                if ($argument === "--") { break; }
+                if (in_array($argument, ["--help", "-h"], true)) {
+                    $command->printHelp();
+                    return 0;
+                }
+            }
             return $command->handle($arguments);
         } catch (Throwable $exception) {
             fwrite(STDERR, "Command failed: " . $exception->getMessage() . PHP_EOL);

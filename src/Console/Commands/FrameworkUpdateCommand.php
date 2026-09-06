@@ -49,7 +49,9 @@ final class FrameworkUpdateCommand extends Command
             return 0;
         }
 
-        $projectRoot = rtrim((string) base_path(), "\\/");
+        $projectRoot = $options["project"] !== null ? realpath($options["project"]) : base_path();
+        if ($projectRoot === false || !is_dir($projectRoot)) { throw new RuntimeException("Project directory does not exist."); }
+        $projectRoot = rtrim($projectRoot, "\\/");
         $currentLock = FrameworkLock::load($projectRoot);
         $appName = (string) ($currentLock["framework_base"]["application"]["name"] ?? config("app.name", "FNLLA Project"));
 
@@ -88,6 +90,7 @@ final class FrameworkUpdateCommand extends Command
             "help" => false,
             "json" => false,
             "release_tag" => null,
+            "project" => null,
         ];
 
         for ($index = 0, $count = count($arguments); $index < $count; $index++) {
@@ -99,6 +102,16 @@ final class FrameworkUpdateCommand extends Command
 
             if ($argument === "--apply") {
                 $options["apply"] = true;
+                continue;
+            }
+
+            if ($argument === "--project" || str_starts_with($argument, "--project=")) {
+                if ($options["project"] !== null) { throw new RuntimeException("Duplicate --project option."); }
+                $path = $argument === "--project" ? (string) ($arguments[++$index] ?? "") : substr($argument, 10);
+                if ($path === "" || str_starts_with($path, "--") || str_contains($path, "\0")) {
+                    throw new RuntimeException("--project requires a project directory.");
+                }
+                $options["project"] = $path;
                 continue;
             }
 
@@ -170,6 +183,7 @@ final class FrameworkUpdateCommand extends Command
 
     private function printUsage(): void
     {
+        $this->line("Use --project PATH to run the current updater against an older project; release sources remain official GitHub only.");
         $this->line("Usage: php fnlla framework:update --check [--release-tag v1.0.x] [--json]");
         $this->line("   or: php fnlla framework:update --dry-run [--release-tag v1.0.x] [--json]");
         $this->line("   or: php fnlla framework:update --apply [--release-tag v1.0.x] [--json]");

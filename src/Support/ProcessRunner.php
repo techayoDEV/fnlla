@@ -75,7 +75,7 @@ final class ProcessRunner
         while (true) {
             $status = proc_get_status($process);
 
-            if (!($status["running"] ?? false)) {
+            if (!$status["running"]) {
                 break;
             }
 
@@ -85,7 +85,7 @@ final class ProcessRunner
                 usleep(100000);
                 $status = proc_get_status($process);
 
-                if ($status["running"] ?? false) {
+                if ($status["running"]) {
                     proc_terminate($process, 9);
                 }
 
@@ -103,7 +103,7 @@ final class ProcessRunner
         $output = trim($stdout . ($stderr !== "" ? PHP_EOL . $stderr : ""));
 
         return [
-            "exit_code" => $timedOut ? 124 : (is_int($exitCode) ? $exitCode : 1),
+            "exit_code" => $timedOut ? 124 : $exitCode,
             "stdout" => trim($stdout),
             "stderr" => trim($stderr),
             "output" => $timedOut
@@ -177,7 +177,7 @@ final class ProcessRunner
     }
 
     /**
-     * @param string[] $command
+     * @param array<array-key, mixed> $command Raw arguments must be checked before process execution.
      */
     private static function assertCommandVector(array $command): void
     {
@@ -209,7 +209,7 @@ final class ProcessRunner
     {
         $path = tempnam(sys_get_temp_dir(), "fnlla-process-" . $label . "-");
 
-        if (!is_string($path) || $path === "") {
+        if ($path === false) {
             throw new RuntimeException("Unable to create process output buffer.");
         }
 

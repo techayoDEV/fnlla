@@ -12,6 +12,16 @@ Purpose:
 ===============================================================================
 */
 
+use Fnlla\Php\Console\Commands\AiAskCommand;
+use Fnlla\Php\Console\Commands\AiBriefCommand;
+use Fnlla\Php\Console\Commands\AiExplainLogCommand;
+use Fnlla\Php\Console\Commands\AiTriageCommand;
+use Fnlla\Php\Console\Commands\BackupPlanCommand;
+use Fnlla\Php\Console\Commands\ConfigDoctorCommand;
+use Fnlla\Php\Console\Commands\DeveloperInstallStorageCommand;
+use Fnlla\Php\Console\Commands\DeveloperRecoveryLinkCommand;
+use Fnlla\Php\Console\Commands\ReleaseManifestCommand;
+use Fnlla\Php\Console\Commands\TechDebtUpdateCommand;
 use Fnlla\Php\Console\Commands\AiContextCommand;
 use Fnlla\Php\Console\Commands\AiProvidersCommand;
 use Fnlla\Php\Console\Commands\AiRedactCommand;
@@ -58,6 +68,16 @@ if (in_array($_SERVER["argv"][1] ?? "", ["fnlla-runtime:sync", "fnlla-runtime:va
 $container = require __DIR__ . DIRECTORY_SEPARATOR . "bootstrap" . DIRECTORY_SEPARATOR . "console.php";
 
 $console = $container->make(\Fnlla\Php\Console\Application::class);
+$console->register(AiAskCommand::class);
+$console->register(AiBriefCommand::class);
+$console->register(AiExplainLogCommand::class);
+$console->register(AiTriageCommand::class);
+$console->register(BackupPlanCommand::class);
+$console->register(ConfigDoctorCommand::class);
+$console->register(DeveloperInstallStorageCommand::class);
+$console->register(DeveloperRecoveryLinkCommand::class);
+$console->register(ReleaseManifestCommand::class);
+$console->register(TechDebtUpdateCommand::class);
 $console->register(AiContextCommand::class);
 $console->register(AiProvidersCommand::class);
 $console->register(AiRedactCommand::class);
@@ -96,5 +116,9 @@ $console->register(UpgradeCheckCommand::class);
 $console->register(UpgradePlanCommand::class);
 $console->register(VersionStatusCommand::class);
 $console->register(VersionSyncCommand::class);
+
+foreach (["MakeController", "MakeMiddleware", "MakeCommand", "MakeFactory", "MakeSeeder", "MakeMigration"] as $command) {
+    $console->register("Fnlla\\Php\\Console\\Commands\\" . $command . "Command");
+}
 
 exit($console->run($_SERVER["argv"] ?? []));

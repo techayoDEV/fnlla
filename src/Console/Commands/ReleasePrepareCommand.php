@@ -15,9 +15,8 @@ Purpose:
 
 namespace Fnlla\Php\Console\Commands;
 
-use Fnlla\Php\Cache\CacheStoreInterface;
 use Fnlla\Php\Console\Command;
-use Fnlla\Php\Observability\MetricsRecorder;
+use Fnlla\Php\Console\Input;
 use Fnlla\Php\Support\AiContextBuilder;
 use Fnlla\Php\Support\AppMapBuilder;
 use Fnlla\Php\Support\ProcessRunner;
@@ -38,15 +37,28 @@ final class ReleasePrepareCommand extends Command
 
     public function handle(array $arguments): int
     {
-        $json = in_array("--json", $arguments, true);
-        $skipTests = in_array("--skip-tests", $arguments, true);
-        $major = in_array("--major", $arguments, true);
-        $target = $this->optionValue($arguments, "--target") ?? $this->currentVersionTarget();
+        $input = Input::parse($arguments, ["json" => false, "skip-tests" => false, "major" => false, "target" => true]);
+        if ($input->option("help", false)) { $this->printHelp(); return 0; }
+        $json = $input->option("json", false);
+        $skipTests = $input->option("skip-tests", false);
+        $major = $input->option("major", false);
+        $target = $input->option("target", $this->currentVersionTarget());
         $steps = [];
+
+        // Documentation checks apply to every maintainer release, even with --skip-tests.
+        if (!$this->isProject()) {
+            foreach ($this->documentationCommands() as $label => $command) {
+                $result = ProcessRunner::run($command, base_path(), 300);
+                $steps[] = ["label" => $label, "exit_code" => $result["exit_code"], "ok" => $result["exit_code"] === 0];
+                if ($result["exit_code"] !== 0) {
+                    return $this->finish($json, $steps, [], 1, $result["output"]);
+                }
+            }
+        }
 
         if (!$skipTests) {
             foreach ($this->validationCommands($major, $target) as $label => $command) {
-                $result = ProcessRunner::run($command, base_path(), 300);
+                $result = ProcessRunner::run($command, base_path(), $label === "tests" ? 1800 : 300);
                 $steps[] = [
                     "label" => $label,
                     "exit_code" => $result["exit_code"],
@@ -58,8 +70,6 @@ final class ReleasePrepareCommand extends Command
                 }
             }
         }
-
-        $this->clearRuntimeResidue();
 
         $builder = $this->container->make(ReleaseArtifactBuilder::class);
         $artifacts = [
@@ -80,13 +90,15 @@ final class ReleasePrepareCommand extends Command
 
     private function finish(bool $json, array $steps, array $artifacts, int $exitCode, string $error = ""): int
     {
+        $tested = count(array_filter($steps, static fn (array $step): bool => $step["label"] === "tests" && $step["ok"])) > 0;
         $payload = [
             "schema" => "fnlla.release_prepare.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
             "ok" => $exitCode === 0,
             "steps" => $steps,
             "artifacts" => $artifacts,
-            "risk" => $this->riskScore($steps, $artifacts),
+            "validation" => $exitCode !== 0 ? "failed" : ($tested ? "passed" : "skipped"),
+            "risk" => $exitCode !== 0 ? "high" : $this->riskScore($steps, $artifacts),
             "error" => $error,
         ];
 
@@ -105,7 +117,9 @@ final class ReleasePrepareCommand extends Command
             $this->error($error);
         }
 
-        $this->line($exitCode === 0 ? "Release preparation passed." : "Release preparation failed.");
+        $this->line($exitCode !== 0 ? "Release preparation failed." : ($tested
+            ? "Local release validation passed; publication acceptance must be verified separately."
+            : "Artifacts prepared; validation skipped. This is not a release-readiness result."));
 
         return $exitCode;
     }
@@ -114,6 +128,9 @@ final class ReleasePrepareCommand extends Command
     {
         if (count(array_filter($steps, static fn (array $step): bool => !($step["ok"] ?? false))) > 0) {
             return "high";
+        }
+        if (count(array_filter($steps, static fn (array $step): bool => $step["label"] === "tests" && $step["ok"])) === 0) {
+            return "unknown";
         }
 
         $upgrade = $artifacts["major"]["upgrade_plan"] ?? null;
@@ -127,7 +144,9 @@ final class ReleasePrepareCommand extends Command
     private function validationCommands(bool $major, string $target): array
     {
         $commands = [
-            "tests" => [PHP_BINARY, base_path("scripts/test.php"), "--suite", "all"],
+            "tests" => $this->isProject()
+                ? [PHP_BINARY, base_path("scripts/test.php"), "--suite", "all"]
+                : [PHP_BINARY, base_path("vendor/phpunit/phpunit/phpunit"), "--testsuite", "framework", "--fail-on-skipped"],
             "lint" => [PHP_BINARY, base_path("scripts/lint.php")],
             "runtime contract" => [PHP_BINARY, base_path("scripts/validate-fnlla-runtime.php")],
             "version manifest" => [PHP_BINARY, base_path("scripts/validate-version-manifest.php")],
@@ -136,14 +155,33 @@ final class ReleasePrepareCommand extends Command
             "technical debt snapshot" => [PHP_BINARY, base_path("fnlla"), "tech-debt:update", "--check"],
         ];
 
+        if ($this->isProject()) {
+            unset($commands["release metadata"], $commands["technical debt snapshot"]);
+            $commands["project acceptance"] = [PHP_BINARY, base_path("fnlla"), "project:acceptance", "--json"];
+            $commands["project configuration"] = [PHP_BINARY, base_path("fnlla"), "config:doctor", "--json"];
+        }
+
         if ($major) {
-            $commands["docs in sync"] = [PHP_BINARY, base_path("scripts/build-docs.php"), "--check"];
             $commands["security posture"] = [PHP_BINARY, base_path("fnlla"), "security:audit", "--strict", "--json"];
             $commands["upgrade readiness"] = [PHP_BINARY, base_path("fnlla"), "upgrade:check", "--target", $target, "--json"];
             $commands["application map"] = [PHP_BINARY, base_path("fnlla"), "app:map", "--json"];
         }
 
         return $commands;
+    }
+
+    private function documentationCommands(): array
+    {
+        return [
+            "docs in sync" => [PHP_BINARY, base_path("scripts/build-docs.php"), "--check"],
+            "docs hygiene" => [PHP_BINARY, base_path("scripts/check-docs.php")],
+            "modernization ledger" => [PHP_BINARY, base_path("scripts/check-modernization.php")],
+        ];
+    }
+
+    private function isProject(): bool
+    {
+        return is_file(base_path(".fnlla/framework-lock.json")) || is_file(base_path(".fnlla/ui-distribution"));
     }
 
     private function currentVersionTarget(): string
@@ -167,44 +205,6 @@ final class ReleasePrepareCommand extends Command
             if (is_array($artifact)) {
                 $this->printArtifacts($artifact, $label);
             }
-        }
-    }
-
-    private function clearRuntimeResidue(): void
-    {
-        foreach ([framework_config_cache_path(), framework_route_cache_path(), framework_asset_manifest_path(), framework_preload_path(), framework_technical_debt_report_path()] as $path) {
-            if (is_file($path)) {
-                unlink($path);
-            }
-        }
-
-        $this->container->make(CacheStoreInterface::class)->clear();
-        $this->container->make(MetricsRecorder::class)->clear();
-
-        foreach (["storage/framework/cache", "storage/framework/sessions", "storage/framework/queue", "storage/logs"] as $directory) {
-            $this->clearRuntimeDirectory(base_path($directory));
-        }
-    }
-
-    private function clearRuntimeDirectory(string $directory): void
-    {
-        if (!is_dir($directory)) {
-            return;
-        }
-
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($iterator as $item) {
-            $path = $item->getPathname();
-
-            if ($item->getBasename() === ".gitignore") {
-                continue;
-            }
-
-            $item->isDir() ? rmdir($path) : unlink($path);
         }
     }
 
@@ -256,18 +256,8 @@ final class ReleasePrepareCommand extends Command
         ];
     }
 
-    private function optionValue(array $arguments, string $name): ?string
+    public function usage(): string
     {
-        foreach ($arguments as $index => $argument) {
-            if ($argument === $name && isset($arguments[$index + 1])) {
-                return (string) $arguments[$index + 1];
-            }
-
-            if (str_starts_with((string) $argument, $name . "=")) {
-                return substr((string) $argument, strlen($name) + 1);
-            }
-        }
-
-        return null;
+        return "release:prepare [--json] [--skip-tests] [--major] [--target=VERSION] [--help]";
     }
 }

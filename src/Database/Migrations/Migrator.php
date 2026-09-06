@@ -25,7 +25,7 @@ use RuntimeException;
 
 final class Migrator
 {
-    public function __construct(private DatabaseManager $database)
+    public function __construct(private DatabaseManager $database, private ?string $directory = null)
     {
     }
 
@@ -48,6 +48,8 @@ final class Migrator
             if (!$migration instanceof Migration) {
                 throw new RuntimeException("Migration file must return a Migration instance: " . $file);
             }
+
+            $migration->useDatabase($this->database);
 
             $this->runMigrationStep($migration, function () use ($migration, $migrationName, $batch): void {
                 $migration->up();
@@ -90,7 +92,10 @@ final class Migrator
 
         foreach ($this->rollbackBatches($steps) as $batch) {
             foreach ($this->ranInBatch($batch) as $migrationName) {
-                $file = base_path("database/migrations/" . $migrationName);
+                if (basename($migrationName) !== $migrationName) {
+                    throw new RuntimeException("Invalid stored migration name.");
+                }
+                $file = ($this->directory ?? base_path("database/migrations")) . "/" . $migrationName;
 
                 if (!is_file($file)) {
                     throw new RuntimeException("Migration file not found for rollback: " . $migrationName);
@@ -101,6 +106,8 @@ final class Migrator
                 if (!$migration instanceof Migration) {
                     throw new RuntimeException("Migration file must return a Migration instance: " . $file);
                 }
+
+                $migration->useDatabase($this->database);
 
                 $this->runMigrationStep($migration, function () use ($migration, $migrationName): void {
                     $migration->down();
@@ -157,7 +164,7 @@ final class Migrator
 
     private function migrationFiles(): array
     {
-        $files = glob(base_path("database/migrations/*.php"));
+        $files = glob(($this->directory ?? base_path("database/migrations")) . "/*.php");
 
         if ($files === false) {
             return [];

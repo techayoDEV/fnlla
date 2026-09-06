@@ -54,7 +54,7 @@ Before opening a public issue, check:
 - `docs/README.md` for the complete documentation map
 - `docs/STARTING-A-NEW-PROJECT.md` for the supported export workflow
 - `docs/PRODUCTION-CHECKLIST.md` for production deployment responsibility
-- `docs/UPGRADE-2.1.1.md` for the current patch-line upgrade sequence
+- `docs/MIGRATION.md` for consolidated upgrade and compatibility guidance
 - `BUGLOG.md` for known framework-level defects, if any are currently tracked
 
 When reporting a confirmed bug, include the FNLLA version, PHP version, command

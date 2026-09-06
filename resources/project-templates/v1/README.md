@@ -17,7 +17,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - the opt-in Fionn runtime AI bridge contract, disabled by default
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
-- root legal and policy files: `LICENSE.md`, `SUPPORT.md`, `TRADEMARKS.md`
+- root license: `LICENSE.md`; framework references: `docs/framework/SUPPORT.md`, `docs/framework/TRADEMARKS.md`
 - an application base with public pages for home, about and services
 - an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
@@ -100,6 +100,20 @@ It intentionally leaves behind:
 - the maintainer docs builder `scripts/build-docs.php`
 - repository governance and contribution files such as `.git/`, `.github/`, `CODE_OF_CONDUCT.md` and `SECURITY.md`
 - local runtime residue such as logs, cache entries, queue files, session files and integrated UI surface guard state
+- maintainer publishing, ecosystem audit, release-metadata validation and export benchmarking scripts
+- the unused FNLLA starter logo and individual icon SVG files
+
+The export is an explicit file manifest maintained in
+`resources/project-templates/v1/export-files.json` in the upstream repository.
+New framework files must be deliberately added to that manifest. Storage and
+uploads are generated empty, regardless of ignored files in the source checkout.
+
+The `.fnlla/ui-distribution` file selects `sprite` for a compact UI package.
+Use local `vendor/fnlla-runtime/assets/icons/sprite.svg#search` references; the
+sprite includes all icon names, including aliases. Runtime synchronization keeps
+this distribution compact. Projects requiring individual SVG URLs can change the
+file to `full` before the next official runtime sync. Existing projects without
+this file keep the full distribution. Keep the icon LICENSE and NOTICE files.
 
 That keeps the downstream project focused on application delivery rather than framework maintenance.
 
@@ -118,11 +132,22 @@ The exported project still contains a working application surface so the applica
 
 That surface is a starting point, not the final product. Replace the placeholder pages, routes and content with the real website or application flow for this project.
 
-Use `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` to understand the upstream FNLLA code license, support boundary and branding rules that came with this application base.
+Use `LICENSE.md`, `docs/framework/SUPPORT.md` and `docs/framework/TRADEMARKS.md` to understand the upstream FNLLA code license, support boundary and branding rules that came with this application base.
 
 ## Useful commands
 
+- `composer install` installs development tools; commit the generated application `composer.lock`.
+- `composer test:unit` runs real PHPUnit; `composer analyse` runs PHPStan level 5.
+- `composer install --no-dev --optimize-autoloader` excludes tools from production.
+- Authenticated panel layout is `views/layouts/developer.php`; public layout/CSS changes do not override it.
+
 The application base keeps only the project-facing scripts, smoke tests and commands:
+
+`tests/ProjectTest.php` covers local setup, protected access, CSRF and health;
+`tests/BootstrapAutoloadTest.php` covers the shipped namespaces. Extend these tests
+with application behavior. Framework internals and demonstration-specific tests
+stay upstream. Tests belong to this application and are not replaced by runtime
+updates. Real PHPUnit remains the preferred runner after `composer install`.
 
 - `php scripts/test.php` runs the project-local smoke test harness kept under `tests/`
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
@@ -135,16 +160,20 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla optimize` builds route and configuration caches for production-style deployments
 - `php fnlla optimize:warm` builds bootstrap caches, the asset manifest and optional OPcache preload file
 - `php fnlla app:map` generates a route/controller/view map for audits, onboarding and AI-assisted review
-- `php fnlla upgrade:check --target=2.1.1` checks current-release upgrade readiness
-- `php fnlla upgrade:plan --target=2.1.1` writes a machine-readable upgrade plan
+- `php fnlla upgrade:check --target={{FNLLA_VERSION}}` checks current-release upgrade readiness
+- `php fnlla upgrade:plan --target={{FNLLA_VERSION}}` writes a machine-readable upgrade plan
 - `php fnlla perf:profile --iterations=5` records local CLI timings, repository footprint and peak memory
 - `php fnlla perf:baseline:update --iterations=7` captures a local performance baseline
 - `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
 - `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
-- `php fnlla ai:review-pack --target=2.1.1` combines context, app map and upgrade readiness into one local AI review artefact
+- `php fnlla ai:review-pack --target={{FNLLA_VERSION}}` combines context, app map and upgrade readiness into one local AI review artefact
 - `php fnlla ai:providers --json` reports local runtime AI provider readiness without contacting external providers
 - `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
 - `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
+- `php fnlla config:doctor --json` checks project environment configuration
+- `php fnlla developer:install-storage --dry-run` prints the optional panel database schema
+- `php fnlla ops:backup-plan --verify` verifies the project backup plan
+- `php fnlla tech-debt:update --json` reports project debt without requiring upstream documentation
 - `php fnlla framework:update --check` checks the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel and caches the release source locally before comparing drift
 - `php fnlla framework:update --dry-run` writes an exact file-change report before any apply run
 - `php fnlla framework:update --apply` applies the safe portion of a newer official GitHub-backed update after the report has no conflicts
@@ -153,6 +182,11 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 - `php fnlla fnlla-runtime:sync` refreshes the integrated FNLLA UI surface from the official `techayoDEV/fnlla` GitHub repository through the publish -> sync workflow
 
 The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
+
+Project release preparation validates the application tests, lint, runtime,
+version metadata, acceptance probes and configuration. It does not require the
+FNLLA maintainer documentation or delete application queues, sessions or logs.
+Release checksums exclude runtime storage, uploads and local environment files.
 
 The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
 Start with `docs/README.md`, `docs/STARTING-A-NEW-PROJECT.md`,
@@ -179,11 +213,11 @@ php fnlla framework:update --dry-run
 php fnlla optimize
 php fnlla optimize:warm
 php fnlla app:map
-php fnlla upgrade:check --target=2.1.1
+php fnlla upgrade:check --target={{FNLLA_VERSION}}
 php fnlla perf:profile --iterations=5
 php fnlla perf:baseline:update --iterations=7
 php fnlla ai:context
-php fnlla ai:review-pack --target=2.1.1
+php fnlla ai:review-pack --target={{FNLLA_VERSION}}
 php fnlla ai:providers --json
 php fnlla optimize:clear
 php fnlla release:prepare
@@ -197,6 +231,11 @@ php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
+
+Developer password recovery is documented in
+[Developer Account Recovery](docs/framework/DEVELOPER-RECOVERY.md). Email reset
+requests require a configured mail transport and `php fnlla queue:work 50`;
+authorized server owners can use `php fnlla developer:recovery-link EMAIL`.
 
 On Windows, the application export also includes:
 

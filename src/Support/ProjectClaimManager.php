@@ -202,7 +202,7 @@ final class ProjectClaimManager
         if (is_file($configPath)) {
             $hash = hash_file("sha256", $configPath);
 
-            if (is_string($hash) && $hash !== "") {
+            if ($hash !== false) {
                 $lock["framework_base"]["managed_files"]["config/app.php"] = $hash;
             }
         }

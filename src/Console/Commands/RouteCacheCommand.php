@@ -36,22 +36,19 @@ final class RouteCacheCommand extends Command
 
     public function handle(array $arguments): int
     {
+        $input = \Fnlla\Php\Console\Input::parse($arguments);
+        if ($input->option("help", false)) { $this->printHelp(); return 0; }
         $path = framework_route_cache_path();
 
-        if (is_file($path)) {
-            unlink($path);
-        }
-
         $container = $this->container;
+        $rebuildRouteCache = true;
         $router = require base_path("bootstrap/router.php");
         $routes = $router->exportCache();
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        file_put_contents($path, "<?php\n\nreturn " . var_export($routes, true) . ";\n", LOCK_EX);
+        \Fnlla\Php\Support\PhpArrayCache::write($path, [
+            "schema" => "fnlla.routes.v1",
+            "profile" => \Fnlla\Php\Support\ProjectProfile::name(),
+            "routes" => $routes,
+        ]);
         $this->line("Routes cached: " . $path);
 
         return 0;

@@ -34,7 +34,7 @@ final class AuthManager
 
     public function check(): bool
     {
-        return $this->id() !== null;
+        return $this->user() !== null;
     }
 
     public function guest(): bool
@@ -44,14 +44,27 @@ final class AuthManager
 
     public function id(): string|int|null
     {
-        return $this->session->get((string) config("auth.session_key", "auth.user_id"));
+        $key = (string) config("auth.session_key", "auth.user_id");
+        $id = $this->session->get($key);
+        if ($id !== null && !self::validId($id)) {
+            $this->session->forget($key);
+            return null;
+        }
+        return $id;
     }
 
     public function user(): ?array
     {
         $id = $this->id();
 
-        return $id !== null ? $this->provider->findById($id) : null;
+        if ($id === null) { return null; }
+        $user = $this->provider->findById($id);
+        $key = (string) config("auth.providers.users.key", "id");
+        if ($user === null || !self::validId($user[$key] ?? null) || (string) $user[$key] !== (string) $id) {
+            $this->session->forget((string) config("auth.session_key", "auth.user_id"));
+            return null;
+        }
+        return $user;
     }
 
     public function attempt(array $credentials): bool
@@ -75,13 +88,21 @@ final class AuthManager
     public function login(array $user): void
     {
         $key = (string) config("auth.providers.users.key", "id");
-        $this->session->put((string) config("auth.session_key", "auth.user_id"), $user[$key] ?? null);
+        $id = $user[$key] ?? null;
+        if (!self::validId($id)) { throw new \InvalidArgumentException("Authenticated user must have a non-empty string or integer identity."); }
+        // Do not install a privileged identity if session rotation fails.
         $this->session->regenerate();
+        $this->session->put((string) config("auth.session_key", "auth.user_id"), $id);
     }
 
     public function logout(): void
     {
         $this->session->forget((string) config("auth.session_key", "auth.user_id"));
         $this->session->regenerate();
+    }
+
+    private static function validId(mixed $id): bool
+    {
+        return is_int($id) || (is_string($id) && trim($id) !== "");
     }
 }

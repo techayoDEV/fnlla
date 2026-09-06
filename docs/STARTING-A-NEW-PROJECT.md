@@ -35,6 +35,110 @@ php fnlla make:project ..\my-new-project "My New Project"
 
 That command exports a clean working project base into a new directory outside the framework repository.
 
+### One Integrated Starter
+
+Omitting `--profile` creates the integrated FNLLA starter immediately, including
+in a terminal. Project Setup creates the first developer account; the private
+panel, UI runtime, diagnostics and updates are included. Workspace, analytics,
+heatmaps and the customer portal are all enabled by default, including before
+`.env` exists. Uncheck unwanted modules during Project Setup or in Panel Settings.
+Heatmaps also require analytics. These switches do not delete code or stored data.
+Updates preserve explicit environment settings and any earlier installation's
+`.fnlla/modules-opt-in` marker; new exports no longer create that marker.
+
+For an explicit advanced installation chooser, including when piping input:
+
+```powershell
+php fnlla make:project ../my-project "My Project" --interactive
+```
+
+Choose `1`/`plain`, `2`/`full`, or `q` to cancel. Enter creates FNLLA (`full`).
+Numeric aliases remain compatible. Scripts may pass `--profile=full` explicitly;
+`--no-interaction` is retained. Input is never read unless `--interactive` is
+explicit. `make:project --help` does not create files.
+
+This is a choice during installation, not a browser switch after installation.
+An already exported full project contains panel code; a web toggle cannot turn
+it into the physically minimal Composer starter. Never expose a public endpoint
+that deletes or replaces the installed framework.
+
+### Advanced Core-Only Export
+
+For an API or application with its own frontend and operations stack, omit the
+panel, optional modules and UI distribution explicitly:
+
+```powershell
+php fnlla make:project ../my-api "My API" --profile=plain
+```
+
+Plain starts with `/`, `/api/health`, generic error pages and focused tests.
+It keeps routing, middleware, validation, database, authentication, sessions,
+cache, queues and mail. It does NOT ship panel services, maintenance/client
+preview, analytics, heatmaps, Kanban, AI, UI assets or their update scripts.
+Application classes live in `app/` under `App\\`; the engine is the independent
+`techayodev/fnlla-core` Composer library in `packages/fnlla-core/`.
+
+Run `composer install` in the export. The bundled path repository needs no
+public package registry; Composer mirrors it into `vendor/`. Before installation,
+the offline bootstrap resolves the bundled package directly. No absolute source
+workspace paths are embedded. Test with `php scripts/test.php`, lint with
+`php scripts/lint.php` and inspect routes with `php fnlla route:list`.
+
+Plain uses Composer dependency updates, not `framework:update`. Its README
+documents replacing the reviewed bundled package and updating the exact version.
+A public Composer release channel is not yet published. Existing legacy plain
+projects are not automatically converted: use a new export and migrate only
+application-owned code/configuration. Changing the profile marker is not migration.
+
+Full keeps `.env.full.example`, `VERSION` and `MANIFEST.json`; plain does not need
+these integrated-distribution files. Both keep Composer metadata, a short
+`.env.example`, `README.md` and the license at root. Full support/trademark
+references live in `docs/framework/`. The remaining instructions on this page
+describe full projects unless explicitly marked otherwise.
+
+In full, the panel migration moves to `database/optional/developer-panel/`; normal
+project migration runs do not create its tables. Preview their SQL with
+`php fnlla developer:install-storage --dry-run` and deliberately install them
+only when selecting database-backed tooling.
+
+The UI guard checks shipped assets without enforcing a downstream site's
+header, footer or CSS framework choice. `FNLLA_RUNTIME_VALIDATE_MARKUP=true`
+opts into the maintainer markup checks. Network sync is explicit by default:
+`php fnlla fnlla-runtime:sync`.
+
+### Developer tools and ownership
+
+Workspace / Technical debt provides source-marker scans and manual entries,
+owner, priority, due date, notes and open/in-progress/accepted/resolved states.
+Acceptance requires a reason. Scans preserve triage; stale edits are rejected.
+The existing `tech-debt:update` report and the triage register are separate:
+accepting an item never suppresses a release check.
+
+Operations / Debug controls an opt-in toolbar. It requires `APP_DEBUG`, a
+local/development/testing environment and a developer session with
+`operations.view`. Changing the switch additionally requires
+`panel.settings.write`. Production, staging, guests, JSON, HEAD and downloads
+do not receive a toolbar. `DEBUG_TOOLBAR=false` is the starter default.
+
+The toolbar displays duration, peak memory, route, request ID and database
+execution metrics. It stores no SQL text, bindings, cookies, form data or
+exception messages. At most 100 query summaries are retained per request.
+Direct PDO calls are not instrumented. The toolbar does not replace Xdebug.
+Debug also offers optional bounded request history, disabled by default. It records
+only authorized developer requests in non-production debug environments, including
+JSON responses. It never stores URLs, request IDs, inputs, headers or response bodies.
+The default is 200 entries / one hour, pruned on reads and writes; disabling clears
+the records. This is not production APM. See `docs/framework/DEVELOPER-DIAGNOSTICS.md`.
+
+Private state lives under `storage/framework/developer/` and is not exported.
+Public routes, page templates and `public/assets/app.css` are project-owned.
+Panel controllers and `developer-panel.css/js` are framework-managed. Old
+public-file lock entries are retired without deleting their files.
+
+CSS is separated into `app-base.css` (shared foundations), `app.css` (public)
+and `developer-panel.css` (tooling). Existing projects require an explicit
+layout/CSS migration; the updater must not replace client UI automatically.
+
 Treat that exported surface as the real beginning of the application itself.
 Do not build a second public front beside it.
 Replace and extend the exported routes, views, assets and controllers directly, while leaving maintenance, health and CLI as linked framework capabilities around the project.
@@ -95,6 +199,13 @@ Framework updates are allowed to refresh the lower layer. They should not
 silently replace product work or environment data.
 
 ## Definition Of Ready
+
+Both profiles now provide real PHPUnit and PHPStan as development dependencies.
+After `composer install`, run `composer test:unit` and `composer analyse` in the
+export. Keep `php scripts/test.php` for offline smoke checks. Development tools
+require package downloads; the basic bundled runtime can still boot offline.
+Production uses `composer install --no-dev --optimize-autoloader` with the
+application's committed lock file. See [Framework development](ARCHITECTURE-ROADMAP.md).
 
 A freshly exported project is ready for commercial product work when:
 
@@ -223,6 +334,31 @@ local-development mode so sessions and flash flows work over plain HTTP on
 Before production deployment, copy only required advanced values into the real
 environment, switch back to production-safe values and enable HTTPS.
 
+## First Browser Visit: Complete
+
+An unconfigured Complete (`--profile=full`) export contains no default developer
+account or shared password. Copy `.env.example` to `.env`, start the local PHP
+server with its document root set to `public`, and open `/` on localhost.
+Project Setup collects the project identity, developer email, password and
+confirmation. After saving, that account opens the Developer Panel. Later visits
+to `/developer` use the email and password chosen during setup.
+
+Before an account exists, a direct local visit to `/developer` (or the configured
+`DEVELOPER_ACCESS_PATH`) redirects to the permitted setup screen. If maintenance
+credentials already exist, setup is on `/maintenance`. Setup is restricted by
+`DEVELOPER_ACCESS_SETUP_UI_ENABLED`, `DEVELOPER_ACCESS_SETUP_UI_LOCAL_ONLY`, the
+request IP and environment-file writability. Do not disable local-only protection
+on an exposed server to work around an access problem; configure locally first
+or use a secured operator deployment procedure.
+
+If you see sign-in immediately, verify that you are using the correct project
+directory, port and entry path. Check whether `DEVELOPER_ACCESS_USERS` is populated
+in `.env` or supplied externally, without posting its contents. A QA preview with
+a preconfigured account is not a fresh starter. Never delete existing accounts to
+force setup; use [account recovery](framework/DEVELOPER-RECOVERY.md) instead.
+
+Core (`--profile=plain`) intentionally has no Developer Panel or browser setup.
+
 ## First Product Commit
 
 The first commit in a downstream product repository should normally contain:
@@ -290,6 +426,34 @@ Cloning `techayoDEV/fnlla` directly is still fine when the goal is:
 That is framework work, not downstream project work.
 
 ## Final rule
+
+### Compact Export Contract
+
+`resources/project-templates/v1/export-files.json` is the explicit starter file
+list. New source files are not exported until a maintainer adds them to that
+list. The exporter validates source containment before copying and creates empty
+storage and upload directories. Ignored runtime files are never an export input.
+
+Starters use `.fnlla/ui-distribution` set to `sprite`. The local sprite contains
+all maintained icon names, including aliases, and travels with LICENSE/NOTICE.
+Individual SVGs and the unused FNLLA PNG logo remain in the maintainer checkout.
+The runtime synchronizer stages and validates the compact package before replacing
+the installed runtime. Set the profile to `full` for individual SVG URLs; older
+projects without a profile retain their full runtime distribution.
+
+After updating source icons, rebuild the maintained sprite with PowerShell:
+
+```powershell
+. ./scripts/copy-fnlla-runtime.ps1
+Write-FnllaIconSprite -IconsPath ./public/vendor/fnlla-runtime/assets/icons -OutputPath ./public/vendor/fnlla-runtime/assets/icons/sprite.svg
+```
+
+Project `release:prepare` validates tests, lint, runtime, versions, acceptance and
+configuration. Maintainer release metadata, docs and public API snapshot checks
+stay in the framework release gate. Application release preparation does not
+purge live queues, sessions or logs; checksums exclude storage, uploads and local
+environment variants. Run the real export regression tests and
+`scripts/test-runtime-distribution.ps1` when changing either boundary.
 
 Treat `techayoDEV/fnlla` as:
 

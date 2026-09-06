@@ -32,6 +32,9 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("uses: actions/checkout@v5", $workflow);
         self::assertStringContainsString("fetch-depth: 0", $workflow);
         self::assertStringContainsString("composer run test -- --suite fast", $workflow);
+        self::assertStringContainsString("composer install --no-interaction --prefer-dist", $workflow);
+        self::assertStringContainsString("composer audit --locked", $workflow);
+        self::assertStringContainsString("--testsuite framework --fail-on-skipped", $workflow);
         self::assertStringContainsString("composer run lint", $workflow);
         self::assertStringContainsString("php ./scripts/build-docs.php --check", $workflow);
         self::assertStringContainsString("php ./fnlla release:prepare --skip-tests", $workflow);

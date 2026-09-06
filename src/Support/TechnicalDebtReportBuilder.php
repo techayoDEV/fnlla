@@ -22,15 +22,23 @@ use RecursiveIteratorIterator;
 
 final class TechnicalDebtReportBuilder
 {
+    public function markerFiles(): array
+    {
+        return $this->checkDebtMarkers()["data"]["files"];
+    }
+
     public function build(): array
     {
-        $checks = [
+        $checks = is_file(base_path(".fnlla/framework-lock.json"))
+            ? [$this->checkDebtMarkers(), $this->checkRuntimeResidue(), $this->checkAiRuntime()]
+            : [
             $this->checkDebtMarkers(),
             $this->checkRuntimeResidue(),
             $this->checkDocsSync(),
             $this->checkReleaseDocs(),
             $this->checkAiRuntime(),
             $this->checkPublicApiLock(),
+            $this->checkModernizationLedger(),
         ];
 
         return [
@@ -80,7 +88,7 @@ final class TechnicalDebtReportBuilder
         foreach ((array) ($report["checks"] ?? []) as $check) {
             if (($check["id"] ?? "") === "runtime-residue") {
                 $check["status"] = "runtime";
-                $check["detail"] = "Runtime residue is reported in the JSON report and must be cleared before tagging a source release.";
+                $check["detail"] = "Runtime data must be excluded from source artifacts, not deleted from a working application.";
             }
             match ((string) ($check["status"] ?? "info")) {
                 "pass" => $snapshotSummary["passed"]++,
@@ -102,7 +110,7 @@ final class TechnicalDebtReportBuilder
         $lines[] = "";
 
         $actions = array_values(array_filter((array) ($report["actions"] ?? []), static function (mixed $action): bool {
-            return !is_string($action) || !str_starts_with($action, "Run php fnlla optimize:clear");
+            return !is_string($action) || !str_starts_with($action, "Verify runtime data is excluded");
         }));
         if ($actions === []) {
             $lines[] = "- No generated remediation actions at this point.";
@@ -215,7 +223,7 @@ final class TechnicalDebtReportBuilder
         return [
             "id" => "runtime-residue",
             "status" => $files === [] ? "pass" : "warn",
-            "detail" => $files === [] ? "No runtime cache, session, queue or log residue detected." : "Ignored runtime residue should be cleared before tagging a source release.",
+            "detail" => $files === [] ? "No runtime cache, session, queue or log residue detected." : "Local runtime data exists; verify source artifact exclusions without deleting application state.",
             "data" => [
                 "count" => count($files),
                 "files" => array_slice($files, 0, 50),
@@ -240,10 +248,10 @@ final class TechnicalDebtReportBuilder
 
         return [
             "id" => "generated-docs-sync",
-            "status" => (int) ($result["exit_code"] ?? 1) === 0 ? "pass" : "warn",
-            "detail" => (int) ($result["exit_code"] ?? 1) === 0 ? "Generated HTML docs match Markdown sources." : "Generated HTML docs are stale; run php scripts/build-docs.php.",
+            "status" => $result["exit_code"] === 0 ? "pass" : "warn",
+            "detail" => $result["exit_code"] === 0 ? "Generated HTML docs match Markdown sources." : "Generated HTML docs are stale; run php scripts/build-docs.php.",
             "data" => [
-                "exit_code" => (int) ($result["exit_code"] ?? 1),
+                "exit_code" => $result["exit_code"],
             ],
         ];
     }
@@ -330,13 +338,16 @@ final class TechnicalDebtReportBuilder
     private function actions(array $checks): array
     {
         $actions = [];
+        if ($this->statusFor($checks, "modernization-ledger") === "warn") {
+            $actions[] = "Run php scripts/check-modernization.php --require-complete and close outstanding acceptance criteria before claiming modernization is complete.";
+        }
 
         if ($this->statusFor($checks, "explicit-debt-markers") !== "pass") {
             $actions[] = "Replace explicit debt markers with tracked issues or implement the missing work.";
         }
 
         if ($this->statusFor($checks, "runtime-residue") !== "pass") {
-            $actions[] = "Run php fnlla optimize:clear and remove ignored release artefacts before tagging.";
+            $actions[] = "Verify runtime data is excluded from the source archive; remove only obsolete generated release artifacts.";
         }
 
         if ($this->statusFor($checks, "generated-docs-sync") !== "pass") {
@@ -348,6 +359,19 @@ final class TechnicalDebtReportBuilder
         }
 
         return $actions;
+    }
+
+    private function checkModernizationLedger(): array
+    {
+        $path = base_path("resources/modernization-tasks.json");
+        $ledger = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        if (($ledger["schema"] ?? null) !== "fnlla.modernization_tasks.v1" || !is_array($ledger["tasks"] ?? null)) {
+            throw new \RuntimeException("Invalid modernization ledger.");
+        }
+        $remaining = array_values(array_filter($ledger["tasks"], static fn (array $task): bool => $task["status"] !== "done"));
+        return ["id" => "modernization-ledger", "status" => $remaining === [] ? "pass" : "warn",
+            "detail" => count($remaining) . " modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md.",
+            "data" => ["remaining" => $remaining]];
     }
 
     private function summary(array $checks): array
@@ -396,7 +420,7 @@ final class TechnicalDebtReportBuilder
             );
 
             foreach ($iterator as $item) {
-                if (!$item->isFile()) {
+                if (!$item->isFile() || $item->isLink()) {
                     continue;
                 }
 

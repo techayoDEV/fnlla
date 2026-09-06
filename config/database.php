@@ -19,9 +19,10 @@ Purpose:
 */
 
 return [
-    "default" => "mysql",
+    "default" => (string) env("DB_CONNECTION", "mysql"),
     "connections" => [
         "mysql" => [
+            "driver" => "mysql",
             "host" => (string) env("DB_HOST", "127.0.0.1"),
             "port" => (string) env("DB_PORT", "3306"),
             "database" => (string) env("DB_DATABASE", "fnlla"),

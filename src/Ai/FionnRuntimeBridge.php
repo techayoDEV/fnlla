@@ -265,11 +265,9 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
                 "ignore_errors" => true,
             ],
         ]);
+        $http_response_header = [];
         $raw = @file_get_contents($endpoint, false, $stream);
-
-        if (isset($http_response_header) && is_array($http_response_header)) {
-            $httpResponseHeaders = $http_response_header;
-        }
+        $httpResponseHeaders = $http_response_header;
 
         if ($raw === false) {
             throw new RuntimeException("Fionn AI bridge request could not be completed.");
@@ -400,7 +398,7 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
         $value = strtolower($value);
         preg_match_all('/[a-z0-9][a-z0-9_-]{1,}/', $value, $matches);
 
-        return array_values(array_unique($matches[0] ?? []));
+        return array_values(array_unique($matches[0]));
     }
 
     private function latencyMs(float $startedAt): int

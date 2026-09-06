@@ -1,141 +1,65 @@
 # FNLLA Technical Debt and Future Proofing
 
-This document tracks known future-facing improvement areas for the maintained
-FNLLA repository. It is not a release blocker list. It is a practical backlog
-for keeping the framework small while reducing long-term operational risk.
+This guide defines how framework debt is recorded and verified. It is not a
+second architecture backlog or a historical implementation report. Use the
+[architecture guide](ARCHITECTURE-ROADMAP.md) for design boundaries, the
+[changelog](../CHANGELOG.md) for released changes and the
+[modernization status](MODERNIZATION-STATUS.md) for outstanding acceptance.
 
-The generated section at the end is maintained by:
+## One Acceptance Ledger
+
+Framework modernization criteria live in
+[resources/modernization-tasks.json](../resources/modernization-tasks.json).
+Keep status, evidence and remaining work there; do not create per-session reports
+or copy its task list into another guide. Application-specific issues belong in
+the application's private issue tracker, not FNLLA source documentation.
+
+An empty source-marker scan does not mean architecture work is complete.
+Validate the ledger with:
 
 ```bash
+php scripts/check-modernization.php
+php scripts/check-modernization.php --require-complete
+```
+
+The second command must pass before claiming all modernization criteria are
+finished. A local passing test does not establish remote integration, production
+recovery, public package installation or performance parity with another framework.
+
+## Defect Triage
+
+Confirm that the issue reproduces in maintained source or a clean project export,
+and distinguish framework defects from application behavior. Fix a small,
+well-understood defect with a regression test. For work that must be deferred,
+record its owner, area, affected contract, reproduction, risk, acceptance criteria
+and evidence in the appropriate issue tracker or the existing architecture ledger.
+
+Use the [security policy](../SECURITY.md) for undisclosed vulnerabilities. Do not
+publish credentials, account identifiers, customer data, workstation paths or
+private recovery evidence. Public reproductions should use synthetic fixtures.
+
+## Documentation Maintenance
+
+Update the affected guide when behavior changes. Keep one canonical procedure
+and link to it from other guides; retain compatibility instructions while they
+remain supported. Keep license attribution and public API names accurate.
+Generate HTML from Markdown rather than maintaining two independent versions.
+
+Before release, follow [release operations](RELEASE-AND-OPERATIONS.md), including:
+
+```bash
+php scripts/build-docs.php
+php scripts/build-docs.php --check
+php scripts/check-docs.php
 php fnlla tech-debt:update
 php fnlla tech-debt:update --check
 ```
 
-The command writes `storage/framework/cache/technical-debt-report.json` for
-local CI or release evidence and refreshes the bounded Markdown snapshot. Use
-`--check` in release gates when the documentation must already be current.
-The machine-readable report schema is `fnlla.technical_debt_report.v1`.
-
-## Implemented Hardening
-
-- `ProcessRunner` now runs process commands with argv boundaries, timeout
-  enforcement and output limits.
-- File cache writes JSON payloads by default and still reads safe legacy PHP
-  serialized cache files during migration.
-- File cache increments are protected by per-key file locks on the local host.
-- Request capture rejects oversized bodies with an explicit 413 response path.
-- Uploaded files expose explicit size and MIME validation before storage.
-- Response headers reject invalid names and CRLF/null-byte values.
-- Client-provided request IDs are normalized before being returned or logged.
-- Logs redact configured sensitive keys and rotate when the active file exceeds
-  the configured size.
-- Queue storage is behind `QueueStoreInterface`; the default implementation is
-  still the local file adapter.
-- `framework:update --json` emits machine-readable reports for CI.
-- Release downloads validate FNLLA release identity through `MANIFEST.json` and
-  `VERSION` in addition to source-root shape.
-- The local test runner supports `--filter`, and `scripts/static-analysis.php`
-  provides a dependency-light static analysis baseline with optional PHPStan or
-  Psalm delegation.
-- Production-style bootstrap caches are available through `config:cache`,
-  `route:cache`, `optimize` and `optimize:clear`.
-- `optimize:warm` now builds bootstrap caches, an asset manifest and an optional
-  OPcache preload file for production deployments.
-- `perf:profile` and `perf:budget` provide local performance baselines and p95
-  regression checks.
-- `ai:context` generates a redacted, local-only review context pack for release
-  workflows without raw secrets or source-file contents.
-- `app:map` exposes route/controller/view topology for audits, onboarding,
-  migration planning and tool-assisted review.
-- `upgrade:check`, `upgrade:plan` and `upgrade:apply` provide a local-first
-  major-release readiness workflow.
-- `ai:review-pack`, `ai:upgrade-brief` and `ai:redact` extend local review
-  without external calls.
-- `release:prepare --major` adds docs sync, security posture, upgrade readiness
-  and app-map evidence to the release gate.
-- Route cache export rejects closure/object route handlers so cached production
-  routes are deterministic and source-reviewable.
-- HTTP session state is lazy: API/static-style requests no longer start session
-  state until flash, CSRF, auth or session helpers are actually used.
-- The health endpoint caches expensive readiness checks briefly while preserving
-  request-specific IDs, method, path, IP and timestamp per request.
-- The public development router rejects dotfiles, null bytes, encoded traversal
-  attempts, Windows alternate-data-stream syntax and static-file symlink escapes.
-- Credentialed wildcard CORS is rejected; deployments using cookies or auth
-  headers must list explicit allowed origins.
-- Trusted host enforcement can reject requests whose Host header is outside the
-  configured deployment boundary.
-- The mail surface validates recipients, subjects and native headers before a
-  form notification can leave the application boundary.
-- `scripts/benchmark.php --production` applies a production-like local
-  environment and builds bootstrap caches before measuring CLI, HTTP and export
-  performance.
-- `doctor`, `security:audit`, `release:prepare`, `release:sbom` and
-  `release:checksums` provide operator-facing readiness, security posture and
-  release supply-chain workflows.
-- Request observability now includes structured access logs, local JSON metrics
-  and an optional response-time header.
-- CSP nonce support is available through `csp_nonce()` and the `{nonce}` header
-  placeholder.
-- `config:doctor`, `ai:explain-log`, `ai:brief`, queue retry metadata, health
-  levels, release risk labels and a small public API lock are available as
-  simple operational guardrails.
-- FNLLA 2.1 adds a business reference blueprint, production checklist,
-  2.0.x-to-2.1.0 upgrade notes, `db()` helper, query pagination, transactional
-  data examples and `ops:backup-plan` for practical recovery planning.
-- FNLLA 2.1.1 adds `project:acceptance`, verified backup-plan readiness and
-  HTTP performance probes for `/` and `/api/health`.
-- The release gate now treats strict security audit, backup-plan generation,
-  performance budgets and 2.0.3 export readiness as visible release evidence.
-
-## Current Backlog
-
-There are no known release-blocking technical-debt items in this snapshot.
-Future work should be opened as explicit issues with owner, scope and acceptance
-criteria instead of staying as vague backlog text inside the repository.
-
-## Defect Triage Policy
-
-Confirmed framework defects should normally be fixed immediately when the scope
-is small and well understood. If a defect needs to be parked, track it as an
-explicit issue or in this document with:
-
-- status: open, fixed or deferred;
-- found in: maintainer source or downstream project;
-- area: export, routing, auth, docs, tests, runtime, release or security;
-- symptom and root cause;
-- action and evidence.
-
-Before recording framework debt, confirm that the issue reproduces on the
-maintained repository or on a clean `make:project` export, is not downstream
-product code, and has useful evidence from tests, lint, route output or a
-manual repro note. For security issues, use `SECURITY.md` until disclosure is
-appropriate.
-
-## Documentation Debt Policy
-
-README is intentionally short. Detailed explanation belongs in `docs/*.md`,
-where it can be linked, generated to HTML and validated with
-`php scripts/build-docs.php --check`.
-
-Future documentation debt should be treated like code debt:
-
-- name the affected document;
-- describe the missing decision or workflow;
-- add the command or test that proves the document is still accurate;
-- avoid duplicating the same long procedure across several files;
-- keep generated HTML in sync with Markdown sources.
-
-## Current Hardening Notes
-
-- Process execution in framework update, release download, runtime sync and
-  project export paths now goes through `Fnlla\Php\Support\ProcessRunner`.
-- Request IDs accepted from clients are restricted to a short safe character set.
-- File cache reads disallow PHP object hydration from serialized cache payloads.
-- Response headers reject invalid names and line-break/null-byte values.
-- Framework and runtime updates reject local sources, fork repositories and
-  repository overrides; downstream updates come only from the official
-  `techayoDEV/fnlla` GitHub channel.
+The debt command writes `storage/framework/cache/technical-debt-report.json` for
+local evidence and refreshes the bounded snapshot below. Its schema is
+`fnlla.technical_debt_report.v1`. A freshness check validates that snapshot,
+not the truth of every acceptance claim. Keep generated operational evidence
+outside source distributions; the snapshot intentionally omits local residue paths.
 
 <!-- FNLLA_TECH_DEBT_REPORT:BEGIN -->
 ## Self-Checking Debt Snapshot
@@ -154,15 +78,16 @@ documentation.
 | Check | Status | Detail |
 | --- | --- | --- |
 | `explicit-debt-markers` | `pass` | No explicit debt markers found in release-facing source files. |
-| `runtime-residue` | `runtime` | Runtime residue is reported in the JSON report and must be cleared before tagging a source release. |
+| `runtime-residue` | `runtime` | Runtime data must be excluded from source artifacts, not deleted from a working application. |
 | `generated-docs-sync` | `pass` | Generated HTML docs match Markdown sources. |
 | `release-documentation` | `pass` | Required release, AI, operations and technical-debt documents are present. |
 | `ai-product-runtime` | `pass` | Local runtime AI and the reserved Fionn bridge contract are present. |
 | `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
+| `modernization-ledger` | `warn` | 8 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
 
 Generated actions:
 
-- No generated remediation actions at this point.
+- Run php scripts/check-modernization.php --require-complete and close outstanding acceptance criteria before claiming modernization is complete.
 
-Snapshot summary: `5` pass, `0` warn, `0` fail, `1` info.
+Snapshot summary: `5` pass, `1` warn, `0` fail, `1` info.
 <!-- FNLLA_TECH_DEBT_REPORT:END -->

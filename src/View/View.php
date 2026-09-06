@@ -40,13 +40,21 @@ final class View
 
     private static function resolvePath(string $template): string
     {
+        if (preg_match('~^(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+$~D', $template) !== 1) {
+            throw new RuntimeException("Invalid view name.");
+        }
         $path = VIEW_ROOT . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $template) . ".php";
-
-        if (!is_file($path)) {
+        $resolved = realpath($path);
+        $root = realpath(VIEW_ROOT);
+        $prefix = (string) $root . DIRECTORY_SEPARATOR;
+        if ($resolved === false || $root === false || !is_file($resolved)
+            || (PHP_OS_FAMILY === "Windows"
+                ? !str_starts_with(strtolower($resolved), strtolower($prefix))
+                : !str_starts_with($resolved, $prefix))) {
             throw new RuntimeException("View not found: " . $template);
         }
 
-        return $path;
+        return $resolved;
     }
 
     private static function capture(string $path, array $data): string

@@ -22,6 +22,9 @@ use RuntimeException;
 
 final class ReleaseArtifactBuilder
 {
+    private ?array $sourceExclusions = null;
+    private array $excludedNames = ["auth.json", ".npmrc", ".pypirc", "id_rsa", "id_ed25519"];
+    private array $excludedExtensions = ["key", "pem", "p12", "pfx", "sql", "sqlite", "sqlite3", "bak", "log", "tmp", "zip"];
     public function buildSbom(string $outputPath): array
     {
         $components = [];
@@ -179,7 +182,7 @@ final class ReleaseArtifactBuilder
         );
 
         foreach ($iterator as $item) {
-            if (!$item->isFile()) {
+            if (!$item->isFile() || $item->isLink()) {
                 continue;
             }
 
@@ -201,10 +204,26 @@ final class ReleaseArtifactBuilder
 
     private function shouldSkip(string $relativePath): bool
     {
+        if ($this->sourceExclusions === null) {
+            $policyPath = base_path("resources/source-distribution.json");
+            $policy = is_file($policyPath)
+                ? json_decode((string) file_get_contents($policyPath), true, 512, JSON_THROW_ON_ERROR) : [];
+            $this->sourceExclusions = (array) ($policy["excluded_prefixes"] ?? []);
+            $this->excludedNames = (array) ($policy["excluded_names"] ?? $this->excludedNames);
+            $this->excludedExtensions = (array) ($policy["excluded_extensions"] ?? $this->excludedExtensions);
+        }
+        foreach ($this->sourceExclusions as $prefix) {
+            if (is_string($prefix) && $prefix !== "" && str_starts_with($relativePath, $prefix)) {
+                return true;
+            }
+        }
         foreach ([
             ".git/",
+            ".fnlla/update-transaction/",
             "dist/",
             "vendor/",
+            "storage/",
+            "public/uploads/",
             "storage/framework/",
             "storage/framework/cache/",
             "storage/framework/developer/",
@@ -216,6 +235,15 @@ final class ReleaseArtifactBuilder
             if (str_starts_with($relativePath, $prefix)) {
                 return !str_ends_with($relativePath, ".gitignore");
             }
+        }
+
+        $name = strtolower(basename($relativePath));
+        if (in_array($name, array_map("strtolower", $this->excludedNames), true)
+            || in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), $this->excludedExtensions, true)) {
+            return true;
+        }
+        if (str_starts_with($name, ".env") && !in_array($name, [".env.example", ".env.full.example"], true)) {
+            return true;
         }
 
         return in_array($relativePath, [

@@ -167,7 +167,7 @@ final class AppMapBuilder
         }
 
         preg_match_all('/(?:view|View::render)\(\s*[\"\']([^\"\']+)[\"\']/', $contents, $matches);
-        $views = array_values(array_unique($matches[1] ?? []));
+        $views = array_values(array_unique($matches[1]));
         sort($views);
 
         return $views;

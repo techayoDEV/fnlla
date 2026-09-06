@@ -55,6 +55,11 @@ final class VersionManifest
     {
         $version = self::readVersionValue(self::repositoryVersionPath());
         self::syncIntegratedRuntimeMetadata($version);
+        return self::syncProjectManifest();
+    }
+
+    public static function syncProjectManifest(): array
+    {
         $existingManifest = is_file(self::repositoryManifestPath())
             ? self::readJsonFile(self::repositoryManifestPath())
             : [];
@@ -124,8 +129,8 @@ final class VersionManifest
                     "README.md",
                     "VERSION",
                     "LICENSE.md",
-                    "SUPPORT.md",
-                    "TRADEMARKS.md",
+                    self::policyPath("SUPPORT.md"),
+                    self::policyPath("TRADEMARKS.md"),
                 ],
             ],
         ];
@@ -225,8 +230,8 @@ final class VersionManifest
                     "README.md",
                     "VERSION",
                     "LICENSE.md",
-                    "SUPPORT.md",
-                    "TRADEMARKS.md",
+                    self::policyPath("SUPPORT.md"),
+                    self::policyPath("TRADEMARKS.md"),
                 ],
             ],
         ];
@@ -296,12 +301,12 @@ final class VersionManifest
             $errors
         );
         self::validateRequiredTextFile(
-            self::ROOT_SUPPORT_FILE,
+            self::policyPath(self::ROOT_SUPPORT_FILE),
             ["Support Policy", "MIT License", "TechAyo LTD", "fnlla.com", "does not promise", "release cadence"],
             $errors
         );
         self::validateRequiredTextFile(
-            self::ROOT_TRADEMARKS_FILE,
+            self::policyPath(self::ROOT_TRADEMARKS_FILE),
             ["Trademark Notice", "MIT License", "TechAyo LTD", "fnlla.com", "does not grant trademark rights", "official FNLLA project"],
             $errors
         );
@@ -503,6 +508,11 @@ final class VersionManifest
                 ],
             ],
         ];
+    }
+
+    private static function policyPath(string $file): string
+    {
+        return is_file(base_path($file)) ? $file : "docs/framework/" . $file;
     }
 
     private static function isClaimedProjectManifest(array $manifest): bool

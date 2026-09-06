@@ -22,6 +22,7 @@ return [
     "default" => (string) env("QUEUE_CONNECTION", "file"),
     "max_attempts" => max(1, (int) env("QUEUE_MAX_ATTEMPTS", 1)),
     "retry_backoff_seconds" => max(1, (int) env("QUEUE_RETRY_BACKOFF_SECONDS", 30)),
+    "visibility_timeout_seconds" => max(1, (int) env("QUEUE_VISIBILITY_TIMEOUT_SECONDS", 300)),
     "connections" => [
         "file" => [
             "path" => (string) env("QUEUE_PATH", "framework/queue"),

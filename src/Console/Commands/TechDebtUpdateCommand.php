@@ -38,7 +38,10 @@ final class TechDebtUpdateCommand extends Command
         $reportPath = $this->optionValue($arguments, "--output") ?? framework_technical_debt_report_path();
         $builder = $this->container->make(TechnicalDebtReportBuilder::class);
         $report = $builder->build();
-        $sync = $builder->syncMarkdown($docsPath, $report, $check);
+        $projectReport = is_file(base_path(".fnlla/framework-lock.json")) && $this->optionValue($arguments, "--docs") === null;
+        $sync = $projectReport
+            ? ["ok" => true, "mode" => "project-report", "path" => null]
+            : $builder->syncMarkdown($docsPath, $report, $check);
 
         if (!$check) {
             $builder->writeJson($report, $reportPath);
