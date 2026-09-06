@@ -83,7 +83,7 @@ documentation.
 | `release-documentation` | `pass` | Required release, AI, operations and technical-debt documents are present. |
 | `ai-product-runtime` | `pass` | Local runtime AI and the reserved Fionn bridge contract are present. |
 | `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
-| `modernization-ledger` | `warn` | 8 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
+| `modernization-ledger` | `warn` | 7 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
 
 Generated actions:
 

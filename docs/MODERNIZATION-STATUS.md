@@ -16,7 +16,7 @@ does not change acceptance or erase unfinished work.
 | Partial | Complete packages | Independent modules and versioned assets/config/routes publication and removal; package mode remains opt-in. |
 | Partial | Business recovery | Application-specific offsite schedule, secrets, consistent restore and external-effect reconciliation. |
 | Partial | HTTP edge matrix | Supported proxy/SAPI topologies and serving OPcache invalidation beyond local transport/cache tests. |
-| Partial | Published upgrades | Official 2.1.3-to-candidate merge, rollback boundary, post-install checks and application preservation pass locally. Published 2.2.0 consumer installation and remote results remain required. |
+| Partial | Published upgrades | Official 2.1.3-to-candidate merge, rollback boundary, post-install checks and application preservation pass locally and in Linux integration CI. Published 2.2.0 consumer installation remains required. |
 | Open | HTTP workers | Sequential/concurrent globals, statics and session isolation; normal PHP requests remain supported. |
 | Open | Comparative benchmarks | Pinned equivalent applications, cold/warm latency percentiles and memory. |
 | Blocked | Public packages | Immutable artifacts, registry metadata and verified consumer installation. |
@@ -34,9 +34,12 @@ it is not evidence for the remote Linux matrix.
 The complete remote Core Quality matrix subsequently passed for commit
 `6c8127b`: Windows/Linux PHP 8.3, 8.4 and 8.5, plus Linux MySQL/Redis integrations
 on all three PHP versions. [Recorded run](https://github.com/techayoDEV/fnlla/actions/runs/34041394523).
-This closes the remote matrix criterion, not the publication gate. Hardening
-separately exposed a transient Windows private-state rename failure; its fix and
-every later candidate must pass all workflows before release approval.
+This closes the remote matrix criterion, not the publication gate. The subsequent
+Windows private-state rename fix passed all workflows for commit `b101a42`:
+[Core Quality](https://github.com/techayoDEV/fnlla/actions/runs/34041649549),
+[Hardening](https://github.com/techayoDEV/fnlla/actions/runs/34041649518),
+[Release Gate](https://github.com/techayoDEV/fnlla/actions/runs/34041649523).
+Every later candidate must pass all workflows before release approval.
 
 ## Evidence Policy
 
