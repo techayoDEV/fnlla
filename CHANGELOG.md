@@ -5,6 +5,9 @@ release tags are cut.
 
 ## Unreleased
 
+- Retry transient Windows private-state rename failures while holding the writer
+  lock; preserve the previous JSON state if atomic publication cannot complete.
+
 - Reject upload MIME validation when Fileinfo or file detection is unavailable;
   never fall back to client-supplied MIME metadata. CI explicitly enables Fileinfo.
 

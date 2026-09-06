@@ -58,8 +58,19 @@ final class LockedJsonStore
                     throw new RuntimeException("Private state exceeds the size limit.");
                 }
                 $temporary = tempnam($directory, ".state-");
-                if ($temporary === false || file_put_contents($temporary, $json) !== strlen($json) || !rename($temporary, $this->path)) {
+                if ($temporary === false || realpath(dirname($temporary)) !== realpath($directory)
+                    || file_put_contents($temporary, $json) !== strlen($json)) {
                     throw new RuntimeException("Cannot atomically save private state.");
+                }
+                $published = false;
+                for ($attempt = 0; $attempt < 50; $attempt++) {
+                    if (@rename($temporary, $this->path)) { $published = true; break; }
+                    if (PHP_OS_FAMILY !== "Windows") { break; }
+                    // Windows may briefly deny replacement. Keep our lock and the old file.
+                    usleep(10000);
+                }
+                if (!$published) {
+                    throw new RuntimeException("Cannot publish private state; previous state preserved.");
                 }
             }
             return $state;

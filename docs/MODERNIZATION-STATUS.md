@@ -6,7 +6,7 @@ Target: stable **2.2.0**. Source and runtime metadata identify the **2.2.0 candi
 the last public release remains **2.1.3**. Do not retag or reuse a published version.
 
 The [JSON ledger](../resources/modernization-tasks.json) is the sole live register.
-Current totals: **18 done, 4 partial, 2 open, 2 blocked**. Document consolidation
+Current totals: **19 done, 4 partial, 2 open, 1 blocked**. Document consolidation
 does not change acceptance or erase unfinished work.
 
 ## Remaining Acceptance
@@ -20,7 +20,6 @@ does not change acceptance or erase unfinished work.
 | Open | HTTP workers | Sequential/concurrent globals, statics and session isolation; normal PHP requests remain supported. |
 | Open | Comparative benchmarks | Pinned equivalent applications, cold/warm latency percentiles and memory. |
 | Blocked | Public packages | Immutable artifacts, registry metadata and verified consumer installation. |
-| Blocked | Remote CI | Successful current-candidate Windows/Linux PHP and MySQL/Redis jobs. |
 
 Implemented criteria and source/test evidence remain in the ledger. See
 [Architecture](ARCHITECTURE-ROADMAP.md), [Runtime contracts](framework/RUNTIME-CONTRACTS.md)
@@ -31,6 +30,13 @@ atomic stale-owner rejection and lazy TTL refresh. Real Redis integration covers
 parallel process writes, termination recovery and HTTP authentication. Local
 service acceptance uses MySQL 8.0 and a Redis 7.4 Windows port with phpredis 6.3;
 it is not evidence for the remote Linux matrix.
+
+The complete remote Core Quality matrix subsequently passed for commit
+`6c8127b`: Windows/Linux PHP 8.3, 8.4 and 8.5, plus Linux MySQL/Redis integrations
+on all three PHP versions. [Recorded run](https://github.com/techayoDEV/fnlla/actions/runs/34041394523).
+This closes the remote matrix criterion, not the publication gate. Hardening
+separately exposed a transient Windows private-state rename failure; its fix and
+every later candidate must pass all workflows before release approval.
 
 ## Evidence Policy
 

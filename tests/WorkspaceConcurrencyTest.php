@@ -9,6 +9,30 @@ use PHPUnit\Framework\TestCase;
 
 final class WorkspaceConcurrencyTest extends TestCase
 {
+    public function testRejectedStatePreservesPreviousJsonAndRemovesStagingFiles(): void
+    {
+        $directory = sys_get_temp_dir() . "/fnlla-state-" . bin2hex(random_bytes(8));
+        mkdir($directory, 0700);
+        $path = $directory . "/state.json";
+        $store = new \Fnlla\Php\Support\LockedJsonStore($path);
+        try {
+            $store->update(static fn (array $state): array => ["value" => "original"]);
+            $original = file_get_contents($path);
+            try {
+                $store->update(static fn (array $state): array => ["value" => str_repeat("x", 2097153)]);
+                self::fail("Oversized state accepted.");
+            } catch (\RuntimeException $error) {
+                self::assertStringContainsString("size limit", $error->getMessage());
+            }
+            self::assertSame($original, file_get_contents($path));
+            self::assertSame(["value" => "original"], $store->read());
+            self::assertSame([], glob($directory . "/.state-*") ?: []);
+        } finally {
+            foreach ([$path, $path . ".lock"] as $file) { if (is_file($file)) { unlink($file); } }
+            rmdir($directory);
+        }
+    }
+
     public function testParallelFileWritersPreserveAllTasksAndCorruptState(): void
     {
         $relative = "framework/workspace-concurrency-" . bin2hex(random_bytes(8)) . ".json";
