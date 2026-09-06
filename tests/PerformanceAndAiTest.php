@@ -390,10 +390,10 @@ final class PerformanceAndAiTest extends TestCase
 
     public function testUpgradeAnalyzerProducesMajorReleasePlan(): void
     {
-        $report = (new UpgradeAnalyzer())->report("2.1.1");
+        $report = (new UpgradeAnalyzer())->report();
 
         self::assertSame("fnlla.upgrade_report.v1", $report["schema"] ?? null);
-        self::assertSame("2.1.1", $report["target_version"] ?? null);
+        self::assertSame(UpgradeAnalyzer::DEFAULT_TARGET_VERSION, $report["target_version"] ?? null);
         self::assertArrayHasKey("checks", $report);
         self::assertArrayHasKey("plan", $report);
     }
@@ -424,7 +424,7 @@ final class PerformanceAndAiTest extends TestCase
 
     public function testUpgradeAnalyzerReportsPublicApiAndDistributedAdapterPosture(): void
     {
-        $report = (new UpgradeAnalyzer())->report("2.1.1");
+        $report = (new UpgradeAnalyzer())->report();
         $ids = array_map(static fn (array $check): string => (string) ($check["id"] ?? ""), (array) ($report["checks"] ?? []));
 
         self::assertTrue(in_array("public-api-contract", $ids, true));
@@ -466,7 +466,7 @@ final class PerformanceAndAiTest extends TestCase
         $pack = $contextBuilder->redactedCopy([
             "context" => $contextBuilder->build(),
             "app_map" => (new AppMapBuilder())->build(),
-            "upgrade" => (new UpgradeAnalyzer())->report("2.1.1"),
+            "upgrade" => (new UpgradeAnalyzer())->report(),
             "app_secret" => "do-not-leak",
         ]);
         $encoded = json_encode($pack, JSON_THROW_ON_ERROR);

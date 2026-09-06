@@ -272,11 +272,18 @@ final class RuntimeAiTest extends TestCase
 
     public function testRuntimeAiPromptRegistryAndEvalFixturesAreVersionedLocalData(): void
     {
+        $version = trim((string) strtok((string) file_get_contents(base_path("VERSION")), "\r\n"));
+        $runtimeVersion = trim((string) file_get_contents(base_path("resources/fnlla-ai-runtime/VERSION")));
+        $manifest = json_decode((string) file_get_contents(base_path("resources/fnlla-ai-runtime/MANIFEST.json")), true);
         $registry = json_decode((string) file_get_contents(base_path("resources/fnlla-ai-runtime/prompts/registry.json")), true);
         $evals = json_decode((string) file_get_contents(base_path("resources/fnlla-ai-runtime/evals/runtime-commands.json")), true);
 
+        self::assertSame($version, $runtimeVersion);
+        self::assertSame($version, $manifest["product"]["version"] ?? null);
         self::assertSame("fnlla.ai_prompt_registry.v1", $registry["schema"] ?? null);
+        self::assertSame($version, $registry["version"] ?? null);
         self::assertSame("fnlla.ai_eval_fixture.v1", $evals["schema"] ?? null);
+        self::assertSame($version, $evals["version"] ?? null);
         self::assertTrue(in_array("review.release-risk", array_column((array) ($registry["prompts"] ?? []), "id"), true));
         self::assertTrue(in_array("ai-ask-release-readiness", array_column((array) ($evals["fixtures"] ?? []), "id"), true));
         self::assertStringContainsString("prompts/registry.json", (string) file_get_contents(base_path("resources/fnlla-ai-runtime/MANIFEST.json")));

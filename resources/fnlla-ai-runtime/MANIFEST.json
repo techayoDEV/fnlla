@@ -3,7 +3,7 @@
     "product": {
         "name": "FNLLA Runtime Intelligence",
         "slug": "fnlla-ai-runtime",
-        "version": "2.1.1",
+        "version": "2.2.0",
         "owner": "TechAyo LTD (techayo.co.uk)",
         "repository": "https://github.com/techayoDEV/fnlla.git",
         "source_of_truth": "integrated"

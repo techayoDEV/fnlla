@@ -10,7 +10,7 @@ contact_links:
     url: https://github.com/techayoDEV/fnlla/blob/main/.github/SUPPORT.md
     about: Find the right support, licensing or conduct route for non-bug requests.
   - name: FNLLA Trademark Notice
-    url: https://github.com/techayoDEV/fnlla/blob/main/TRADEMARKS.md
+    url: https://github.com/techayoDEV/fnlla/blob/main/docs/framework/TRADEMARKS.md
     about: Review branding and endorsement rules before presenting a fork, derivative or integration as official FNLLA work.
   - name: FNLLA README
     url: https://github.com/techayoDEV/fnlla/blob/main/README.md

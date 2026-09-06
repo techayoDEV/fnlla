@@ -23,7 +23,8 @@ does not change acceptance or erase unfinished work.
 
 Implemented criteria and source/test evidence remain in the ledger. See
 [Architecture](ARCHITECTURE-ROADMAP.md), [Runtime contracts](framework/RUNTIME-CONTRACTS.md)
-and [Recovery](RECOVERY.md) for reusable procedures and constraints.
+and [release operations](RELEASE-AND-OPERATIONS.md#backup-and-recovery) for
+reusable procedures and constraints.
 
 Redis sessions now implement strict ID validation, bounded token-owned locking,
 atomic stale-owner rejection and lazy TTL refresh. Real Redis integration covers

@@ -34,22 +34,35 @@ final class ReleaseStore
             throw new RuntimeException("Artifact and deployment trees must not overlap.");
         }
         return $this->locked(function () use ($source, $target, $id): string {
-            if (file_exists($target) || !mkdir($target, 0700)) {
-                throw new RuntimeException("Release ID already exists or cannot be created.");
+            if (file_exists($target)) {
+                throw new RuntimeException("Release ID already exists.");
             }
-            $files = $this->inventory($source);
-            if (!isset($files["public/index.php"])) { throw new RuntimeException("Artifact has no public entrypoint."); }
-            foreach ($files as $path => $hash) {
-                $destination = $target . "/" . $path;
-                if (!is_dir(dirname($destination)) && !mkdir(dirname($destination), 0700, true)) {
-                    throw new RuntimeException("Cannot stage release directory.");
-                }
-                if (!copy($source . "/" . $path, $destination) || hash_file("sha256", $destination) !== $hash) {
-                    throw new RuntimeException("Artifact changed during staging: " . $path);
-                }
+            $staging = $this->stagingReleasePath();
+            if (!mkdir($staging, 0700)) {
+                throw new RuntimeException("Cannot create release staging directory.");
             }
-            $this->write($target . "/.fnlla-release.json", ["schema" => "fnlla.release.v1", "id" => $id, "files" => $files]);
-            return $target;
+            try {
+                $files = $this->inventory($source);
+                if (!isset($files["public/index.php"])) { throw new RuntimeException("Artifact has no public entrypoint."); }
+                foreach ($files as $path => $hash) {
+                    $destination = $staging . "/" . $path;
+                    if (!is_dir(dirname($destination)) && !mkdir(dirname($destination), 0700, true)) {
+                        throw new RuntimeException("Cannot stage release directory.");
+                    }
+                    if (!copy($source . "/" . $path, $destination) || hash_file("sha256", $destination) !== $hash) {
+                        throw new RuntimeException("Artifact changed during staging: " . $path);
+                    }
+                }
+                $this->write($staging . "/.fnlla-release.json", ["schema" => "fnlla.release.v1", "id" => $id, "files" => $files]);
+                if (file_exists($target) || !$this->publishDirectory($staging, $target)) {
+                    throw new RuntimeException("Cannot publish staged release.");
+                }
+                $this->verify($id);
+                return $target;
+            } catch (\Throwable $error) {
+                $this->discardStagingRelease($staging);
+                throw $error;
+            }
         });
     }
 
@@ -87,7 +100,13 @@ final class ReleaseStore
         if (($state["schema"] ?? "") !== "fnlla.deployment.v1" || !is_string($state["current"] ?? null)) {
             throw new RuntimeException("Invalid deployment state.");
         }
-        $this->release($state["current"]);
+        $this->assertReleaseRecordExists($state["current"]);
+        if (($state["previous"] ?? null) !== null && !is_string($state["previous"])) {
+            throw new RuntimeException("Invalid deployment state.");
+        }
+        if (is_string($state["previous"] ?? null)) {
+            $this->release($state["previous"]);
+        }
         return $state;
     }
 
@@ -149,7 +168,8 @@ final class ReleaseStore
         $temporary = tempnam(dirname($path), ".activation-");
         if ($temporary === false) { throw new RuntimeException("Cannot stage activation record."); }
         try {
-            if (file_put_contents($temporary, $json) !== strlen($json) || !rename($temporary, $path)) {
+            $expectedBytes = strlen($json);
+            if (file_put_contents($temporary, $json) !== $expectedBytes || !$this->publishFile($temporary, $path)) {
                 throw new RuntimeException("Cannot atomically activate release.");
             }
         } finally { if (is_file($temporary)) { unlink($temporary); } }
@@ -165,5 +185,61 @@ final class ReleaseStore
             if (!flock($lock, LOCK_EX | LOCK_NB)) { throw new RuntimeException("Another deployment is running."); }
             return $operation();
         } finally { flock($lock, LOCK_UN); fclose($lock); }
+    }
+
+    private function stagingReleasePath(): string
+    {
+        return $this->root . "/releases/.staging-" . bin2hex(random_bytes(8));
+    }
+
+    private function assertReleaseRecordExists(string $id): void
+    {
+        $path = $this->release($id);
+        if (!is_dir($path) || !is_file($path . "/.fnlla-release.json")) {
+            throw new RuntimeException("Active release record is missing.");
+        }
+    }
+
+    private function publishFile(string $temporary, string $target): bool
+    {
+        // Windows can briefly hold recently closed files; keep the old pointer
+        // until same-directory rename finally succeeds or the bounded retry ends.
+        return $this->renameWithRetry($temporary, $target);
+    }
+
+    private function publishDirectory(string $temporary, string $target): bool
+    {
+        return $this->renameWithRetry($temporary, $target);
+    }
+
+    private function renameWithRetry(string $temporary, string $target): bool
+    {
+        $attempts = PHP_OS_FAMILY === "Windows" ? 50 : 1;
+        for ($attempt = 0; $attempt < $attempts; $attempt++) {
+            if (@rename($temporary, $target)) {
+                return true;
+            }
+            if (PHP_OS_FAMILY === "Windows") {
+                usleep(10000);
+            }
+        }
+        return false;
+    }
+
+    private function discardStagingRelease(string $path): void
+    {
+        $normalized = str_replace("\\", "/", $path);
+        $prefix = str_replace("\\", "/", $this->root . "/releases/.staging-");
+        if (!str_starts_with($normalized, $prefix) || !is_dir($path)) {
+            return;
+        }
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($iterator as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        }
+        rmdir($path);
     }
 }

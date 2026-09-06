@@ -34,7 +34,7 @@ final class TechDebtUpdateCommand extends Command
     {
         $json = in_array("--json", $arguments, true);
         $check = in_array("--check", $arguments, true);
-        $docsPath = $this->optionValue($arguments, "--docs") ?? base_path("docs/TECH-DEBT-AND-FUTURE-PROOFING.md");
+        $docsPath = $this->optionValue($arguments, "--docs") ?? base_path("docs/DEVELOPER-PANEL.md");
         $reportPath = $this->optionValue($arguments, "--output") ?? framework_technical_debt_report_path();
         $builder = $this->container->make(TechnicalDebtReportBuilder::class);
         $report = $builder->build();

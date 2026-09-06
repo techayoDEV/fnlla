@@ -358,15 +358,54 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
   <div class="container">
     <section class="feature-section" id="developer-panel-setup" aria-label="<?= $freshDeveloperOnboarding ? "Project setup" : "Developer panel activation" ?>">
       <div class="grid grid-2 gap-lg site-login-grid">
-        <article class="feature-card">
-          <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Project setup" : "Framework update fallback" ?></p>
-          <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
-              ? "Set the project identity and private developer entry before client preview is enabled."
-              : "Activate the developer panel for an existing project that predates this feature." ?></h2>
-          <p class="content-text"><?= $freshDeveloperOnboarding
-              ? "This first local setup step saves the visible project name, optional public URL and a hashed password for the developer panel. The public site remains available until you deliberately enable maintenance or private client preview from the panel."
-              : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
-          <ul class="project-note-list project-blueprint-list">
+        <article class="feature-card project-setup-hero-card">
+          <div class="project-setup-hero-content">
+            <div class="project-setup-hero-topline">
+              <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Project setup" : "Framework update fallback" ?></p>
+              <span class="project-setup-local-badge">Local first</span>
+            </div>
+            <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
+                ? "Project identity and private developer entry, set before handoff."
+                : "Activate the developer panel for an existing project that predates this feature." ?></h2>
+            <p class="content-text"><?= $freshDeveloperOnboarding
+                ? "This step stores the public identity and creates the first named developer account while keeping maintenance and private preview disabled until you choose otherwise."
+                : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
+          </div>
+
+          <div class="project-setup-visual" aria-hidden="true">
+            <div class="project-setup-window">
+              <div class="project-setup-window-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="project-setup-window-body">
+                <div class="project-setup-title-line">
+                  <span><?= h((string) ($projectSetup["name"] ?? "FNLLA Project")) ?></span>
+                  <strong>/developer</strong>
+                </div>
+                <div class="project-setup-metric-row">
+                  <span class="is-active"></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="project-setup-access-card">
+                  <span class="project-setup-lock-shape"></span>
+                  <div>
+                    <strong>Private access</strong>
+                    <small>Named account, hashed password, session controls</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="project-setup-flow">
+              <span><strong>01</strong> Identity</span>
+              <span><strong>02</strong> Access</span>
+              <span><strong>03</strong> Panel</span>
+            </div>
+          </div>
+
+          <ul class="project-note-list project-blueprint-list project-setup-contract-list">
             <?php if ($freshDeveloperOnboarding): ?>
             <li><code>identity.title</code><span>Browser title, header, operations.</span></li>
             <li><code>identity.slogan?</code><span>Optional title suffix after the site name.</span></li>

@@ -70,7 +70,7 @@ final class AiTriageCommand extends Command
             "app_map_summary" => [
                 "routes" => (int) ($this->container->make(AppMapBuilder::class)->build()["routes"]["count"] ?? 0),
             ],
-            "upgrade_summary" => $this->container->make(UpgradeAnalyzer::class)->report("2.1.1")["summary"] ?? [],
+            "upgrade_summary" => $this->container->make(UpgradeAnalyzer::class)->report(UpgradeAnalyzer::DEFAULT_TARGET_VERSION)["summary"] ?? [],
             "next_steps" => [
                 "Run composer test -- --filter when the affected area is known.",
                 "Run php fnlla app:map --json before changing routes or controllers.",

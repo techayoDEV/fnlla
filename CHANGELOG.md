@@ -5,6 +5,10 @@ release tags are cut.
 
 ## Unreleased
 
+- Consolidate project command and recovery docs into the operations guide, move
+  framework policy documents out of the repository root, place Windows helper
+  launchers under `scripts/windows/`, and refresh Project Setup visuals.
+
 - Retry transient Windows private-state rename failures while holding the writer
   lock; preserve the previous JSON state if atomic publication cannot complete.
 

@@ -15,7 +15,9 @@ The patterns below describe the FNLLA application contract without prescribing a
 
 Before using this guide for a real delivery, read [`STARTING-A-NEW-PROJECT.md`](./STARTING-A-NEW-PROJECT.md). That document explains the official project-export workflow and when not to build directly inside the maintained `techayoDEV/fnlla` repository.
 
-When you need the exact responsibilities of the project scripts and validation commands, read [`PROJECT-SCRIPTS-REFERENCE.md`](./PROJECT-SCRIPTS-REFERENCE.md).
+When you need the exact responsibilities of the project scripts and validation
+commands, read the project-facing command reference in
+[`RELEASE-AND-OPERATIONS.md`](./RELEASE-AND-OPERATIONS.md#project-facing-command-reference).
 
 ## The working model
 

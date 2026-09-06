@@ -11,26 +11,22 @@ FNLLA experience; plain is an advanced core-only export of the same framework.
 - [Environment configuration](./ENVIRONMENT.md)
 - [Public API and compatibility](./PUBLIC-API.md)
 - [CLI and runtime contracts](framework/RUNTIME-CONTRACTS.md)
-- [Project scripts](./PROJECT-SCRIPTS-REFERENCE.md)
 - [Business application reference](./BUSINESS-APP-REFERENCE.md)
 
 ## Operations And Security
 
 - [Developer Panel](./DEVELOPER-PANEL.md)
-- [Developer account recovery](framework/DEVELOPER-RECOVERY.md)
-- [Developer diagnostics](framework/DEVELOPER-DIAGNOSTICS.md)
-- [Production checklist](./PRODUCTION-CHECKLIST.md)
-- [Backup and recovery](./RECOVERY.md)
+- [Developer diagnostics, account recovery and technical debt](./DEVELOPER-PANEL.md#diagnostic-storage-and-limits)
+- [Production checklist, root policy, project commands, backup and performance](./RELEASE-AND-OPERATIONS.md#root-file-policy)
 - [Migration and compatibility](./MIGRATION.md)
-- [Release operations](./RELEASE-AND-OPERATIONS.md)
-- [Performance measurement](./PERFORMANCE.md)
+- [Release operations, project commands, backup and recovery](./RELEASE-AND-OPERATIONS.md)
 - [Local AI review tooling and optional adapters](./AI-CONTEXT.md)
 
 ## Framework Maintenance
 
 - [Architecture and development](./ARCHITECTURE-ROADMAP.md)
 - [Current acceptance status](./MODERNIZATION-STATUS.md)
-- [Technical debt](./TECH-DEBT-AND-FUTURE-PROOFING.md)
+- [Technical debt](./DEVELOPER-PANEL.md#technical-debt-and-future-proofing)
 - [Release acceptance checklist](./RELEASE-AND-OPERATIONS.md#release-acceptance-checklist)
 
 The JSON ledger is the sole live acceptance register. Architecture explains
@@ -55,6 +51,12 @@ php scripts/check-docs.php
 Examples must match shipped commands and distinguish full-only operations.
 Keep compatibility in the migration guide and release history in CHANGELOG,
 not a growing collection of one-off upgrade files.
+
+Operational material belongs in one place unless it describes a stable public
+contract. Project-facing scripts, backup policy, restore drills, release gates
+performance budgets and publication checks are consolidated in
+`RELEASE-AND-OPERATIONS.md`. Developer diagnostics, account recovery and
+technical-debt workflow are consolidated in `DEVELOPER-PANEL.md`.
 
 Website: [fnlla.com](https://fnlla.com).
 Source: [techayoDEV/fnlla](https://github.com/techayoDEV/fnlla).

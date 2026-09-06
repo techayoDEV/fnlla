@@ -119,8 +119,9 @@ final class MakeProjectCommand extends Command
         $this->line("4. Leave ASSET_URL empty unless browser assets are served from a separate asset domain or CDN.");
         $this->line("5. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
         $this->line("6. Run php fnlla project:acceptance --json, php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
-        $this->line("7. Before production deployment, run php fnlla optimize:warm; before packaging a clean source release, run php fnlla optimize:clear.");
-        $this->line("8. Initialize a separate Git repository for the new website or application.");
+        $this->line("7. Windows shortcuts live under scripts/windows; fnlla.cmd stays in root as the CLI launcher.");
+        $this->line("8. Before production deployment, run php fnlla optimize:warm; before packaging a clean source release, run php fnlla optimize:clear.");
+        $this->line("9. Initialize a separate Git repository for the new website or application.");
 
         return 0;
     }
@@ -425,6 +426,9 @@ final class MakeProjectCommand extends Command
         $legacyLaunchers = [
             $targetRoot . DIRECTORY_SEPARATOR . "test-fnlla.cmd",
             $targetRoot . DIRECTORY_SEPARATOR . "lint-fnlla.cmd",
+            $targetRoot . DIRECTORY_SEPARATOR . "test-project.cmd",
+            $targetRoot . DIRECTORY_SEPARATOR . "lint-project.cmd",
+            $targetRoot . DIRECTORY_SEPARATOR . "update-fnlla-runtime.cmd",
         ];
 
         foreach ($legacyLaunchers as $legacyLauncher) {
@@ -433,8 +437,8 @@ final class MakeProjectCommand extends Command
             }
         }
 
-        $this->writeProjectTemplate($targetRoot, "test-project.cmd");
-        $this->writeProjectTemplate($targetRoot, "lint-project.cmd");
+        $this->writeProjectTemplate($targetRoot, "scripts/windows/test-project.cmd");
+        $this->writeProjectTemplate($targetRoot, "scripts/windows/lint-project.cmd");
     }
 
     private function writeProjectTemplate(string $targetRoot, string $relativePath, array $tokens = []): void

@@ -10,11 +10,10 @@ Before opening work, read:
 
 - [`README.md`](../README.md)
 - [`LICENSE.md`](../LICENSE.md)
-- [`SUPPORT.md`](../SUPPORT.md)
-- [`TRADEMARKS.md`](../TRADEMARKS.md)
 - [`SECURITY.md`](../SECURITY.md)
-- [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
-- [`.github/SUPPORT.md`](./SUPPORT.md)
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+- [`docs/framework/SUPPORT.md`](../docs/framework/SUPPORT.md)
+- [`docs/framework/TRADEMARKS.md`](../docs/framework/TRADEMARKS.md)
 
 ## What kinds of contributions are welcome
 
@@ -61,7 +60,8 @@ When a change is accepted for implementation:
 
 - edit first-party source files under `src/`, `bootstrap/`, `config/`, `routes/`, `views/` and `scripts/` where appropriate
 - do not treat generated runtime state under `storage/` as a hand-authored source of truth
-- keep `README.md`, `VERSION`, `LICENSE.md`, `SUPPORT.md` and `TRADEMARKS.md` aligned when release-facing behavior changes
+- keep `README.md`, `VERSION`, `LICENSE.md` and framework policy documents
+  under `docs/framework/` aligned when release-facing behavior changes
 - preserve the documented MySQL-only database boundary unless an explicit product decision changes it
 - preserve the FNLLA Runtime runtime boundary under `public/vendor/fnlla-runtime/`
 - keep GitHub as the source of truth for `techayoDEV/fnlla`, its published release line and the integrated FNLLA Runtime workflow
@@ -104,4 +104,4 @@ Submitting a contribution does not transfer ownership of FNLLA branding or chang
 
 ## Support and contact
 
-For general repository help, usage routing and business-boundary questions, use the guidance in [`.github/SUPPORT.md`](./SUPPORT.md).
+For general repository help, usage routing and business-boundary questions, use the guidance in [`docs/framework/SUPPORT.md`](../docs/framework/SUPPORT.md).

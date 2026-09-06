@@ -23,10 +23,7 @@ final class AtomicDeploymentTest extends TestCase
 
     protected function tearDown(): void
     {
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->root,
-            \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($files as $file) { $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname()); }
-        rmdir($this->root);
+        $this->removeTree($this->root);
     }
 
     public function testActivationFailureAndRollbackPreserveImmutableReleasesAndSharedData(): void
@@ -68,5 +65,46 @@ final class AtomicDeploymentTest extends TestCase
         self::assertSame("two", $store->activate("two", "one", static fn (): bool => true)["current"]);
         $this->expectException(RuntimeException::class);
         $store->activate("one", "one", static fn (): bool => true);
+    }
+
+    public function testFailedStagingDoesNotReserveReleaseIdOrLeaveStagingTree(): void
+    {
+        $store = new ReleaseStore($this->root . "/deployment");
+        $broken = $this->root . "/broken-artifact";
+        mkdir($broken . "/public", 0700, true);
+        file_put_contents($broken . "/public/app.css", "body{}");
+
+        try {
+            $store->stage($broken, "broken");
+            self::fail("Broken release staged without a public entrypoint.");
+        } catch (RuntimeException $error) {
+            self::assertStringContainsString("public entrypoint", $error->getMessage());
+        }
+
+        self::assertFileDoesNotExist($store->release("broken"));
+        self::assertSame([], glob($this->root . "/deployment/releases/.staging-*") ?: []);
+    }
+
+    public function testDeploymentStateRejectsMissingActiveReleaseRecord(): void
+    {
+        $store = new ReleaseStore($this->root . "/deployment");
+        $store->stage($this->root . "/artifact", "one");
+        $store->activate("one", null, static fn (): bool => true);
+        $this->removeTree($store->release("one"));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage("Active release record is missing.");
+        $store->state();
+    }
+
+    private function removeTree(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path,
+            \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($files as $file) { $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname()); }
+        rmdir($path);
     }
 }

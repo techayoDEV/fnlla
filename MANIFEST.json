@@ -39,8 +39,8 @@
             "README.md",
             "VERSION",
             "LICENSE.md",
-            "SUPPORT.md",
-            "TRADEMARKS.md"
+            "docs/framework/SUPPORT.md",
+            "docs/framework/TRADEMARKS.md"
         ]
     }
 }

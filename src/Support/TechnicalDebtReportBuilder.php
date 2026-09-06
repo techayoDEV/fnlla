@@ -267,7 +267,6 @@ final class TechnicalDebtReportBuilder
             "docs/ENVIRONMENT.md",
             "docs/PUBLIC-API.md",
             "docs/RELEASE-AND-OPERATIONS.md",
-            "docs/TECH-DEBT-AND-FUTURE-PROOFING.md",
         ];
         $missing = [];
 
@@ -280,7 +279,7 @@ final class TechnicalDebtReportBuilder
         return [
             "id" => "release-documentation",
             "status" => $missing === [] ? "pass" : "fail",
-            "detail" => $missing === [] ? "Required release, AI, operations and technical-debt documents are present." : "Required release documentation is missing.",
+            "detail" => $missing === [] ? "Required release, AI, operations and developer-panel documents are present." : "Required release documentation is missing.",
             "data" => ["missing" => $missing],
         ];
     }
@@ -426,7 +425,7 @@ final class TechnicalDebtReportBuilder
 
                 $relativePath = $this->relativePath($item->getPathname());
 
-                if ($relativePath === "docs/TECH-DEBT-AND-FUTURE-PROOFING.md" || !$this->isTextSource($relativePath) || preg_match('#^docs/.*\.html$#i', $relativePath) === 1) {
+                if ($relativePath === "docs/DEVELOPER-PANEL.md" || !$this->isTextSource($relativePath) || preg_match('#^docs/.*\.html$#i', $relativePath) === 1) {
                     continue;
                 }
 

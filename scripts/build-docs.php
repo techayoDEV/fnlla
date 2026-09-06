@@ -72,15 +72,6 @@ $rootPages = [
 
 $guidePages = [
     [
-        "label" => "Recovery",
-        "href" => "recovery.html",
-        "source" => "docs/RECOVERY.md",
-        "source_name" => "RECOVERY.md",
-        "title" => "Recovery",
-        "document_title" => "Recovery - FNLLA Documentation",
-        "lead" => "Application-neutral backup, restoration and external-effect reconciliation.",
-    ],
-    [
         "label" => "Documentation Map",
         "href" => "readme.html",
         "source" => "docs/README.md",
@@ -135,15 +126,6 @@ $guidePages = [
         "lead" => "Private technical workspace, capability model and framework-vs-product boundary.",
     ],
     [
-        "label" => "Project Scripts Reference",
-        "href" => "project-scripts-reference.html",
-        "source" => "docs/PROJECT-SCRIPTS-REFERENCE.md",
-        "source_name" => "PROJECT-SCRIPTS-REFERENCE.md",
-        "title" => "Project Scripts Reference",
-        "document_title" => "Project Scripts Reference - FNLLA Documentation",
-        "lead" => "Exact responsibilities, boundaries and downstream usage notes for the scripts kept in the FNLLA project export.",
-    ],
-    [
         "label" => "Release And Operations",
         "href" => "release-and-operations.html",
         "source" => "docs/RELEASE-AND-OPERATIONS.md",
@@ -153,15 +135,6 @@ $guidePages = [
         "lead" => "Operational readiness, observability and supply-chain release workflow for FNLLA deployments.",
     ],
     [
-        "label" => "Production Checklist",
-        "href" => "production-checklist.html",
-        "source" => "docs/PRODUCTION-CHECKLIST.md",
-        "source_name" => "PRODUCTION-CHECKLIST.md",
-        "title" => "Production Checklist",
-        "document_title" => "Production Checklist - FNLLA Documentation",
-        "lead" => "Security, backup, performance and deployment gate for production FNLLA applications.",
-    ],
-    [
         "label" => "Environment",
         "href" => "environment.html",
         "source" => "docs/ENVIRONMENT.md",
@@ -169,15 +142,6 @@ $guidePages = [
         "title" => "Environment",
         "document_title" => "Environment - FNLLA Documentation",
         "lead" => "Short starter env, full environment reference, client-preview mode and the Fionn bridge boundary.",
-    ],
-    [
-        "label" => "Performance",
-        "href" => "performance.html",
-        "source" => "docs/PERFORMANCE.md",
-        "source_name" => "PERFORMANCE.md",
-        "title" => "Performance",
-        "document_title" => "Performance - FNLLA Documentation",
-        "lead" => "Production cache warmup, performance profiling and regression budgets for FNLLA deployments.",
     ],
     [
         "label" => "AI Context",
@@ -197,34 +161,27 @@ $guidePages = [
         "document_title" => "Migration - FNLLA Documentation",
         "lead" => "Major-version migration workflow, public contract review and AI-assisted upgrade guidance.",
     ],
-    [
-        "label" => "Tech Debt",
-        "href" => "tech-debt-and-future-proofing.html",
-        "source" => "docs/TECH-DEBT-AND-FUTURE-PROOFING.md",
-        "source_name" => "TECH-DEBT-AND-FUTURE-PROOFING.md",
-        "title" => "Tech Debt And Future Proofing",
-        "document_title" => "Tech Debt And Future Proofing - FNLLA Documentation",
-        "lead" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
-    ],
 ];
 
 $guideLinkMap = [
-    "./RECOVERY.md" => "./recovery.html",
+    "./RECOVERY.md" => "./release-and-operations.html#backup-and-recovery",
     "./README.md" => "./readme.html",
     "./STARTING-A-NEW-PROJECT.md" => "./starting-a-new-project.html",
     "./BUILDING-WITH-FNLLA.md" => "./building-with-fnlla.html",
     "./BUSINESS-APP-REFERENCE.md" => "./business-app-reference.html",
     "./PUBLIC-API.md" => "./public-api.html",
     "./DEVELOPER-PANEL.md" => "./developer-panel.html",
-    "./PROJECT-SCRIPTS-REFERENCE.md" => "./project-scripts-reference.html",
+    "./PROJECT-SCRIPTS-REFERENCE.md" => "./release-and-operations.html#project-facing-command-reference",
     "./RELEASE-AND-OPERATIONS.md" => "./release-and-operations.html",
-    "./PRODUCTION-CHECKLIST.md" => "./production-checklist.html",
+    "./PRODUCTION-CHECKLIST.md" => "./release-and-operations.html#production-readiness-checklist",
     "./ENVIRONMENT.md" => "./environment.html",
-    "./PERFORMANCE.md" => "./performance.html",
+    "./PERFORMANCE.md" => "./release-and-operations.html#performance-baselines-and-budgets",
     "./AI-CONTEXT.md" => "./ai-context.html",
     "./MIGRATION.md" => "./migration.html",
-    "./MAJOR-RELEASE-CHECKLIST.md" => "./major-release-checklist.html",
-    "./TECH-DEBT-AND-FUTURE-PROOFING.md" => "./tech-debt-and-future-proofing.html",
+    "./MAJOR-RELEASE-CHECKLIST.md" => "./release-and-operations.html#release-acceptance-checklist",
+    "./TECH-DEBT-AND-FUTURE-PROOFING.md" => "./developer-panel.html#technical-debt-and-future-proofing",
+    "framework/DEVELOPER-DIAGNOSTICS.md" => "./developer-panel.html#diagnostic-storage-and-limits",
+    "framework/DEVELOPER-RECOVERY.md" => "./developer-panel.html#developer-account-recovery",
 ];
 
 $pagesToWrite = [
@@ -347,6 +304,31 @@ foreach ($guidePages as $guidePage) {
 $pagesToWrite[] = [
     "target" => $docsRoot . DIRECTORY_SEPARATOR . "major-release-checklist.html",
     "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Release Checklist</title><link rel="canonical" href="./release-and-operations.html#release-acceptance-checklist"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#release-acceptance-checklist"></head><body><p>The checklist is maintained in <a href="./release-and-operations.html#release-acceptance-checklist">Release And Operations</a>.</p></body></html>',
+];
+
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "recovery.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Backup And Recovery</title><link rel="canonical" href="./release-and-operations.html#backup-and-recovery"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#backup-and-recovery"></head><body><p>Backup and recovery are maintained in <a href="./release-and-operations.html#backup-and-recovery">Release And Operations</a>.</p></body></html>',
+];
+
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "project-scripts-reference.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Project Command Reference</title><link rel="canonical" href="./release-and-operations.html#project-facing-command-reference"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#project-facing-command-reference"></head><body><p>Project commands are maintained in <a href="./release-and-operations.html#project-facing-command-reference">Release And Operations</a>.</p></body></html>',
+];
+
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "production-checklist.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Production Readiness Checklist</title><link rel="canonical" href="./release-and-operations.html#production-readiness-checklist"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#production-readiness-checklist"></head><body><p>The production readiness checklist is maintained in <a href="./release-and-operations.html#production-readiness-checklist">Release And Operations</a>.</p></body></html>',
+];
+
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "performance.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Performance Baselines</title><link rel="canonical" href="./release-and-operations.html#performance-baselines-and-budgets"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#performance-baselines-and-budgets"></head><body><p>Performance baselines and budgets are maintained in <a href="./release-and-operations.html#performance-baselines-and-budgets">Release And Operations</a>.</p></body></html>',
+];
+
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "tech-debt-and-future-proofing.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Technical Debt</title><link rel="canonical" href="./developer-panel.html#technical-debt-and-future-proofing"><meta http-equiv="refresh" content="0;url=./developer-panel.html#technical-debt-and-future-proofing"></head><body><p>Technical debt and future-proofing guidance is maintained in <a href="./developer-panel.html#technical-debt-and-future-proofing">Developer Panel</a>.</p></body></html>',
 ];
 
 ensure_directory($assetsRoot);
@@ -941,7 +923,8 @@ views/</code></pre>
           <pre><code>.git
 .github
 README.md
-CODE_OF_CONDUCT.md
+docs/framework/SUPPORT.md
+docs/framework/TRADEMARKS.md
 SECURITY.md</code></pre>
           <p class="card-text">Framework-maintainer metadata stays in the source repository so the downstream project starts with its own Git history and its own project-level documentation.</p>
         </article>
@@ -1289,7 +1272,7 @@ throttle</code></pre>
             <li><code>php fnlla framework:update --apply</code> for conflict-free official GitHub updates</li>
             <li><code>php fnlla route:list</code></li>
             <li><code>php fnlla ai:providers</code> for runtime AI provider readiness</li>
-            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.1.3</code></li>
+            <li><code>php fnlla version:status</code>, <code>php fnlla version:sync</code> and maintainer-only <code>php fnlla version:set 2.2.0</code></li>
           </ul>
         </article>
         <article class="card">

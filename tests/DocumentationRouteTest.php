@@ -65,9 +65,12 @@ final class DocumentationRouteTest extends TestCase
         self::assertStringContainsString("/docs/starting-a-new-project.html", $response->body());
         self::assertStringContainsString("/docs/business-app-reference.html", $response->body());
         self::assertStringContainsString("/docs/public-api.html", $response->body());
-        self::assertStringContainsString("/docs/production-checklist.html", $response->body());
         self::assertStringContainsString("/docs/environment.html", $response->body());
-        self::assertStringContainsString("/docs/recovery.html", $response->body());
+        self::assertStringContainsString("/docs/release-and-operations.html", $response->body());
+        self::assertStringNotContainsString("/docs/recovery.html", $response->body());
+        self::assertStringNotContainsString("/docs/production-checklist.html", $response->body());
+        self::assertStringNotContainsString("/docs/performance.html", $response->body());
+        self::assertStringNotContainsString("/docs/tech-debt-and-future-proofing.html", $response->body());
         self::assertStringNotContainsString("/docs/enterprise-todo.html", $response->body());
     }
 

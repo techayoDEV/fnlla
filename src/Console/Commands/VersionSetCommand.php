@@ -81,6 +81,6 @@ final class VersionSetCommand extends Command
     private function printUsage(): void
     {
         $this->line("Usage: php fnlla version:set <semver>");
-        $this->line("Example: php fnlla version:set 2.1.1");
+        $this->line("Example: php fnlla version:set 2.2.0");
     }
 }

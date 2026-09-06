@@ -128,7 +128,8 @@ Debug also offers optional bounded request history, disabled by default. It reco
 only authorized developer requests in non-production debug environments, including
 JSON responses. It never stores URLs, request IDs, inputs, headers or response bodies.
 The default is 200 entries / one hour, pruned on reads and writes; disabling clears
-the records. This is not production APM. See `docs/framework/DEVELOPER-DIAGNOSTICS.md`.
+the records. This is not production APM. See
+`docs/DEVELOPER-PANEL.md#diagnostic-storage-and-limits`.
 
 Private state lives under `storage/framework/developer/` and is not exported.
 Public routes, page templates and `public/assets/app.css` are project-owned.
@@ -172,7 +173,8 @@ It also avoids copying framework-maintainer-only surfaces such as:
 - local runtime residue from `storage/` such as logs, cache entries, queue files, session files and guard state
 - framework governance files
 
-For the exact script boundary, read [`PROJECT-SCRIPTS-REFERENCE.md`](./PROJECT-SCRIPTS-REFERENCE.md).
+For the exact script boundary, read the project-facing command reference in
+[`RELEASE-AND-OPERATIONS.md`](./RELEASE-AND-OPERATIONS.md#project-facing-command-reference).
 
 ## What the new project should be
 
@@ -310,6 +312,11 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
+On Windows, optional command wrappers live under `scripts/windows/` to keep the
+project root focused. `fnlla.cmd` remains in root as the normal CLI launcher.
+The full root-file policy is maintained in
+`docs/RELEASE-AND-OPERATIONS.md#root-file-policy`.
+
 12. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
 
 13. When client preview should stay private, either open `/maintenance` locally
@@ -355,7 +362,8 @@ If you see sign-in immediately, verify that you are using the correct project
 directory, port and entry path. Check whether `DEVELOPER_ACCESS_USERS` is populated
 in `.env` or supplied externally, without posting its contents. A QA preview with
 a preconfigured account is not a fresh starter. Never delete existing accounts to
-force setup; use [account recovery](framework/DEVELOPER-RECOVERY.md) instead.
+force setup; use [account recovery](DEVELOPER-PANEL.md#developer-account-recovery)
+instead.
 
 Core (`--profile=plain`) intentionally has no Developer Panel or browser setup.
 

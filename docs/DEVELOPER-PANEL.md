@@ -28,7 +28,35 @@ locked, atomic JSON store in `storage/framework/developer/request-history.json`.
 
 `DEBUG_REQUEST_HISTORY=false` is the default; the panel's saved switch overrides
 this default. The setting does not enable the toolbar or production profiling.
-See [starter diagnostics](framework/DEVELOPER-DIAGNOSTICS.md).
+
+### Diagnostic Storage And Limits
+
+Set `APP_ENV=development` and `APP_DEBUG=true` locally. Sign in as a developer
+with `operations.view`; `panel.settings.write` is additionally required to change
+debug settings. Toolbar and request history are independent switches. Both
+default to disabled (`DEBUG_TOOLBAR=false`, `DEBUG_REQUEST_HISTORY=false`). A
+saved panel switch overrides its environment default. Refresh cached
+configuration after editing environment variables.
+
+History records only authorized developer requests, including JSON and failed
+responses. It stores timestamp, normalized HTTP method, status, duration and peak
+memory, never paths, IDs, query strings, SQL, bindings, headers, cookies,
+request/response bodies or exception messages. The table shows newest first.
+PHP peak memory is process-scoped; long-lived concurrent HTTP workers are not
+the supported runtime model.
+
+`config/debug.php` sets `history.max_entries` (default 200, maximum 1000) and
+`history.retention_seconds` (default 3600, maximum 86400). Entries expire on the
+next history read/write, not via a background timer. Disable history to erase
+entries or select Clear history and Save. The save/redirect requests themselves
+may appear when recording remains enabled. Clear before production deployment.
+
+Private state is in `storage/framework/developer/request-history.json`, outside
+the public web root and excluded from source exports. Corrupt or unwritable
+optional telemetry must not interrupt application requests. Clear-history and
+settings mutations are CSRF protected. Guests, staging and production are not
+recorded. No shared-browser session, payload viewer, production APM or remote
+telemetry service is included.
 
 Full projects can independently switch modules off in `config/modules.php` or `.env`:
 
@@ -441,6 +469,96 @@ Teams that need long-lived history should install the database storage contract
 with `php fnlla developer:install-storage`. Teams that need full product
 project management should build or connect that as application-layer software.
 
+## Technical Debt And Future Proofing
+
+Framework debt is recorded and verified inside the Developer Panel and the
+release tooling. This is not a second architecture backlog or a historical
+implementation report. Use the [architecture guide](ARCHITECTURE-ROADMAP.md) for
+design boundaries, the [changelog](../CHANGELOG.md) for released changes and the
+[modernization status](MODERNIZATION-STATUS.md) for outstanding acceptance.
+
+Framework modernization criteria live in
+[resources/modernization-tasks.json](../resources/modernization-tasks.json).
+Keep status, evidence and remaining work there; do not create per-session reports
+or copy its task list into another guide. Application-specific issues belong in
+the application's private issue tracker, not FNLLA source documentation.
+
+An empty source-marker scan does not mean architecture work is complete.
+Validate the ledger with:
+
+```bash
+php scripts/check-modernization.php
+php scripts/check-modernization.php --require-complete
+```
+
+The second command must pass before claiming all modernization criteria are
+finished. A local passing test does not establish remote integration, production
+recovery, public package installation or performance parity with another
+framework.
+
+Confirm that a defect reproduces in maintained source or a clean project export,
+and distinguish framework defects from application behavior. Fix a small,
+well-understood defect with a regression test. For work that must be deferred,
+record its owner, area, affected contract, reproduction, risk, acceptance
+criteria and evidence in the appropriate issue tracker or the existing
+architecture ledger.
+
+Use the [security policy](../SECURITY.md) for undisclosed vulnerabilities. Do
+not publish credentials, account identifiers, customer data, workstation paths or
+private recovery evidence. Public reproductions should use synthetic fixtures.
+
+Update the affected guide when behavior changes. Keep one canonical procedure
+and link to it from other guides; retain compatibility instructions while they
+remain supported. Keep license attribution and public API names accurate.
+Generate HTML from Markdown rather than maintaining two independent versions.
+
+Before release, follow [release operations](RELEASE-AND-OPERATIONS.md), including:
+
+```bash
+php scripts/build-docs.php
+php scripts/build-docs.php --check
+php scripts/check-docs.php
+php fnlla tech-debt:update
+php fnlla tech-debt:update --check
+```
+
+The debt command writes `storage/framework/cache/technical-debt-report.json` for
+local evidence and refreshes the bounded snapshot below. Its schema is
+`fnlla.technical_debt_report.v1`. A freshness check validates that snapshot, not
+the truth of every acceptance claim. Keep generated operational evidence outside
+source distributions; the snapshot intentionally omits local residue paths.
+
+<!-- FNLLA_TECH_DEBT_REPORT:BEGIN -->
+## Self-Checking Debt Snapshot
+
+Refresh this section with:
+
+```bash
+php fnlla tech-debt:update
+php fnlla tech-debt:update --check
+```
+
+The command rebuilds a machine-readable report, rewrites this bounded
+snapshot and returns a non-zero exit code when `--check` sees stale
+documentation.
+
+| Check | Status | Detail |
+| --- | --- | --- |
+| `explicit-debt-markers` | `pass` | No explicit debt markers found in release-facing source files. |
+| `runtime-residue` | `runtime` | Runtime data must be excluded from source artifacts, not deleted from a working application. |
+| `generated-docs-sync` | `pass` | Generated HTML docs match Markdown sources. |
+| `release-documentation` | `pass` | Required release, AI, operations and developer-panel documents are present. |
+| `ai-product-runtime` | `pass` | Local runtime AI and the reserved Fionn bridge contract are present. |
+| `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
+| `modernization-ledger` | `warn` | 7 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
+
+Generated actions:
+
+- Run php scripts/check-modernization.php --require-complete and close outstanding acceptance criteria before claiming modernization is complete.
+
+Snapshot summary: `5` pass, `1` warn, `0` fail, `1` info.
+<!-- FNLLA_TECH_DEBT_REPORT:END -->
+
 ## Release Checklist
 
 Before treating a Developer Panel change as release-ready:
@@ -490,8 +608,109 @@ server shell. Recovery preserves MFA and revokes existing developer sessions.
 Production email requires a real mail transport and a regularly scheduled queue
 worker; the default log transport does not deliver mail.
 
-See [Developer Account Recovery](framework/DEVELOPER-RECOVERY.md) for setup,
-local testing, token lifetime, credential-cache behavior and deployment limits.
+### Developer Account Recovery
+
+The Complete starter includes a split Developer Panel sign-in screen, email
+password recovery and a server-owner CLI fallback. Core/plain includes none of
+these panel files. No database tables or additional Composer dependencies are
+required for recovery.
+
+To enable email recovery:
+
+1. Configure named developer accounts in `DEVELOPER_ACCESS_USERS`.
+2. Set `APP_URL` to the project's canonical HTTPS base URL, including any base
+   path. Reset links never use the incoming Host header. Loopback HTTP is allowed
+   only in `development` and `testing`.
+3. Configure a real `MAIL_MAILER` transport: `http`, explicitly enabled
+   `native`, or `adapter` with a registered transport such as optional
+   `fnlla-smtp`. Configure `MAIL_FROM_ADDRESS` and verify delivery before
+   enabling production access. The default `log` driver writes local test
+   messages, not real email; production recovery refuses it.
+4. Run `php fnlla queue:work 50` regularly, for example every minute through
+   cron or Windows Task Scheduler. This command drains a batch and exits; it is
+   not a permanent worker. Set its working directory to the project root. The
+   default file queue works without Redis; all web/worker processes must share
+   its storage.
+5. Keep `.env`, its parent directory and private `storage` writable by the
+   application and worker accounts. Protect their filesystem permissions. Web
+   document roots must point only to `public`, never to the project root.
+
+Optional settings, after rebuilding configuration cache when used:
+
+```dotenv
+DEVELOPER_ACCESS_RECOVERY_ENABLED=true
+DEVELOPER_ACCESS_RECOVERY_TTL_MINUTES=30
+```
+
+The lifetime is bounded to 5-60 minutes. The switch disables both HTTP recovery
+and issuing CLI links; it does not remove the panel. With a custom entry path,
+`/private-tools`, the forms live at `/private-tools/forgot-password` and
+`/private-tools/reset-password`.
+
+In local development with `APP_ENV=development`, `MAIL_MAILER=log` and an
+explicit loopback `APP_URL`, submit the form and run `php fnlla queue:work 50`.
+The message is in the configured mail log, by default
+`storage/mail/YYYYMMDD.log`. That file contains a live bearer link: never expose
+it publicly, commit it or attach it to a support ticket.
+
+When email delivery is unavailable, an authorized operator with shell access can
+run:
+
+```sh
+php fnlla developer:recovery-link developer@example.com
+```
+
+This prints a private, expiring link for an existing account. Open it in the
+browser and choose the new password there. Passwords are never CLI arguments or
+terminal output. Treat the link as a temporary password: do not use this command
+in CI, shared terminal recordings or HTTP command-execution endpoints. This
+fallback does not require a queue worker or mail transport.
+
+If 2FA was also lost, password recovery deliberately does not bypass it. Another
+authorized lead developer must follow the project's identity-verification and
+MFA recovery procedure. Do not delete all accounts or disable authentication as
+a password-reset workaround.
+
+Recovery security rules:
+
+- Public requests queue the same job for valid known and unknown email
+  addresses; account lookup and mail delivery happen outside the HTTP request.
+  Responses do not reveal whether an account exists. No bearer token is placed
+  in a queue job.
+- Requests are limited atomically to 3 per email and 5 per IP per hour, with
+  additional route throttles and CSRF protection. These limits do not lock the
+  developer out of ordinary sign-in. Jobs older than an hour are discarded.
+- Tokens contain 256 random bits; private token state stores only SHA-256
+  digests and credential fingerprints. A newer link supersedes an older one.
+  Opening a link does not consume it, so mail scanners cannot reset a password.
+- On opening the link, the token moves to the private browser session and the
+  browser redirects to a clean URL. Pages are no-store and no-referrer. Configure
+  your web server, reverse proxy and observability tools not to retain query
+  strings on the initial reset request; FNLLA cannot sanitize upstream logs.
+- Reset changes only the password, preserves account roles and MFA, and revokes
+  all existing developer sessions through the existing credential fingerprint.
+  Other outstanding recovery links also become invalid after credential changes.
+  A separate notification is sent after success where a mail transport is allowed.
+- Environment writes use a shared lock and atomic replacement. Recovery compares
+  the current on-disk account configuration before writing, rejects duplicates
+  and stale changes, and never replaces unrelated environment keys. Developer
+  credentials are refreshed even when other configuration is cached.
+- Credentials supplied through externally injected environment variables must
+  match the writable `.env` value. If they differ, recovery fails closed. For
+  immutable secret-store deployments, rotate the authoritative secret through
+  your deployment process; this local `.env` workflow is not a secret-store
+  adapter.
+- Check private logs for `developer_recovery_queue_failed`,
+  `developer_recovery_write_failed` and `developer_recovery_mail_failed`, and
+  inspect failed queue jobs for generic delivery errors. Check `APP_URL`, mail
+  transport, worker scheduling and storage permissions when no message arrives.
+- Use shared private recovery storage across all application instances; local
+  per-host token files are not a distributed recovery backend. Short-lived worker
+  batches reload configuration; restart any custom long-running workers after
+  credential changes. Secure and rotate local mail logs and expired session data.
+
+Security design reference:
+[OWASP Forgot Password Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
 
 ### Panel Scope
 

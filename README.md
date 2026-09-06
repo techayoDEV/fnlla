@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/badge/version-2.2.0-0f766e?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
-[![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/PERFORMANCE.md)
+[![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md#performance-baselines-and-budgets)
 [![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
 [![Release Gate](https://img.shields.io/badge/release%20gate-Ubuntu%20%7C%20macOS%20%7C%20Windows-0f766e?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md)
 [![UI Runtime](https://img.shields.io/badge/UI-integrated%20FNLLA%20runtime-18352f?style=flat-square)](./public/vendor/fnlla-runtime/README.md)
@@ -87,8 +87,8 @@ php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=100
 php fnlla release:prepare --major --target=2.2.0
 ```
 
-Command responsibilities and downstream boundaries are documented in
-[`docs/PROJECT-SCRIPTS-REFERENCE.md`](./docs/PROJECT-SCRIPTS-REFERENCE.md).
+Command responsibilities, downstream script boundaries and recovery operations
+are documented in [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md).
 
 ## Documentation
 
@@ -98,24 +98,21 @@ documentation set:
 - [`docs/BUILDING-WITH-FNLLA.md`](./docs/BUILDING-WITH-FNLLA.md) for the
   practical build guide.
 - [`docs/PUBLIC-API.md`](./docs/PUBLIC-API.md) for the stable public contract.
-- [`docs/PRODUCTION-CHECKLIST.md`](./docs/PRODUCTION-CHECKLIST.md) for
-  deployment and security gates.
+- [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for
+  releases, root file policy, production gates, performance budgets, backups,
+  restore flow, SBOM and GitHub Actions.
 - [`docs/DEVELOPER-PANEL.md`](./docs/DEVELOPER-PANEL.md) for the private
   technical workspace, security, analytics, remote-control adapter
-  contract, storage and framework-vs-product boundary.
+  contract, storage, diagnostics, recovery, technical debt and
+  framework-vs-product boundary.
 - [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
   `.env.full.example`, client preview and the Fionn bridge boundary.
-- [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for
-  releases, backups, restore flow, SBOM and GitHub Actions.
 - [`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) for the
   reference business-application checklist.
 - [`resources/business-reference/2.1/`](./resources/business-reference/2.1/) for
   the machine-readable blueprint behind the reference checklist.
-- [`docs/PERFORMANCE.md`](./docs/PERFORMANCE.md) for baselines and HTTP probes.
 - [`docs/AI-CONTEXT.md`](./docs/AI-CONTEXT.md) for local, redacted AI review
   packs and the opt-in Fionn bridge contract.
-- [`docs/TECH-DEBT-AND-FUTURE-PROOFING.md`](./docs/TECH-DEBT-AND-FUTURE-PROOFING.md) for
-  the self-checking technical-debt report and release cleanup policy.
 
 The generated HTML documentation lives in `docs/*.html` and is rebuilt from the
 Markdown sources with:
@@ -135,7 +132,8 @@ php scripts/build-docs.php --check
 - `resources/` - local runtime bundles, reference manifests and export
   templates.
 - `routes/` - web, maintenance and console route definitions.
-- `scripts/` - validation, release and maintainer scripts.
+- `scripts/` - validation, release and maintainer scripts; Windows shortcuts
+  are kept under `scripts/windows/`.
 - `src/` - framework source code.
 - `storage/` - runtime state; only placeholder `.gitignore` files belong in Git.
 - `tests/` - framework and export regression tests.
@@ -157,7 +155,7 @@ See [`CHANGELOG.md`](./CHANGELOG.md) and
 ## Governance
 
 - License: [`LICENSE.md`](./LICENSE.md)
-- Support boundary: [`SUPPORT.md`](./SUPPORT.md)
+- Support boundary: [`docs/framework/SUPPORT.md`](./docs/framework/SUPPORT.md)
 - Security policy: [`SECURITY.md`](./SECURITY.md)
-- Code of conduct: [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
-- Trademark notice: [`TRADEMARKS.md`](./TRADEMARKS.md)
+- Code of conduct: [`.github/CODE_OF_CONDUCT.md`](./.github/CODE_OF_CONDUCT.md)
+- Trademark notice: [`docs/framework/TRADEMARKS.md`](./docs/framework/TRADEMARKS.md)

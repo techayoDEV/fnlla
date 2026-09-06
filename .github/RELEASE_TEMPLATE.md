@@ -14,7 +14,7 @@ Highlights
 - FNLLA Runtime runtime contract enforcement with publish -> sync flow under public/vendor/fnlla-runtime/
 
 Operational notes
-- README.md, VERSION, LICENSE.md, SUPPORT.md and TRADEMARKS.md are aligned for the release line
+- README.md, VERSION, LICENSE.md and docs/framework policy documents are aligned for the release line
 - release metadata, docs sync and published runtime export have been validated for the release line
 - Follow-up cleanup and hardening work is tracked in GitHub after publication when needed
 ```

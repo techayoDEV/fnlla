@@ -23,7 +23,7 @@ final class AiBriefCommand extends Command
     public function handle(array $arguments): int
     {
         $map = $this->container->make(AppMapBuilder::class)->build();
-        $upgrade = $this->container->make(UpgradeAnalyzer::class)->report((string) ($arguments[0] ?? "2.1.1"));
+        $upgrade = $this->container->make(UpgradeAnalyzer::class)->report((string) ($arguments[0] ?? UpgradeAnalyzer::DEFAULT_TARGET_VERSION));
         $brief = [
             "schema" => "fnlla.ai_brief.v1",
             "project" => (string) config("app.name", "FNLLA"),

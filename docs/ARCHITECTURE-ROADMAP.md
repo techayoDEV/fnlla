@@ -91,7 +91,7 @@ path package is not proof of public registry publication.
 Core and Complete need a common versioned ownership contract for assets, config,
 routes and package removal. Test actual published upgrades while preserving
 application files. File rollback cannot reverse emails, payments, uploads or
-schema changes. See [Recovery](RECOVERY.md).
+schema changes. See [release operations](RELEASE-AND-OPERATIONS.md#backup-and-recovery).
 
 Measure checkout, source archive, clean export and browser transfer separately.
 Clean-export limits are 400,000 bytes / 160 files for plain and 4,000,000 bytes /

@@ -1,6 +1,6 @@
 {
     "schema": "fnlla.ai_eval_fixture.v1",
-    "version": "2.1.1",
+    "version": "2.2.0",
     "fixtures": [
         {
             "id": "ai-ask-release-readiness",
@@ -26,7 +26,7 @@
         {
             "id": "ai-brief-upgrade",
             "command": "ai:brief",
-            "input": "2.1.1",
+            "input": "2.2.0",
             "expected_schema": "fnlla.ai_brief.v1",
             "must_include_fields": ["project", "routes", "upgrade_summary"]
         },

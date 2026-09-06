@@ -119,6 +119,255 @@ integration on Linux. Release Gate adds macOS and export/update regression.
 Hardening validates repository scripts and runtime export. Every job depending
 on Composer tools must install the lock file before invoking them.
 
+## Production Readiness Checklist
+
+Use this checklist before tagging a production release or deploying a downstream
+FNLLA application. It is written as a gate: unchecked items are release blockers
+unless the release owner records an explicit exception.
+
+Environment:
+
+- `APP_ENV=production`.
+- `APP_DEBUG=false`.
+- `APP_URL` uses `https://`.
+- `.env` exists only on the target environment and is not committed.
+- `APP_KEY` is unique per environment.
+- File permissions allow the web process to write only required storage paths.
+
+Use these labels during handover:
+
+- `not-ready`: any required command below fails.
+- `staging-ready`: the project passes acceptance, tests, lint and strict
+  security audit on a staging-like environment.
+- `release-ready`: staging-ready plus verified backup restore, current
+  performance budget and tagged source state.
+- `production-ready`: release-ready plus live HTTPS, host/proxy configuration,
+  monitoring, backup retention and rollback access.
+
+Do not call a deployment production-ready only because the homepage renders.
+
+HTTP security:
+
+- HTTPS is enforced at the reverse proxy or web server.
+- Trusted hosts are configured for every public hostname.
+- Trusted proxies are configured when traffic passes through a load balancer,
+  CDN or platform proxy.
+- Secure cookies are enabled.
+- SameSite cookie policy is set deliberately.
+- CORS allows only known origins.
+- CSP is enabled with a nonce-aware policy.
+- Error pages do not expose stack traces.
+
+Auth and sessions:
+
+- Admin/operator/client roles are explicitly tested.
+- Protected routes have unauthorized-flow tests.
+- Password reset and first-password setup links expire.
+- Session files or Redis keys are excluded from backups.
+- Client preview passwords are rotated before sharing with a real client.
+
+Data and storage:
+
+- Migrations have run successfully on a staging copy.
+- Destructive migrations have a rollback or manual recovery plan.
+- Database writes that span multiple tables use `db()->transaction()`.
+- Uploaded files are validated by size and extension.
+- Upload download routes are protected by auth and gates.
+- Logs, queues, sessions and cache are not included in release commits.
+
+Generate a redacted operational backup plan:
+
+```bash
+php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
+```
+
+The real runbook must cover database dump/restore commands, storage include and
+exclude paths, retention policy, encryption and access controls, restore order
+and verification commands after restore. Before deployment, verify the latest
+backup by restoring it to a non-production environment, then run
+`php fnlla project:acceptance --json` on the restored copy.
+
+Restore evidence should record source tag or commit, dump timestamp, storage
+archive timestamp, restore operator, target environment, post-restore command
+output summaries, known exceptions and follow-up actions.
+
+Runtime and performance:
+
+- `php fnlla optimize:warm` completes successfully.
+- `php fnlla project:acceptance --json` passes on the deployable source tree or
+  restored staging copy.
+- `php fnlla perf:baseline:update --iterations=7` has a current baseline.
+- `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000`
+  passes against that baseline.
+- Baseline coverage includes command listing, route listing, `/`, `/api/health`
+  and project export timing where the application deployment pipeline can run
+  those probes.
+
+Runtime AI and Fionn:
+
+- Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly needs Fionn.
+- If `AI_RUNTIME_DRIVER=fionn`, keep `AI_FIONN_BRIDGE_ENABLED=true` only on
+  environments where a reviewed Fionn service is available.
+- Pin `AI_FIONN_ALLOWED_HOSTS` to the exact Fionn service host.
+- Use HTTPS and `AI_FIONN_API_TOKEN` for every non-local Fionn endpoint.
+- Use plain HTTP only for `localhost` or `127.0.0.1` development and staging
+  drills where `AI_FIONN_ALLOW_INSECURE_LOCALHOST=true` is deliberate.
+- Keep Fionn learning, training, admin and queue endpoints outside FNLLA
+  application calls.
+- Verify `php fnlla ai:providers --json` before release; the Fionn provider must
+  report `provider_ready=true` and `endpoint_allowed=true` when selected.
+- Run `php fnlla security:audit --strict`; it fails selected Fionn unless the
+  endpoint policy passes.
+
+Run the production gate locally or in CI:
+
+```bash
+php scripts/test.php
+php scripts/lint.php
+php scripts/validate-fnlla-runtime.php
+php scripts/validate-version-manifest.php
+php scripts/validate-release-metadata.php
+php scripts/build-docs.php --check
+php fnlla doctor
+php fnlla security:audit --strict
+php fnlla project:acceptance --json
+php fnlla release:prepare --major --target=2.2.0
+```
+
+Strict security audit is a production blocker. If it fails, fix the
+configuration or document why the release is not production-ready.
+
+Deployment:
+
+- Deploy from a tagged release.
+- Deploy the exact source state that passed the release gate.
+- Keep production `.env`, storage, uploads and hosting files outside framework
+  update replacement paths.
+- Warm caches after deploy.
+- Check `/api/health` after deploy.
+- Keep a rollback tag, database backup and storage backup available.
+
+After deployment, verify `APP_URL` over HTTPS, `/api/health`, protected-page
+guest rejection, maintenance/client preview unlock, writable logs without
+secret leakage, intended mail transport and backup include-path access.
+
+## Project-Facing Command Reference
+
+Exported projects keep only the scripts and commands that help a delivery team
+build, validate, update and release a downstream application. Maintainer-only
+documentation builders, publishing scripts, ecosystem audits and `make:project`
+remain in `techayoDEV/fnlla`.
+
+The normal downstream command set is:
+
+| Need | Command |
+| --- | --- |
+| Confirm a fresh export or restored staging copy | `php fnlla project:acceptance --json` |
+| Check PHP/runtime prerequisites | `php fnlla doctor` |
+| Check environment shape | `php fnlla config:doctor --json` |
+| Check deploy security posture | `php fnlla security:audit --strict` |
+| Run smoke tests without Composer PHPUnit | `php scripts/test.php` |
+| Run syntax lint | `php scripts/lint.php` |
+| Validate integrated UI runtime files | `php scripts/validate-fnlla-runtime.php` |
+| Validate `VERSION`, `MANIFEST.json` and runtime metadata | `php scripts/validate-version-manifest.php` |
+| Refresh version metadata after an intentional version change | `php fnlla version:sync` |
+| Claim real product identity after export | `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` |
+| Review official framework drift | `php fnlla framework:update --check` and `php fnlla framework:update --dry-run` |
+| Apply only conflict-free official framework updates | `php fnlla framework:update --apply` |
+| Inspect framework update drift in the browser | `/maintenance/framework-update` |
+| Print optional Developer Panel storage SQL | `php fnlla developer:install-storage --dry-run` |
+| Build a redacted backup plan | `php fnlla ops:backup-plan --verify` |
+| Check local technical-debt posture | `php fnlla tech-debt:update --check` |
+| Measure local performance | `php fnlla perf:profile --iterations=5` |
+| Enforce saved performance budgets | `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` |
+
+`scripts/test.php` is the dependency-light smoke harness. After `composer install`,
+`composer test:unit` runs real PHPUnit and `composer analyse` runs PHPStan.
+The smoke harness is useful offline, but it is not a full framework CI service.
+
+`scripts/lint.php` checks PHP syntax in the local project tree and ignores
+dependencies plus runtime storage. It catches parse errors, not behavioral bugs.
+`validate-fnlla-runtime.php` checks the integrated UI runtime contract.
+`validate-version-manifest.php` checks version metadata consistency.
+
+`framework:update` uses only the official `techayoDEV/fnlla` GitHub release
+channel. Local `--source` overrides, forks and unpublished checkouts are rejected
+in the public downstream path. A dry run writes the exact safe-change, conflict
+and local-only report before an apply run.
+
+## Root File Policy
+
+Keep the repository root small, but do not hide files that standard tools expect
+at root. `composer.json`, `composer.lock`, `phpunit.xml`, `phpstan.neon`,
+`phpstan.neon.dist`, `.env.example`, `.env.full.example`, `VERSION`,
+`MANIFEST.json`, `README.md`, `CHANGELOG.md`, `LICENSE.md`, `SECURITY.md`,
+`fnlla` and `fnlla.cmd` stay at root because Composer, PHPUnit, PHPStan, release
+validation, archive consumers or Windows developers use them directly.
+
+Project exports follow the same rule. Full exports keep `VERSION`,
+`MANIFEST.json`, `.env.full.example`, `fnlla` and `fnlla.cmd` because they are an
+integrated framework distribution. Plain exports omit integrated-distribution
+metadata and panel/runtime assets, but keep Composer metadata, `.env.example`,
+`README.md`, `LICENSE.md`, `phpunit.xml`, `phpstan.neon.dist` and the CLI launcher.
+
+Optional launchers and task wrappers belong under `scripts/windows/`. Private
+governance lives under `.github/`; framework support and trademark references live
+under `docs/framework/`. Generated logs, caches, queues, sessions, update
+transactions, local backups and package archives must not be committed or exported.
+
+The Windows root stays intentionally small. `fnlla.cmd` remains in project root
+because it is the primary CLI launcher; optional wrappers live in
+`scripts/windows/`:
+
+```cmd
+scripts\windows\test-project.cmd
+scripts\windows\lint-project.cmd
+scripts\windows\update-fnlla-runtime.cmd
+```
+
+Full exports include the Developer Panel, runtime assets, update machinery,
+maintenance preview, analytics modules and project-facing scripts. Plain exports
+ship the core package, focused tests and a minimal app surface; they do not include
+panel, runtime UI distribution or `framework:update`.
+
+## Backup And Recovery
+
+Code rollback and business-data recovery are separate decisions. FNLLA can restore
+managed framework files and switch immutable release pointers, but it cannot undo
+database writes, uploaded files, sent email, payments, webhooks or third-party
+state. Each production application needs its own RPO, RTO, retention, encryption,
+offsite retrieval, secret recovery and external-effect reconciliation policy.
+
+For an isolated file exercise, stop traffic and all writers, choose a private
+backup parent outside the repository/web root, and run:
+
+```powershell
+php scripts/recovery-drill.php --source="$env:RECOVERY_SOURCE" --output="$env:RECOVERY_OUTPUT" --quiesced --rpo-seconds=86400 --rto-seconds=3600
+```
+
+Those RPO/RTO values are illustrative, not approved defaults. The output must be
+new and outside the source tree. The tool verifies hashes, rejects source changes
+and does not overwrite existing destinations. Snapshots can include secrets, so
+do not publish reports or paths in Git, issue trackers or public release assets.
+
+Database and external-effect recovery should follow this sequence:
+
+1. Freeze outbound workers and integrations, then record the recovery boundary.
+2. Retrieve a verified database backup and matching upload snapshot.
+3. Restore into an isolated database with least-privilege credentials.
+4. Compare schema, row counts, critical invariants and application compatibility.
+5. Reconcile completed and pending provider effects through provider records and
+   idempotency keys. Never blindly replay queues after restoring a database.
+6. Verify secret recovery, credentials, sessions, login, permissions, forms,
+   uploads, health checks and application read/write workflows.
+7. Resume deliberately and record restore time plus observed data loss.
+
+Keep backup timestamps, targets, toolchain, hashes, integrity results, measured
+time and reconciliation decisions in restricted application records. Redact
+identifiers before sharing summaries. Synthetic fixtures validate the mechanism;
+they do not prove offsite availability, backup freshness or a real application's
+production RPO/RTO.
+
 ## Daily Readiness
 
 Run:
@@ -175,6 +424,97 @@ microbenchmark false positives.
 
 `app:map` and `upgrade:check` are especially useful before a major release. They
 make route/controller/view topology and migration readiness machine-readable.
+
+## Performance Baselines And Budgets
+
+FNLLA keeps performance work local, reproducible and easy to inspect. The goal is
+not to hide runtime behavior behind a build service. The goal is to make
+production readiness explicit before a public release.
+
+Run:
+
+```bash
+php fnlla optimize:warm
+```
+
+The command builds normal bootstrap caches and adds two production-facing
+artefacts:
+
+- `storage/framework/cache/assets.php` is a generated asset manifest used by
+  `asset()` so hot requests can avoid repeated `filemtime()` checks.
+- `storage/framework/cache/preload.php` is an optional OPcache preload list for
+  hosts that support `opcache.preload`.
+
+`optimize:warm` is safe to run during deployment. For source packaging or local
+development resets, run:
+
+```bash
+php fnlla optimize:clear
+```
+
+Profiling commands:
+
+```bash
+php fnlla perf:profile --iterations=5
+php fnlla perf:profile --iterations=5 --json
+php fnlla perf:baseline:update --iterations=7
+php fnlla perf:compare --iterations=5 --against storage/framework/cache/performance-baseline.json
+```
+
+The profiler records CLI timings for `list`, `route:list`, `version:status` and
+`make:project`; in-process HTTP probe timings for `/` and `/api/health`; p50,
+p95, average, minimum and maximum command times; source footprint for the main
+framework directories; PHP version, environment and peak memory.
+
+HTTP probes boot the local application in-process. They do not require a web
+server and do not claim to represent public internet latency. The `/` probe
+confirms that the public surface responds or redirects into the expected
+maintenance/setup flow. The `/api/health` probe confirms that the machine-facing
+health route is reachable and returns a deliberate status. A `503` from
+`/api/health` can be valid when maintenance mode is actively restricting API
+access; it is still useful performance data because the route, middleware and
+JSON response path executed correctly.
+
+Create a local baseline:
+
+```bash
+php fnlla perf:profile --iterations=7 --write-baseline
+php fnlla perf:baseline:update --iterations=7
+```
+
+Then compare future changes:
+
+```bash
+php fnlla perf:budget --iterations=7 --max-regression=20
+php fnlla perf:budget --iterations=7 --max-regression=20 --max-regression-ms=1000 --json
+php fnlla perf:compare --iterations=7 --max-regression=20 --max-regression-ms=1000
+```
+
+`--max-regression` is a percentage threshold against saved p95 timings.
+`--max-regression-ms` is an absolute tolerance that prevents tiny local timings
+from becoming noisy false positives. A comparison fails only when both thresholds
+are exceeded. A failed budget exits with code `1`, which makes it suitable for CI
+and release gates.
+
+FNLLA ships a baseline policy at
+`resources/performance-baselines/2.1-policy.json`. It names the release-decision
+targets for command listing, route listing, homepage health, API health and
+project export. The built-in profiler measures the CLI/export targets locally;
+deployment pipelines should add HTTP probes for `/` and `/api/health` against
+the same thresholds.
+
+For a commercial application, keep two baselines: a framework baseline
+immediately after `make:project` and `project:claim`, and an application baseline
+after the first real product flows exist. Compare later changes against the
+application baseline. That separates framework startup cost from real business
+code, queries and templates.
+
+The highest-value optimizations are already wired into the framework: static
+route lookup, route/config caches, generated asset manifest, lazy session boot
+and health readiness caching. Future large-scale deployments should add
+adapter-backed infrastructure where needed: Redis or Memcached cache, external
+session storage, a distributed queue store and OpenTelemetry-compatible metrics
+export.
 
 ## Commercial Product Handover Evidence
 
@@ -411,7 +751,8 @@ Update recovery:
    in the affected project to recover an interrupted managed-file transaction.
    Do not delete its journal or overwrite project-owned files from Git blindly.
 4. Verify recovery, then run `php fnlla framework:update --dry-run` before any
-   second apply. See [Recovery](RECOVERY.md) for the database/external-effect boundary.
+   second apply. See [Backup And Recovery](#backup-and-recovery) for the
+   database/external-effect boundary.
 
 Backup and restore:
 

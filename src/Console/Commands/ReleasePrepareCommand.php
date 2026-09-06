@@ -189,7 +189,7 @@ final class ReleasePrepareCommand extends Command
         $contents = is_file(base_path("VERSION")) ? (string) file_get_contents(base_path("VERSION")) : "";
         $version = trim(strtok($contents, "\r\n") ?: "");
 
-        return $version !== "" ? $version : "2.1.1";
+        return $version !== "" ? $version : UpgradeAnalyzer::DEFAULT_TARGET_VERSION;
     }
 
     private function printArtifacts(array $artifacts, string $prefix = ""): void

@@ -99,9 +99,9 @@ final class DocsController extends Controller
         ],
         [
             "file" => "project-scripts-reference.html",
-            "title" => "Project Scripts Reference",
-            "summary" => "What the project-facing scripts are responsible for and which ones belong only in the maintainer workspace.",
-            "kind" => "Guide",
+            "title" => "Project Command Reference",
+            "summary" => "Compatibility redirect to the consolidated release and operations guide.",
+            "kind" => "Alias",
         ],
         [
             "file" => "release-and-operations.html",
@@ -112,8 +112,8 @@ final class DocsController extends Controller
         [
             "file" => "production-checklist.html",
             "title" => "Production Checklist",
-            "summary" => "The production security, backup, performance and deployment gate for FNLLA applications.",
-            "kind" => "Guide",
+            "summary" => "Compatibility redirect to the consolidated release and operations guide.",
+            "kind" => "Alias",
         ],
         [
             "file" => "environment.html",
@@ -124,8 +124,8 @@ final class DocsController extends Controller
         [
             "file" => "performance.html",
             "title" => "Performance",
-            "summary" => "Production warmup, local profiling and regression budgets for performance-aware releases.",
-            "kind" => "Guide",
+            "summary" => "Compatibility redirect to the consolidated release and operations guide.",
+            "kind" => "Alias",
         ],
         [
             "file" => "ai-context.html",
@@ -136,8 +136,8 @@ final class DocsController extends Controller
         [
             "file" => "recovery.html",
             "title" => "Recovery",
-            "summary" => "Application-neutral backup, restoration and external-effect reconciliation.",
-            "kind" => "Guide",
+            "summary" => "Compatibility redirect to the consolidated release and operations guide.",
+            "kind" => "Alias",
         ],
         [
             "file" => "migration.html",
@@ -149,13 +149,13 @@ final class DocsController extends Controller
             "file" => "major-release-checklist.html",
             "title" => "Major Release Checklist",
             "summary" => "Release-owner checklist for validation, performance, privacy and publication readiness.",
-            "kind" => "Guide",
+            "kind" => "Alias",
         ],
         [
             "file" => "tech-debt-and-future-proofing.html",
             "title" => "Tech Debt And Future Proofing",
-            "summary" => "Implemented hardening, remaining non-blocking debt and documentation quality policy.",
-            "kind" => "Guide",
+            "summary" => "Compatibility redirect to the consolidated developer panel guide.",
+            "kind" => "Alias",
         ],
     ];
 

@@ -12,8 +12,8 @@ FNLLA includes a local, privacy-first AI context pack:
 php fnlla ai:context
 php fnlla ai:context --json
 php fnlla ai:context --output storage/framework/cache/my-ai-context.json
-php fnlla ai:review-pack --target=2.1.3
-php fnlla ai:upgrade-brief --target=2.1.3
+php fnlla ai:review-pack --target=2.2.0
+php fnlla ai:upgrade-brief --target=2.2.0
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 php fnlla ai:ask "How do I check release readiness?"
 php fnlla ai:triage --input="route 404 on controller" --json
@@ -102,7 +102,7 @@ php scripts/lint.php
 2. Generate a redacted review pack:
 
 ```bash
-php fnlla ai:review-pack --target=2.1.3
+php fnlla ai:review-pack --target=2.2.0
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 ```
 

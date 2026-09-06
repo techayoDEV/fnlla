@@ -16,6 +16,9 @@ Application code belongs in `app/` (`App\`), routes in `routes/`, templates in `
 The core (`Fnlla\Php\`) is a separate Composer library. Do not modify `vendor/`.
 Database access is lazy: the homepage and `/api/health` do not require a database.
 The health endpoint is liveness only, not database or deployment readiness.
+Composer metadata, `.env.example`, `phpunit.xml`, `phpstan.neon`, `README.md`,
+`LICENSE.md` and the `fnlla` launcher remain at root because common PHP tooling
+discovers them there by default.
 
 After installation, `composer test:unit` runs real PHPUnit and `composer analyse`
 runs PHPStan level 5 for app and core. `php scripts/test.php` stays available offline.

@@ -43,7 +43,7 @@ Without such an agreement, the public repository, issues and documentation shoul
 - Bug or regression reports: GitHub Issues in `techayoDEV/fnlla`
 - Framework support mailbox: `support@fnlla.com`
 - Security reports: `SECURITY.md`
-- Repository conduct concerns: `CODE_OF_CONDUCT.md`
+- Repository conduct concerns: `.github/CODE_OF_CONDUCT.md`
 - Business, partnership or commercial implementation requests: `https://techayo.co.uk`
 
 ## Runtime-specific report checklist

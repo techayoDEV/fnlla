@@ -63,7 +63,7 @@ php scripts/lint.php
 - In this repository, `public/vendor/fnlla-runtime/` is the integrated UI surface that `fnlla-runtime:sync`, validation and downstream exports consume directly.
 - `scripts/sync-fnlla-runtime.ps1` can sync from this integrated vendored runtime in a local `techayoDEV/fnlla` checkout or from a dedicated runtime export rooted elsewhere.
 - If you maintain a separate runtime source checkout outside this repository, sync from its published export rather than from partial source fragments.
-- Current framework metadata remains governed by README.md, VERSION, LICENSE.md, SUPPORT.md and TRADEMARKS.md in the repository root.
-- Support and trademark boundaries remain governed by SUPPORT.md and TRADEMARKS.md in the repository root plus the integrated UI surface metadata shipped here.
+- Current framework metadata remains governed by README.md, VERSION, LICENSE.md and the policies under docs/framework/ in the repository source.
+- Support and trademark boundaries remain governed by docs/framework/SUPPORT.md and docs/framework/TRADEMARKS.md plus the integrated UI surface metadata shipped here.
 - Machine-readable UI surface metadata remains governed by MANIFEST.json in this directory and the repository root.
 - The repository root of `techayoDEV/fnlla` remains the authoritative maintainer workspace and documentation source of truth.

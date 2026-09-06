@@ -33,7 +33,7 @@ final class UpgradePlanCommand extends Command
     public function handle(array $arguments): int
     {
         $json = in_array("--json", $arguments, true);
-        $target = $this->optionValue($arguments, "--target") ?? "2.1.1";
+        $target = $this->optionValue($arguments, "--target") ?? UpgradeAnalyzer::DEFAULT_TARGET_VERSION;
         $output = $this->optionValue($arguments, "--output") ?? framework_upgrade_plan_path();
         $analyzer = $this->container->make(UpgradeAnalyzer::class);
         $report = $analyzer->report($target);

@@ -139,7 +139,7 @@ function Test-OrganizationBranding {
     $optionalTargets = @(
         "README.md",
         "CONTRIBUTING.md",
-        "CODE_OF_CONDUCT.md",
+        ".github/CODE_OF_CONDUCT.md",
         ".github/ISSUE_TEMPLATE/config.yml",
         ".github/ISSUE_TEMPLATE/bug-report.yml",
         ".github/ISSUE_TEMPLATE/feature-request.yml"

@@ -294,15 +294,16 @@ final class ApplicationSurfaceTest extends TestCase
     public function testProjectSetupNotesUseBlueprintListStyle(): void
     {
         $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
+        $appCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
 
         self::assertStringContainsString("--fnlla-brand-font: \"Space Grotesk\"", $css);
         self::assertStringContainsString("--fnlla-brand-mono: \"JetBrains Mono\"", $css);
         self::assertStringContainsString("--fnlla-workbench-binary-signal:", $css);
         self::assertStringContainsString("--fnlla-workbench-short-signal:", $css);
-        self::assertStringContainsString("--fnlla-workbench-binary-field:", $css);
-        self::assertStringContainsString("--fnlla-workbench-binary-field-color:", $css);
-        self::assertStringContainsString("--fnlla-workbench-binary-field-opacity:", $css);
-        self::assertStringContainsString("--fnlla-workbench-binary-field-shadow:", $css);
+        self::assertStringNotContainsString("--fnlla-workbench-binary-field:", $css);
+        self::assertStringNotContainsString("--fnlla-workbench-binary-field-color:", $css);
+        self::assertStringNotContainsString("--fnlla-workbench-binary-field-opacity:", $css);
+        self::assertStringNotContainsString("--fnlla-workbench-binary-field-shadow:", $css);
         self::assertStringContainsString("--fnlla-workbench-panel-edge:", $css);
         self::assertStringContainsString("Workbench surface contract", $css);
         self::assertStringContainsString("--fnlla-blueprint-panel-bg:", $css);
@@ -312,9 +313,16 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("body.developer-workspace-layout::after {\n  position: fixed;", $css);
         self::assertStringContainsString(".starter-hero::before,\n.framework-update-stage::before,\n.maintenance-lock-stage::before {", $css);
         self::assertStringContainsString(".starter-hero::after,\n.framework-update-stage::after,\n.maintenance-lock-stage::after {", $css);
-        self::assertStringContainsString("text-shadow: var(--fnlla-workbench-binary-field-shadow);", $css);
-        self::assertStringContainsString("24rem 0 0 currentColor,", $css);
-        self::assertStringContainsString("linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.9) 18%", $css);
+        self::assertStringContainsString(".site-login-grid > .project-setup-hero-card", $css);
+        self::assertStringContainsString(".project-setup-visual", $css);
+        self::assertStringContainsString(".project-setup-window", $css);
+        self::assertStringContainsString(".project-setup-flow", $css);
+        self::assertStringContainsString(".project-setup-contract-list", $css);
+        self::assertStringContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $css);
+        self::assertStringContainsString("content: \"\";\n  opacity: 0.95;", $css);
+        self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-field);", $appCss);
+        self::assertStringNotContainsString("text-shadow: var(--fnlla-workbench-binary-field-shadow);", $appCss);
+        self::assertStringNotContainsString("24rem 0 0 currentColor,", $appCss);
         self::assertStringContainsString("content: var(--fnlla-workbench-short-signal);", $css);
         self::assertStringContainsString(".framework-update-status-grid > .feature-card", $css);
         self::assertStringContainsString(".project-blueprint-list {\n  display: grid;", $css);
@@ -648,7 +656,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("data-fnlla-cookie-consent", $response->body());
         self::assertStringContainsString("Project name", $response->body());
         self::assertStringContainsString("Public URL", $response->body());
-        self::assertStringContainsString("Set the project identity and private developer entry", $response->body());
+        self::assertStringContainsString("Project identity and private developer entry, set before handoff.", $response->body());
+        self::assertStringContainsString("project-setup-visual", $response->body());
+        self::assertStringContainsString("project-setup-flow", $response->body());
         self::assertStringContainsString("Save project setup and private access", $response->body());
         self::assertStringContainsString("project-note-list project-blueprint-list", $response->body());
         self::assertStringContainsString("<code>identity.title</code><span>Browser title, header, operations.</span>", $response->body());
@@ -969,7 +979,7 @@ final class ApplicationSurfaceTest extends TestCase
             "ui_apply_enabled" => true,
         ]));
         $_SESSION["_flash_old"]["framework_upgrade_report"] = [
-            "target_version" => "2.1.1",
+            "target_version" => "2.2.0",
             "executed_at_utc" => "2026-07-13T10:00:00+00:00",
             "summary" => [
                 "passed" => 6,
@@ -1329,7 +1339,8 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $pageResponse->status());
-        self::assertStringContainsString("Set the project identity and private developer entry", $pageResponse->body());
+        self::assertStringContainsString("Project identity and private developer entry, set before handoff.", $pageResponse->body());
+        self::assertStringContainsString("project-setup-visual", $pageResponse->body());
         self::assertStringContainsString("Save project setup and private access", $pageResponse->body());
         self::assertStringNotContainsString("Configure maintenance access", $pageResponse->body());
 
@@ -1749,10 +1760,13 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("/fnlla/analytics/event", $heatmapResponse->body());
         self::assertStringContainsString("No external calls by default", $heatmapResponse->body());
         $developerCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
+        $developerPanelCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/developer-panel.css")));
         self::assertStringContainsString("body.developer-workspace-layout {\n  position: relative;\n  min-height: 100vh;", $developerCss);
-        self::assertStringContainsString("radial-gradient(circle at top right", $developerCss);
-        self::assertStringContainsString("content: var(--fnlla-workbench-binary-field);", $developerCss);
-        self::assertStringContainsString("repeating-linear-gradient(180deg, transparent 0 1.35rem", $developerCss);
+        self::assertStringContainsString("linear-gradient(90deg, rgba(219, 234, 254, 0.5)", $developerPanelCss);
+        self::assertStringContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $developerPanelCss);
+        self::assertStringContainsString("repeating-linear-gradient(180deg, transparent 0 2.75rem", $developerPanelCss);
+        self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-field);", $developerPanelCss);
+        self::assertStringNotContainsString("text-shadow: var(--fnlla-workbench-binary-field-shadow);", $developerPanelCss);
         self::assertStringContainsString(".developer-dashboard-section::before {\n  position: absolute;", $developerCss);
         self::assertStringContainsString("content: var(--fnlla-workbench-binary-signal);", $developerCss);
         self::assertStringContainsString(".developer-panel-page-head::after {\n  width: fit-content;", $developerCss);

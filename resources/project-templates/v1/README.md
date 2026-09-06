@@ -17,7 +17,8 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - the opt-in Fionn runtime AI bridge contract, disabled by default
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
-- root license: `LICENSE.md`; framework references: `docs/framework/SUPPORT.md`, `docs/framework/TRADEMARKS.md`
+- root license: `LICENSE.md`; framework references:
+  `docs/framework/SUPPORT.md`, `docs/framework/TRADEMARKS.md`
 - an application base with public pages for home, about and services
 - an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
@@ -98,7 +99,7 @@ It intentionally leaves behind:
 - framework-only browser docs under `docs/`
 - versioned project-export templates under `resources/project-templates/`
 - the maintainer docs builder `scripts/build-docs.php`
-- repository governance and contribution files such as `.git/`, `.github/`, `CODE_OF_CONDUCT.md` and `SECURITY.md`
+- repository governance and contribution files such as `.git/`, `.github/CODE_OF_CONDUCT.md` and `SECURITY.md`
 - local runtime residue such as logs, cache entries, queue files, session files and integrated UI surface guard state
 - maintainer publishing, ecosystem audit, release-metadata validation and export benchmarking scripts
 - the unused FNLLA starter logo and individual icon SVG files
@@ -191,7 +192,13 @@ Release checksums exclude runtime storage, uploads and local environment files.
 The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
 Start with `docs/README.md`, `docs/STARTING-A-NEW-PROJECT.md`,
 `docs/BUILDING-WITH-FNLLA.md`, `docs/PUBLIC-API.md` and
-`docs/PRODUCTION-CHECKLIST.md` there when you need deeper framework guidance.
+`docs/RELEASE-AND-OPERATIONS.md` there when you need deeper framework guidance.
+
+The export keeps standard tool entrypoints at root: Composer metadata,
+`phpunit.xml`, `phpstan.neon`, `.env.example`, `VERSION`, `MANIFEST.json`,
+`LICENSE.md`, `README.md`, `fnlla` and `fnlla.cmd`. Optional Windows wrappers
+live under `scripts/windows/`, and framework policy references live under
+`docs/framework/`.
 
 Fionn integration is a controlled API bridge, not a copied model or knowledge
 bundle. Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly enables a
@@ -232,15 +239,15 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-Developer password recovery is documented in
-[Developer Account Recovery](docs/framework/DEVELOPER-RECOVERY.md). Email reset
+Developer password recovery is documented in the upstream
+`docs/DEVELOPER-PANEL.md#developer-account-recovery` section. Email reset
 requests require a configured mail transport and `php fnlla queue:work 50`;
 authorized server owners can use `php fnlla developer:recovery-link EMAIL`.
 
 On Windows, the application export also includes:
 
 ```cmd
-test-project.cmd
-lint-project.cmd
-update-fnlla-runtime.cmd
+scripts\windows\test-project.cmd
+scripts\windows\lint-project.cmd
+scripts\windows\update-fnlla-runtime.cmd
 ```

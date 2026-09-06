@@ -43,7 +43,7 @@ Without such an agreement, the public repository, issues and documentation shoul
 - Bug or regression reports: GitHub Issues in `techayoDEV/fnlla`
 - Framework support mailbox: `support@fnlla.com`
 - Security reports: `SECURITY.md`
-- Repository conduct concerns: `CODE_OF_CONDUCT.md`
+- Repository conduct concerns: `.github/CODE_OF_CONDUCT.md`
 - Business, partnership or commercial implementation requests: `https://techayo.co.uk`
 
 ## Self-service resources
@@ -53,9 +53,9 @@ Before opening a public issue, check:
 - `README.md` for the short project overview and current stable line
 - `docs/README.md` for the complete documentation map
 - `docs/STARTING-A-NEW-PROJECT.md` for the supported export workflow
-- `docs/PRODUCTION-CHECKLIST.md` for production deployment responsibility
+- `docs/RELEASE-AND-OPERATIONS.md#production-readiness-checklist` for production deployment responsibility
 - `docs/MIGRATION.md` for consolidated upgrade and compatibility guidance
-- `BUGLOG.md` for known framework-level defects, if any are currently tracked
+- GitHub Issues for known framework-level defects, if any are currently tracked
 
 When reporting a confirmed bug, include the FNLLA version, PHP version, command
 or route affected, reproduction steps and the smallest relevant output from

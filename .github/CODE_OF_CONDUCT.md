@@ -44,6 +44,6 @@ If you need to report unacceptable behavior, use TechAyo LTD's contact route at 
 ## Related policies
 
 - `SECURITY.md` covers private vulnerability reporting.
-- `SUPPORT.md` defines the public support boundary.
-- `TRADEMARKS.md` defines branding and endorsement boundaries.
+- `docs/framework/SUPPORT.md` defines the public support boundary.
+- `docs/framework/TRADEMARKS.md` defines branding and endorsement boundaries.
 - `LICENSE.md` defines the open-source software license.

@@ -38,10 +38,10 @@ $requiredContains = [
         'techayoDEV/fnlla',
         'public/vendor/fnlla-runtime/',
         'docs/BUSINESS-APP-REFERENCE.md',
-        'docs/PRODUCTION-CHECKLIST.md',
+        'docs/RELEASE-AND-OPERATIONS.md',
         'docs/ENVIRONMENT.md',
         'resources/business-reference/2.1/',
-        'docs/TECH-DEBT-AND-FUTURE-PROOFING.md',
+        'docs/DEVELOPER-PANEL.md',
     ],
     'CHANGELOG.md' => [
         '## 2.1.3 - 2026-09-04',
@@ -67,16 +67,19 @@ $requiredContains = [
         'client',
         'security:audit --strict',
     ],
-    'docs/PRODUCTION-CHECKLIST.md' => [
+    'docs/RELEASE-AND-OPERATIONS.md' => [
         'security:audit --strict',
         'ops:backup-plan',
         'project:acceptance --json',
         'APP_DEBUG=false',
+        'Performance Baselines And Budgets',
     ],
-    'docs/TECH-DEBT-AND-FUTURE-PROOFING.md' => [
+    'docs/DEVELOPER-PANEL.md' => [
         'php fnlla tech-debt:update',
         'fnlla.technical_debt_report.v1',
         'FNLLA_TECH_DEBT_REPORT:BEGIN',
+        'Developer Account Recovery',
+        'Diagnostic Storage And Limits',
     ],
     'docs/PUBLIC-API.lock.json' => [
         'tech-debt:update',
@@ -119,6 +122,7 @@ $requiredContains = [
     ],
     'resources/fnlla-ai-runtime/MANIFEST.json' => [
         '"slug": "fnlla-ai-runtime"',
+        '"version": "2.2.0"',
         '"external_calls": false',
         '"prompt_registry_path": "prompts/registry.json"',
         '"evals_directory": "evals"',
@@ -126,15 +130,18 @@ $requiredContains = [
     ],
     'resources/fnlla-ai-runtime/README.md' => [
         'resources/fnlla-ai-runtime',
+        '2.2.0',
         'AI_RUNTIME_LOAD_INTEGRATED',
         'prompts/registry.json',
     ],
     'resources/fnlla-ai-runtime/prompts/registry.json' => [
         '"schema": "fnlla.ai_prompt_registry.v1"',
+        '"version": "2.2.0"',
         '"id": "review.release-risk"',
     ],
     'resources/fnlla-ai-runtime/evals/runtime-commands.json' => [
         '"schema": "fnlla.ai_eval_fixture.v1"',
+        '"version": "2.2.0"',
         '"id": "ai-ask-release-readiness"',
     ],
 ];

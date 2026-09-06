@@ -31,7 +31,7 @@ Provision shared/.env and migrate storage/uploads under an operator-controlled
 maintenance window. Staging never copies .env, storage, uploads or .git. Install
 production Composer dependencies in the artifact before staging. Symbolic links
 are rejected. Keep deployment outside webroot; never modify or reuse release IDs.
-Failed staging leaves an inactive directory for inspection, not a partial activation.
+Failed staging removes its temporary tree and does not reserve the release ID.
 
 Artifacts must supply .fnlla/deployment-check.php: trusted application code that
 receives $release and returns true after readiness checks. Do not write business

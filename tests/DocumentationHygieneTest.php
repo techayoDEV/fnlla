@@ -16,6 +16,33 @@ final class DocumentationHygieneTest extends TestCase
         self::assertStringContainsString("release-and-operations.html#release-acceptance-checklist", $alias);
         self::assertStringContainsString('rel="canonical"', $alias);
         self::assertFalse(is_file(base_path("docs/MAJOR-RELEASE-CHECKLIST.md")));
+        self::assertFalse(is_file(base_path("docs/RECOVERY.md")));
+        self::assertFalse(is_file(base_path("docs/PROJECT-SCRIPTS-REFERENCE.md")));
+        self::assertFalse(is_file(base_path("docs/PRODUCTION-CHECKLIST.md")));
+        self::assertFalse(is_file(base_path("docs/PERFORMANCE.md")));
+        self::assertFalse(is_file(base_path("docs/TECH-DEBT-AND-FUTURE-PROOFING.md")));
+        self::assertFalse(is_file(base_path("docs/framework/DEVELOPER-DIAGNOSTICS.md")));
+        self::assertFalse(is_file(base_path("docs/framework/DEVELOPER-RECOVERY.md")));
+        self::assertStringContainsString(
+            "release-and-operations.html#backup-and-recovery",
+            (string) file_get_contents(base_path("docs/recovery.html"))
+        );
+        self::assertStringContainsString(
+            "release-and-operations.html#project-facing-command-reference",
+            (string) file_get_contents(base_path("docs/project-scripts-reference.html"))
+        );
+        self::assertStringContainsString(
+            "release-and-operations.html#production-readiness-checklist",
+            (string) file_get_contents(base_path("docs/production-checklist.html"))
+        );
+        self::assertStringContainsString(
+            "release-and-operations.html#performance-baselines-and-budgets",
+            (string) file_get_contents(base_path("docs/performance.html"))
+        );
+        self::assertStringContainsString(
+            "developer-panel.html#technical-debt-and-future-proofing",
+            (string) file_get_contents(base_path("docs/tech-debt-and-future-proofing.html"))
+        );
     }
 
     public function testPublicDocumentationHasNoKnownPrivateMarkersOrBrokenLinks(): void

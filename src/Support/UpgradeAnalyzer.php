@@ -21,7 +21,9 @@ use Fnlla\Php\Observability\MetricsRecorder;
 
 final class UpgradeAnalyzer
 {
-    public function report(string $targetVersion = "2.1.1"): array
+    public const DEFAULT_TARGET_VERSION = "2.2.0";
+
+    public function report(string $targetVersion = self::DEFAULT_TARGET_VERSION): array
     {
         $checks = [
             $this->checkRequiredFiles(),
@@ -209,8 +211,8 @@ final class UpgradeAnalyzer
 
         foreach ([
             "docs/MIGRATION.md",
-            "docs/PRODUCTION-CHECKLIST.md",
             "docs/BUSINESS-APP-REFERENCE.md",
+            "docs/DEVELOPER-PANEL.md",
             "CHANGELOG.md",
             "docs/RELEASE-AND-OPERATIONS.md",
         ] as $file) {
@@ -222,7 +224,7 @@ final class UpgradeAnalyzer
         return [
             "id" => "major-release-docs",
             "status" => $missing === [] ? "pass" : "warn",
-            "detail" => $missing === [] ? "Major-release docs are present." : "Major release should include migration, upgrade, production, business-reference, changelog and checklist docs.",
+            "detail" => $missing === [] ? "Major-release docs are present." : "Major release should include migration, business-reference, developer-panel, changelog and release-operations docs.",
             "data" => ["missing" => $missing],
         ];
     }
@@ -291,7 +293,7 @@ final class UpgradeAnalyzer
     {
         $builder = new TechnicalDebtReportBuilder();
         $report = $builder->build();
-        $sync = $builder->syncMarkdown(base_path("docs/TECH-DEBT-AND-FUTURE-PROOFING.md"), $report, true);
+        $sync = $builder->syncMarkdown(base_path("docs/DEVELOPER-PANEL.md"), $report, true);
 
         return [
             "id" => "technical-debt-snapshot",

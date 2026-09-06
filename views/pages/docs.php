@@ -67,7 +67,7 @@ Purpose:
         <p class="card-text">If someone opens this repo in a browser and thinks “this must be the app I edit for a new client project”, they will almost certainly mix framework maintenance with delivery work. The docs should stop that confusion early.</p>
         <div class="d-flex flex-wrap gap-md mt-3">
           <a class="btn btn-primary btn-sm" href="<?= h(route("docs.page", ["page" => "starting-a-new-project.html"])) ?>">Start there</a>
-          <a class="btn btn-outline btn-sm" href="<?= h(route("docs.page", ["page" => "project-scripts-reference.html"])) ?>">Check project scripts</a>
+          <a class="btn btn-outline btn-sm" href="<?= h(route("docs.page", ["page" => "release-and-operations.html"])) ?>#project-facing-command-reference">Check project commands</a>
         </div>
       </article>
 

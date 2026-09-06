@@ -105,6 +105,8 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "LICENSE.md");
         self::assertFileExists($this->targetPath . "/docs/framework/SUPPORT.md");
         self::assertFileExists($this->targetPath . "/docs/framework/TRADEMARKS.md");
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "SUPPORT.md"));
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "TRADEMARKS.md"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "VERSION");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "MANIFEST.json");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . ".fnlla" . DIRECTORY_SEPARATOR . "framework-lock.json");
@@ -150,10 +152,16 @@ final class MakeProjectCommandTest extends TestCase
             glob($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "sessions" . DIRECTORY_SEPARATOR . "sess_*") ?: []
         );
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "sessions" . DIRECTORY_SEPARATOR . ".gitignore");
+        foreach (["scripts/windows/test-project.cmd", "scripts/windows/lint-project.cmd", "scripts/windows/update-fnlla-runtime.cmd"] as $launcher) {
+            self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $launcher), $launcher);
+        }
         self::assertStringContainsString(
             'validate-version-manifest.php',
-            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "lint-project.cmd")
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "windows" . DIRECTORY_SEPARATOR . "lint-project.cmd")
         );
+        foreach (["test-project.cmd", "lint-project.cmd", "update-fnlla-runtime.cmd"] as $launcher) {
+            self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . $launcher), $launcher);
+        }
         self::assertStringContainsString(
             "php scripts/validate-version-manifest.php",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
@@ -236,6 +244,10 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertStringContainsString(
             "Developer panel password",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringContainsString(
+            "project-setup-visual",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
         );
         self::assertStringNotContainsString(
@@ -482,8 +494,8 @@ final class MakeProjectCommandTest extends TestCase
             "README.md",
             "fnlla",
             "fnlla.cmd",
-            "test-project.cmd",
-            "lint-project.cmd",
+            "scripts/windows/test-project.cmd",
+            "scripts/windows/lint-project.cmd",
             "database/seeders/DatabaseSeeder.php",
             "tests/BootstrapAutoloadTest.php",
         ] as $relativePath) {

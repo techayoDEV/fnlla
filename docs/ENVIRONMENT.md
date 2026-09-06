@@ -218,7 +218,7 @@ Developer access is separate from client preview. Client preview protects the
 public site for customer review. Developer access unlocks operational screens
 for the team maintaining the project.
 
-FNLLA 2.1.3 supports named developer accounts:
+FNLLA 2.2.0 supports named developer accounts:
 
 ```dotenv
 DEVELOPER_ACCESS_ENABLED=true

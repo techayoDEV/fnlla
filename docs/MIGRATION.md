@@ -43,7 +43,8 @@ disable unwanted modules; updating an existing project's code preserves its sett
 advanced chooser or `--profile=plain` for an explicit core-only export.
 
 Back up before changes, test login/roles/CRUD/forms/uploads/queue/mail/health on a
-staging copy, and retain private recovery evidence following [Recovery](RECOVERY.md).
+staging copy, and retain private recovery evidence following
+[release operations](RELEASE-AND-OPERATIONS.md#backup-and-recovery).
 
 ## Upgrade Categories
 
