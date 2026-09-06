@@ -172,6 +172,16 @@ final class HardeningTest extends TestCase
         $file->validate(100, ["application/pdf"]);
     }
 
+    public function testUploadedFileDetectsBytesInsteadOfTrustingClientMimeType(): void
+    {
+        $directory = $this->makeTempDirectory("fnlla-upload-mime-");
+        $path = $directory . DIRECTORY_SEPARATOR . "payload.png";
+        file_put_contents($path, "This is plain text, not an image.");
+        $file = new UploadedFile($path, "payload.png", "image/png", 32, UPLOAD_ERR_OK);
+
+        self::assertSame("text/plain", $file->detectedMimeType());
+    }
+
     public function testUploadedFileExposesPhpUploadErrorCode(): void
     {
         $file = new UploadedFile("", "avatar.png", "image/png", 0, UPLOAD_ERR_INI_SIZE);

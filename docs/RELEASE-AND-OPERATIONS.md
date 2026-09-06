@@ -86,6 +86,39 @@ Public instructions must describe FNLLA with neutral examples. Keep application
 recovery evidence, account details, local paths and deployment reports in private
 storage. Preserve license attribution and documented public API identifiers.
 
+## Release Acceptance Checklist
+
+This is the canonical checklist for both incremental and major releases.
+
+1. Review public helpers, CLI commands and JSON contracts against the API lock.
+   Document intentional changes in MIGRATION and CHANGELOG.
+2. Run `composer install`, `composer audit --locked`,
+   `composer test:unit -- --testsuite framework`, `composer analyse` and
+   `composer lint`. Deprecations are failures, not warnings to suppress.
+   The offline smoke runner does not replace PHPUnit acceptance.
+3. Run the documentation checks and `php fnlla release:prepare`. For a major
+   compatibility review, also use `--major --target=2.2.0` and inspect its app map,
+   upgrade plan and redacted AI review pack. Adjust the target for future releases.
+4. Verify full and plain exports, first-run setup, application-owned files,
+   dry-run/apply behavior and rollback from a supported previous release.
+5. Review CORS, sessions, trusted hosts/proxies, debug and mail policy. Run
+   `php fnlla security:audit --strict` with the intended deployment configuration.
+6. Compare representative baselines with `perf:baseline:update` and `perf:compare`,
+   including `/` and `/api/health`. Publish measured results, not unsupported
+   performance claims or comparisons between inequivalent applications.
+7. Push the approved candidate and require Core Quality, Hardening and Release
+   Gate to pass for that exact commit. Inspect every matrix job, not an older
+   green run or a workflow still in progress.
+8. Inspect source archives, SBOMs and checksums; verify consumer installation and
+   upgrade from the actual immutable artifacts. Preserve evidence privately.
+9. Obtain separate tag/publication approval. Align release notes, version/runtime
+   metadata and migration instructions; attach only reviewed release assets.
+
+Core Quality covers PHP 8.3, 8.4 and 8.5 on Windows and Linux, plus MySQL/Redis
+integration on Linux. Release Gate adds macOS and export/update regression.
+Hardening validates repository scripts and runtime export. Every job depending
+on Composer tools must install the lock file before invoking them.
+
 ## Daily Readiness
 
 Run:
@@ -211,7 +244,7 @@ explicitly attaches generated artefacts to a GitHub release.
 
 ## Source Tree Cleanliness
 
-Before commit, the maintained source tree should not contain:
+The committed source and distribution artifacts must not contain:
 
 - `dist/`;
 - cache files under `storage/framework/cache/`;
@@ -222,8 +255,10 @@ Before commit, the maintained source tree should not contain:
 - local `.env` files;
 - database dumps, uploaded client files or staging artefacts.
 
-Only placeholder `.gitignore` files should remain in persistent storage
-directories.
+Only placeholder `.gitignore` files belong in versioned persistent storage
+directories. Local working copies may contain real runtime state; do not delete
+that state to satisfy a packaging checklist. Inspect `git status` and archive
+entries instead, using the distribution exclusions described above.
 
 Individual artefact commands are also available:
 
@@ -348,19 +383,6 @@ for single-node and staging deployments. Larger multi-node deployments should
 replace it later with a Prometheus/OpenTelemetry adapter while keeping the same
 request-observer boundary.
 
-## Clean Source Release
-
-Before committing source changes, clear runtime residue:
-
-```bash
-php fnlla optimize:clear
-php fnlla cache:clear
-```
-
-The source tree should keep only `.gitignore` placeholders under `storage/`.
-Runtime files such as sessions, cache entries, queue jobs, metrics and logs
-should not be committed.
-
 ## Maintainer Runbook
 
 Release:
@@ -371,7 +393,8 @@ Release:
 4. Run `php fnlla security:audit --strict`.
 5. Run `php fnlla release:prepare`.
 6. Review `dist/release/fnlla-sbom.cdx.json`, `dist/release/SHA256SUMS` and `dist/release/fnlla-release-manifest.json`.
-7. Push the commit and signed tag only after local validation passes.
+7. Push the approved commit and wait for the full remote matrix, then obtain
+   separate tag/publication approval. Local validation alone is insufficient.
 
 Rollback:
 
@@ -384,13 +407,18 @@ Update recovery:
 
 1. Read `storage/framework/updates/fnlla/dry-run-report.json`.
 2. Read `storage/logs/framework-update.log`.
-3. Restore project-owned files from Git when an apply was interrupted.
-4. Re-run `php fnlla framework:update --dry-run` before any second apply.
+3. Stop application writers and run `php scripts/rollback-framework-update.php`
+   in the affected project to recover an interrupted managed-file transaction.
+   Do not delete its journal or overwrite project-owned files from Git blindly.
+4. Verify recovery, then run `php fnlla framework:update --dry-run` before any
+   second apply. See [Recovery](RECOVERY.md) for the database/external-effect boundary.
 
 Backup and restore:
 
 1. Back up `.env`, `storage/`, uploaded project files and the application database before deployment.
-2. Do not back up generated cache, queue, session or log residue as release state.
+2. Keep runtime data out of code release assets. Separately define backup and
+   reconciliation policy for pending jobs, audit logs and application data;
+   never discard pending work merely because it is stored under `storage/`.
 3. Generate `php fnlla ops:backup-plan` and attach the redacted plan to internal deployment evidence.
 4. Restore database and uploaded files before warming caches.
 5. Run `php fnlla migrate:status` after restore.

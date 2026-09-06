@@ -36,6 +36,14 @@ jobs:
         shell: pwsh
         run: php -v
 
+      - name: Install locked development dependencies
+        shell: pwsh
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Audit locked dependencies
+        shell: pwsh
+        run: composer audit --locked
+
       - name: Run repository tests
         shell: pwsh
         run: php .\scripts\test.php --suite fast

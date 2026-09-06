@@ -122,16 +122,12 @@ final class UploadedFile
 
     public function detectedMimeType(): string
     {
-        if (is_file($this->tmpName) && function_exists("finfo_open")) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if (is_file($this->tmpName) && class_exists(\finfo::class)) {
+            // Inspect bytes, not the client-supplied MIME header. The object owns its lifetime.
+            $detected = (new \finfo(FILEINFO_MIME_TYPE))->file($this->tmpName);
 
-            if ($finfo !== false) {
-                $detected = finfo_file($finfo, $this->tmpName);
-                finfo_close($finfo);
-
-                if (is_string($detected) && $detected !== "") {
-                    return $detected;
-                }
+            if (is_string($detected) && $detected !== "") {
+                return $detected;
             }
         }
 

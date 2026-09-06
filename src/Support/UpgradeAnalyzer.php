@@ -209,11 +209,10 @@ final class UpgradeAnalyzer
 
         foreach ([
             "docs/MIGRATION.md",
-            "docs/MIGRATION.md",
             "docs/PRODUCTION-CHECKLIST.md",
             "docs/BUSINESS-APP-REFERENCE.md",
             "CHANGELOG.md",
-            "docs/MAJOR-RELEASE-CHECKLIST.md",
+            "docs/RELEASE-AND-OPERATIONS.md",
         ] as $file) {
             if (!is_file(base_path($file))) {
                 $missing[] = $file;

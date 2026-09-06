@@ -92,12 +92,14 @@ final class RedisSessionHandler implements SessionHandlerInterface, SessionUpdat
 
     public function updateTimestamp(string $id, string $data): bool
     {
+        // PHP lazy writes may refresh TTL, but must not recreate a deleted session.
         $this->acquireLock($id);
         return $this->guarded($id, 'return redis.call("EXPIRE", KEYS[2], ARGV[2])', [$this->ttlSeconds]) === 1;
     }
 
     public function gc(int $max_lifetime): int
     {
+        // Redis expires payloads independently; scanning keys here would block requests.
         return 0;
     }
 
@@ -155,6 +157,7 @@ final class RedisSessionHandler implements SessionHandlerInterface, SessionUpdat
         $token = $this->lockToken;
         $this->lockedId = null;
         $this->lockToken = null;
+        // An expired lease may belong to another worker; only remove our token.
         $this->redis->eval('if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) end; return 0', [$this->lockKey($id), $token], 1);
     }
 }

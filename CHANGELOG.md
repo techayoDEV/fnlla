@@ -5,6 +5,12 @@ release tags are cut.
 
 ## Unreleased
 
+- Use managed Fileinfo objects for MIME detection without PHP 8.5 deprecations;
+  cover spoofed client MIME headers with a regression test.
+- Install locked development tools in hardening CI before repository tests.
+- Consolidate release acceptance into the operations guide, correct update
+  recovery instructions and distinguish clean distribution from live runtime data.
+
 Target release: `2.2.0` (stable, not yet published). The architecture
 changes and unfinished acceptance are tracked in `docs/MODERNIZATION-STATUS.md`.
 This target replaces the proposed beta. Do not advertise this workspace as a

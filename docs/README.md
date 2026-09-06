@@ -31,7 +31,7 @@ FNLLA experience; plain is an advanced core-only export of the same framework.
 - [Architecture and development](./ARCHITECTURE-ROADMAP.md)
 - [Current acceptance status](./MODERNIZATION-STATUS.md)
 - [Technical debt](./TECH-DEBT-AND-FUTURE-PROOFING.md)
-- [Major release checklist](./MAJOR-RELEASE-CHECKLIST.md)
+- [Release acceptance checklist](./RELEASE-AND-OPERATIONS.md#release-acceptance-checklist)
 
 The JSON ledger is the sole live acceptance register. Architecture explains
 decisions; guides explain procedures. Do not create parallel stage reports or

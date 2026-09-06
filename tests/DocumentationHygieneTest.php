@@ -8,6 +8,16 @@ use PHPUnit\Framework\TestCase;
 
 final class DocumentationHygieneTest extends TestCase
 {
+    public function testConsolidatedChecklistPreservesPublishedBookmark(): void
+    {
+        $guide = (string) file_get_contents(base_path("docs/RELEASE-AND-OPERATIONS.md"));
+        $alias = (string) file_get_contents(base_path("docs/major-release-checklist.html"));
+        self::assertStringContainsString("## Release Acceptance Checklist", $guide);
+        self::assertStringContainsString("release-and-operations.html#release-acceptance-checklist", $alias);
+        self::assertStringContainsString('rel="canonical"', $alias);
+        self::assertFalse(is_file(base_path("docs/MAJOR-RELEASE-CHECKLIST.md")));
+    }
+
     public function testPublicDocumentationHasNoKnownPrivateMarkersOrBrokenLinks(): void
     {
         require_once base_path("scripts/check-docs.php");

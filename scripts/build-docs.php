@@ -198,15 +198,6 @@ $guidePages = [
         "lead" => "Major-version migration workflow, public contract review and AI-assisted upgrade guidance.",
     ],
     [
-        "label" => "Major Release Checklist",
-        "href" => "major-release-checklist.html",
-        "source" => "docs/MAJOR-RELEASE-CHECKLIST.md",
-        "source_name" => "MAJOR-RELEASE-CHECKLIST.md",
-        "title" => "Major Release Checklist",
-        "document_title" => "Major Release Checklist - FNLLA Documentation",
-        "lead" => "Release-owner checklist for contract, validation, performance, privacy and publication readiness.",
-    ],
-    [
         "label" => "Tech Debt",
         "href" => "tech-debt-and-future-proofing.html",
         "source" => "docs/TECH-DEBT-AND-FUTURE-PROOFING.md",
@@ -351,6 +342,12 @@ foreach ($guidePages as $guidePage) {
         ]),
     ];
 }
+
+// Preserve published bookmarks without maintaining a second copy of the release guide.
+$pagesToWrite[] = [
+    "target" => $docsRoot . DIRECTORY_SEPARATOR . "major-release-checklist.html",
+    "content" => '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FNLLA Release Checklist</title><link rel="canonical" href="./release-and-operations.html#release-acceptance-checklist"><meta http-equiv="refresh" content="0;url=./release-and-operations.html#release-acceptance-checklist"></head><body><p>The checklist is maintained in <a href="./release-and-operations.html#release-acceptance-checklist">Release And Operations</a>.</p></body></html>',
+];
 
 ensure_directory($assetsRoot);
 $outdatedFiles = [];
