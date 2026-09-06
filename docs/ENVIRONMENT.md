@@ -1,5 +1,14 @@
 # Environment Configuration
 
+## Upload Prerequisite
+
+Enable PHP `ext-fileinfo` in both the web SAPI and CLI when validating upload MIME
+types. Check `php --ri fileinfo` for CLI and verify the web server's PHP configuration
+separately. FNLLA detects MIME from file bytes; `UploadedFile::mimeType()` exposes
+untrusted client metadata only. Missing Fileinfo or failed detection causes MIME
+validation to throw instead of trusting the client's header. PHP 8.5 is supported
+without calling the deprecated `finfo_close()` function.
+
 FNLLA uses two environment templates:
 
 - `.env.example` is the short starter for a new project.

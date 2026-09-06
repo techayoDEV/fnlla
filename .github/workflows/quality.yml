@@ -22,7 +22,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_mysql, mbstring, dom, xml
+          extensions: pdo_mysql, fileinfo, mbstring, dom, xml
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: composer audit --locked
@@ -72,7 +72,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_mysql, redis, mbstring, dom, xml
+          extensions: pdo_mysql, redis, fileinfo, mbstring, dom, xml
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: composer audit --locked

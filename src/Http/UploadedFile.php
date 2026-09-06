@@ -122,7 +122,10 @@ final class UploadedFile
 
     public function detectedMimeType(): string
     {
-        if (is_file($this->tmpName) && class_exists(\finfo::class)) {
+        if (!class_exists(\finfo::class)) {
+            throw new RuntimeException("Upload MIME validation requires the ext-fileinfo PHP extension.");
+        }
+        if (is_file($this->tmpName)) {
             // Inspect bytes, not the client-supplied MIME header. The object owns its lifetime.
             $detected = (new \finfo(FILEINFO_MIME_TYPE))->file($this->tmpName);
 
@@ -131,6 +134,7 @@ final class UploadedFile
             }
         }
 
-        return $this->mimeType;
+        // Client metadata is available through mimeType(), never as validation evidence.
+        throw new RuntimeException("Cannot determine the uploaded file MIME type.");
     }
 }

@@ -6,6 +6,11 @@ compatibility and upgrade procedures rather than maintaining one file per releas
 
 ## Compatibility Notes
 
+For 2.2.0, enable `ext-fileinfo` wherever upload MIME validation runs.
+`UploadedFile::detectedMimeType()` now throws when detection is unavailable;
+it no longer falls back to the client-provided Content-Type. Keep `mimeType()`
+only for displaying untrusted metadata, never for an authorization or type check.
+
 For 2.0.x installations adopting the 2.1 line, review environment templates,
 project identity/ownership, the public API lock, database helpers, pagination and
 release commands. Keep application routes, views, controllers and data intact.

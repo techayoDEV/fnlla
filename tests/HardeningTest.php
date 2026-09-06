@@ -182,6 +182,29 @@ final class HardeningTest extends TestCase
         self::assertSame("text/plain", $file->detectedMimeType());
     }
 
+    public function testMimeDetectionDoesNotTrustClientHeaderForMissingFile(): void
+    {
+        $file = new UploadedFile("", "avatar.png", "image/png", 0, UPLOAD_ERR_OK);
+        $this->expectException(RuntimeException::class);
+        $file->detectedMimeType();
+    }
+
+    public function testUploadValidationWithoutIniCannotAcceptSpoofedMime(): void
+    {
+        $directory = $this->makeTempDirectory("fnlla-upload-no-ini-");
+        $path = $directory . DIRECTORY_SEPARATOR . "payload.png";
+        file_put_contents($path, "plain text");
+        $script = 'require ' . var_export(base_path("src/Http/UploadedFile.php"), true) . ';'
+            . '$file = new \\Fnlla\\Php\\Http\\UploadedFile(' . var_export($path, true) . ', "image.png", "image/png", 10, UPLOAD_ERR_OK);'
+            . 'try { $file->validate(100, ["image/png"]); exit(1); }'
+            . 'catch (\\RuntimeException $error) { echo $error->getMessage(); }';
+        $result = ProcessRunner::run([PHP_BINARY, "-n", "-r", $script], base_path());
+        self::assertSame(0, $result["exit_code"], $result["output"]);
+        // Fileinfo can be compiled in or loaded from php.ini; both paths must deny the upload.
+        self::assertTrue(str_contains($result["output"], "ext-fileinfo")
+            || str_contains($result["output"], "type is not allowed"), $result["output"]);
+    }
+
     public function testUploadedFileExposesPhpUploadErrorCode(): void
     {
         $file = new UploadedFile("", "avatar.png", "image/png", 0, UPLOAD_ERR_INI_SIZE);

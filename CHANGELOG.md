@@ -5,6 +5,9 @@ release tags are cut.
 
 ## Unreleased
 
+- Reject upload MIME validation when Fileinfo or file detection is unavailable;
+  never fall back to client-supplied MIME metadata. CI explicitly enables Fileinfo.
+
 - Use managed Fileinfo objects for MIME detection without PHP 8.5 deprecations;
   cover spoofed client MIME headers with a regression test.
 - Install locked development tools in hardening CI before repository tests.
