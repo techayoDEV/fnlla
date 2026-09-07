@@ -59,7 +59,7 @@ final class FrameworkReleaseChannel
             $downloadedNow = true;
         }
 
-        self::assertReleaseSourceIntegrity($sourceRoot, self::repositoryConfig($projectRoot)["slug"]);
+        self::assertReleaseSourceIntegrity($sourceRoot, self::repositoryConfig($projectRoot)["slug"], (string) $release["tag_name"]);
 
         $summary = self::releaseSummary($projectRoot, $release, $sourceRoot, $releaseDirectory, $downloadedNow);
         self::writeReleaseMetadata($cacheRoot, $releaseDirectory, $summary);
@@ -106,19 +106,10 @@ final class FrameworkReleaseChannel
     {
         $repository = self::repositoryConfig($projectRoot);
 
-        try {
-            return self::requestJson($repository["api_base_url"] . "/repos/" . $repository["slug"] . "/releases/latest");
-        } catch (RuntimeException $exception) {
-            $tag = self::latestTagFromGit($repository["clone_url"]);
-
-            return [
-                "tag_name" => $tag,
-                "name" => "Latest published tag " . $tag,
-                "html_url" => $repository["html_url"] . "/releases/tag/" . $tag,
-                "published_at" => null,
-                "body" => "GitHub release metadata could not be loaded from the API. FNLLA fell back to the latest published Git tag instead." . PHP_EOL . $exception->getMessage(),
-            ];
-        }
+        // A tag may exist for an unaccepted draft. An API outage must not authorize it.
+        return self::publishedRelease(self::requestJson(
+            $repository["api_base_url"] . "/repos/" . $repository["slug"] . "/releases/latest"
+        ));
     }
 
     private static function fetchReleaseByTag(string $projectRoot, string $tag): array
@@ -126,17 +117,26 @@ final class FrameworkReleaseChannel
         $repository = self::repositoryConfig($projectRoot);
         $normalizedTag = self::normalizeReleaseTag($tag);
 
-        try {
-            return self::requestJson($repository["api_base_url"] . "/repos/" . $repository["slug"] . "/releases/tags/" . rawurlencode($normalizedTag));
-        } catch (RuntimeException $exception) {
-            return [
-                "tag_name" => $normalizedTag,
-                "name" => "Requested tag " . $normalizedTag,
-                "html_url" => $repository["html_url"] . "/releases/tag/" . $normalizedTag,
-                "published_at" => null,
-                "body" => "GitHub release metadata for the requested tag could not be loaded from the API. FNLLA will still try to clone that tag directly." . PHP_EOL . $exception->getMessage(),
-            ];
+        if (preg_match('/^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/D', $normalizedTag) !== 1) {
+            throw new RuntimeException("Framework updates require a stable release tag, for example v2.2.0.");
         }
+        return self::publishedRelease(self::requestJson(
+            $repository["api_base_url"] . "/repos/" . $repository["slug"] . "/releases/tags/" . rawurlencode($normalizedTag)
+        ), $normalizedTag);
+    }
+
+    private static function publishedRelease(array $release, ?string $requestedTag = null): array
+    {
+        $tag = $release["tag_name"] ?? null;
+        if (!is_string($tag) || preg_match('/^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/D', $tag) !== 1
+            || ($requestedTag !== null && $tag !== $requestedTag)
+            || ($release["draft"] ?? null) !== false || ($release["prerelease"] ?? null) !== false
+            || !is_int($release["id"] ?? null) || $release["id"] < 1
+            || !is_string($release["published_at"] ?? null) || trim($release["published_at"]) === ""
+            || ($release["html_url"] ?? null) !== "https://github.com/" . self::OFFICIAL_REPOSITORY . "/releases/tag/" . $tag) {
+            throw new RuntimeException("GitHub did not confirm a public, stable FNLLA release. No tag fallback is allowed.");
+        }
+        return $release;
     }
 
     private static function repositoryConfig(string $projectRoot): array
@@ -243,43 +243,7 @@ final class FrameworkReleaseChannel
             );
         }
 
-        self::assertReleaseSourceIntegrity($sourceRoot, $repository["slug"]);
-    }
-
-    private static function latestTagFromGit(string $repositoryUrl): string
-    {
-        $gitBinary = trim((string) env("GIT_BINARY", "git"));
-        $result = ProcessRunner::run([
-            $gitBinary,
-            "ls-remote",
-            "--tags",
-            "--refs",
-            $repositoryUrl,
-        ]);
-
-        if ($result["exit_code"] !== 0) {
-            throw new RuntimeException(
-                "Unable to resolve the latest FNLLA release tag from GitHub." . PHP_EOL . $result["output"]
-            );
-        }
-
-        $tags = [];
-
-        foreach (preg_split('/\R/', $result["output"]) ?: [] as $line) {
-            if (!preg_match('/refs\/tags\/(v?\d+\.\d+\.\d+)$/', $line, $matches)) {
-                continue;
-            }
-
-            $tags[] = $matches[1];
-        }
-
-        if ($tags === []) {
-            throw new RuntimeException("GitHub did not return any usable FNLLA release tags.");
-        }
-
-        usort($tags, static fn (string $left, string $right): int => self::compareVersions($right, $left));
-
-        return $tags[0];
+        self::assertReleaseSourceIntegrity($sourceRoot, $repository["slug"], $tag);
     }
 
     private static function requestJson(string $url): array
@@ -500,7 +464,7 @@ final class FrameworkReleaseChannel
         return is_file($launcher) && is_file($makeProjectCommand);
     }
 
-    private static function assertReleaseSourceIntegrity(string $sourceRoot, string $expectedSlug): void
+    private static function assertReleaseSourceIntegrity(string $sourceRoot, string $expectedSlug, string $expectedTag): void
     {
         $manifestPath = $sourceRoot . DIRECTORY_SEPARATOR . "MANIFEST.json";
         $versionPath = $sourceRoot . DIRECTORY_SEPARATOR . "VERSION";
@@ -524,8 +488,9 @@ final class FrameworkReleaseChannel
 
         $version = self::readVersionLine($versionPath);
 
-        if ($version === null || self::normalizeVersion($version) !== self::normalizeVersion((string) ($manifest["product"]["version"] ?? ""))) {
-            throw new RuntimeException("Downloaded FNLLA release manifest version does not match VERSION.");
+        if ($version === null || self::normalizeVersion($version) !== self::normalizeVersion((string) ($manifest["product"]["version"] ?? ""))
+            || self::normalizeVersion($version) !== self::normalizeVersion($expectedTag)) {
+            throw new RuntimeException("Downloaded FNLLA release manifest, VERSION and published tag do not match.");
         }
     }
 

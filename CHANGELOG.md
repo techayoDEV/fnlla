@@ -82,6 +82,8 @@ Created and maintained by **TechAyo**. Lead Developer / Product Manager: **Marci
 
 ### Release Acceptance
 
+- Require confirmed public, stable GitHub release metadata for framework updates;
+  remove the bare-tag fallback during API failures and validate source/tag versions.
 - Accept an absent/empty CGI content length from Nginx/PHP-FPM while retaining
   strict HTTP length validation and bounded body reads.
 - Replace automatic tag publication with a manually requested draft, exact-commit

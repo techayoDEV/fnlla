@@ -61,6 +61,9 @@ files. Checksums establish integrity, not an independent signature. This process
 does not regenerate or sign metadata. It refuses both existing public releases
 and existing drafts; a failed draft needs explicit maintainer review before any
 manual cleanup or retry. Never replace a published asset or retag a release.
+The updater also requires GitHub to confirm a public, stable release. Missing
+metadata, API outages/rate limits, drafts and prereleases stop the update; a bare
+tag is not a fallback. Cached source identity must match the published tag.
 
 Before clicking **Publish release**, download the draft as an authenticated
 maintainer, verify its hashes against the retained receipt, repeat the installation
