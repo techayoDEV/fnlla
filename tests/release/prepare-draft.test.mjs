@@ -61,7 +61,18 @@ for (const scenario of ['accepted', 'wrong-zip', 'wrong-metadata', 'expired', 'r
                     if (args[0] === 'status') return '';
                     if (args[0] === 'rev-parse') return sha;
                     if (args[0] === 'ls-remote') return `${scenario === 'moved-tag' ? 'b'.repeat(40) : sha}\trefs/tags/v2.2.0`;
-                    if (args[0] === 'archive') return Buffer.from('accepted ZIP bytes');
+                    if (args[0] === 'archive') {
+                        assert.ok(args.includes('--format=zip'));
+                        writeFileSync(args.find((arg) => arg.startsWith('--output=')).slice(9), 'expected archive');
+                        return '';
+                    }
+                }
+                if (exe === 'python') {
+                    assert.equal(args[0], 'scripts/release/verify-archive.py');
+                    assert.equal(readFileSync(args[1], 'utf8'), 'expected archive');
+                    if (scenario === 'wrong-zip') throw new Error('Source archive contents differ');
+                    assert.equal(readFileSync(args[2], 'utf8'), 'accepted ZIP bytes');
+                    return '';
                 }
                 if (exe === 'gh' && args[0] === 'api') {
                     if (scenario === 'api-error') throw new Error('API unavailable');

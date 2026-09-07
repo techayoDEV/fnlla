@@ -102,8 +102,12 @@ for attempt in {1..50}; do
     sleep 0.2
 done
 if [[ "$ready" != 1 ]]; then
-    # Startup logs contain no request credentials; application/access logs are not printed.
-    cat "$work/fpm-console.log" "$work/nginx-console.log"
+    # No account or recovery token exists yet. Limit diagnostics to this startup phase.
+    echo 'FAIL HTTP stack readiness (before account creation)'
+    curl --silent --show-error --cacert "$work/tls.crt" --output /dev/null --write-out 'HTTP %{http_code}\n' "$base/" || true
+    for log in fpm-console nginx-console fpm-error nginx-error php-error; do
+        if [[ -f "$work/$log.log" ]]; then tail -n 30 "$work/$log.log"; fi
+    done
     exit 1
 fi
 "$php_bin" "$source/scripts/acceptance/http-smoke.php" "$project" "$base" exercise

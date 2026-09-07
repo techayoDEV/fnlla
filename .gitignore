@@ -31,5 +31,5 @@
 !/storage/framework/sessions/.gitignore
 /contact*.html
 /cookies*.txt
-/scripts/branding/__pycache__/
+__pycache__/
 /branding/source/photoshop/debug.log

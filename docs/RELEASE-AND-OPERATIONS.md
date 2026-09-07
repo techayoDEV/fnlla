@@ -50,6 +50,11 @@ repository, rejects missing/failed/active evidence and downloads the retained
 `accepted-source-archive` from Core Quality. Expired artifacts require another
 successful run; do not replace them with a working-tree build.
 
+Draft preparation uses Node.js 22 and Python 3.12. It compares every archive path,
+Unix permission and file byte against `git archive` for the approved tag without
+extracting untrusted paths. ZIP compression and ordering may differ between Git
+builds; the original CI ZIP is preserved and its exact SHA-256 is recorded.
+
 The draft contains the identical source ZIP, SBOM, source checksums, release
 manifest, CI acceptance receipt and `fnlla-downloads.sha256` covering the attached
 files. Checksums establish integrity, not an independent signature. This process

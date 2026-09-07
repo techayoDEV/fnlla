@@ -86,10 +86,10 @@ export function prepareDraft(command = execute, tag = process.env.RELEASE_TAG ||
         '--name', 'accepted-source-archive', '--dir', work]);
     const source = join(work, 'fnlla-source.zip');
     const hash = digest(readFileSync(source));
-    // Promote the CI artifact, never a fresh working-tree build or a mutable URL.
-    if (hash !== digest(command('git', ['archive', '--format=zip', sha], true))) {
-        throw new Error('Downloaded source archive differs from the tagged Git archive.');
-    }
+    // ZIP encoding varies across Git/zlib builds. Compare every entry, keeping the original CI bytes.
+    const expected = join(work, 'expected-source.zip');
+    command('git', ['archive', '--format=zip', `--output=${expected}`, sha]);
+    command('python', ['scripts/release/verify-archive.py', expected, source]);
     const metadata = join(work, 'fnlla-source', 'dist', 'release');
     const names = ['fnlla-sbom.cdx.json', 'SHA256SUMS', 'fnlla-release-manifest.json'];
     const files = [source, ...names.map((name) => join(metadata, name))];
