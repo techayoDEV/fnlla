@@ -2,8 +2,8 @@
 
 ## Target 2.2.0 Acceptance
 
-2.2.0 is the selected stable target, not a published version. Consult
-`MODERNIZATION-STATUS.md` and the canonical modernization ledger before advancing
+This guide defines the acceptance scope for 2.2.0. GitHub Releases establishes
+published availability. Consult `MODERNIZATION-STATUS.md` and the canonical modernization ledger before advancing
 VERSION or creating a tag. The current working tree is not a substitute for an
 immutable, tested release artifact.
 
@@ -35,8 +35,65 @@ only empty runtime directories. Successful runs retain the source ZIP and its
 supply-chain metadata as the `accepted-source-archive` CI artifact. The macOS gate
 provisions PHP 8.3 with Homebrew before configuring its extensions and tools.
 
-Publication also needs working HTTPS destinations for the website and campaign
-QR codes. A draft release or a prepared archive is not an availability announcement.
+Campaigns using website links and QR codes need verified HTTPS destinations.
+The repository and its Markdown documentation can be the initial download/support
+entrypoint; a full documentation website is not a runtime prerequisite. Do not
+advertise a QR destination that is unavailable. A draft is not an announcement.
+
+### Controlled Draft And Publication
+
+Tag pushes run acceptance but no longer create or modify a public release.
+After explicit approval, tag only the clean commit whose Core Quality, Hardening
+and Release Gate main-push runs passed. Run the **FNLLA Release Draft** workflow
+with that existing tag. It checks the latest runs for the exact commit and
+repository, rejects missing/failed/active evidence and downloads the retained
+`accepted-source-archive` from Core Quality. Expired artifacts require another
+successful run; do not replace them with a working-tree build.
+
+The draft contains the identical source ZIP, SBOM, source checksums, release
+manifest, CI acceptance receipt and `fnlla-downloads.sha256` covering the attached
+files. Checksums establish integrity, not an independent signature. This process
+does not regenerate or sign metadata. It refuses both existing public releases
+and existing drafts; a failed draft needs explicit maintainer review before any
+manual cleanup or retry. Never replace a published asset or retag a release.
+
+Before clicking **Publish release**, download the draft as an authenticated
+maintainer, verify its hashes against the retained receipt, repeat the installation
+instructions and review its notes. Confirm private security reporting and actual
+notification delivery. Keep the version-specific changelog's publication status
+honest; the versioned changelog supplies the release summary and GitHub records the publication date. After publishing, repeat
+an unauthenticated download and installation check before announcing availability.
+Publication itself remains a separate human action, not a workflow side effect.
+
+### Production HTTP Acceptance
+
+Core Quality's `production-http` job consumes the accepted source archive and
+installs Full, Plain and package preview with `composer install --no-dev`. It runs
+their project tests/lint, then exercises Full through a disposable TLS Nginx
+ingress, loopback Nginx origin and PHP-FPM 8.3 on Ubuntu 24.04. The runner uses
+generated test credentials and a one-day local certificate verified by the client.
+No application credentials or bearer links are uploaded as evidence.
+
+The test configures the first account in a local development context, then switches
+to production with setup/debug disabled and configuration/routes cached. It checks
+CSRF, login rotation, protected paths, Host validation, CLI-assisted HTTP password
+reset, token replay rejection and revocation of old sessions. It also demonstrates
+that `opcache.validate_timestamps=0` needs a restart of the serving FPM processes
+to expose changed PHP views. Running a CLI cache command cannot reset FPM's OPcache.
+
+To reproduce on a disposable Ubuntu host with PHP 8.3 CLI/FPM, curl, XML, mbstring,
+PDO extensions, Composer, Nginx, OpenSSL and unzip installed:
+
+```sh
+bash scripts/acceptance/fpm.sh /absolute/path/to/fnlla-source.zip
+```
+
+The script binds only loopback high ports and terminates its own processes on
+exit. Private fixtures remain under the host's temporary directory; protect and
+dispose of them under the test host's retention policy. Passing this topology is
+not evidence for IIS, Apache, every proxy chain, distributed recovery storage,
+mailbox delivery, application load or a production backup restore. Record the
+actual CI result before claiming the new acceptance job has passed.
 
 Review `framework/RUNTIME-CONTRACTS.md` before upgrading: non-local migrations now
 require explicit `--force`, proxy protocol must be canonical, application auth
@@ -590,7 +647,7 @@ The command runs:
 - release metadata validation
 - static analysis baseline
 - strict security audit
-- bootstrap/cache cleanup
+- exclusion of private runtime/cache data from distribution metadata
 - CycloneDX SBOM generation
 - SHA-256 checksum generation
 
@@ -600,8 +657,10 @@ Artefacts are written under `dist/release/`:
 - `SHA256SUMS`
 - `fnlla-release-manifest.json`
 
-Tag pushes attach those three files to the GitHub Release after the full release
-gate and export regression jobs pass.
+Tag pushes do not publish or attach assets. The manually dispatched Release Draft
+workflow promotes these files from the accepted Core Quality artifact, together
+with its source ZIP and acceptance receipt, only after all three exact-commit
+main-push workflows have passed. See Controlled Draft And Publication above.
 
 Release manifest signing is enabled only when the release owner has approved a
 signing key policy and configured both values:
@@ -610,7 +669,10 @@ signing key policy and configured both values:
 - `RELEASE_SIGNING_KEY_ID`
 
 The manifest then records the HMAC algorithm, key id, signing timestamp and
-payload hash. Leave the key empty for local unsigned manifests.
+payload hash. HMAC is a shared-secret check, not a publicly verifiable publisher
+signature; never distribute the key. Leave the key empty for unsigned manifests.
+The draft workflow does not inject signing secrets or regenerate the accepted
+manifest, and must not advertise an unsigned artifact as signed.
 
 With `--major`, FNLLA also writes:
 

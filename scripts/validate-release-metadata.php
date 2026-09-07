@@ -43,6 +43,8 @@ foreach ($editionFiles as $path => $field) {
 }
 
 $requiredContains = [
+    '.env.example' => ['# Version: ' . $version],
+    '.env.full.example' => ['# Version: ' . $version],
     '.github/ISSUE_TEMPLATE/config.yml' => [
         'https://github.com/techayoDEV/fnlla/blob/main/.github/CONTRIBUTING.md',
         'https://github.com/techayoDEV/fnlla/releases',

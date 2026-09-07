@@ -53,16 +53,38 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("php ./fnlla perf:budget --iterations=1 --max-regression=20 --max-regression-ms=1000", $workflow);
     }
 
-    public function testTagReleaseGateAttachesSupplyChainAssetsToGitHubRelease(): void
+    public function testProductionHttpGateConsumesTheAcceptedArchive(): void
+    {
+        $workflow = (string) file_get_contents(base_path(".github/workflows/quality.yml"));
+        $runner = (string) file_get_contents(base_path("scripts/acceptance/fpm.sh"));
+        self::assertStringContainsString("production-http:", $workflow);
+        self::assertStringContainsString("needs: source-archive", $workflow);
+        self::assertStringContainsString("actions/download-artifact@v4", $workflow);
+        self::assertStringContainsString("scripts/acceptance/fpm.sh", $workflow);
+        self::assertStringContainsString("opcache.validate_timestamps] = 0", $runner);
+        self::assertStringContainsString("after-reload", $runner);
+        self::assertStringContainsString("trap cleanup EXIT", $runner);
+        self::assertStringNotContainsString("continue-on-error", $workflow);
+    }
+
+    public function testPublishingRequiresAnExplicitDraftAndNeverReplacesAssets(): void
     {
         $workflow = (string) file_get_contents(base_path(".github/workflows/fnlla-release-gate.yml"));
 
-        self::assertStringContainsString("release-assets:", $workflow);
-        self::assertStringContainsString("gh release upload", $workflow);
-        self::assertStringContainsString("dist/release/fnlla-sbom.cdx.json", $workflow);
-        self::assertStringContainsString("dist/release/SHA256SUMS", $workflow);
-        self::assertStringContainsString("dist/release/fnlla-release-manifest.json", $workflow);
-        self::assertStringContainsString("FNLLA_RELEASE_SIGNING_KEY", $workflow);
+        self::assertStringNotContainsString("contents: write", $workflow);
+        self::assertStringNotContainsString("gh release create", $workflow);
+        $draft = (string) file_get_contents(base_path(".github/workflows/release-draft.yml"));
+        $script = (string) file_get_contents(base_path("scripts/release/prepare-draft.mjs"));
+        self::assertStringContainsString("workflow_dispatch:", $draft);
+        self::assertStringNotContainsString("  push:", $draft);
+        self::assertStringContainsString("'--draft'", $script);
+        self::assertStringContainsString("'--verify-tag'", $script);
+        self::assertStringNotContainsString("--clobber", $script);
+        self::assertStringContainsString("accepted-source-archive", $script);
+        self::assertStringContainsString("fnlla-downloads.sha256", $script);
+        foreach (["quality.yml", "fnlla-hardening.yml", "fnlla-release-gate.yml"] as $required) {
+            self::assertStringContainsString($required, $script);
+        }
     }
 
     public function testMaintainerLauncherExposesVersionSetWorkflow(): void

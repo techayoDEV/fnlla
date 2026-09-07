@@ -30,10 +30,33 @@ That quickly becomes messy because:
 Use the built-in project export command from the maintained `techayoDEV/fnlla` repository:
 
 ```bash
-php fnlla make:project ..\my-new-project "My New Project"
+php fnlla make:project ../my-new-project "My New Project"
 ```
 
 That command exports a clean working project base into a new directory outside the framework repository.
+
+For a published release, download the explicit `fnlla-source.zip` attachment from
+GitHub Releases, verify it against `fnlla-downloads.sha256`, and extract it as your
+framework source. Do not substitute a moving `main` checkout when reproducing a
+release. Before publication, these instructions apply only to an approved draft
+or retained CI artifact, not an already available 2.2.0 download.
+
+After export, run these commands from the new project directory:
+
+```sh
+composer install
+php scripts/test.php
+php scripts/lint.php
+php fnlla route:list
+```
+
+Open the Full starter locally to complete Project Setup before deployment. There
+is no default developer password. For production, serve only `public/`, configure
+HTTPS and the canonical `APP_URL`, disable `APP_DEBUG`,
+`DEVELOPER_ACCESS_SETUP_UI_ENABLED` and `MAINTENANCE_SETUP_UI_ENABLED`, and follow
+the [production checklist](RELEASE-AND-OPERATIONS.md#production-readiness-checklist).
+Verify real mail delivery and queue scheduling for email-based password recovery;
+the documented server-owner recovery link is a separate fallback, not a mail test.
 
 ### One Integrated Starter
 

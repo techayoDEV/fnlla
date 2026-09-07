@@ -3,7 +3,95 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
-## Unreleased
+## 2.2.0
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.0 brings application foundations and developer operations into one
+integrated web framework, built on PHP. Start with your own project identity,
+configure private developer access, and build the application in a clean export.
+
+#### Highlights
+
+- **An integrated starter:** Project Setup, a private Developer Panel, diagnostics,
+  optional developer tooling and controlled file-based framework updates.
+- **A focused PHP foundation:** routing, dependency injection, validation, PDO data
+  access, migrations, authentication, sessions, cache, queues and mail.
+- **Safer setup and recovery:** no default accounts, CSRF-protected onboarding,
+  password recovery, session rotation and revocation after password changes.
+- **A consistent UI:** outline identity, self-hosted typography, light/dark surfaces
+  and regression-tested private/public layouts. Your application's brand remains yours.
+- **AI connections by choice:** a built-in gateway to FIONN AI by TechAyo, plus
+  optional OpenAI API and Anthropic API adapters. Accounts, API access and provider
+  configuration are separate; no language model is bundled.
+
+#### Start A Project
+
+Use PHP 8.3 or later. Download the `fnlla-source.zip` attachment and verify its
+SHA-256 against `fnlla-downloads.sha256`. Extract it, then run from the source directory:
+
+```sh
+php fnlla make:project ../my-app "My App"
+cd ../my-app
+composer install
+php scripts/test.php
+php scripts/lint.php
+```
+
+Open the project locally to complete Project Setup. Serve only `public/` in
+production and follow the
+[installation guide](https://github.com/techayoDEV/fnlla/blob/v2.2.0/docs/STARTING-A-NEW-PROJECT.md).
+For a deliberate core-only installation, add `--profile=plain` to `make:project`.
+
+#### Upgrading From 2.1.3
+
+Back up the application and stop traffic. Use the new release's updater, with the
+existing application as its explicit target; do not use the old 2.1.3 updater:
+
+```sh
+php ../fnlla-2.2.0/fnlla framework:update --project=. --release-tag=v2.2.0 --dry-run
+php ../fnlla-2.2.0/fnlla framework:update --project=. --release-tag=v2.2.0 --apply
+```
+
+Review the [migration guide](https://github.com/techayoDEV/fnlla/blob/v2.2.0/docs/MIGRATION.md):
+non-local migrations/seeding require explicit confirmation, MIME validation requires
+Fileinfo, and existing demo accounts must be reviewed by the application owner.
+Customized files must be reconciled; file rollback does not reverse database changes
+or external business operations.
+
+#### Scope And Support
+
+The supported runtime is ordinary isolated PHP requests. Long-lived HTTP worker
+isolation is not supported. Composer package mode remains a bundled-path preview,
+not a public registry offering. Email recovery requires a working mail transport
+and queue worker; CLI recovery is a separate server-owner fallback.
+
+FNLLA is MIT-licensed. Security maintenance targets the latest 2.2.x patch on a
+best-effort basis, without LTS or SLA guarantees. Application-specific security,
+load testing and restore procedures remain deployment responsibilities. See the
+[operations guide](https://github.com/techayoDEV/fnlla/blob/v2.2.0/docs/RELEASE-AND-OPERATIONS.md).
+
+Release attachments include a source ZIP, SBOM, checksums and an exact-commit CI
+receipt. Checksums are integrity checks, not a publisher signature or security
+certification. Report vulnerabilities through
+[private GitHub reporting](https://github.com/techayoDEV/fnlla/security/advisories/new).
+
+Created and maintained by **TechAyo**. Lead Developer / Product Manager: **Marcin Kordyaczny**.
+
+### Release Acceptance
+
+- Replace automatic tag publication with a manually requested draft, exact-commit
+  checks of all three CI workflows and promotion of the accepted source ZIP.
+  Refuse existing drafts/releases and never overwrite release assets.
+- Add source-archive installation checks and a disposable HTTPS/Nginx/PHP-FPM
+  acceptance runner covering setup, cached login, CSRF, recovery, session revocation
+  and serving-process restart with timestamp-disabled OPcache.
+- Make private vulnerability reporting the primary security contact route and
+  document the latest-patch, best-effort maintenance policy for 2.2.x.
+
+### Framework And Developer Experience
 
 - Recognize unchanged FNLLA brand assets from the published 2.1.3 baseline during
   upgrades; retain conflicts for customized marks and test both cases against
@@ -103,10 +191,11 @@ release tags are cut.
 - Consolidate release acceptance into the operations guide, correct update
   recovery instructions and distinguish clean distribution from live runtime data.
 
-Target release: `2.2.0` (stable, not yet published). The architecture
-changes and unfinished acceptance are tracked in `docs/MODERNIZATION-STATUS.md`.
-This target replaces the proposed beta. Do not advertise this workspace as a
-new stable release until the supported release scope passes its acceptance gates.
+Remaining architecture work and the supported release scope are tracked in
+`docs/MODERNIZATION-STATUS.md`. Package mode is a bundled-path preview; public
+registry installation, isolated long-lived HTTP workers and comparative performance
+claims are not part of the supported 2.2.0 scope. Review `docs/MIGRATION.md` for
+breaking operational changes before updating an existing application.
 
 - Atomic config/route cache publication preserving working files on failure;
   route/profile metadata now travels together, with legacy cache read support.

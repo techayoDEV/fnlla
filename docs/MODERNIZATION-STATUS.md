@@ -2,8 +2,9 @@
 
 ## Release Boundary
 
-Edition **2.2.0** is the current development target, not a published release.
-The last public release is **2.1.3**. Do not retag or reuse a published version.
+This ledger describes the architecture acceptance for edition **2.2.0**.
+[GitHub Releases](https://github.com/techayoDEV/fnlla/releases) records published
+versions; the ledger is not an availability announcement. Do not retag or reuse a published version.
 
 The [JSON ledger](../resources/modernization-tasks.json) is the sole live register.
 Current totals: **19 done, 4 partial, 2 open, 1 blocked**. Document consolidation
@@ -11,6 +12,13 @@ does not change acceptance or erase unfinished work. In particular, the 2.2.0
 database defaults, updated security policy, tooling fixes and unified brand kit
 are implemented improvements, not evidence that the seven remaining architecture
 criteria have passed.
+
+Pre-publication work adds a manual draft-only release workflow and a disposable
+Nginx/TLS/PHP-FPM acceptance runner consuming the CI source archive. Their presence
+does not establish a successful remote run. Keep the HTTP and publication criteria
+open until exact-commit evidence, draft/download checks and the required external
+acceptance have actually been recorded. Notification delivery and website hosting
+are separate operational checks, not inferred from repository configuration.
 
 ## Remaining Acceptance
 

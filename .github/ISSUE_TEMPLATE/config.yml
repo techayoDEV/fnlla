@@ -3,9 +3,9 @@ contact_links:
   - name: FNLLA Contributing Guide
     url: https://github.com/techayoDEV/fnlla/blob/main/.github/CONTRIBUTING.md
     about: Review repository scope, contribution expectations and maintainer workflow before opening implementation work.
-  - name: FNLLA Security Policy
-    url: https://github.com/techayoDEV/fnlla/blob/main/SECURITY.md
-    about: Use this private route for vulnerabilities instead of opening a public issue.
+  - name: Report a vulnerability privately
+    url: https://github.com/techayoDEV/fnlla/security/advisories/new
+    about: Send a private security report. Do not disclose exploitable vulnerabilities in public issues.
   - name: FNLLA Support
     url: https://github.com/techayoDEV/fnlla/blob/main/.github/SUPPORT.md
     about: Find the right support, licensing or conduct route for non-bug requests.

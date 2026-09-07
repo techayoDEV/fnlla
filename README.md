@@ -1,8 +1,8 @@
 # FNLLA
 
-[![FNLLA web framework: PHP foundations, Project Setup, a private Developer Panel, diagnostics and controlled updates. Created and maintained by TechAyo.](./docs/assets/brand/fnlla-cover.jpg)](https://fnlla.com)
+[![FNLLA web framework: PHP foundations, Project Setup, a private Developer Panel, diagnostics and controlled updates. Created and maintained by TechAyo.](./docs/assets/brand/fnlla-cover.jpg)](./docs/STARTING-A-NEW-PROJECT.md)
 
-[![Source candidate](https://img.shields.io/badge/candidate-2.2.0-2563eb?style=flat-square)](./VERSION)
+[![Source edition](https://img.shields.io/badge/source-2.2.0-2563eb?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md#performance-baselines-and-budgets)
 [![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
@@ -156,11 +156,17 @@ php scripts/check-docs.php
 
 ## Release State
 
-Current source candidate: **2.2.0**. Last public release: **2.1.3**.
+Source edition: **2.2.0**. Use the published, versioned downloads from
+[GitHub Releases](https://github.com/techayoDEV/fnlla/releases), not a moving `main`
+checkout, for reproducible installations. An unpublished tag or draft is not a release.
 
-The next stable target is **2.2.0**, currently unreleased. Matching source/runtime
-version markers identify the candidate, not completed publication acceptance.
-Historical CI results do not validate the current candidate. See
+The default Full starter includes Project Setup, the private Developer Panel,
+diagnostics and controlled file updates. Plain is an explicit core-only preset.
+Both use the normal isolated PHP request lifecycle. Public Composer registry
+packages and long-lived HTTP workers are not part of the supported 2.2.0 scope.
+
+Matching source/runtime version markers do not establish completed publication
+acceptance. Historical CI results do not validate a later commit. See
 [modernization status](./docs/MODERNIZATION-STATUS.md) for outstanding acceptance
 and [release operations](./docs/RELEASE-AND-OPERATIONS.md) for publication gates.
 

@@ -5,7 +5,7 @@ Product website: [fnlla.com](https://fnlla.com). Policy edition: **2.2.0**.
 
 ## Version And Support Boundary
 
-The source tree identifies the 2.2.0 candidate. A source version is not evidence
+The source tree identifies version 2.2.0. A source version is not evidence
 of a published release or a security certification. Consult the repository's
 [releases](https://github.com/techayoDEV/fnlla/releases) and security advisories
 for available updates; do not assume an unpublished build has release support.
@@ -18,8 +18,29 @@ If you believe you have found a security issue in FNLLA or in its integrated UI 
 
 Use one of these routes:
 
-1. GitHub private vulnerability reporting for this repository, when available.
-2. TechAyo LTD's contact route at `https://techayo.co.uk`, clearly marked `FNLLA SECURITY`.
+1. [Report a vulnerability privately on GitHub](https://github.com/techayoDEV/fnlla/security/advisories/new).
+2. If GitHub reporting is unavailable, email `hello@techayo.co.uk` with the
+   subject `FNLLA SECURITY`. Start with a minimal, redacted description; agree
+   on a suitable private channel before sending sensitive evidence.
+
+Do not report exploitable vulnerabilities in public Issues. Maintainers must
+keep private reporting enabled, subscribe to repository security notifications,
+and verify notification delivery before each public release. An enabled setting
+alone does not prove that an email was received.
+
+## Security Maintenance For 2.2.x
+
+Once 2.2.0 is published, the latest published 2.2.x patch is the primary target
+for security fixes. Reports affecting earlier patches are triaged against that
+patch first; fixes normally ship in a new 2.2.x patch, never by replacing an
+existing tag or download. Existing 2.1.x deployments must review the migration
+guide; parallel backports and LTS are not promised. Until 2.2.0 is published,
+2.1.3 remains the current public release.
+
+Maintainers prioritize confirmed authentication bypass, unauthorized data access,
+code execution and data-loss risks. Publish an advisory with affected/fixed
+versions and mitigations when appropriate. This is a best-effort maintenance
+policy, not a response-time SLA or a commitment to a fixed support end date.
 
 ## Please include
 

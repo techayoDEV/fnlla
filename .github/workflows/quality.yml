@@ -33,6 +33,11 @@ jobs:
         working-directory: ${{ runner.temp }}/fnlla-source
       - run: composer audit --locked
         working-directory: ${{ runner.temp }}/fnlla-source
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/release/*.test.mjs
+        working-directory: ${{ runner.temp }}/fnlla-source
       - run: php fnlla release:prepare --json
         working-directory: ${{ runner.temp }}/fnlla-source
       - uses: actions/upload-artifact@v4
@@ -42,6 +47,23 @@ jobs:
             ${{ runner.temp }}/fnlla-source.zip
             ${{ runner.temp }}/fnlla-source/dist/release/
           retention-days: 14
+
+  production-http:
+    needs: source-archive
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the production HTTP test stack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nginx php8.3-cli php8.3-fpm php8.3-curl php8.3-mbstring php8.3-xml php8.3-mysql php8.3-sqlite3
+      - uses: actions/download-artifact@v4
+        with:
+          name: accepted-source-archive
+          path: ${{ runner.temp }}/fnlla-http-input
+      - name: Accept the downloaded starter on HTTPS and PHP-FPM
+        run: bash scripts/acceptance/fpm.sh "${{ runner.temp }}/fnlla-http-input/fnlla-source.zip"
 
   brand-ui:
     runs-on: ubuntu-latest

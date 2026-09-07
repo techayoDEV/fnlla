@@ -63,6 +63,12 @@ or route affected, reproduction steps and the smallest relevant output from
 
 ## Release cadence
 
+The 2.2.x security maintenance policy is defined in `SECURITY.md`: once published,
+the latest patch is the primary fix target, with no automatic LTS or parallel
+backport commitment. Applications should budget for tested patch upgrades.
+Business-critical deployments need an explicit maintenance owner and, where
+required, a separate support agreement; a framework version is not an SLA.
+
 FNLLA is updated when TechAyo LTD decides that an update is appropriate.
 
 Releases are not guaranteed to follow a regular public schedule.
