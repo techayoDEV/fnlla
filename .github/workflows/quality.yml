@@ -10,6 +10,39 @@ permissions:
   contents: read
 
 jobs:
+  source-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, fileinfo, mbstring, dom, xml
+          coverage: none
+      - name: Extract the exact commit without private storage or design masters
+        shell: bash
+        run: |
+          git archive --format=zip --output="${{ runner.temp }}/fnlla-source.zip" HEAD
+          unzip -q "${{ runner.temp }}/fnlla-source.zip" -d "${{ runner.temp }}/fnlla-source"
+          test ! -e "${{ runner.temp }}/fnlla-source/.env"
+          test ! -e "${{ runner.temp }}/fnlla-source/storage"
+          test ! -e "${{ runner.temp }}/fnlla-source/branding"
+          test ! -e "${{ runner.temp }}/fnlla-source/scripts/branding"
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: ${{ runner.temp }}/fnlla-source
+      - run: composer audit --locked
+        working-directory: ${{ runner.temp }}/fnlla-source
+      - run: php fnlla release:prepare --json
+        working-directory: ${{ runner.temp }}/fnlla-source
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accepted-source-archive
+          path: |
+            ${{ runner.temp }}/fnlla-source.zip
+            ${{ runner.temp }}/fnlla-source/dist/release/
+          retention-days: 14
+
   brand-ui:
     runs-on: ubuntu-latest
     timeout-minutes: 20

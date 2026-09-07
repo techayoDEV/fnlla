@@ -29,6 +29,12 @@ Review supported proxy/SAPI deployment requirements and any remaining limitation
 Test the exact downloadable artifacts before recommending them to consumers;
 do not substitute a working-tree export for the release download.
 
+Core Quality also runs release preparation inside `git archive` output, with
+private storage and editable branding masters absent. Its test bootstrap creates
+only empty runtime directories. Successful runs retain the source ZIP and its
+supply-chain metadata as the `accepted-source-archive` CI artifact. The macOS gate
+provisions PHP 8.3 with Homebrew before configuring its extensions and tools.
+
 Publication also needs working HTTPS destinations for the website and campaign
 QR codes. A draft release or a prepared archive is not an availability announcement.
 

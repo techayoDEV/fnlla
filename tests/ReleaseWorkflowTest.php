@@ -25,6 +25,15 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleaseWorkflowTest extends TestCase
 {
+    public function testSourceArchiveRunsTheFullReleasePreparationWithoutPrivateStorage(): void
+    {
+        $workflow = (string) file_get_contents(base_path(".github/workflows/quality.yml"));
+        self::assertStringContainsString("git archive --format=zip", $workflow);
+        self::assertStringContainsString('test ! -e "${{ runner.temp }}/fnlla-source/storage"', $workflow);
+        self::assertStringContainsString("run: php fnlla release:prepare --json", $workflow);
+        self::assertStringContainsString("name: accepted-source-archive", $workflow);
+    }
+
     public function testReleaseGateFetchesFullGitHistoryForHistoryDependentTests(): void
     {
         $workflow = (string) file_get_contents(base_path(".github/workflows/fnlla-release-gate.yml"));

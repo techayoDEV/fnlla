@@ -29,3 +29,11 @@ $GLOBALS["fnlla_config"]["app"]["environment"] = "testing";
 $GLOBALS["fnlla_config"]["app"]["debug"] = false;
 $GLOBALS["fnlla_config"]["app"]["log_path"] = storage_path("logs/test.log");
 $GLOBALS["fnlla_php_config"] = $GLOBALS["fnlla_config"];
+
+// Source archives omit private storage, including Git's empty-directory placeholders.
+foreach (["app", "database", "framework/cache", "framework/queue", "framework/sessions", "logs", "uploads"] as $directory) {
+    $path = storage_path($directory);
+    if (!is_dir($path) && !mkdir($path, 0700, true) && !is_dir($path)) {
+        throw new RuntimeException("Unable to prepare test storage: " . $directory);
+    }
+}

@@ -10,6 +10,9 @@ release tags are cut.
   the original release.
 - Correct upgrade readiness checks to accept documented provider integrations
   and match the business reference to the current source edition.
+- Validate source archives independently of the Git checkout and initialize empty
+  test-storage fixtures when private directories are absent. Provision macOS PHP
+  explicitly before release-gate configuration.
 
 - Fix private preview and update stylesheet ownership, dark cookie/Kanban
   surfaces and form boundaries. Add browser regression checks against fresh
