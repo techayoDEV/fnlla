@@ -82,6 +82,8 @@ Created and maintained by **TechAyo**. Lead Developer / Product Manager: **Marci
 
 ### Release Acceptance
 
+- Make queue lease/retry tests independent of one-second scheduling assumptions;
+  simulate expiry in private fixtures while retaining stale-worker rejection.
 - Require confirmed public, stable GitHub release metadata for framework updates;
   remove the bare-tag fallback during API failures and validate source/tag versions.
 - Accept an absent/empty CGI content length from Nginx/PHP-FPM while retaining

@@ -18,8 +18,8 @@ final class QueueReservationTest extends TestCase
         $this->directory = sys_get_temp_dir() . "/fnlla-queue-lease-" . bin2hex(random_bytes(8));
         $this->configuration = (array) config("queue", []);
         config_set("queue.max_attempts", 2);
-        config_set("queue.visibility_timeout_seconds", 1);
-        config_set("queue.retry_backoff_seconds", 1);
+        config_set("queue.visibility_timeout_seconds", 300);
+        config_set("queue.retry_backoff_seconds", 300);
     }
 
     protected function tearDown(): void
@@ -40,9 +40,7 @@ final class QueueReservationTest extends TestCase
         $old = $first->pop();
         self::assertSame(null, $second->pop());
         self::assertSame(1, $first->pendingCount());
-        sleep(2);
-        // Only the abandoned lease should expire; acknowledgement is not a one-second performance test.
-        config_set("queue.visibility_timeout_seconds", 30);
+        $this->makeDue($id, "reserved_until");
         $new = $second->pop();
         self::assertSame($id, $new["id"]);
         self::assertSame(2, $new["attempts"]);
@@ -56,12 +54,12 @@ final class QueueReservationTest extends TestCase
     public function testRetryDelayAndExhaustedCrashAreQuarantined(): void
     {
         $queue = new FileQueueStore($this->directory);
-        $queue->push("Synthetic");
+        $id = $queue->push("Synthetic");
         $queue->fail($queue->pop());
         self::assertSame(null, $queue->pop());
-        sleep(2);
+        $this->makeDue($id, "available_at");
         self::assertSame(2, $queue->pop()["attempts"]);
-        sleep(2);
+        $this->makeDue($id, "reserved_until");
         self::assertSame(null, $queue->pop());
         self::assertSame(1, $queue->failedCount());
         self::assertSame(0, $queue->pendingCount());
@@ -72,7 +70,7 @@ final class QueueReservationTest extends TestCase
         $queue = new FileQueueStore($this->directory);
         $id = $queue->push("Synthetic");
         $code = 'define("FNLLA_RUNTIME_SKIP_AUTO_GUARD", true); require $argv[1];'
-            . 'config_set("queue.visibility_timeout_seconds", 1);'
+            . 'config_set("queue.visibility_timeout_seconds", 300);'
             . '$q = new \\Fnlla\\Php\\Queue\\FileQueueStore($argv[2]); echo $q->pop()["id"]; exit(23);';
         $process = proc_open([PHP_BINARY, "-r", $code, base_path("tests/bootstrap.php"), $this->directory],
             [0 => ["pipe", "r"], 1 => ["pipe", "w"], 2 => ["pipe", "w"]], $pipes);
@@ -82,11 +80,20 @@ final class QueueReservationTest extends TestCase
         fclose($pipes[1]); fclose($pipes[2]);
         self::assertSame(23, proc_close($process), $errors);
         self::assertSame($id, $output);
-        sleep(2);
-        config_set("queue.visibility_timeout_seconds", 30);
+        $this->makeDue($id, "reserved_until");
         $recovered = $queue->pop();
         self::assertSame($id, $recovered["id"]);
         $queue->complete($recovered);
+    }
+
+    private function makeDue(string $id, string $field): void
+    {
+        // No worker is active here. Backdate only the disposable persisted fixture,
+        // so lease semantics are tested without depending on runner speed or sleep.
+        $path = $this->directory . "/" . $id . ".job";
+        $payload = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $payload[$field] = time() - 1;
+        file_put_contents($path, json_encode($payload, JSON_THROW_ON_ERROR));
     }
 
     public function testParallelWorkersDoNotShareLiveReservations(): void

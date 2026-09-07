@@ -65,6 +65,12 @@ The updater also requires GitHub to confirm a public, stable release. Missing
 metadata, API outages/rate limits, drafts and prereleases stop the update; a bare
 tag is not a fallback. Cached source identity must match the published tag.
 
+On Windows, OpenSSL-based PHP installations may need a CA bundle configured in
+`php.ini` through `curl.cainfo` and `openssl.cafile`. Use an up-to-date trusted
+bundle, for example the [curl CA bundle](https://curl.se/docs/caextract.html), and
+an absolute path. Restart the serving PHP processes after configuration changes.
+Do not disable TLS certificate verification to work around a missing trust store.
+
 Before clicking **Publish release**, download the draft as an authenticated
 maintainer, verify its hashes against the retained receipt, repeat the installation
 instructions and review its notes. Confirm private security reporting and actual
