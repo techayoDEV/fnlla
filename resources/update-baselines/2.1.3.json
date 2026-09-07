@@ -4,6 +4,10 @@
   "commit": "06b2b03e3bc7d6e92e6e6d0221e8e720cd58a085",
   "normalized_sha256": {
     "VERSION": "dbbe1cbf5e37512d2d91fb743f5fa2f907a9d987511f85544f1619c98f3c3432",
+    "public/assets/brand/fnlla/favicon.svg": "30068adc02302b749c3fb965a21c399a860fcbc9ca6d0209f5735b27673f6b43",
+    "public/assets/brand/fnlla/fnlla-monogram-outline-v3.svg": "30068adc02302b749c3fb965a21c399a860fcbc9ca6d0209f5735b27673f6b43",
+    "public/assets/brand/fnlla/fnlla-open-graph-v3-1200x630.png": "3212b047ff86b7f55f94d82123ac4ae15b3fe740d4e04c1025d3f1ee8d7caa62",
+    "public/assets/brand/fnlla/fnlla-recommended-lockup-outline-v3.svg": "1cc02c6f6158691fa45d7f132726b42cbebadd8f0aea9aa3ccd9332b76a97ad9",
     "public/vendor/fnlla-runtime/LICENSE.md": "c3c3032ec51afea00036eaac7706854b63d5479db6308031879374688da42455",
     "public/vendor/fnlla-runtime/MANIFEST.json": "7063169f3c4e65762f52f2203243ecbc230ba532e879c38b373ac07b7c97fa0c",
     "public/vendor/fnlla-runtime/README.md": "5b5a1335be81152a03e7e9de45aeba623459b983b15cf0747170586a30731b1d",

@@ -104,6 +104,10 @@ protects Git archives. Environment examples remain included. These rules exclude
 files from distribution, not from the application's filesystem or backup policy.
 Use PHP migrations rather than shipping SQL dumps as source fixtures.
 
+Upgrade readiness distinguishes tool-authorship notices from supported integration
+names. Provider configuration and API documentation must retain accurate names;
+the release check is not a blanket ban on third-party references or attribution.
+
 Inspect the archive before publication, including its Markdown reference.
 HTML documentation and its former generator are no longer distributed.
 Public instructions must describe FNLLA with neutral examples. Keep application

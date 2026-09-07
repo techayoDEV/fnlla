@@ -333,11 +333,12 @@ final class UpgradeAnalyzer
         }
 
         $valid = false;
+        $edition = $this->readFirstLine(base_path("VERSION"));
         if ($missing === []) {
             $manifest = json_decode((string) file_get_contents($manifestPath), true);
             $blueprint = json_decode((string) file_get_contents($blueprintPath), true);
             $valid = ($manifest["schema"] ?? null) === "fnlla.business_reference.v1"
-                && ($manifest["version"] ?? null) === "2.1.1"
+                && $edition !== null && ($manifest["version"] ?? null) === $edition
                 && ($blueprint["schema"] ?? null) === "fnlla.business_app_blueprint.v1";
         }
 
@@ -345,8 +346,8 @@ final class UpgradeAnalyzer
             "id" => "business-reference-blueprint",
             "status" => $missing === [] && $valid ? "pass" : "warn",
             "detail" => $missing === [] && $valid
-                ? "Business reference blueprint is present and versioned for 2.1."
-                : "Business reference blueprint should be present, parseable and versioned for 2.1.",
+                ? "Business reference blueprint matches the source edition."
+                : "Business reference blueprint should be present, parseable and match the source edition.",
             "data" => ["missing" => $missing],
         ];
     }
@@ -367,11 +368,14 @@ final class UpgradeAnalyzer
         ];
     }
 
-    private function checkAssistantVendorMarkers(): array
+    private function checkAssistantVendorMarkers(?string $root = null): array
     {
+        $root = $root ?? base_path();
         $matches = [];
+        // Provider names describe supported integrations; only tool-authorship notices are residue.
         $patterns = array_map(
-            static fn (array $parts): string => '/\b' . preg_quote(implode('', $parts), '/') . '\b/i',
+            static fn (array $parts): string => '/\b(?:generated|written|created|built|coded|authored)\s+'
+                . '(?:by|with|using)\s+(?:(?:the|an?)\s+)?' . preg_quote(implode('', $parts), '/') . '\b/i',
             [
                 ['Co', 'dex'],
                 ['Chat', 'G', 'PT'],
@@ -383,21 +387,21 @@ final class UpgradeAnalyzer
             ]
         );
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(base_path(), \RecursiveDirectoryIterator::SKIP_DOTS)
+            new \RecursiveDirectoryIterator($root, \RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $item) {
-            if (!$item->isFile()) {
+            if (!$item->isFile() || $item->isLink()) {
                 continue;
             }
 
-            $relativePath = str_replace("\\", "/", substr($item->getPathname(), strlen(base_path()) + 1));
+            $relativePath = str_replace("\\", "/", substr($item->getPathname(), strlen($root) + 1));
 
             if (preg_match('#^(\.git|dist|storage|vendor|\.fnlla/update-transaction)/#', $relativePath) === 1) {
                 continue;
             }
 
-            if (preg_match('/\.(png|jpe?g|gif|webp|ico|pdf|zip|phar)$/i', $relativePath) === 1) {
+            if (preg_match('/\.(png|jpe?g|gif|webp|ico|pdf|psd|docx|ttf|woff2?|zip|phar)$/i', $relativePath) === 1) {
                 continue;
             }
 
@@ -416,7 +420,7 @@ final class UpgradeAnalyzer
         return [
             "id" => "assistant-vendor-markers",
             "status" => $matches === [] ? "pass" : "fail",
-            "detail" => $matches === [] ? "No assistant-vendor markers detected in published sources." : "Published sources must not mention assistant-vendor tooling.",
+            "detail" => $matches === [] ? "No tool-authorship notices detected in published sources." : "Review tool-authorship notices in published sources; integration names are permitted.",
             "data" => ["files" => $matches],
         ];
     }

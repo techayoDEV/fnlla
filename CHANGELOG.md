@@ -5,6 +5,12 @@ release tags are cut.
 
 ## Unreleased
 
+- Recognize unchanged FNLLA brand assets from the published 2.1.3 baseline during
+  upgrades; retain conflicts for customized marks and test both cases against
+  the original release.
+- Correct upgrade readiness checks to accept documented provider integrations
+  and match the business reference to the current source edition.
+
 - Fix private preview and update stylesheet ownership, dark cookie/Kanban
   surfaces and form boundaries. Add browser regression checks against fresh
   exports in both themes and four viewport widths.

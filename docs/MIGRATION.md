@@ -81,7 +81,9 @@ php ../fnlla-2.2.0/fnlla framework:update --project=. --release-tag=v2.2.0 --app
 The project target is explicit; local/fork release sources remain prohibited.
 Back up first and stop traffic. The updater tracks framework policy documents,
 VERSION and bundled UI files, using verified normalized 2.1.3 hashes for formerly
-untracked files. Local changes cause conflicts rather than silent replacement.
+untracked files, including the four maintained FNLLA brand assets. These assets
+upgrade only when they still match the published baseline. Custom marks cause
+conflicts rather than silent replacement.
 Only unchanged, lock-hash-matched framework test fixtures are removed; modified
 tests and application tests are preserved. Reconcile any retained historical tests
 with the new documented behavior. Manifest refresh and metadata changes are inside

@@ -51,6 +51,24 @@ final class ReleasedUpgradeTest extends TestCase
                 FrameworkLock::load($project), FrameworkLock::load($candidate), $project, $candidate);
             self::assertSame([], $report["conflicts"], json_encode(array_keys($report["conflicts"])));
             self::assertGreaterThan(0, count($report["updates"]));
+            $brandPaths = array_filter(array_keys(FrameworkLock::legacyNormalizedHashes("2.1.3")),
+                static fn (string $path): bool => str_starts_with($path, "public/assets/brand/fnlla/"));
+            self::assertCount(4, $brandPaths);
+            foreach ($brandPaths as $path) {
+                self::assertArrayHasKey($path, $report["updates"], $path);
+                self::assertSame("update", $report["updates"][$path]["action"]);
+                $original = (string) file_get_contents($project . "/" . $path);
+                try {
+                    // A published baseline must never authorize replacing a custom mark.
+                    file_put_contents($project . "/" . $path, $original . "custom-brand-change");
+                    $modified = (new ReflectionMethod(FrameworkUpdater::class, "buildReport"))->invoke(null,
+                        FrameworkLock::load($project), FrameworkLock::load($candidate), $project, $candidate);
+                    self::assertArrayHasKey($path, $modified["conflicts"], $path);
+                    self::assertArrayNotHasKey($path, $modified["updates"], $path);
+                } finally {
+                    file_put_contents($project . "/" . $path, $original);
+                }
+            }
             (new FrameworkUpdateTransaction($project))->run([...array_keys($report["updates"]), FrameworkLock::lockFile(), "MANIFEST.json"], static function () use ($report, $project, $candidate): void {
                 (new ReflectionMethod(FrameworkUpdater::class, "applyReport"))->invoke(null, $report, $project, $candidate);
                 FrameworkLock::syncFromExport($candidate, $project);
