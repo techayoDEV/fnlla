@@ -7,6 +7,8 @@ archive=$(realpath "${1:?Pass the accepted source ZIP}")
 work=$(mktemp -d /tmp/fnlla-fpm.XXXXXXXX)
 php_bin=${PHP_BIN:-/usr/bin/php8.3}
 fpm_bin=${PHP_FPM_BIN:-/usr/sbin/php-fpm8.3}
+# Enable OPcache before module startup, not as a per-request pool override.
+fpm_options=(-d opcache.enable=1 -d opcache.validate_timestamps=0 -d opcache.file_update_protection=0)
 fpm_pid=''
 nginx_pid=''
 cleanup() {
@@ -48,9 +50,6 @@ security.limit_extensions = .php
 php_admin_value[display_errors] = Off
 php_admin_value[log_errors] = On
 php_admin_value[error_log] = $work/php-error.log
-php_admin_value[opcache.enable] = 1
-php_admin_value[opcache.validate_timestamps] = 0
-php_admin_value[opcache.file_update_protection] = 0
 EOF
 cat > "$work/nginx.conf" <<EOF
 daemon off;
@@ -92,13 +91,13 @@ http {
     }
 }
 EOF
-"$fpm_bin" --fpm-config "$work/fpm.conf" --nodaemonize > "$work/fpm-console.log" 2>&1 &
+"$fpm_bin" "${fpm_options[@]}" --fpm-config "$work/fpm.conf" --nodaemonize > "$work/fpm-console.log" 2>&1 &
 fpm_pid=$!
 nginx -p "$work/" -c "$work/nginx.conf" > "$work/nginx-console.log" 2>&1 &
 nginx_pid=$!
 ready=0
 for attempt in {1..50}; do
-    if curl --silent --fail --cacert "$work/tls.crt" "$base/" >/dev/null; then ready=1; break; fi
+    if curl --silent --fail --connect-timeout 1 --max-time 3 --cacert "$work/tls.crt" "$base/" >/dev/null; then ready=1; break; fi
     sleep 0.2
 done
 if [[ "$ready" != 1 ]]; then
@@ -113,7 +112,7 @@ fi
 "$php_bin" "$source/scripts/acceptance/http-smoke.php" "$project" "$base" exercise
 kill "$fpm_pid"
 wait "$fpm_pid" || true
-"$fpm_bin" --fpm-config "$work/fpm.conf" --nodaemonize > "$work/fpm-console.log" 2>&1 &
+"$fpm_bin" "${fpm_options[@]}" --fpm-config "$work/fpm.conf" --nodaemonize > "$work/fpm-console.log" 2>&1 &
 fpm_pid=$!
 sleep 1
 "$php_bin" "$source/scripts/acceptance/http-smoke.php" "$project" "$base" after-reload

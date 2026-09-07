@@ -85,6 +85,9 @@ CSRF, login rotation, protected paths, Host validation, CLI-assisted HTTP passwo
 reset, token replay rejection and revocation of old sessions. It also demonstrates
 that `opcache.validate_timestamps=0` needs a restart of the serving FPM processes
 to expose changed PHP views. Running a CLI cache command cannot reset FPM's OPcache.
+OPcache must be enabled at FPM startup, not switched on by a per-request pool
+override. FNLLA accepts the empty CGI `CONTENT_LENGTH` used by standard Nginx
+FastCGI parameters for requests without a declared length; body limits still apply.
 
 To reproduce on a disposable Ubuntu host with PHP 8.3 CLI/FPM, curl, XML, mbstring,
 PDO extensions, Composer, Nginx, OpenSSL and unzip installed:

@@ -319,6 +319,9 @@ final class Request
             }
 
             if (in_array($key, ["CONTENT_TYPE", "CONTENT_LENGTH", "CONTENT_MD5"], true)) {
+                if ($value === "" || $value === null) {
+                    continue;
+                }
                 $normalizedName = str_replace(" ", "-", ucwords(strtolower(str_replace("_", " ", $key))));
                 $headers[strtolower($normalizedName)] = (string) $value;
             }
@@ -345,7 +348,12 @@ final class Request
     private static function assertBodySizeAllowed(array $server, string $rawBody): void
     {
         $maxBytes = self::bodyLimit();
-        $declared = $server["CONTENT_LENGTH"] ?? $server["HTTP_CONTENT_LENGTH"] ?? "0";
+        // CGI permits an empty CONTENT_LENGTH when no length is supplied (RFC 3875, 4.1.2).
+        // Do not extend that allowance to a malformed HTTP Content-Length header.
+        $cgiLength = $server["CONTENT_LENGTH"] ?? null;
+        $declared = $cgiLength === null || $cgiLength === ""
+            ? ($server["HTTP_CONTENT_LENGTH"] ?? "0")
+            : $cgiLength;
         if ((!is_string($declared) && !is_int($declared)) || preg_match('/^[0-9]+$/D', (string) $declared) !== 1) {
             throw new HttpException(400, "Invalid Content-Length.");
         }

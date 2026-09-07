@@ -41,7 +41,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m unittest discover -s tests/release -p "test_*.py"
+      - run: python -B -m unittest discover -s tests/release -p "test_*.py"
         working-directory: ${{ runner.temp }}/fnlla-source
       - run: php fnlla release:prepare --json
         working-directory: ${{ runner.temp }}/fnlla-source
@@ -62,7 +62,7 @@ jobs:
       - name: Install the production HTTP test stack
         run: |
           sudo apt-get update
-          sudo apt-get install -y nginx php8.3-cli php8.3-fpm php8.3-curl php8.3-mbstring php8.3-xml php8.3-mysql php8.3-sqlite3
+          sudo apt-get install -y nginx php8.3-cli php8.3-fpm php8.3-opcache php8.3-curl php8.3-mbstring php8.3-xml php8.3-mysql php8.3-sqlite3
       - uses: actions/download-artifact@v4
         with:
           name: accepted-source-archive

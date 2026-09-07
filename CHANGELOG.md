@@ -82,6 +82,8 @@ Created and maintained by **TechAyo**. Lead Developer / Product Manager: **Marci
 
 ### Release Acceptance
 
+- Accept an absent/empty CGI content length from Nginx/PHP-FPM while retaining
+  strict HTTP length validation and bounded body reads.
 - Replace automatic tag publication with a manually requested draft, exact-commit
   checks of all three CI workflows and promotion of the accepted source ZIP.
   Refuse existing drafts/releases and never overwrite release assets.

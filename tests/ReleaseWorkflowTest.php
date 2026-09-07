@@ -61,7 +61,7 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("needs: source-archive", $workflow);
         self::assertStringContainsString("actions/download-artifact@v4", $workflow);
         self::assertStringContainsString("scripts/acceptance/fpm.sh", $workflow);
-        self::assertStringContainsString("opcache.validate_timestamps] = 0", $runner);
+        self::assertStringContainsString("-d opcache.enable=1 -d opcache.validate_timestamps=0", $runner);
         self::assertStringContainsString("after-reload", $runner);
         self::assertStringContainsString("trap cleanup EXIT", $runner);
         self::assertStringNotContainsString("continue-on-error", $workflow);

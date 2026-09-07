@@ -68,6 +68,37 @@ final class HttpBoundaryTest extends TestCase
         }
     }
 
+    public function testEmptyFastCgiLengthIsAbsentButBodyLimitsStillApply(): void
+    {
+        $previous = config("security.request.max_body_bytes");
+        config_set("security.request.max_body_bytes", 4);
+        try {
+            foreach (["GET", "HEAD", "POST"] as $method) {
+                $request = Request::capture("", ["REQUEST_METHOD" => $method, "CONTENT_LENGTH" => ""]);
+                self::assertSame("", $request->rawBody());
+                self::assertNull($request->header("content-length"));
+            }
+            self::assertSame("1234", Request::capture("1234", ["CONTENT_LENGTH" => ""])->rawBody());
+            self::assertSame("4", Request::capture("1234", ["HTTP_CONTENT_LENGTH" => "4", "CONTENT_LENGTH" => ""])->header("content-length"));
+            foreach ([
+                ["12345", ["CONTENT_LENGTH" => ""], 413],
+                ["", ["CONTENT_LENGTH" => "", "HTTP_CONTENT_LENGTH" => "5"], 413],
+                ["", ["CONTENT_LENGTH" => "", "HTTP_CONTENT_LENGTH" => ""], 400],
+                ["", ["CONTENT_LENGTH" => " "], 400],
+                ["", ["CONTENT_LENGTH" => false], 400],
+            ] as [$body, $server, $status]) {
+                try {
+                    Request::capture($body, $server);
+                    self::fail("Invalid body boundary was accepted.");
+                } catch (HttpException $error) {
+                    self::assertSame($status, $error->statusCode());
+                }
+            }
+        } finally {
+            config_set("security.request.max_body_bytes", $previous);
+        }
+    }
+
     public function testForwardedSchemeRequiresOneCanonicalValueFromTrustedIngress(): void
     {
         $server = $_SERVER;
