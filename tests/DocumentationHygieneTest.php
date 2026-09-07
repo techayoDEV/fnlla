@@ -8,41 +8,19 @@ use PHPUnit\Framework\TestCase;
 
 final class DocumentationHygieneTest extends TestCase
 {
-    public function testConsolidatedChecklistPreservesPublishedBookmark(): void
+    public function testRetiredHtmlCannotReturnToTheDocumentationDistribution(): void
     {
-        $guide = (string) file_get_contents(base_path("docs/RELEASE-AND-OPERATIONS.md"));
-        $alias = (string) file_get_contents(base_path("docs/major-release-checklist.html"));
-        self::assertStringContainsString("## Release Acceptance Checklist", $guide);
-        self::assertStringContainsString("release-and-operations.html#release-acceptance-checklist", $alias);
-        self::assertStringContainsString('rel="canonical"', $alias);
-        self::assertFalse(is_file(base_path("docs/MAJOR-RELEASE-CHECKLIST.md")));
-        self::assertFalse(is_file(base_path("docs/RECOVERY.md")));
-        self::assertFalse(is_file(base_path("docs/PROJECT-SCRIPTS-REFERENCE.md")));
-        self::assertFalse(is_file(base_path("docs/PRODUCTION-CHECKLIST.md")));
-        self::assertFalse(is_file(base_path("docs/PERFORMANCE.md")));
-        self::assertFalse(is_file(base_path("docs/TECH-DEBT-AND-FUTURE-PROOFING.md")));
-        self::assertFalse(is_file(base_path("docs/framework/DEVELOPER-DIAGNOSTICS.md")));
-        self::assertFalse(is_file(base_path("docs/framework/DEVELOPER-RECOVERY.md")));
-        self::assertStringContainsString(
-            "release-and-operations.html#backup-and-recovery",
-            (string) file_get_contents(base_path("docs/recovery.html"))
-        );
-        self::assertStringContainsString(
-            "release-and-operations.html#project-facing-command-reference",
-            (string) file_get_contents(base_path("docs/project-scripts-reference.html"))
-        );
-        self::assertStringContainsString(
-            "release-and-operations.html#production-readiness-checklist",
-            (string) file_get_contents(base_path("docs/production-checklist.html"))
-        );
-        self::assertStringContainsString(
-            "release-and-operations.html#performance-baselines-and-budgets",
-            (string) file_get_contents(base_path("docs/performance.html"))
-        );
-        self::assertStringContainsString(
-            "developer-panel.html#technical-debt-and-future-proofing",
-            (string) file_get_contents(base_path("docs/tech-debt-and-future-proofing.html"))
-        );
+        require_once base_path("scripts/check-docs.php");
+        $root = sys_get_temp_dir() . "/fnlla-docs-" . bin2hex(random_bytes(6));
+        mkdir($root . "/docs", 0700, true);
+        try {
+            file_put_contents($root . "/docs/index.html", "<!doctype html><title>Retired docs</title>");
+            self::assertSame(["docs/index.html: retired HTML documentation"], fnlla_documentation_issues($root));
+        } finally {
+            unlink($root . "/docs/index.html");
+            rmdir($root . "/docs");
+            rmdir($root);
+        }
     }
 
     public function testPublicDocumentationHasNoKnownPrivateMarkersOrBrokenLinks(): void

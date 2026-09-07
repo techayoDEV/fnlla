@@ -10,8 +10,8 @@ Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 Purpose:
-- Provides an opt-in HTTP boundary to a separate Fionn AI service without
-  coupling FNLLA to Fionn source, model files, memory, queues or private data.
+- Includes the built-in gateway to FIONN AI, created by TechAyo, with opt-in HTTP access without
+  coupling FNLLA to FIONN AI source, model files, memory, queues or private data.
 */
 
 namespace Fnlla\Php\Ai;
@@ -35,18 +35,18 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
         $input = $this->normaliseText($input, (int) config("ai.runtime.max_input_chars", 2000));
 
         if ($input === "") {
-            throw new RuntimeException("Fionn AI bridge requires a non-empty input.");
+            throw new RuntimeException("FIONN AI bridge requires a non-empty input.");
         }
 
         $endpoint = $this->resolveEndpoint($config);
         $policy = $this->endpointPolicy($endpoint, $config);
 
-        if (($config["enabled"] ?? false) !== true) {
-            throw new RuntimeException("Fionn AI bridge is disabled. Set AI_FIONN_BRIDGE_ENABLED=true and AI_RUNTIME_DRIVER=fionn after reviewing the endpoint policy.");
+        if (!(bool) config("ai.runtime.enabled", true) || ($config["enabled"] ?? false) !== true) {
+            throw new RuntimeException("FIONN AI bridge is disabled. Set AI_FIONN_BRIDGE_ENABLED=true and AI_RUNTIME_DRIVER=fionn after reviewing the endpoint policy.");
         }
 
         if (!$policy["allowed"]) {
-            throw new RuntimeException("Fionn AI bridge is not allowed: " . $policy["reason"]);
+            throw new RuntimeException("FIONN AI bridge is not allowed: " . $policy["reason"]);
         }
 
         $payload = [
@@ -63,22 +63,30 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
             ],
         ];
 
-        $response = $this->postJson($endpoint, $payload, $config);
+        try {
+            $response = $this->postJson($endpoint, $payload, $config);
+        } catch (\Throwable) {
+            throw new RuntimeException("FIONN AI bridge request could not be completed.");
+        }
         $statusCode = (int) ($response["status"] ?? 0);
-        $body = json_decode((string) ($response["body"] ?? ""), true);
+        $raw = (string) ($response["body"] ?? "");
+        if (strlen($raw) > 1048576) {
+            throw new RuntimeException("FIONN AI bridge response exceeded the size limit.");
+        }
+        $body = json_decode($raw, true, 64);
 
         if (!is_array($body)) {
-            throw new RuntimeException("Fionn AI bridge returned invalid JSON.");
+            throw new RuntimeException("FIONN AI bridge returned invalid JSON.");
         }
 
         if ($statusCode < 200 || $statusCode >= 300) {
-            throw new RuntimeException("Fionn AI bridge request failed: " . (string) ($body["error"] ?? ("HTTP " . $statusCode)));
+            throw new RuntimeException("FIONN AI bridge request failed (HTTP " . $statusCode . ").");
         }
 
         $reply = $this->normaliseText((string) ($body["reply"] ?? $body["answer"] ?? ""), 8000);
 
         if ($reply === "") {
-            throw new RuntimeException("Fionn AI bridge returned an empty reply.");
+            throw new RuntimeException("FIONN AI bridge returned an empty reply.");
         }
 
         $replySource = $this->normaliseText((string) ($body["reply_source"] ?? "fionn"), 120);
@@ -90,12 +98,12 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
             "answer" => $reply,
             "confidence" => $this->confidence($body),
             "intent" => "fionn.remote",
-            "title" => "Fionn",
+            "title" => "FIONN AI",
             "actions" => [],
             "sources" => [$replySource !== "" ? "fionn:" . $replySource : "fionn"],
             "context" => $payload["context"],
             "usage" => $this->usage($input, $reply),
-            "estimated_cost_gbp" => 0.0,
+            "estimated_cost_gbp" => null,
             "latency_ms" => $this->latencyMs($startedAt),
             "provider" => [
                 "schema" => "fnlla.fionn_bridge.response.v1",
@@ -103,8 +111,9 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
                 "reply_mode" => $this->normaliseText((string) ($body["reply_mode"] ?? $payload["reply_mode"]), 80),
                 "knowledge_mode" => $this->normaliseText((string) ($body["knowledge_mode"] ?? $payload["knowledge_mode"]), 80),
                 "learning_mode" => false,
-                "privacy" => is_array($body["privacy"] ?? null) ? (array) $body["privacy"] : [],
-                "grounding" => is_array($body["grounding"] ?? null) ? (array) $body["grounding"] : [],
+                "confidence_measured" => is_numeric($body["confidence"] ?? null),
+                "privacy" => $this->booleanMetadata($body["privacy"] ?? null, ["redacted", "learning_mode", "external_learning", "stores_session_transcript"]),
+                "grounding" => $this->booleanMetadata($body["grounding"] ?? null, ["grounded", "verified", "knowledge_used"]),
             ],
         ];
     }
@@ -216,12 +225,16 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
 
         $allowedHosts = $this->allowedHosts((array) ($config["allowed_hosts"] ?? []));
 
-        if ($allowedHosts !== [] && !in_array($host, $allowedHosts, true)) {
+        if (!in_array($host, $allowedHosts, true)) {
             return $this->policy(false, "Endpoint host is not in AI_FIONN_ALLOWED_HOSTS.", $scheme, $host);
         }
 
-        if (!$local && trim((string) ($config["api_token"] ?? "")) === "") {
-            return $this->policy(false, "Non-local Fionn endpoints require AI_FIONN_API_TOKEN.", $scheme, $host);
+        $token = (string) ($config["api_token"] ?? "");
+        if ($token !== "" && preg_match('/\A[\x21-\x7E]{1,512}\z/D', $token) !== 1) {
+            return $this->policy(false, "FIONN AI API token contains invalid characters.", $scheme, $host);
+        }
+        if (!$local && trim($token) === "") {
+            return $this->policy(false, "Non-local FIONN AI endpoints require AI_FIONN_API_TOKEN.", $scheme, $host);
         }
 
         return $this->policy(true, "Endpoint policy passed.", $scheme, $host);
@@ -263,14 +276,17 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
                 "content" => $body,
                 "timeout" => max(1, (int) ($config["timeout_seconds"] ?? 10)),
                 "ignore_errors" => true,
+                "follow_location" => 0,
+                "max_redirects" => 0,
             ],
+            "ssl" => ["verify_peer" => true, "verify_peer_name" => true],
         ]);
         $http_response_header = [];
-        $raw = @file_get_contents($endpoint, false, $stream);
+        $raw = @file_get_contents($endpoint, false, $stream, 0, 1048577);
         $httpResponseHeaders = $http_response_header;
 
         if ($raw === false) {
-            throw new RuntimeException("Fionn AI bridge request could not be completed.");
+            throw new RuntimeException("FIONN AI bridge request could not be completed.");
         }
 
         return [
@@ -288,7 +304,7 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
             }
         }
 
-        return 200;
+        return 0;
     }
 
     private function safeContext(array $context, int $limit): array
@@ -349,9 +365,25 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
 
     private function normaliseText(string $value, int $limit): string
     {
+        if (preg_match('//u', $value) !== 1) {
+            throw new RuntimeException("FIONN AI bridge text must be valid UTF-8.");
+        }
         $value = trim(strip_tags(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]+/', " ", $value) ?? ""));
 
-        return substr($value, 0, max(1, $limit));
+        // PCRE keeps code points intact without adding a multibyte extension dependency.
+        preg_match('/\A.{0,' . max(1, min(32000, $limit)) . '}/us', $value, $matches);
+        return $matches[0] ?? "";
+    }
+
+    private function booleanMetadata(mixed $value, array $allowed): array
+    {
+        $result = [];
+        foreach ($allowed as $key) {
+            if (is_array($value) && is_bool($value[$key] ?? null)) {
+                $result[$key] = $value[$key];
+            }
+        }
+        return $result;
     }
 
     private function normaliseKey(string $key): string
@@ -377,7 +409,7 @@ final class FionnRuntimeBridge implements RuntimeAiProviderInterface
             return max(0, min(100, (int) $body["confidence"]));
         }
 
-        return 60;
+        return 0;
     }
 
     private function usage(string $input, string $output): array

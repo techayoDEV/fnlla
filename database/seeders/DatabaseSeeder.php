@@ -15,25 +15,17 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Provides seed data for framework demos, local setup or delivery bootstrapping.
+- Provides an explicit application seeding entrypoint without predefined accounts.
 */
 
 namespace Database\Seeders;
 
-use Database\Factories\UserFactory;
 use Fnlla\Php\Database\Seeders\Seeder;
 
 final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!$this->database->table("users")->where("email", "admin@example.com")->exists()) {
-            $this->container->make(UserFactory::class)->create([
-                "name" => "Admin User",
-                "email" => "admin@example.com",
-                "password" => app(\Fnlla\Php\Hashing\Hasher::class)->make("password123"),
-                "role" => "admin",
-            ]);
-        }
+        // Add application-owned seeders here. Privileged accounts require explicit provisioning.
     }
 }

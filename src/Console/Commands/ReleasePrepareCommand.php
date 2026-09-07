@@ -173,7 +173,6 @@ final class ReleasePrepareCommand extends Command
     private function documentationCommands(): array
     {
         return [
-            "docs in sync" => [PHP_BINARY, base_path("scripts/build-docs.php"), "--check"],
             "docs hygiene" => [PHP_BINARY, base_path("scripts/check-docs.php")],
             "modernization ledger" => [PHP_BINARY, base_path("scripts/check-modernization.php")],
         ];

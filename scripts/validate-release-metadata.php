@@ -22,6 +22,26 @@ Purpose:
 $root = dirname(__DIR__);
 $errors = [];
 
+// Current editions follow VERSION; schema identifiers and historical baselines do not.
+$version = trim((string) (file($root . '/VERSION', FILE_IGNORE_NEW_LINES)[0] ?? ''));
+$editionFiles = [
+    'resources/business-reference/MANIFEST.json' => 'version',
+    'resources/business-reference/blueprint.json' => 'version',
+    'resources/performance-baselines/policy.json' => 'version',
+];
+if (is_dir($root . '/branding')) {
+    $editionFiles['branding/tokens.json'] = 'edition';
+}
+foreach ($editionFiles as $path => $field) {
+    $data = is_file($root . '/' . $path) ? json_decode((string) file_get_contents($root . '/' . $path), true) : null;
+    if (!is_array($data) || ($data[$field] ?? null) !== $version) {
+        $errors[] = $path . ': edition must match VERSION';
+    }
+    if ($field === 'edition' && ($data['domain'] ?? null) !== 'fnlla.com') {
+        $errors[] = $path . ': official domain must be fnlla.com';
+    }
+}
+
 $requiredContains = [
     '.github/ISSUE_TEMPLATE/config.yml' => [
         'https://github.com/techayoDEV/fnlla/blob/main/.github/CONTRIBUTING.md',
@@ -40,7 +60,7 @@ $requiredContains = [
         'docs/BUSINESS-APP-REFERENCE.md',
         'docs/RELEASE-AND-OPERATIONS.md',
         'docs/ENVIRONMENT.md',
-        'resources/business-reference/2.1/',
+        'resources/business-reference/',
         'docs/DEVELOPER-PANEL.md',
     ],
     'CHANGELOG.md' => [
@@ -61,7 +81,7 @@ $requiredContains = [
         'QueryBuilder::paginate()',
     ],
     'docs/BUSINESS-APP-REFERENCE.md' => [
-        'resources/business-reference/2.1/blueprint.json',
+        'resources/business-reference/blueprint.json',
         'admin',
         'operator',
         'client',
@@ -89,7 +109,7 @@ $requiredContains = [
     'docs/ENVIRONMENT.md' => [
         '.env.full.example',
         'CLIENT_PREVIEW_ENABLED',
-        'Fionn Bridge',
+        'FIONN AI Bridge',
         'AI_FIONN_ENDPOINT',
     ],
     'docs/MIGRATION.md' => [
@@ -98,17 +118,16 @@ $requiredContains = [
         'framework:update --dry-run',
         'ops:backup-plan',
     ],
-    'resources/business-reference/2.1/MANIFEST.json' => [
+    'resources/business-reference/MANIFEST.json' => [
         '"schema": "fnlla.business_reference.v1"',
-        '"version": "2.1.1"',
         '"maintenance_preview"',
     ],
-    'resources/business-reference/2.1/blueprint.json' => [
+    'resources/business-reference/blueprint.json' => [
         '"schema": "fnlla.business_app_blueprint.v1"',
         '"admin.access"',
         '"client.records.view"',
     ],
-    'resources/performance-baselines/2.1-policy.json' => [
+    'resources/performance-baselines/policy.json' => [
         '"schema": "fnlla.performance_baseline_policy.v1"',
         '"project.export"',
         '"http.health"',
@@ -164,7 +183,8 @@ $forbiddenPatterns = [
 ];
 
 $forbiddenPublishedMarkers = array_map(
-    static fn (array $parts): string => '/\b' . preg_quote(implode('', $parts), '/') . '\b/i',
+    // API/provider names describe integrations, not source authorship.
+    static fn (array $parts): string => '/\b(?:generated|written|built|authored)\s+(?:by|with|using)\s+' . preg_quote(implode('', $parts), '/') . '\b/i',
     [
         ['Co', 'dex'],
         ['Chat', 'G', 'PT'],

@@ -1,0 +1,654 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="960" height="640" viewBox="0 0 960 640">
+<title>FNLLA guidebook-14 / editable vector source</title><defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,0,640)" d="M8 58H32V477H8Z" clip-rule="evenodd" />
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,0,640)" d="M928 58H952V477H928Z" clip-rule="evenodd" />
+</clipPath>
+</defs>
+<path transform="matrix(1,0,0,-1,0,640)" d="M0 0H960V640H0Z" fill="#ffffff" fill-rule="evenodd" />
+<g clip-path="url(#clip_1)">
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-83.4" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-83.4" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="25.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="8">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="13.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="19.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="25.1">0</tspan></text>
+</g>
+<g clip-path="url(#clip_2)">
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-471" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-460.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-450.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-440.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-430.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-420" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-399.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-389.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-379.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-369" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-358.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-348.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-328.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-318" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-307.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-297.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-287.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-277.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-256.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-246.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-236.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-226.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-216" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-205.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-185.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-175.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-165" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-154.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-144.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-134.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-114" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-103.8" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-93.6" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-83.4" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-83.4" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-73.2" x="945.1">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="928">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="933.7">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="939.4">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="6" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-63" x="945.1">0</tspan></text>
+</g>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-602" x="48">FNLLA  /  BRAND STANDARDS</tspan></text>
+<text fill="#6b7280" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-602" x="752">EDITION 2.2.0     /     14</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" stroke-width=".8" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#e5e7eb" d="M48 587H912" />
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="34" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-533" x="48">Ownership &amp; Handoff</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 48 138)" font-size="12" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-5" x="0">Keep one maintained kit, clear provenance and an explicit distinction between guidance and shipped behaviour.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" stroke-width=".8" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#e5e7eb" d="M48 37H912" />
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="14" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-14" x="48">fnlla.com</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="8.5" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-23.5" x="220">Created &amp; maintained by TechAyo</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-23" x="450">techayo.co.uk</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="8.5" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-22.5" x="614">hello@techayo.co.uk</tspan></text>
+<text fill="#6b7280" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="8.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-8.5" x="220">Lead Developer / Product Manager - Marcin Kordyaczny</tspan></text>
+<text fill="#6b7280" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="9" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-16" x="858">14 / 14</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-446" x="48">ONE MAINTAINED KIT</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="29" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-390" x="48">Source. Build. Review.</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="14" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-349" x="48">Brand rules + tokens + vector masters</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="12" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-317" x="48">Reproducible exports. Verified links. Visual proof.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" d="M634 345H746V457H634Z" fill="#ffffff" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 95.0303H37.33334V98.42423H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 95.0303H50.90909V98.42423H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 95.0303H61.090909V98.42423H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 95.0303H67.878787V98.42423H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 95.0303H98.424259V98.42423H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 91.63636H16.9697V95.0303H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 91.63636H37.33333V95.0303H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 91.63636H54.30303V95.0303H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M57.69697 91.63636H71.272739V95.0303H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 91.63636H78.06061V95.0303H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 91.63636H98.42423V95.0303H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 88.24242H16.9697V91.63635H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 88.24242H30.54546V91.63635H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 88.24242H37.33333V91.63635H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 88.24242H50.90909V91.63635H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M57.69697 88.24242H61.09091V91.63635H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 88.24242H71.27273V91.63635H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 88.24242H78.06061V91.63635H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 88.24242H91.63637V91.63635H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 88.24242H98.42423V91.63635H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 84.84848H16.9697V88.24242H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 84.84848H30.54546V88.24242H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 84.84848H37.33333V88.24242H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 84.84848H50.90909V88.24242H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 84.84848H57.696969V88.24242H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 84.84848H64.48485V88.24242H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 84.84848H78.06061V88.24242H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 84.84848H91.63637V88.24242H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 84.84848H98.42423V88.24242H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 81.45455H16.9697V84.84849H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 81.45455H30.54546V84.84849H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 81.45455H37.33333V84.84849H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 81.45455H44.12121V84.84849H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 81.45455H57.696969V84.84849H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 81.45455H71.27273V84.84849H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 81.45455H78.06061V84.84849H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 81.45455H91.63637V84.84849H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 81.45455H98.42423V84.84849H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 78.06061H16.9697V81.454547H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 78.06061H37.33333V81.454547H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 78.06061H44.12121V81.454547H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 78.06061H54.30303V81.454547H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 78.06061H71.27273V81.454547H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 78.06061H78.06061V81.454547H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 78.06061H98.42423V81.454547H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 74.66667H37.33334V78.06061H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 74.66667H44.12121V78.06061H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 74.66667H50.90909V78.06061H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 74.66667H57.696969V78.06061H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 74.66667H64.48485V78.06061H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 74.66667H71.27273V78.06061H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 74.66667H98.424259V78.06061H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 71.27273H47.51515V74.666667H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 71.27273H57.696969V74.666667H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 71.27273H64.48485V74.666667H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 71.27273H71.27273V74.666667H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 67.87879H16.9697V71.27273H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 67.87879H37.33334V71.27273H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 67.87879H50.90909V71.27273H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 67.87879H57.696969V71.27273H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 67.87879H91.63637V71.27273H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 64.48485H20.36364V67.878787H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 64.48485H50.90909V67.878787H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 64.48485H64.48485V67.878787H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 64.48485H71.27273V67.878787H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M78.06061 64.48485H81.454547V67.878787H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M91.63636 64.48485H95.0303V67.878787H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 61.09091H20.36364V64.48485H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M23.75758 61.09091H27.15152V64.48485H23.75758Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 61.09091H37.33333V64.48485H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 61.09091H50.90909V64.48485H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 61.09091H74.66667V64.48485H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 61.09091H88.24243V64.48485H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M91.63636 61.09091H98.42424V64.48485H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 57.69697H30.54546V61.09091H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M57.69697 57.69697H61.09091V61.09091H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M78.06061 57.69697H81.454547V61.09091H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 57.69697H98.42423V61.09091H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M16.9697 54.30303H20.36364V57.696969H16.9697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M30.54545 54.30303H37.33333V57.696969H30.54545Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 54.30303H47.51515V57.696969H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 54.30303H57.696969V57.696969H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 54.30303H67.87879V57.696969H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M71.27273 54.30303H78.06061V57.696969H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 54.30303H84.84849V57.696969H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M88.24242 54.30303H98.42424V57.696969H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 50.90909H16.9697V54.30303H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M27.15152 50.90909H30.54546V54.30303H27.15152Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 50.90909H47.51515V54.30303H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 50.90909H71.27273V54.30303H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M78.06061 50.90909H81.454547V54.30303H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M84.84848 50.90909H88.24242V54.30303H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M91.63636 50.90909H95.0303V54.30303H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 47.51515H16.9697V50.90909H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M23.75758 47.51515H27.15152V50.90909H23.75758Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 47.51515H40.72727V50.90909H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M44.12121 47.51515H47.51515V50.90909H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 47.51515H57.696969V50.90909H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 47.51515H67.878787V50.90909H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M71.27273 47.51515H74.666667V50.90909H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M78.06061 47.51515H88.24243V50.90909H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M91.63636 47.51515H98.42424V50.90909H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 44.12121H16.9697V47.51515H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 44.12121H27.15152V47.51515H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 44.12121H47.51515V47.51515H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 44.12121H54.30303V47.51515H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 44.12121H64.48485V47.51515H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 44.12121H71.27273V47.51515H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 44.12121H84.848499V47.51515H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 44.12121H98.42423V47.51515H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 40.72727H16.9697V44.12121H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M30.54545 40.72727H37.33333V44.12121H30.54545Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M44.12121 40.72727H47.51515V44.12121H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 40.72727H54.30303V44.12121H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 40.72727H84.848499V44.12121H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M88.24242 40.72727H91.63635V44.12121H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 37.33333H50.90909V40.72727H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 37.33333H71.27273V40.72727H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 37.33333H88.24243V40.72727H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 33.93939H37.33334V37.33333H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M44.12121 33.93939H50.90909V37.33333H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M57.69697 33.93939H64.48485V37.33333H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M67.87879 33.93939H71.27273V37.33333H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 33.93939H78.06061V37.33333H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 33.93939H84.84849V37.33333H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M88.24242 33.93939H98.42424V37.33333H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 30.54545H16.9697V33.93939H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 30.54545H37.33333V33.93939H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 30.54545H50.90909V33.93939H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 30.54545H61.090909V33.93939H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 30.54545H71.27273V33.93939H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 30.54545H88.24243V33.93939H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M91.63636 30.54545H98.42424V33.93939H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 27.15152H16.9697V30.54546H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 27.15152H30.54546V30.54546H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 27.15152H37.33333V30.54546H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 27.15152H44.12121V30.54546H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M54.30303 27.15152H57.696969V30.54546H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 27.15152H84.848499V30.54546H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M88.24242 27.15152H91.63635V30.54546H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 27.15152H98.42423V30.54546H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 23.75758H16.9697V27.15152H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 23.75758H30.54546V27.15152H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 23.75758H37.33333V27.15152H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 23.75758H47.51515V27.15152H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M71.27273 23.75758H78.06061V27.15152H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M81.45455 23.75758H98.424259V27.15152H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 20.36364H16.9697V23.75758H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M20.36364 20.36364H30.54546V23.75758H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 20.36364H37.33333V23.75758H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 20.36364H44.12121V23.75758H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 20.36364H57.696969V23.75758H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M64.48485 20.36364H67.878787V23.75758H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M84.84848 20.36364H91.63636V23.75758H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 20.36364H98.42423V23.75758H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 16.9697H16.9697V20.36364H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M33.93939 16.9697H37.33333V20.36364H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M50.90909 16.9697H54.30303V20.36364H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M61.09091 16.9697H74.66667V20.36364H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M78.06061 16.9697H88.24243V20.36364H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M95.0303 16.9697H98.42423V20.36364H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M13.57576 13.57576H37.33334V16.9697H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M40.72727 13.57576H44.12121V16.9697H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M47.51515 13.57576H54.30303V16.9697H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,634,295)" d="M74.66667 13.57576H98.424259V16.9697H74.66667Z" fill-rule="evenodd" />
+<text fill="#6b7280" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="9" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-323" x="634">THE FRAMEWORK</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="12" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-299" x="634">fnlla.com</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" d="M784 345H896V457H784Z" fill="#ffffff" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 95.0303H37.33334V98.42423H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 95.0303H47.51515V98.42423H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 95.0303H57.696969V98.42423H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 95.0303H64.48485V98.42423H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 95.0303H98.424259V98.42423H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 91.63636H16.9697V95.0303H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 91.63636H37.33333V95.0303H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 91.63636H50.90909V95.0303H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 91.63636H64.48485V95.0303H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 91.63636H71.27273V95.0303H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 91.63636H78.06061V95.0303H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 91.63636H98.42423V95.0303H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 88.24242H16.9697V91.63635H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 88.24242H30.54546V91.63635H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 88.24242H37.33333V91.63635H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 88.24242H47.51515V91.63635H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 88.24242H61.090909V91.63635H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 88.24242H71.27273V91.63635H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 88.24242H78.06061V91.63635H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 88.24242H91.63637V91.63635H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 88.24242H98.42423V91.63635H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 84.84848H16.9697V88.24242H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 84.84848H30.54546V88.24242H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 84.84848H37.33333V88.24242H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 84.84848H61.090909V88.24242H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 84.84848H78.06061V88.24242H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 84.84848H91.63637V88.24242H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 84.84848H98.42423V88.24242H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 81.45455H16.9697V84.84849H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 81.45455H30.54546V84.84849H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 81.45455H37.33333V84.84849H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 81.45455H50.90909V84.84849H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 81.45455H57.696969V84.84849H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 81.45455H64.48485V84.84849H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 81.45455H78.06061V84.84849H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 81.45455H91.63637V84.84849H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 81.45455H98.42423V84.84849H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 78.06061H16.9697V81.454547H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 78.06061H37.33333V81.454547H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 78.06061H44.12121V81.454547H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 78.06061H64.48485V81.454547H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 78.06061H78.06061V81.454547H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 78.06061H98.42423V81.454547H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 74.66667H37.33334V78.06061H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 74.66667H44.12121V78.06061H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M47.51515 74.66667H50.90909V78.06061H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 74.66667H57.696969V78.06061H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 74.66667H64.48485V78.06061H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 74.66667H71.27273V78.06061H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 74.66667H98.424259V78.06061H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 71.27273H47.51515V74.666667H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 71.27273H54.30303V74.666667H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 71.27273H71.27273V74.666667H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 67.87879H16.9697V71.27273H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 67.87879H23.75758V71.27273H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 67.87879H40.72727V71.27273H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 67.87879H47.51515V71.27273H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 67.87879H57.696969V71.27273H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 67.87879H71.27273V71.27273H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M78.06061 67.87879H81.454547V71.27273H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M88.24242 67.87879H91.63635V71.27273H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 67.87879H98.42423V71.27273H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M16.9697 64.48485H27.15152V67.878787H16.9697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 64.48485H54.30303V67.878787H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 64.48485H67.87879V67.878787H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 64.48485H81.45455V67.878787H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M84.84848 64.48485H88.24242V67.878787H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M91.63636 64.48485H98.42424V67.878787H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M16.9697 61.09091H20.36364V64.48485H16.9697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M30.54545 61.09091H40.727273V64.48485H30.54545Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 61.09091H50.90909V64.48485H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 61.09091H61.090909V64.48485H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 61.09091H67.878787V64.48485H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 61.09091H91.63637V64.48485H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 61.09091H98.42423V64.48485H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M23.75758 57.69697H27.15152V61.09091H23.75758Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 57.69697H57.696969V61.09091H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 57.69697H74.66667V61.09091H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M78.06061 57.69697H81.454547V61.09091H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M84.84848 57.69697H88.24242V61.09091H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M16.9697 54.30303H23.75758V57.696969H16.9697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M27.15152 54.30303H37.33334V57.696969H27.15152Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 54.30303H47.51515V57.696969H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 54.30303H57.696969V57.696969H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 54.30303H71.27273V57.696969H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 54.30303H78.06061V57.696969H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 54.30303H98.42423V57.696969H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M16.9697 50.90909H20.36364V54.30303H16.9697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M37.33333 50.90909H50.90909V54.30303H37.33333Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 50.90909H61.090909V54.30303H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 50.90909H71.27273V54.30303H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 50.90909H81.45455V54.30303H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M91.63636 50.90909H98.42424V54.30303H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 47.51515H23.75758V50.90909H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 47.51515H37.33333V50.90909H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 47.51515H47.51515V50.90909H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 47.51515H57.696969V50.90909H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 47.51515H67.87879V50.90909H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M71.27273 47.51515H78.06061V50.90909H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M84.84848 47.51515H91.63636V50.90909H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 47.51515H98.42423V50.90909H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M23.75758 44.12121H30.54546V47.51515H23.75758Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M37.33333 44.12121H40.72727V47.51515H37.33333Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 44.12121H57.696969V47.51515H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 44.12121H64.48485V47.51515H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M71.27273 44.12121H88.24243V47.51515H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 40.72727H20.36364V44.12121H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M23.75758 40.72727H40.72728V44.12121H23.75758Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 40.72727H50.90909V44.12121H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 40.72727H64.48485V44.12121H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 40.72727H84.848499V44.12121H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M91.63636 40.72727H95.0303V44.12121H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 37.33333H44.12121V40.72727H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 37.33333H61.09091V40.72727H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 37.33333H71.27273V40.72727H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 37.33333H84.84849V40.72727H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 37.33333H98.42423V40.72727H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 33.93939H37.33334V37.33333H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 33.93939H44.12121V37.33333H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M47.51515 33.93939H54.30303V37.33333H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 33.93939H71.27273V37.33333H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 33.93939H78.06061V37.33333H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 33.93939H84.84849V37.33333H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 33.93939H98.42423V37.33333H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 30.54545H16.9697V33.93939H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 30.54545H37.33333V33.93939H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 30.54545H47.51515V33.93939H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 30.54545H61.09091V33.93939H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 30.54545H71.27273V33.93939H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 30.54545H84.84849V33.93939H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M91.63636 30.54545H95.0303V33.93939H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 27.15152H16.9697V30.54546H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 27.15152H30.54546V30.54546H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 27.15152H37.33333V30.54546H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M44.12121 27.15152H47.51515V30.54546H44.12121Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 27.15152H61.090909V30.54546H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 27.15152H84.84849V30.54546H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 27.15152H98.42423V30.54546H95.0303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 23.75758H16.9697V27.15152H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 23.75758H30.54546V27.15152H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 23.75758H37.33333V27.15152H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M47.51515 23.75758H50.90909V27.15152H47.51515Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 23.75758H57.696969V27.15152H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M64.48485 23.75758H67.878787V27.15152H64.48485Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M71.27273 23.75758H74.666667V27.15152H71.27273Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M81.45455 23.75758H84.84849V27.15152H81.45455Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M88.24242 23.75758H95.0303V27.15152H88.24242Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 20.36364H16.9697V23.75758H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M20.36364 20.36364H30.54546V23.75758H20.36364Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 20.36364H37.33333V23.75758H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 20.36364H50.90909V23.75758H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M54.30303 20.36364H74.66667V23.75758H54.30303Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M78.06061 20.36364H88.24243V23.75758H78.06061Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M91.63636 20.36364H98.42424V23.75758H91.63636Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 16.9697H16.9697V20.36364H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M33.93939 16.9697H37.33333V20.36364H33.93939Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M50.90909 16.9697H57.696969V20.36364H50.90909Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M61.09091 16.9697H64.48485V20.36364H61.09091Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 16.9697H71.27273V20.36364H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M74.66667 16.9697H84.848499V20.36364H74.66667Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M13.57576 13.57576H37.33334V16.9697H13.57576Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M40.72727 13.57576H44.12121V16.9697H40.72727Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M57.69697 13.57576H64.48485V16.9697H57.69697Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M67.87879 13.57576H78.06061V16.9697H67.87879Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M84.84848 13.57576H88.24242V16.9697H84.84848Z" fill-rule="evenodd" />
+<path transform="matrix(1,0,0,-1,784,295)" d="M95.0303 13.57576H98.42423V16.9697H95.0303Z" fill-rule="evenodd" />
+<text fill="#6b7280" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="9" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-323" x="784">THE CREATOR</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="12" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-299" x="784">techayo.co.uk</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-249" x="48">WCAG: text contrast</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-249" x="300">WCAG: non-text contrast</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-249" x="580">Space Grotesk</tspan></text>
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 640)" font-size="10" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-249" x="764">JetBrains Mono</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#2563eb" d="M48 208H80" />
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 48 462)" font-size="12" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-4" x="0">Maintain the sources</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 48 554)" font-size="10.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-59.5" x="0">BRAND-GUIDE.md owns the prose; tokens.json owns</tspan><tspan y="-45.5" x="0">the visual values. Build the PDF, print and social</tspan><tspan y="-31.5" x="0">exports with scripts/branding/build-guide.py.</tspan><tspan y="-17.5" x="0">Review all pages after regeneration. The --check</tspan><tspan y="-3.5" x="0">option detects stale committed outputs.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#2563eb" d="M344 208H376" />
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 344 462)" font-size="12" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-4" x="0">Retain attribution</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 344 554)" font-size="10.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-59.5" x="0">Use Created &amp; maintained by TechAyo with</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 344 554)" font-size="10.5" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-45.5" x="0">techayo.co.uk</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 344 554)" font-size="10.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-45.5" x="81.9">, followed by Lead Developer /</tspan><tspan y="-31.5" x="0">Product Manager - Marcin Kordyaczny. Every guide</tspan><tspan y="-17.5" x="0">page also includes </tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 344 554)" font-size="10.5" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-17.5" x="97.28252">hello@techayo.co.uk</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 344 554)" font-size="10.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-17.5" x="216.98258">. Preserve</tspan><tspan y="-3.5" x="0">legal and font license notices.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,640)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#2563eb" d="M640 208H672" />
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 640 462)" font-size="12" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-4" x="0">Review before publication</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 640 554)" font-size="10.5" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-59.5" x="0">Check logo geometry, colours, type, contrast,</tspan><tspan y="-45.5" x="0">example syntax, domain and data privacy. Keep</tspan><tspan y="-31.5" x="0">supporting sources linked on this page. A brand</tspan><tspan y="-17.5" x="0">edition is not a software release, and a design</tspan><tspan y="-3.5" x="0">example is not a declaration of runtime compliance.</tspan></text>
+</svg>

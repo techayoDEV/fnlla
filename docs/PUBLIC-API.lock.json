@@ -92,6 +92,8 @@
     "framework_identity": {
         "schema": "fnlla.framework_identity.v1",
         "name": "FNLLA",
+        "lead_name": "Marcin Kordyaczny",
+        "lead_role": "Lead Developer / Product Manager",
         "official_url": "https://fnlla.com",
         "support_email": "support@fnlla.com",
         "repository": "techayoDEV/fnlla"

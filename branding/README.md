@@ -1,0 +1,269 @@
+# FNLLA Brand System
+
+The maintained identity kit for FNLLA. Start with the
+[Brand Guidebook](guide/FNLLA-Brand-Guidebook.pdf) for visual examples or
+[the Markdown source](BRAND-GUIDE.md) for searchable rules.
+
+Guidebook, tokens and print artwork use edition **2.2.0**, matching the framework
+target and preserving the established outline identity in six colour treatments. This kit does not certify
+or publish the software release.
+
+Created & maintained by **TechAyo**, [techayo.co.uk](https://techayo.co.uk),
+[hello@techayo.co.uk](mailto:hello@techayo.co.uk).
+**Lead Developer / Product Manager - Marcin Kordyaczny**.
+These credits appear on every guide and print page; email is included in the guide. The
+name originates in **Finella Gardens, Dundee, Scotland**, where the idea was
+conceived and the framework was first written.
+
+Positioning: **Web framework. PHP foundation. Developer tools built in.** Lead
+with Project Setup, private access, diagnostics and controlled updates. AI-ready
+is a supporting capability, not a substitute for these benefits. The full starter
+includes the gateway to **FIONN AI, Persistent Personal
+Intelligence created by TechAyo**. An appropriate FIONN developer account and API
+access are required; its brain and memory run separately. **OpenAI API** and
+**Anthropic API** are additional opt-in integrations, not bundled models.
+
+## Asset Map
+
+| Location | Use |
+| --- | --- |
+| [assets/logo/](assets/logo/) | Canonical wordmark, monogram, lockup and dedicated favicon SVGs |
+| [assets/logo/outline/](assets/logo/outline/) | Outline blue, black, grey and white on blue/black/grey, SVG + PNG |
+| [assets/social/](assets/social/) | Open Graph, avatars and LinkedIn/Facebook covers |
+| [assets/fonts/](assets/fonts/) | Guide fonts with their SIL Open Font Licenses |
+| [tokens.json](tokens.json) | Brand colours, accessible text roles, spacing and typography |
+| [source/vector/](source/vector/) | 22 editable SVG artboards for Illustrator, Affinity Designer or Inkscape |
+| [source/photoshop/](source/photoshop/) | Seven layered PSD layouts with editable text |
+| [office/](office/) | Four editable DOCX correspondence and print-sheet templates |
+| [guide/FNLLA-Brand-Guidebook.pdf](guide/FNLLA-Brand-Guidebook.pdf) | Shareable, searchable visual standard |
+| [print/](print/) | Landscape A3/A4 campaign posters, credits and verified QRs to FNLLA and TechAyo |
+| [Repository cover](../docs/assets/brand/fnlla-cover.jpg) | 1600 x 800 identity-led README artwork |
+| [Workflow diagram](../docs/assets/brand/fnlla-workflow.png) | 1600 x 480; setup, application development and operations |
+| [AI boundary diagram](../docs/assets/brand/fnlla-ai-boundary.png) | 1600 x 760; gateway, separate service and optional providers |
+
+`BRAND-GUIDE.md` owns the written rules. `tokens.json` owns the guide's design
+values. The SVGs own logo geometry; do not redraw them from screenshots or fonts.
+The monogram, lockup and favicon match the assets currently used by the framework.
+The standalone wordmark is the matching outlined master from the established kit;
+the previous loose wordmark used different geometry and has been retired.
+
+The old versioned ZIP, duplicated loose exports and contact sheet have been
+removed. Git history preserves the previous handoff; do not keep a second,
+divergent identity package in the working tree. This directory is excluded from
+framework source archives and starter exports. Runtime assets remain under
+`public/assets/brand/fnlla/` and must be reviewed separately when their use changes.
+`tokens.json` owns the palette, semantic light/dark roles and type sizes.
+Runtime supporting text uses `supporting_text` on tinted surfaces; the lighter
+brand grey is reserved for artwork and suitable white-background text.
+`build-runtime.php` generates the runtime colour blocks and framework brand
+configuration without making the brand kit a dependency of exported projects.
+The shell supplies the self-hosted fonts.
+`public/assets/brand/fnlla/` is a reserved, framework-managed namespace. Put the
+application's own logo elsewhere under `public/assets/` and configure its path.
+Existing modified files still require update conflict review; the ownership
+rule does not grant permission to overwrite application edits. Plain updates
+exclude these optional Full-shell assets.
+Setup and sign-in use the outline mark and a small decorative 01 signature.
+Panel reading surfaces are neutral, with blue actions and distinct success,
+warning and error states. Artwork stays outside forms, tables and navigation.
+
+## Rebuild And Review
+
+Brand tooling is optional for maintainers. It adds no dependency to PHP projects.
+From the repository root, with Python 3.12 or newer:
+
+```console
+python -m pip install -r scripts/branding/requirements.txt
+php scripts/branding/build-runtime.php
+php scripts/branding/build-runtime.php --check
+python scripts/branding/build-guide.py
+python scripts/branding/build-guide.py --check
+python scripts/branding/build-stationery.py
+php scripts/check-docs.php
+```
+
+The builder generates the 14-page guide, both print sizes, outline SVG/PNG variants,
+transparent outline logo PNGs,
+social images, three repository graphics and self-hosted WOFF2 fonts. It mirrors Open Graph
+artwork into the runtime's existing public asset path. Temporary page proofs stay
+outside the repository. It validates source assets, page boundaries, readable
+content, exact master path geometry, open letter interiors and byte-for-byte
+reproducibility. Social QRs are decoded at upload size and representative display
+widths (1128 px LinkedIn, 820 px Facebook). `--check` generates in memory and
+compares committed output without writing files. Review every rendered page
+after changing the guide; automated checks cannot judge the complete layout.
+
+For browser regression checks, create a **disposable fresh Full export**. Never
+point the fixture renderer at a project with real accounts or data:
+
+```console
+python -m pip install playwright==1.62.0
+python -m playwright install chromium
+php fnlla make:project ../brand-complete "Brand Regression" --profile=full
+php scripts/branding/ui-fixtures.php ../brand-complete ../brand-fixtures
+python scripts/branding/check-ui.py ../brand-complete ../brand-fixtures
+```
+
+The suite loads exported PHP responses and actual styles/fonts at 320, 390, 768
+and 1440 px in both themes. It checks asset loading, overflow, selected text and
+control contrasts, preview unlock, logo minimum size and project-owned identity.
+No network calls leave the fixture browser. CI retains screenshots and results,
+not fixture HTML. These checks are regression coverage, not WCAG certification.
+Plain remains the advanced core-only choice and intentionally uses system fonts.
+The source archive omits the optional brand builders and their source-dependent
+`RuntimeBrandTest`; application, access and update regression tests remain in it.
+
+## Print Specification
+
+Use `print/FNLLA-2.2.0-A3.pdf` for a 420 x 297 mm wall print or
+`print/FNLLA-2.2.0-A4.pdf` for a 297 x 210 mm office print. Both are single-page
+landscape PDFs with embedded fonts, vector logos and two vector QR symbols. The
+content has safe margins; office printers may leave a white edge around the campaign stripe.
+Disable printer headers, footers and automatic enlargement. The layout also
+supports proportional reduction; do not stretch it to fit a different ratio.
+
+The QRs encode `https://fnlla.com` and `https://techayo.co.uk` directly, without
+tracking redirects. The builder decodes both from the guide and print PDFs and checks page size, margins and
+font embedding. Always test a physical proof before ordering multiple copies.
+Artwork uses sRGB colours for ordinary office/photo printing; it is not a PDF/X
+CMYK press file. Ask the printer for a profile and proof before commercial offset
+production. A3 at 100% on matte white paper is the primary wall format.
+
+Existing public asset filenames retain their historical suffix for URL
+compatibility; that suffix is not the current brand edition. Their accessible
+titles and the guide identify the same unversioned outline mark.
+
+Space Grotesk Regular and SemiBold are static instances of the official variable
+font from [Google Fonts](https://github.com/google/fonts/tree/main/ofl/spacegrotesk).
+JetBrains Mono Regular and SemiBold are pinned to the
+[official v2.304 release](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304).
+The builder validates each source's actual 400/600 weight metadata, rather than
+trusting its filename. Their respective
+license notices are retained alongside the fonts. The full starter self-hosts
+WOFF2 derivatives in `public/assets/brand/fnlla/fonts/`, with `font-display: swap`.
+No CDN request is required. Plain retains its lightweight system-font stylesheet.
+Runtime copy and branding use the same 400/600 weight contract. Literal addresses,
+email, versions and endpoint values use Mono; ordinary link labels and navigation
+stay Space Grotesk. The application may override the font tokens without editing
+vendored assets. Framework lead credits do not claim authorship of downstream apps.
+
+## Social Delivery
+
+Cover campaigns use outline blue signatures, light-grey `#F1F3F5` information bands and
+**fnlla.com** / **techayo.co.uk** in JetBrains Mono SemiBold. FIONN AI uses the
+same Mono weight as a standalone name. Covers keep one product promise, a short
+FIONN AI gateway line with its account/API requirement, and the TechAyo credit.
+Feature lists, workflow slogans and additional provider names belong in the profile
+description and guide, not the cover. The builder limits each cover to eight copy
+lines and 36 words, excluding decorative binary digits. Ink copy and blue accents on grey give the shallow
+covers a quieter hierarchy; the top rule stays blue. Print retains its stronger
+blue band. A repeating ASCII encoding of FNLLA supplies an original JetBrains
+Mono `01` field and a larger digit-built `01` silhouette. Neither is a new logo,
+live data or a memory map. Keep reading areas and QR quiet zones clear. FNLLA
+does not bundle local AI.
+
+The README uses three complementary graphics rather than repeated full-page
+advertisements. The main cover establishes identity; workflow and AI diagrams
+explain the full starter and the external-service boundary. Their claims remain
+available as Markdown and alt text, including when images are disabled. Link
+the AI diagram to the technical contract. No QR is needed in these clickable
+repository images. New editorial graphics are not added to starter exports.
+The builder caps each repository image at 350 KB and checks for blank output.
+
+Each cover has one direct fnlla.com QR and a typed domain. Extra QRs would
+compete with the message in shallow social headers; the print and guide handoff
+retain both framework and creator codes. No FIONN portal link is invented while
+its public developer address is unavailable. Recheck scanning after the platform
+compresses or crops an upload; download-time validation cannot cover that step.
+
+| Asset | Dimensions | Intended use |
+| --- | --- | --- |
+| [LinkedIn avatar](assets/social/linkedin-avatar.png) | 400 x 400 | Company Page logo; safe inset for circular presentation |
+| [LinkedIn cover](assets/social/linkedin-cover.png) | 4200 x 700 | Company Page cover |
+| [Facebook avatar](assets/social/facebook-avatar.png) | 1024 x 1024 | Square Page/profile logo master |
+| [Facebook cover](assets/social/facebook-cover.png) | 1640 x 624 | Campaign cover preset; adjust in Page crop preview |
+| [Transparent wordmark](assets/logo/wordmark-transparent.png) | 2400 x 770 | Logo overlay on a white or pale surface |
+| [Transparent monogram](assets/logo/monogram-transparent.png) | 1200 x 873 | Compact logo overlay |
+
+LinkedIn dimensions follow its [Page image guidance](https://www.linkedin.com/help/linkedin/answer/a563309).
+The Facebook sizes are delivery presets, not a guarantee of every device's crop.
+Preview both desktop and mobile before posting. Keep the square avatars free of
+small text. Social graphics are exported for upload; no account has been changed.
+
+Use [approved copy](BRAND-GUIDE.md#approved-copy) for profile bios, README and
+future fnlla.com pages. Retain the distinction between supported providers and
+endorsement by those providers.
+
+Brand and endorsement rules: [Trademark notice](../docs/framework/TRADEMARKS.md).
+Framework code license: [MIT](../LICENSE.md). Official domain: fnlla.com.
+
+## Editable Sources
+
+The maintainable originals are the Python layout generators, Markdown rules,
+tokens, OFL fonts and canonical SVG paths. The SVG and PSD handoff files are
+reconstructed from those same layouts, not traced from compressed screenshots.
+
+Install the four TTF faces from `assets/fonts/` before editing in a design app.
+Each guide page, poster, social cover and repository graphic has a vector SVG
+artboard. Logos, QR modules and geometry stay vector; ordinary text remains text.
+Open the SVG in Illustrator, then save as AI when an Adobe-native project is
+needed. No PDF or SVG has been renamed to pretend to be an AI file.
+
+PSDs cover both social headers, the README, workflow and AI diagrams, A3 poster
+and guide cover. Each has a raster artwork layer and separate native text layers;
+the matching SVG supplies editable vector artwork. These are not all-vector PSDs.
+The A3 PSD is rendered at 300 ppi (4961 x 3508 px); digital layouts retain their
+delivery pixel dimensions. The PDF remains the primary print handoff.
+Photoshop may ask to update text rendering; check line breaks and fonts before
+exporting. Native Adobe application round-trip compatibility is not certified.
+
+To rebuild PSDs, install **ag-psd 31.0.2** and **pngjs 7.0.0** in a separate
+maintainer-tool directory, then pass that directory's `node_modules` path:
+
+```console
+python scripts/branding/build-editor-sources.py --node-modules /path/to/tools/node_modules
+```
+
+The builder validates layer text through a PSD read-back. Do not install these
+tools into an exported PHP project. Generated handoffs are overwritten on rebuild;
+bring approved design edits back to the canonical generators to keep them in sync.
+
+## Office Identity
+
+- [Cover letter](office/FNLLA-Cover-Letter.docx): editable transmittal letter with recipient, project and enclosure fields.
+- [Letterhead](office/FNLLA-Letterhead.docx): general correspondence with repeating header and footer.
+- [Business cards](office/FNLLA-Business-Cards.docx): eight single-sided 85 x 55 mm cards on an A4 sheet, with 5 mm gutters.
+- [Sticker sheet](office/FNLLA-Sticker-Sheet.docx): ten 70 x 40 mm labels on an A4 sheet, with 10 mm gutters.
+
+Templates use full embedded OFL fonts, editable Word text and direct FNLLA links.
+The light-grey cell borders are cut guides. Card and sticker dimensions are fixed;
+keep copy within those frames. They are custom sheets, not an Avery stock preset.
+Print at **100% / actual size**, never fit-to-page, and measure one proof before
+cutting or ordering adhesive stock. The QR includes its white quiet zone.
+These sRGB office templates have no bleed and are not commercial press masters.
+
+Replace bracketed correspondence fields before sending. No postal address,
+telephone number, company registration detail or recipient data has been invented.
+Creators' details do not assert ownership of downstream applications. Fonts and
+pagination should be checked again after editing in Word or another office suite.
+
+## Outline Asset Selection
+
+Both `wordmark` and `monogram` have the same six treatments in `assets/logo/outline/`:
+
+| Suffix | Artwork | Background |
+| --- | --- | --- |
+| `-blue` | Blueprint Blue `#2563EB` | Transparent; use on white or pale tint |
+| `-black` | Black `#000000` | Transparent; monochrome reproduction |
+| `-grey` | Grey `#6B7280` | Transparent; secondary, neutral attribution |
+| `-on-blue` | White | Blueprint Blue |
+| `-on-black` | White | Black |
+| `-on-grey` | White | Grey |
+
+Each treatment has an SVG and a high-resolution PNG. The builder recolours the
+canonical paths without changing their geometry or filling their interiors. Do not
+edit generated variants; change the source geometry only as a reviewed identity
+revision. Reverse artboards are not a substitute for the surrounding H/4 clear space.
+Filled silhouettes have been retired; there is no parallel solid family.
+Any older `assets/logo/solid/` files left in a working copy are obsolete, are not
+regenerated and must not be used. They are not inputs to any current export.

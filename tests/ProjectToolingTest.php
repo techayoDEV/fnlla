@@ -72,7 +72,7 @@ final class ProjectToolingTest extends TestCase
             self::assertStringContainsString(".env.example", $checksums);
             self::assertStringContainsString("public/index.php", $checksums);
             if (is_file(base_path("resources/source-distribution.json"))) {
-                self::assertStringNotContainsString("branding/FNLLA-Brand", $checksums);
+                self::assertStringNotContainsString("branding/", $checksums);
             }
         } finally {
             foreach ($files as $relativePath) {
@@ -89,13 +89,12 @@ final class ProjectToolingTest extends TestCase
 
     public function testMaintainerDocumentationGateCoversEveryRelease(): void
     {
-        if (!is_file(base_path("scripts/build-docs.php"))) {
+        if (!is_file(base_path("scripts/check-docs.php"))) {
             self::assertTrue(is_file(base_path(".fnlla/framework-lock.json")));
             return;
         }
         $command = new ReleasePrepareCommand($GLOBALS["fnlla_container"]);
         $checks = (new ReflectionMethod($command, "documentationCommands"))->invoke($command);
-        self::assertSame([PHP_BINARY, base_path("scripts/build-docs.php"), "--check"], $checks["docs in sync"]);
         self::assertSame([PHP_BINARY, base_path("scripts/check-docs.php")], $checks["docs hygiene"]);
         self::assertSame([PHP_BINARY, base_path("scripts/check-modernization.php")], $checks["modernization ledger"]);
         foreach ($checks as $check) {

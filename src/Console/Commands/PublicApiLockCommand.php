@@ -69,6 +69,8 @@ final class PublicApiLockCommand extends Command
             "framework_identity" => [
                 "schema" => "fnlla.framework_identity.v1",
                 "name" => FrameworkIdentity::PRODUCT_NAME,
+                "lead_name" => FrameworkIdentity::LEAD_NAME,
+                "lead_role" => FrameworkIdentity::LEAD_ROLE,
                 "official_url" => FrameworkIdentity::OFFICIAL_URL,
                 "support_email" => FrameworkIdentity::SUPPORT_EMAIL,
                 "repository" => FrameworkIdentity::REPOSITORY,

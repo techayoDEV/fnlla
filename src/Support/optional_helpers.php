@@ -34,7 +34,10 @@ function framework_runtime_ai_provider(?Container $container = null): \Fnlla\Php
     $driver = trim((string) config("ai.runtime.driver", "local")) ?: "local";
     $providers = (array) config("ai.runtime.providers", []);
     $provider = (array) ($providers[$driver] ?? []);
-    $class = (string) ($provider["class"] ?? \Fnlla\Php\Ai\LocalRuntimeAssistant::class);
+    if (!in_array($driver, \Fnlla\Php\Ai\RuntimeAiProviderRegistry::ALLOWED_DRIVERS, true)) {
+        throw new RuntimeException("Unknown runtime AI driver.");
+    }
+    $class = (string) ($provider["class"] ?? "");
 
     if ($class === "" || !class_exists($class) || !is_subclass_of($class, \Fnlla\Php\Ai\RuntimeAiProviderInterface::class)) {
         throw new RuntimeException("Runtime AI provider is not configured for driver: " . $driver);
@@ -92,4 +95,3 @@ function framework_technical_debt_report_path(): string
 {
     return framework_cache_path("technical-debt-report.json");
 }
-

@@ -33,6 +33,7 @@ final class FrameworkLock
     private const PROJECT_OWNED_PATHS = [
         "config/app.php",
         "public/assets/app.css",
+        // Retired from new exports; existing projects may have replaced this logo.
         "public/assets/fnlla-logo.png",
         "routes/web.php",
         "src/Controllers/PageController.php",
@@ -239,6 +240,7 @@ final class FrameworkLock
             return false;
         }
         if ($relativePath === "VERSION" || str_starts_with($relativePath, "docs/framework/")
+            || str_starts_with($relativePath, "public/assets/brand/fnlla/")
             || str_starts_with($relativePath, "public/vendor/fnlla-runtime/")) {
             return true;
         }
@@ -269,7 +271,7 @@ final class FrameworkLock
             return false;
         }
 
-        if (in_array($relativePath, ["views/layouts/developer.php", "public/assets/app-base.css", "public/assets/developer-panel.css", "public/assets/developer-panel.js", "public/assets/developer-tools.css", "public/assets/debug-toolbar.css"], true)) {
+        if (in_array($relativePath, ["views/layouts/developer.php", "views/partials/framework-wordmark.php", "public/assets/app-base.css", "public/assets/developer-panel.css", "public/assets/developer-panel.js", "public/assets/developer-tools.css", "public/assets/debug-toolbar.css"], true)) {
             return true;
         }
 

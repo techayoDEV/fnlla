@@ -76,7 +76,7 @@ php scripts/lint.php
 php scripts/validate-fnlla-runtime.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
-php scripts/build-docs.php --check
+php scripts/check-docs.php
 powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 ```

@@ -1,5 +1,28 @@
 # FNLLA Developer Operations Panel
 
+Edition 2.2.0 includes **Integrations > AI providers** for selecting local
+knowledge, the built-in FIONN AI gateway by TechAyo, OpenAI API or Anthropic API. Configuration writes
+require `panel.settings.write` and CSRF validation. Keys are never prefilled;
+blank fields preserve them, and removal requires an explicit checkbox. Saving
+does not contact a provider. Cloud access is off by default and requires PHP cURL,
+an API key and a model. See [AI request boundaries](AI-CONTEXT.md#openai-api-and-anthropic-api)
+before enabling external requests. The full UI self-hosts Space Grotesk for
+interface text and JetBrains Mono for literal URLs, email, code, versions,
+endpoints and technical metadata. Both families include 400/600 faces; navigation
+labels remain Space Grotesk. FIONN AI uses Mono SemiBold as a standalone name.
+Use `.fnlla-literal` for literal values and `.fnlla-fionn-name` for that name,
+without applying monospace to ordinary paragraphs or every hyperlink.
+
+Supporting text uses the shared 14 px minimum. Private preview and framework
+update views load their styles through the framework-owned shell, not the
+application's `app.css`. Cookie surfaces, forms, Kanban and diagnostic tools use
+semantic light/dark colours. Tablet setup switches to a single-column form
+instead of shrinking the wordmark or controls. These defaults do not add FNLLA
+campaign artwork to the public application's identity.
+
+About FNLLA identifies the framework's **Lead Developer / Product Manager -
+Marcin Kordyaczny** independently of the application's own leadership record.
+
 ## Optional Modules
 
 Project Setup and Panel Settings provide workspace, analytics, heatmap and customer
@@ -145,7 +168,7 @@ Do not use the Developer Panel for:
 - billing, bookings, orders, quotes, documents or contracts;
 - business user management for the finished application;
 - private client data;
-- private Fionn knowledge, model data, learning queues or evals;
+- private FIONN AI knowledge, model data, learning queues or evals;
 - tracking scripts enabled by default.
 
 ## The Boundary
@@ -191,7 +214,7 @@ The following belong in FNLLA core:
 - consent events used by optional analytics or heatmap adapters;
 - TOTP verification for developer accounts and an explicit passkey adapter
   contract;
-- the reserved Fionn bridge policy, without the private Fionn brain.
+- the reserved FIONN AI bridge policy, without the private FIONN AI brain.
 
 ## Project-Owned
 
@@ -212,7 +235,7 @@ Do not commit these to the public FNLLA repository:
 
 - `.env` secrets, API tokens, DB dumps, logs, uploads or client backups;
 - customer workflows or private operating procedures;
-- private Fionn prompts, memory, learned data, model weights, queues or evals;
+- private FIONN AI prompts, memory, learned data, model weights, queues or evals;
 - proprietary external operations logic;
 - industry-specific CRM/CMS/billing features;
 - default-enabled analytics, heatmaps or marketing trackers.
@@ -384,7 +407,7 @@ must be archived, attached to a change request or reviewed outside the panel.
 
 ## Integrations
 
-FNLLA may expose integration hooks for GA4, Microsoft Clarity, Sentry, Fionn and
+FNLLA may expose integration hooks for GA4, Microsoft Clarity, Sentry, FIONN AI and
 generic API callbacks. They must stay disabled by default. When enabled, GA4,
 Clarity, heatmap adapter events and generic browser API hooks run from the
 public layout only after analytics consent. Production CSP must explicitly allow
@@ -393,7 +416,7 @@ the required script or endpoint hosts before those browser adapters can load.
 Rules:
 
 - analytics and heatmaps load only after explicit consent;
-- Fionn is accessed only through the audited bridge policy;
+- FIONN AI is accessed only through the audited bridge policy;
 - remote service control must use HTTPS and allowed hosts;
 - external adapters belong to project configuration or a separate package, not
   hard-coded framework core.
@@ -510,13 +533,12 @@ private recovery evidence. Public reproductions should use synthetic fixtures.
 Update the affected guide when behavior changes. Keep one canonical procedure
 and link to it from other guides; retain compatibility instructions while they
 remain supported. Keep license attribution and public API names accurate.
-Generate HTML from Markdown rather than maintaining two independent versions.
+Maintain the Markdown reference; the future fnlla.com documentation website is
+separate from the framework distribution.
 
 Before release, follow [release operations](RELEASE-AND-OPERATIONS.md), including:
 
 ```bash
-php scripts/build-docs.php
-php scripts/build-docs.php --check
 php scripts/check-docs.php
 php fnlla tech-debt:update
 php fnlla tech-debt:update --check
@@ -546,9 +568,9 @@ documentation.
 | --- | --- | --- |
 | `explicit-debt-markers` | `pass` | No explicit debt markers found in release-facing source files. |
 | `runtime-residue` | `runtime` | Runtime data must be excluded from source artifacts, not deleted from a working application. |
-| `generated-docs-sync` | `pass` | Generated HTML docs match Markdown sources. |
+| `documentation-hygiene` | `pass` | Documentation hygiene and relative links passed. |
 | `release-documentation` | `pass` | Required release, AI, operations and developer-panel documents are present. |
-| `ai-product-runtime` | `pass` | Local runtime AI and the reserved Fionn bridge contract are present. |
+| `ai-product-runtime` | `pass` | Local reference lookup and the opt-in FIONN AI gateway contract are present. |
 | `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
 | `modernization-ledger` | `warn` | 7 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
 
@@ -588,10 +610,13 @@ maintenance, service control, customer review, analytics, project logs, release
 readiness, framework updates and technical-debt checks are all close to the
 codebase instead of scattered across notes and one-off scripts.
 
-The AI claim should stay precise. FNLLA includes local deterministic runtime AI,
-redacted review packs, triage and provider-readiness commands, plus the reserved
-Fionn bridge. It does not bundle private Fionn memory, train models or call
-third-party providers by default.
+The AI claim should stay precise. FNLLA includes a deterministic reference lookup
+(not a local AI model), redacted review packs, triage and provider-status commands.
+The built-in gateway connects to FIONN AI, Persistent Personal Intelligence by
+TechAyo, with an appropriate developer account and API access. Its memory and
+permissions remain separate. OpenAI API and Anthropic API are optional
+integrations. No provider is called by default; the gateway does not automatically
+index code, train models or write FIONN AI memory.
 
 ## Functional Closure Criteria
 

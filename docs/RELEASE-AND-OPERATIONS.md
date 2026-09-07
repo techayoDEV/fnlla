@@ -7,6 +7,31 @@
 VERSION or creating a tag. The current working tree is not a substitute for an
 immutable, tested release artifact.
 
+### Supported Release Scope
+
+The 2.2.0 acceptance scope is the integrated Full starter and the explicit Plain
+core-only preset, using the normal PHP request lifecycle on the tested PHP/OS
+matrix. Full includes Project Setup, private developer access, diagnostics and
+controlled file-based framework updates. Optional external AI providers require
+separate credentials and explicit activation; no language model is bundled.
+
+Long-lived HTTP workers, independently removable Complete modules and comparative
+Laravel/Symfony performance claims are outside this release scope. Package mode
+remains opt-in; bundled Composer path packages do not establish public registry
+availability. Application recovery objectives require application-owned evidence.
+These boundaries do not close the corresponding modernization tasks.
+
+Before announcing availability, record the exact clean commit and successful
+Core Quality, Hardening and Release Gate runs. Inspect its source archive, install
+both starters from that archive, test the packaged Composer mode separately, and
+verify a real 2.1.3 upgrade with application preservation and rollback checks.
+Review supported proxy/SAPI deployment requirements and any remaining limitations.
+Test the exact downloadable artifacts before recommending them to consumers;
+do not substitute a working-tree export for the release download.
+
+Publication also needs working HTTPS destinations for the website and campaign
+QR codes. A draft release or a prepared archive is not an availability announcement.
+
 Review `framework/RUNTIME-CONTRACTS.md` before upgrading: non-local migrations now
 require explicit `--force`, proxy protocol must be canonical, application auth
 revalidates accounts, and cache publication requires secure CLI/PHP permissions.
@@ -44,14 +69,12 @@ approved version, and keep unresolved architecture work in the JSON ledger.
 Do not replace evidence with checked boxes or delete active acceptance criteria.
 
 ```sh
-php scripts/build-docs.php
-php scripts/build-docs.php --check
 php scripts/check-docs.php
 php scripts/check-modernization.php
 php fnlla release:prepare
 ```
 
-All maintainer releases require synchronized documentation, documentation hygiene
+All maintainer releases require reviewed Markdown documentation, documentation hygiene
 and a valid modernization ledger, including non-major releases and `--skip-tests`
 invocations. The quality workflow checks documentation too. Hygiene checks detect
 broken relative Markdown links, workstation paths and known credential patterns;
@@ -81,7 +104,8 @@ protects Git archives. Environment examples remain included. These rules exclude
 files from distribution, not from the application's filesystem or backup policy.
 Use PHP migrations rather than shipping SQL dumps as source fixtures.
 
-Inspect the archive before publication, including its Markdown and generated HTML.
+Inspect the archive before publication, including its Markdown reference.
+HTML documentation and its former generator are no longer distributed.
 Public instructions must describe FNLLA with neutral examples. Keep application
 recovery evidence, account details, local paths and deployment reports in private
 storage. Preserve license attribution and documented public API identifiers.
@@ -203,20 +227,25 @@ Runtime and performance:
   and project export timing where the application deployment pipeline can run
   those probes.
 
-Runtime AI and Fionn:
+Runtime AI and FIONN AI:
 
-- Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly needs Fionn.
+FIONN AI is created by TechAyo. Its gateway ships with the full starter; the
+service itself must be configured and operated separately. Optional OpenAI API
+and Anthropic API integrations have their own credentials, terms and
+[request boundaries](AI-CONTEXT.md#openai-api-and-anthropic-api).
+
+- Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly needs FIONN AI.
 - If `AI_RUNTIME_DRIVER=fionn`, keep `AI_FIONN_BRIDGE_ENABLED=true` only on
-  environments where a reviewed Fionn service is available.
-- Pin `AI_FIONN_ALLOWED_HOSTS` to the exact Fionn service host.
-- Use HTTPS and `AI_FIONN_API_TOKEN` for every non-local Fionn endpoint.
+  environments where a reviewed FIONN AI service is available.
+- Pin `AI_FIONN_ALLOWED_HOSTS` to the exact FIONN AI service host.
+- Use HTTPS and `AI_FIONN_API_TOKEN` for every non-local FIONN AI endpoint.
 - Use plain HTTP only for `localhost` or `127.0.0.1` development and staging
   drills where `AI_FIONN_ALLOW_INSECURE_LOCALHOST=true` is deliberate.
-- Keep Fionn learning, training, admin and queue endpoints outside FNLLA
+- Keep FIONN AI learning, training, admin and queue endpoints outside FNLLA
   application calls.
-- Verify `php fnlla ai:providers --json` before release; the Fionn provider must
+- Verify `php fnlla ai:providers --json` before release; the FIONN AI provider must
   report `provider_ready=true` and `endpoint_allowed=true` when selected.
-- Run `php fnlla security:audit --strict`; it fails selected Fionn unless the
+- Run `php fnlla security:audit --strict`; it fails selected FIONN AI unless the
   endpoint policy passes.
 
 Run the production gate locally or in CI:
@@ -227,7 +256,7 @@ php scripts/lint.php
 php scripts/validate-fnlla-runtime.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
-php scripts/build-docs.php --check
+php scripts/check-docs.php
 php fnlla doctor
 php fnlla security:audit --strict
 php fnlla project:acceptance --json
@@ -271,7 +300,7 @@ The normal downstream command set is:
 | Validate integrated UI runtime files | `php scripts/validate-fnlla-runtime.php` |
 | Validate `VERSION`, `MANIFEST.json` and runtime metadata | `php scripts/validate-version-manifest.php` |
 | Refresh version metadata after an intentional version change | `php fnlla version:sync` |
-| Claim real product identity after export | `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` |
+| Claim real product identity after export | `php fnlla project:claim --product "Product Name" --owner "Owner" --developer "Developer"` |
 | Review official framework drift | `php fnlla framework:update --check` and `php fnlla framework:update --dry-run` |
 | Apply only conflict-free official framework updates | `php fnlla framework:update --apply` |
 | Inspect framework update drift in the browser | `/maintenance/framework-update` |
@@ -497,7 +526,7 @@ are exceeded. A failed budget exits with code `1`, which makes it suitable for C
 and release gates.
 
 FNLLA ships a baseline policy at
-`resources/performance-baselines/2.1-policy.json`. It names the release-decision
+`resources/performance-baselines/policy.json`. It names the release-decision
 targets for command listing, route listing, homepage health, API health and
 project export. The built-in profiler measures the CLI/export targets locally;
 deployment pipelines should add HTTP probes for `/` and `/api/health` against
@@ -728,7 +757,7 @@ request-observer boundary.
 Release:
 
 1. Confirm `CHANGELOG.md`, `VERSION`, `MANIFEST.json` and runtime metadata are aligned.
-2. Run `php scripts/build-docs.php --check`.
+2. Review the affected Markdown guides and run `php scripts/check-docs.php`.
 3. Run `php fnlla ops:backup-plan --output=framework/backup-plan.json`.
 4. Run `php fnlla security:audit --strict`.
 5. Run `php fnlla release:prepare`.

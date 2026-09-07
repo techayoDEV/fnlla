@@ -14,7 +14,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - the FNLLA application core
 - the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
 - the integrated server-side runtime intelligence bundle under `resources/fnlla-ai-runtime/`
-- the opt-in Fionn runtime AI bridge contract, disabled by default
+- the built-in FIONN AI gateway by TechAyo and optional OpenAI API / Anthropic API adapters; external connections disabled by default
 - machine-readable release metadata in `MANIFEST.json`
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - root license: `LICENSE.md`; framework references:
@@ -32,7 +32,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 1. Claim the project identity:
 
 ```bash
-php fnlla project:claim --product "{{APP_NAME}}" --owner "Owner LTD" --developer "Developer LTD" --maintainer "Developer LTD"
+php fnlla project:claim --product "{{APP_NAME}}" --owner "Owner" --developer "Developer" --maintainer "Developer"
 ```
 
 2. Copy `.env.example` to `.env`. Use `.env.full.example` only as the complete
@@ -98,7 +98,7 @@ It intentionally leaves behind:
 
 - framework-only browser docs under `docs/`
 - versioned project-export templates under `resources/project-templates/`
-- the maintainer docs builder `scripts/build-docs.php`
+- the maintainer documentation checks and Markdown reference library
 - repository governance and contribution files such as `.git/`, `.github/CODE_OF_CONDUCT.md` and `SECURITY.md`
 - local runtime residue such as logs, cache entries, queue files, session files and integrated UI surface guard state
 - maintainer publishing, ecosystem audit, release-metadata validation and export benchmarking scripts
@@ -154,7 +154,7 @@ updates. Real PHPUnit remains the preferred runner after `composer install`.
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree
 - `php scripts/validate-fnlla-runtime.php` checks that the exported project still respects FNLLA's integrated UI surface contract
 - `php scripts/validate-version-manifest.php` checks that `VERSION`, `MANIFEST.json` and the integrated UI surface metadata stay aligned on one FNLLA version
-- `php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
+- `php fnlla project:claim --product "Product Name" --owner "Owner" --developer "Developer"` writes project identity into `MANIFEST.json`, `.env.example`, `README.md` and `config/app.php`
 - `php fnlla project:acceptance --json` checks runtime files, writable storage, `/`, `/api/health` and `/maintenance` before product-specific work or release
 - `php fnlla doctor` checks local PHP/runtime readiness before development, CI or release
 - `php fnlla security:audit` checks deploy-time security configuration posture
@@ -168,7 +168,7 @@ updates. Real PHPUnit remains the preferred runner after `composer install`.
 - `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` compares current p95 timings against a saved local baseline
 - `php fnlla ai:context` writes a local redacted context pack for AI-assisted review without raw secrets
 - `php fnlla ai:review-pack --target={{FNLLA_VERSION}}` combines context, app map and upgrade readiness into one local AI review artefact
-- `php fnlla ai:providers --json` reports local runtime AI provider readiness without contacting external providers
+- `php fnlla ai:providers --json` reports provider configuration readiness without contacting external services; it does not verify a live connection or imply a bundled model
 - `php fnlla optimize:clear` removes generated bootstrap caches before local development or release packaging
 - `php fnlla release:prepare` runs the release gate and generates SBOM/checksum artefacts under `dist/release/`
 - `php fnlla config:doctor --json` checks project environment configuration
@@ -200,10 +200,33 @@ The export keeps standard tool entrypoints at root: Composer metadata,
 live under `scripts/windows/`, and framework policy references live under
 `docs/framework/`.
 
-Fionn integration is a controlled API bridge, not a copied model or knowledge
-bundle. Keep `AI_RUNTIME_DRIVER=local` unless the product explicitly enables a
-separate Fionn service through `AI_FIONN_ENDPOINT`, `AI_FIONN_ALLOWED_HOSTS` and
-the production security checklist.
+OpenAI API and Anthropic API can be configured in Developer Panel > Integrations > AI providers or
+through `AI_OPENAI_*` / `AI_ANTHROPIC_*` in `.env.full.example`. Set your API key,
+an available model ID and the selected `AI_RUNTIME_DRIVER`. PHP cURL is required
+only for these cloud adapters. Cloud requests send the explicit question, not
+application context, source files or sessions. Status checks do not call providers;
+costs and provider data policies apply. Never publish provider keys or responses.
+
+Space Grotesk and JetBrains Mono are self-hosted in the full starter. Override
+`--fnlla-font-base`, `--fnlla-font-heading` and `--fnlla-font-mono` for your product;
+keep font license notices with redistributed assets.
+Both families ship real 400/600 weights. Space Grotesk handles body, headings,
+navigation and prose; JetBrains Mono handles literal URLs, email, code, versions
+and metadata. Use `.fnlla-literal` for displayed technical values, not all links.
+The standalone FIONN AI name uses `.fnlla-fionn-name`. Plain keeps system fonts.
+
+FNLLA framework authorship: **Lead Developer / Product Manager - Marcin Kordyaczny**.
+This credits the framework, not the ownership or leadership of your application.
+The private About FNLLA screen exposes the same framework credit.
+
+FIONN AI, Persistent Personal Intelligence created by TechAyo, has a built-in,
+controlled API gateway, not a bundled local model. An appropriate FIONN developer
+account and API access are required. Configure `AI_FIONN_ENDPOINT`,
+`AI_FIONN_ALLOWED_HOSTS`, `AI_FIONN_API_TOKEN` and explicit activation according
+to the production security checklist. Memory and permissions belong to the
+connected service; FNLLA disables learning and does not automatically index the
+project or write service memory. Never share personal memory between app users.
+The default `local` driver is a deterministic reference lookup, not AI inference.
 
 The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
 
@@ -211,7 +234,7 @@ The GitHub-backed framework-update flow only prepares diffs or apply runs when t
 php fnlla list
 php fnlla fnlla-runtime:sync
 php fnlla fnlla-runtime:validate
-php fnlla project:claim --product "Product Name" --owner "Owner LTD" --developer "Developer LTD"
+php fnlla project:claim --product "Product Name" --owner "Owner" --developer "Developer"
 php fnlla project:acceptance --json
 php fnlla doctor
 php fnlla security:audit

@@ -40,11 +40,15 @@ credentials, private endpoints, customer records, local usernames, workstation
 paths, backup locations or access links. Keep public copyright attribution,
 official repository/package identifiers and actual API/configuration names accurate.
 
-Markdown is maintained source. Rebuild registered HTML and validate hygiene:
+Markdown is the maintained reference in this repository. The previous HTML
+documentation, its generator and local `/docs` routes have been retired.
+A new documentation website is planned for fnlla.com; it is not part of the
+framework or starter distribution. Until publication, read these files locally
+or on GitHub. The private Developer Panel's contextual help remains available.
+
+Validate documentation hygiene and relative links:
 
 ```console
-php scripts/build-docs.php
-php scripts/build-docs.php --check
 php scripts/check-docs.php
 ```
 

@@ -21,7 +21,7 @@ $facts = [
     "Official website" => $officialUrl,
     "Source repository" => $repositoryUrl,
     "Support email" => $supportEmail,
-    "Maintainer" => (string) ($about["maintainer"] ?? "TechAyo Limited"),
+    "Maintainer" => (string) ($about["maintainer"] ?? \Fnlla\Php\Support\FrameworkIdentity::MAINTAINER_NAME),
     "License" => (string) ($about["license"] ?? "MIT"),
 ];
 $projectLeadership = project_leadership("admin");
@@ -39,18 +39,19 @@ require __DIR__ . "/panel-header.php";
             <div class="developer-panel-intro-copy">
               <?php if ($frameworkBrandLockup !== null): ?>
               <div class="developer-framework-brand-lockup" aria-label="FNLLA brand system">
-                <img src="<?= h($frameworkBrandLockup) ?>" alt="FNLLA" width="1807" height="574" decoding="async">
+                <?php require dirname(__DIR__) . "/partials/framework-wordmark.php"; ?>
                 <span><?= h($frameworkBrandMessage) ?></span>
               </div>
               <?php endif; ?>
               <p class="feature-kicker">Framework information</p>
-              <h2 class="developer-dashboard-section-title">FNLLA by TechAyo Limited</h2>
-              <p class="content-text mb-0">FNLLA is the framework-managed base used to deliver the public project surface and private developer operations panel. The official framework website is <?= h($officialUrl) ?>.</p>
+              <h2 class="developer-dashboard-section-title">FNLLA by TechAyo</h2>
+              <p class="content-text" data-framework-lead><?= h((string) ($about["lead_role"] ?? \Fnlla\Php\Support\FrameworkIdentity::LEAD_ROLE)) ?> - <?= h((string) ($about["lead_name"] ?? \Fnlla\Php\Support\FrameworkIdentity::LEAD_NAME)) ?></p>
+              <p class="content-text mb-0">FNLLA is the framework-managed base used to deliver the public project surface and private developer operations panel. The official framework website is <a class="fnlla-literal" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a>.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">FNLLA.com</a>
+              <a class="btn btn-outline btn-sm fnlla-literal" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a>
               <a class="btn btn-outline btn-sm" href="<?= h($repositoryUrl) ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
-              <a class="btn btn-outline btn-sm" href="<?= h($maintainerUrl) ?>" target="_blank" rel="noopener noreferrer">TechAyo</a>
+              <a class="btn btn-outline btn-sm fnlla-literal" href="<?= h($maintainerUrl) ?>" target="_blank" rel="noopener noreferrer">techayo.co.uk</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))) ?>">Documentation</a>
             </div>
           </div>
@@ -58,12 +59,12 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Framework</strong><span class="developer-dashboard-ok">FNLLA</span></div>
-              <h3><?= h((string) ($facts["Framework version"] ?: "unknown")) ?></h3>
+              <h3 class="fnlla-literal"><?= h((string) ($facts["Framework version"] ?: "unknown")) ?></h3>
               <p>Current framework version reported by this installation.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Runtime</strong><span class="developer-dashboard-ok">PHP</span></div>
-              <h3><?= h((string) ($facts["Runtime version"] ?: "unknown")) ?></h3>
+              <h3 class="fnlla-literal"><?= h((string) ($facts["Runtime version"] ?: "unknown")) ?></h3>
               <p>Runtime package version available to the project.</p>
             </article>
             <article class="developer-dashboard-status-card">
@@ -73,7 +74,7 @@ require __DIR__ . "/panel-header.php";
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Official</strong><span class="developer-dashboard-ok">WEB</span></div>
-              <h3><a class="developer-text-link" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a></h3>
+              <h3><a class="developer-text-link fnlla-literal" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a></h3>
               <p>Canonical framework website and product reference.</p>
             </article>
           </div>
@@ -120,7 +121,7 @@ require __DIR__ . "/panel-header.php";
               <?php foreach ($facts as $label => $value): ?>
               <div class="developer-dashboard-glance-row">
                 <strong><?= h((string) $label) ?></strong>
-                <span><?= h((string) $value) ?></span>
+                <span<?= in_array($label, ["Framework version", "Brand system", "Runtime version", "Environment", "Official website", "Source repository", "Support email"], true) ? ' class="fnlla-literal"' : "" ?>><?= h((string) $value) ?></span>
               </div>
               <?php endforeach; ?>
             </div>

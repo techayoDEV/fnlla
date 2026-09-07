@@ -121,6 +121,7 @@ if (developer_access()->enabled()) {
         ["get", $developerPanel("/release-readiness"), DeveloperOperationsController::class, "releaseReadiness", "developer.panel.release_readiness", "developer-session"],
         ["get", $developerPanel("/integrations"), DeveloperSettingsController::class, "integrations", "developer.panel.integrations", "developer-session"],
         ["post", $developerPanel("/integrations/settings"), DeveloperSettingsController::class, "updateIntegrationSettings", "developer.panel.integrations.settings", ["csrf", "developer-session"]],
+        ["post", $developerPanel("/integrations/ai"), \Fnlla\Php\Controllers\DeveloperAiSettingsController::class, "update", "developer.panel.integrations.ai", ["csrf", "developer-session"]],
         ["get", $developerPanel("/workspace"), DeveloperWorkspaceController::class, "workspace", "developer.panel.workspace", "developer-session"],
         ["get", $developerPanel("/policy"), DeveloperOverviewController::class, "policy", "developer.panel.policy", "developer-session"],
         ["get", $developerPanel("/documentation"), DeveloperOverviewController::class, "documentation", "developer.panel.documentation", "developer-session"],

@@ -321,9 +321,9 @@ final class UpgradeAnalyzer
 
     private function checkBusinessReferenceBlueprint(): array
     {
-        $manifestPath = base_path("resources/business-reference/2.1/MANIFEST.json");
-        $blueprintPath = base_path("resources/business-reference/2.1/blueprint.json");
-        $readmePath = base_path("resources/business-reference/2.1/README.md");
+        $manifestPath = base_path("resources/business-reference/MANIFEST.json");
+        $blueprintPath = base_path("resources/business-reference/blueprint.json");
+        $readmePath = base_path("resources/business-reference/README.md");
         $missing = [];
 
         foreach ([$manifestPath, $blueprintPath, $readmePath] as $path) {
@@ -353,7 +353,7 @@ final class UpgradeAnalyzer
 
     private function checkProductionBaselinePolicy(): array
     {
-        $path = base_path("resources/performance-baselines/2.1-policy.json");
+        $path = base_path("resources/performance-baselines/policy.json");
         $decoded = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
         $targets = is_array($decoded) ? (array) ($decoded["targets"] ?? []) : [];
 
@@ -363,7 +363,7 @@ final class UpgradeAnalyzer
             "detail" => is_array($decoded) && $targets !== []
                 ? "Production performance baseline policy is present."
                 : "Define the production performance baseline policy before release.",
-            "data" => ["path" => "resources/performance-baselines/2.1-policy.json"],
+            "data" => ["path" => "resources/performance-baselines/policy.json"],
         ];
     }
 

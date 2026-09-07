@@ -18,7 +18,6 @@ Purpose:
 - Registers maintained HTTP or console routes for the framework runtime.
 */
 
-use Fnlla\Php\Controllers\DocsController;
 use Fnlla\Php\Controllers\HomeController;
 use Fnlla\Php\Controllers\ConsentController;
 use Fnlla\Php\Controllers\PageController;
@@ -30,15 +29,6 @@ Public route contract:
 - developer/customer/maintenance routes live in routes/maintenance.php so the
   public surface remains easy to scan during handover
 */
-if (has_local_docs_workspace()) {
-    $router->get("/docs", [DocsController::class, "index"])->name("docs.home");
-    $router->get("/docs/assets/docs.css", [DocsController::class, "stylesheet"])->name("docs.asset.stylesheet");
-    $router->get("/docs/assets/docs.js", [DocsController::class, "script"])->name("docs.asset.script");
-    $router->get("/docs/assets/brand/fnlla-runtime.svg", [DocsController::class, "runtimeBrandIcon"])->name("docs.asset.runtime_brand");
-    $router->get("/docs/assets/brand/fnlla.svg", [DocsController::class, "brandIcon"])->name("docs.asset.brand");
-    $router->get("/docs/{page}", [DocsController::class, "page"])->name("docs.page");
-}
-
 $router->get("/", [HomeController::class, "projectHome"])->name("home");
 $router->get("/about", [PageController::class, "about"])->name("about");
 $router->get("/services", [PageController::class, "services"])->name("services");

@@ -5,6 +5,79 @@ release tags are cut.
 
 ## Unreleased
 
+- Fix private preview and update stylesheet ownership, dark cookie/Kanban
+  surfaces and form boundaries. Add browser regression checks against fresh
+  exports in both themes and four viewport widths.
+- Generate framework/runtime palette values from the brand tokens; use shared
+  supporting type and canonical compact wordmarks. Remove retired solid marks
+  from exports and correct office-template minimum logo sizes.
+- Put application identity first on the starter home page, remove the fictitious
+  terminal command and distinguish FNLLA's built-in tools from optional FIONN AI
+  access. Derive upgrade targets from version metadata and show live main-branch
+  CI status separately from the unreleased source candidate.
+
+- Align runtime and full-starter UI with the outline brand, neutral light/dark
+  surfaces, semantic status colours and visible keyboard focus. Keep Plain's
+  system-font footprint. Simplify the 01 signature and keep it outside working forms.
+- Add editable vector artboards, layered PSD handoffs and four branded Word
+  templates. Keep all design-tool files outside starter and source distributions.
+- Complete missing assertion support in the dependency-free test harness and
+  prevent an absent expected exception from accepting its own assertion failure.
+
+- Refresh the README with an identity-led cover, a full-starter workflow and an
+  AI service-boundary diagram, reused in the matching Markdown guides. Keep
+  the essential claims in text and alt descriptions. Use light-grey social
+  information bands and an original, static 01 motif built from FNLLA's bytes.
+- Refine the 2.2.0 brand palette without Citron, brighten accessible success/error
+  text and introduce a grouped binary campaign pattern. Use lowercase Mono
+  domains/email and Mono SemiBold for the FIONN AI display name.
+- Ship real 400/600 faces for both brand families, align project-shell weights,
+  and include the new Mono face in full starter exports. Keep plain lightweight.
+- Add canonical framework lead credits to About FNLLA and public API metadata,
+  separate from application ownership. Use Anthropic API as the display label
+  for the direct Claude API without changing driver IDs or request contracts.
+
+- Standardise the brand kit on six outline colour treatments, preserve every
+  master contour and retire filled silhouettes. Add restrained binary campaign
+  fields, scannable social-cover QRs and stronger FIONN AI positioning with
+  explicit developer-account, API access and service-memory boundaries.
+- Retain TechAyo contact details and dual framework/creator
+  print QRs. Clarify that local reference lookup is not a local AI model and that
+  `ai:ask` can send the question to an explicitly enabled external provider.
+- Align public naming around FIONN AI by TechAyo, its built-in gateway and
+  optional OpenAI API / Anthropic API integrations. Keep driver and env
+  identifiers compatible; use Claude Platform's documented Bearer authentication
+  and test refusal, stop-reason and multi-block text response handling.
+
+- Add opt-in OpenAI API (Responses) and Anthropic API (Messages) text-generation adapters,
+  bounded HTTPS transport, explicit model/key settings and protected panel controls.
+  Keep diagnostics local, reject unknown drivers and never report unknown AI cost as free.
+- Tighten FIONN AI host allowlists, reject unsafe tokens, block redirects, bound
+  responses and avoid exposing upstream error details.
+- Adopt the AI-ready web framework positioning with a PHP foundation; distinguish
+  local assistance, the separate FIONN AI brain and cloud provider integrations.
+- Enrich the 14-page brand guide with origin and creator credits, introduce
+  landscape A3/A4 campaigns and platform-specific social artwork, and refresh
+  the README cover. Self-host Space Grotesk and JetBrains Mono in the full starter.
+
+- Remove the default demo administrator and shared factory password; require
+  explicit non-local seeding confirmation and validate seeder input before execution.
+- Align PHPStan's distributed and active configuration, adding database source
+  analysis; preserve Windows CLI exit codes and argument expansion settings.
+- Protect future module storage from accidental Git inclusion in both starter
+  profiles; keep actual data and historical migration identities unchanged.
+- Refresh the business reference and performance policy for edition 2.2.0,
+  correct route-to-gate mismatches, and use neutral ownership placeholders.
+- Align branding to edition 2.2.0 and add reproducible A3/A4 vector print artwork
+  with a verified QR link to fnlla.com.
+
+- Retire generated HTML documentation, its local routes and build pipeline;
+  retain Markdown guides and enforce documentation hygiene in CI and release checks.
+  Consolidate brand assets and replace the outdated brand guide with a maintainable
+  visual standard aligned with FNLLA's actual product identity.
+- Replace the runtime's outdated Open Graph image with the maintained artwork
+  using the official fnlla.com domain.
+
 - Consolidate project command and recovery docs into the operations guide, move
   framework policy documents out of the repository root, place Windows helper
   launchers under `scripts/windows/`, and refresh Project Setup visuals.
@@ -84,7 +157,7 @@ new stable release until the supported release scope passes its acceptance gates
 
 - README and documentation now position FNLLA as an AI-ready web product
   framework with a Developer Operations Panel, while keeping the AI claims
-  limited to the shipped local runtime, review commands and opt-in Fionn bridge.
+  limited to the shipped local runtime, review commands and opt-in FIONN AI bridge.
 
 ## 2.1.2 - 2026-08-31
 
@@ -125,7 +198,7 @@ new stable release until the supported release scope passes its acceptance gates
 - `.env.full.example` as the complete environment reference beside the shorter
   `.env.example` starter.
 - `docs/ENVIRONMENT.md` and generated `docs/environment.html` for environment
-  layers, client preview and the Fionn bridge boundary.
+  layers, client preview and the FIONN AI bridge boundary.
 
 ### Changed
 
@@ -140,7 +213,7 @@ new stable release until the supported release scope passes its acceptance gates
 - Markdown documentation has been expanded around downstream project start,
   commercial release evidence, security review and framework/product
   boundaries.
-- Runtime AI now has an opt-in Fionn HTTP bridge contract with endpoint policy
+- Runtime AI now has an opt-in FIONN AI HTTP bridge contract with endpoint policy
   checks, redacted context forwarding, provider selection through
   `runtime_ai()` and strict security-audit coverage.
 - Exported application surface tests now validate the configured application

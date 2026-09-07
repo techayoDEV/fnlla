@@ -31,7 +31,16 @@ $upgradeSummary = is_array($upgradeReport["summary"] ?? null) ? (array) $upgrade
 $upgradeChecks = is_array($upgradeReport["checks"] ?? null) ? (array) $upgradeReport["checks"] : [];
 $upgradePlanActions = is_array($upgradeReport["plan"]["actions"] ?? null) ? (array) $upgradeReport["plan"]["actions"] : [];
 $upgradeApplyActions = is_array($upgradeApply["actions"] ?? null) ? (array) $upgradeApply["actions"] : [];
-$upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? "2.1.1"));
+$installedVersion = trim((string) ($frameworkMeta["version"] ?? ""));
+if ($installedVersion === "" && is_readable(base_path("VERSION"))) {
+    $installedVersion = trim((string) (file(base_path("VERSION"), FILE_IGNORE_NEW_LINES)[0] ?? ""));
+}
+$upgradeTargetVersion = trim((string) ($upgradeReport["target_version"] ?? ""));
+if ($upgradeTargetVersion === "") {
+    // A cached older public release must never become the suggested downgrade target.
+    $upgradeTargetVersion = $cachedReleaseVersion !== "" && version_compare($cachedReleaseVersion, $installedVersion, ">")
+        ? $cachedReleaseVersion : $installedVersion;
+}
 $reportMode = trim((string) ($report["mode"] ?? ""));
 $reportUsesGitHub = in_array($reportMode, ["github-check", "github-dry-run", "github-apply"], true);
 $reportIsApply = in_array($reportMode, ["apply", "github-apply"], true);
@@ -121,7 +130,7 @@ $updateActionLabel = static function (array $update): string {
     <section class="feature-section" aria-label="Major upgrade readiness workflow">
       <div class="section-header mb-0">
         <p class="feature-kicker">Major upgrade safety</p>
-        <h2 class="section-title">FNLLA can check and apply the safe part of a 1.x to 2.0 upgrade from this browser page.</h2>
+        <h2 class="section-title">Review compatibility before updating FNLLA.</h2>
         <p class="section-text">The GUI uses the same upgrade analyser as the CLI. It can write the upgrade plan and clear generated runtime residue automatically, while manual-review items remain explicit and blocked from automatic apply.</p>
       </div>
 
@@ -133,7 +142,7 @@ $updateActionLabel = static function (array $update): string {
             <?= csrf_field() ?>
             <div class="form-group">
               <label class="label" for="framework-upgrade-target">Target version</label>
-              <input class="input" id="framework-upgrade-target" name="target_version" type="text" value="<?= h($upgradeTargetVersion !== "" ? $upgradeTargetVersion : "2.1.1") ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+              <input class="input fnlla-literal" id="framework-upgrade-target" name="target_version" type="text" value="<?= h($upgradeTargetVersion) ?>" required <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
             </div>
             <div class="grid grid-2 gap-md framework-update-actions-grid">
               <button class="btn btn-outline" type="submit" name="mode" value="upgrade-check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check major readiness</button>
@@ -162,7 +171,7 @@ $updateActionLabel = static function (array $update): string {
               <p class="content-title mb-0"><?= h((string) ($upgradeSummary["failures"] ?? 0)) ?></p>
             </div>
           </div>
-          <p class="content-text">Target <?= h((string) ($upgradeReport["target_version"] ?? "2.1.1")) ?> checked at <?= h((string) ($upgradeReport["executed_at_utc"] ?? $upgradeReport["generated_at_utc"] ?? "unknown")) ?>.</p>
+          <p class="content-text">Target <?= h($upgradeTargetVersion) ?> checked at <?= h((string) ($upgradeReport["executed_at_utc"] ?? $upgradeReport["generated_at_utc"] ?? "unknown")) ?>.</p>
 
           <?php if ($upgradeChecks !== []): ?>
           <ul class="contact-list">
@@ -253,7 +262,7 @@ $updateActionLabel = static function (array $update): string {
 
               <div class="form-group">
                 <label class="label" for="framework-update-release-tag">Optional release tag override</label>
-                <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for the latest release, or enter a specific tag such as v1.0.x" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
+                <input class="input" id="framework-update-release-tag" name="release_tag" type="text" placeholder="Leave blank for latest, or enter an existing release tag" value="<?= h($releaseTagValue) ?>" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>
                 <p class="help-text">Leave this blank for the latest published release. Use a tag only when you need to verify or apply a specific published FNLLA version.</p>
               </div>
 

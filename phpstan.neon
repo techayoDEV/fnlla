@@ -1,13 +1,2 @@
-parameters:
-    level: 5
-    bootstrapFiles:
-        - scripts/phpstan-bootstrap.php
-    paths:
-        - src
-        - packages/fnlla-psr/src
-        - packages/fnlla-smtp/src
-        - packages/fnlla-deploy/src
-    scanFiles:
-        - src/Support/helpers.php
-        - src/Support/optional_helpers.php
-    tmpDir: storage/framework/phpstan
+includes:
+    - phpstan.neon.dist

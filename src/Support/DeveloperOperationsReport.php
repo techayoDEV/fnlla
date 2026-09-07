@@ -196,7 +196,7 @@ final class DeveloperOperationsReport
                 ],
             ],
             [
-                "name" => "Fionn",
+                "name" => "FIONN AI",
                 "status" => (string) ($fionn["integration_state"] ?? "available_opt_in"),
                 "consent_event" => "server-side policy",
                 "external_calls" => (bool) ($fionn["external_calls"] ?? false),

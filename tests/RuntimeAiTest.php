@@ -10,7 +10,7 @@ Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 ===============================================================================
 
 Purpose:
-- Validates the local runtime AI service used for project-owned, user-facing
+- Validates the runtime assistant service used for project-owned, user-facing
   assistance without external model providers.
 */
 
@@ -115,7 +115,7 @@ final class RuntimeAiTest extends TestCase
             return [
                 "status" => 200,
                 "body" => json_encode([
-                    "reply" => "Fionn response.",
+                    "reply" => "FIONN AI response.",
                     "reply_source" => "model_only",
                     "reply_mode" => "memory_assisted",
                     "knowledge_mode" => "auto",
@@ -127,7 +127,7 @@ final class RuntimeAiTest extends TestCase
             ];
         });
 
-        $answer = $bridge->answer("Hello Fionn", [
+        $answer = $bridge->answer("Hello FIONN AI", [
             "page" => "support",
             "api_token" => "secret",
             "session_cookie" => "private",
@@ -136,12 +136,12 @@ final class RuntimeAiTest extends TestCase
         self::assertSame("http://127.0.0.1:8765/api/chat", $seen["endpoint"]);
         self::assertSame(2, $seen["timeout"]);
         self::assertSame(false, $seen["payload"]["learning_mode"]);
-        self::assertSame("Hello Fionn", $seen["payload"]["message"]);
+        self::assertSame("Hello FIONN AI", $seen["payload"]["message"]);
         self::assertArrayHasKey("page", $seen["payload"]["context"]);
         self::assertArrayNotHasKey("api_token", $seen["payload"]["context"]);
         self::assertArrayNotHasKey("session_cookie", $seen["payload"]["context"]);
         self::assertSame("fionn", $answer["driver"]);
-        self::assertSame("Fionn response.", $answer["answer"]);
+        self::assertSame("FIONN AI response.", $answer["answer"]);
         self::assertSame(["fionn:model_only"], $answer["sources"]);
         self::assertArrayNotHasKey("session_path", $answer);
         self::assertArrayNotHasKey("memory_path", $answer);
@@ -266,7 +266,7 @@ final class RuntimeAiTest extends TestCase
 
         self::assertSame("blocked", $status["integration_state"] ?? null);
         self::assertSame(false, $status["provider_ready"] ?? null);
-        self::assertStringContainsString("reserved Fionn", (string) ($status["reason"] ?? ""));
+        self::assertStringContainsString("Unknown runtime AI driver", (string) ($status["reason"] ?? ""));
         self::assertSame("latency_ms", $status["accounting"]["latency_field"] ?? null);
     }
 

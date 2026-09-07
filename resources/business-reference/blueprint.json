@@ -1,0 +1,36 @@
+{
+    "schema": "fnlla.business_app_blueprint.v1",
+    "version": "2.2.0",
+    "routes": [
+        {"method": "GET", "path": "/dashboard", "middleware": ["auth", "authorize:operations.access"], "role": "operator"},
+        {"method": "GET", "path": "/clients", "middleware": ["auth", "authorize:operations.access"], "role": "operator"},
+        {"method": "POST", "path": "/clients", "middleware": ["auth", "csrf", "authorize:admin.access"], "role": "admin"},
+        {"method": "GET", "path": "/requests", "middleware": ["auth", "authorize:client.records.view"], "role": "client"},
+        {"method": "POST", "path": "/requests", "middleware": ["auth", "csrf", "authorize:client.records.update", "throttle"], "role": "client"}
+    ],
+    "tables": [
+        {"name": "users", "purpose": "Authentication identity and role field"},
+        {"name": "clients", "purpose": "Business customer records"},
+        {"name": "service_requests", "purpose": "Client-facing request workflow"},
+        {"name": "activity_log", "purpose": "Auditable business events"}
+    ],
+    "gates": [
+        {"name": "admin.access", "roles": ["admin"]},
+        {"name": "operations.access", "roles": ["admin", "operator"]},
+        {"name": "client.records.view", "roles": ["admin", "operator", "client"], "ownership_required_for": ["client"]},
+        {"name": "client.records.update", "roles": ["admin", "operator", "client"], "ownership_required_for": ["client"]}
+    ],
+    "workflows": [
+        "schema -> migration -> seeder -> repository -> controller -> view -> validation -> auth gate -> tests -> deployment gate",
+        "client preview -> owner sign-off -> security:audit --strict -> optimize:warm -> backup-plan -> deploy"
+    ],
+    "security_controls": [
+        "CSRF on every state-changing form",
+        "role gates for admin, operator and client actions",
+        "validated uploads with MIME and size limits",
+        "log mailer in development; explicitly configured HTTPS HTTP transport or optional SMTP adapter in production",
+        "application-owned seeders without predefined privileged accounts or shared passwords",
+        "ownership-filtered record queries; never trust a client-supplied owner identifier",
+        "trusted hosts, trusted proxies and secure cookies in production"
+    ]
+}

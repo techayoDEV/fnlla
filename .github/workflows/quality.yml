@@ -10,6 +10,35 @@ permissions:
   contents: read
 
 jobs:
+  brand-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, fileinfo, mbstring, dom, xml
+          coverage: none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.62.0
+      - run: python -m playwright install --with-deps chromium
+      - run: php scripts/branding/build-runtime.php --check
+      - run: php fnlla make:project "${{ runner.temp }}/brand-complete" "Brand Regression" --profile=full
+      - run: php scripts/branding/ui-fixtures.php "${{ runner.temp }}/brand-complete" "${{ runner.temp }}/brand-fixtures"
+      - run: python scripts/branding/check-ui.py "${{ runner.temp }}/brand-complete" "${{ runner.temp }}/brand-fixtures"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brand-ui
+          path: |
+            ${{ runner.temp }}/brand-fixtures/results.json
+            ${{ runner.temp }}/brand-fixtures/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
   php:
     strategy:
       fail-fast: false
@@ -29,7 +58,6 @@ jobs:
       - run: composer test:unit -- --testsuite framework "--log-junit=${{ runner.temp }}/junit-framework.xml"
       - run: composer analyse
       - run: php scripts/check-modernization.php
-      - run: php scripts/build-docs.php --check
       - run: php scripts/check-docs.php
       - run: composer lint
       - uses: actions/upload-artifact@v4

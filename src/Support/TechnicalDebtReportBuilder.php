@@ -34,7 +34,7 @@ final class TechnicalDebtReportBuilder
             : [
             $this->checkDebtMarkers(),
             $this->checkRuntimeResidue(),
-            $this->checkDocsSync(),
+            $this->checkDocsHygiene(),
             $this->checkReleaseDocs(),
             $this->checkAiRuntime(),
             $this->checkPublicApiLock(),
@@ -231,25 +231,25 @@ final class TechnicalDebtReportBuilder
         ];
     }
 
-    private function checkDocsSync(): array
+    private function checkDocsHygiene(): array
     {
-        $script = base_path("scripts/build-docs.php");
+        $script = base_path("scripts/check-docs.php");
 
         if (!is_file($script)) {
             return [
-                "id" => "generated-docs-sync",
+                "id" => "documentation-hygiene",
                 "status" => "warn",
-                "detail" => "Docs sync script is missing.",
+                "detail" => "Documentation hygiene script is missing.",
                 "data" => [],
             ];
         }
 
-        $result = ProcessRunner::run([PHP_BINARY, $script, "--check"], base_path(), 120);
+        $result = ProcessRunner::run([PHP_BINARY, $script], base_path(), 120);
 
         return [
-            "id" => "generated-docs-sync",
+            "id" => "documentation-hygiene",
             "status" => $result["exit_code"] === 0 ? "pass" : "warn",
-            "detail" => $result["exit_code"] === 0 ? "Generated HTML docs match Markdown sources." : "Generated HTML docs are stale; run php scripts/build-docs.php.",
+            "detail" => $result["exit_code"] === 0 ? "Documentation hygiene and relative links passed." : "Documentation hygiene failed; run php scripts/check-docs.php.",
             "data" => [
                 "exit_code" => $result["exit_code"],
             ],
@@ -309,7 +309,7 @@ final class TechnicalDebtReportBuilder
         return [
             "id" => "ai-product-runtime",
             "status" => $missing === [] ? "pass" : "fail",
-            "detail" => $missing === [] ? "Local runtime AI and the reserved Fionn bridge contract are present." : "Runtime AI surface is incomplete.",
+            "detail" => $missing === [] ? "Local reference lookup and the opt-in FIONN AI gateway contract are present." : "Runtime AI surface is incomplete.",
             "data" => ["missing" => $missing],
         ];
     }
@@ -349,11 +349,11 @@ final class TechnicalDebtReportBuilder
             $actions[] = "Verify runtime data is excluded from the source archive; remove only obsolete generated release artifacts.";
         }
 
-        if ($this->statusFor($checks, "generated-docs-sync") !== "pass") {
-            $actions[] = "Run php scripts/build-docs.php and repeat php fnlla tech-debt:update --check.";
+        if (in_array($this->statusFor($checks, "documentation-hygiene"), ["warn", "fail"], true)) {
+            $actions[] = "Run php scripts/check-docs.php, fix reported issues and repeat php fnlla tech-debt:update --check.";
         }
 
-        if ($this->statusFor($checks, "technical-debt-public-contract") !== "pass") {
+        if (in_array($this->statusFor($checks, "technical-debt-public-contract"), ["warn", "fail"], true)) {
             $actions[] = "Run php fnlla api:lock after public CLI or schema changes.";
         }
 
@@ -425,7 +425,7 @@ final class TechnicalDebtReportBuilder
 
                 $relativePath = $this->relativePath($item->getPathname());
 
-                if ($relativePath === "docs/DEVELOPER-PANEL.md" || !$this->isTextSource($relativePath) || preg_match('#^docs/.*\.html$#i', $relativePath) === 1) {
+                if ($relativePath === "docs/DEVELOPER-PANEL.md" || !$this->isTextSource($relativePath)) {
                     continue;
                 }
 

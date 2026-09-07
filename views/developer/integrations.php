@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $developerPanelTitle = "Integrations";
-$developerPanelLead = "Consent-aware adapter contracts for analytics, diagnostics, Fionn and remote control.";
+$developerPanelLead = "Consent-aware adapter contracts for analytics, diagnostics, FIONN AI and remote control.";
 $report = is_array($operationsReport ?? null) ? (array) $operationsReport : [];
 $integrations = (array) ($report["integrations"] ?? []);
 $heatmaps = (array) ($report["heatmaps"] ?? []);
@@ -26,7 +26,7 @@ $integrationDescriptions = [
     "GA4" => "Optional Google Analytics measurement for traffic and conversion trends after analytics consent.",
     "Microsoft Clarity" => "Optional session analytics and UX diagnostics after analytics consent; keep disabled until a project needs it.",
     "Sentry" => "Server-side exception reporting for production diagnostics when a DSN and environment are configured.",
-    "Fionn" => "AI runtime bridge for approved local or explicitly configured providers; it stays policy-bound by server settings.",
+    "FIONN AI" => "Persistent Personal Intelligence by TechAyo. Built-in gateway; FIONN developer account and API access required.",
     "Generic API hooks" => "Project-specific webhook adapter for outbound events such as consent updates or operational hooks.",
     "TechAyo Remote Control" => "Central TechAyo control-plane contract for project status and operational toggles, not private product logic.",
 ];
@@ -34,7 +34,7 @@ $integrationBoundaries = [
     "GA4" => "Loads only when enabled, configured and analytics consent has been granted.",
     "Microsoft Clarity" => "Loads only when enabled, configured and analytics consent has been granted.",
     "Sentry" => "Sends server diagnostics only when enabled and the DSN exists.",
-    "Fionn" => "No remote model call is made unless an approved provider policy enables it.",
+    "FIONN AI" => "No remote model call is made unless an approved provider policy enables it.",
     "Generic API hooks" => "No webhook request is made unless the endpoint is configured and the adapter is enabled.",
     "TechAyo Remote Control" => "No central-control request is made unless the remote contract is enabled and configured.",
 ];
@@ -68,7 +68,7 @@ $integrationControls = [
     "GA4" => ["enabled_field" => "fnlla_integration_ga4_enabled", "enabled" => (bool) ($integrationConfig["ga4"]["enabled"] ?? false), "modal" => "developer-integration-ga4-settings"],
     "Microsoft Clarity" => ["enabled_field" => "fnlla_integration_clarity_enabled", "enabled" => (bool) ($integrationConfig["clarity"]["enabled"] ?? false), "modal" => "developer-integration-clarity-settings"],
     "Sentry" => ["enabled_field" => "fnlla_integration_sentry_enabled", "enabled" => (bool) ($integrationConfig["sentry"]["enabled"] ?? false), "modal" => "developer-integration-sentry-settings"],
-    "Fionn" => ["enabled_field" => "ai_fionn_enabled", "enabled" => (bool) ($fionnConfig["enabled"] ?? false), "modal" => "developer-integration-fionn-settings"],
+    "FIONN AI" => ["enabled_field" => "ai_fionn_enabled", "enabled" => (bool) ($fionnConfig["enabled"] ?? false), "modal" => "developer-integration-fionn-settings"],
     "Generic API hooks" => ["enabled_field" => "fnlla_integration_api_hooks_enabled", "enabled" => (bool) ($integrationConfig["api_hooks"]["enabled"] ?? false), "modal" => "developer-integration-api-hooks-settings"],
     "TechAyo Remote Control" => ["enabled_field" => "developer_control_remote_enabled", "enabled" => (bool) ($remoteConfig["enabled"] ?? false), "modal" => "developer-integration-remote-control-settings"],
 ];
@@ -87,7 +87,7 @@ require __DIR__ . "/panel-header.php";
             <?php $control = (array) ($integrationControls[$name] ?? []); ?>
             <article class="developer-integrations-row">
               <div>
-                <p class="feature-kicker"><?= h($name) ?></p>
+                <p class="feature-kicker<?= $name === "FIONN AI" ? " fnlla-fionn-name" : "" ?>"><?= h($name) ?></p>
                 <h3><?= h((string) ($integration["status"] ?? "disabled")) ?></h3>
                 <p class="content-text mb-0"><?= h((string) ($integrationDescriptions[$name] ?? "Optional adapter controlled by project configuration and policy.")) ?></p>
               </div>
@@ -133,6 +133,42 @@ require __DIR__ . "/panel-header.php";
             <strong>Why "No external calls by default"?</strong>
             <p>It means the adapter contract exists in FNLLA, but the application does not send network requests to that third party until the project explicitly enables the adapter, provides the required ID/endpoint/DSN and passes the consent or server-policy gate.</p>
           </div>
+        </section>
+
+        <section class="developer-ai-settings" aria-labelledby="ai-providers-title">
+          <h2 id="ai-providers-title" class="content-title">AI providers</h2>
+          <form class="form" action="<?= h(route("developer.panel.integrations.ai")) ?>" method="post" autocomplete="off">
+            <?= csrf_field() ?>
+            <div class="developer-ai-settings-grid">
+              <label>Active provider
+                <select class="select" name="ai_runtime_driver">
+                  <?php foreach (["local" => "Local reference (no AI model)", "fionn" => "FIONN AI by TechAyo / API account required", "openai" => "OpenAI API / optional", "anthropic" => "Anthropic API / optional"] as $driver => $label): ?>
+                  <option value="<?= h($driver) ?>" <?= config("ai.runtime.driver", "local") === $driver ? "selected" : "" ?>><?= h($label) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </label>
+              <label class="developer-workspace-check"><input type="checkbox" name="ai_runtime_enabled" value="1" <?= config("ai.runtime.enabled", true) ? "checked" : "" ?>>Runtime AI enabled</label>
+            </div>
+            <?php foreach (["openai" => "OpenAI API", "anthropic" => "Anthropic API"] as $driver => $label):
+                $provider = (array) config("ai.runtime." . $driver, []);
+                $providerStatus = (new \Fnlla\Php\Ai\RuntimeAiProviderRegistry())->status($driver);
+                $field = "ai_" . $driver . "_";
+            ?>
+            <fieldset class="developer-ai-provider">
+              <legend><?= h($label) ?></legend>
+              <p class="developer-dashboard-status is-neutral"><?= ($providerStatus["provider_ready"] ?? false) ? "Configured / not live-tested" : (($providerStatus["enabled"] ?? false) ? "Configuration required" : "Disabled") ?></p>
+              <div class="developer-ai-settings-grid">
+                <label class="developer-workspace-check"><input type="checkbox" name="<?= h($field) ?>enabled" value="1" <?= ($provider["enabled"] ?? false) ? "checked" : "" ?>>External requests enabled</label>
+                <label>Model ID<input class="input" name="<?= h($field) ?>model" maxlength="160" value="<?= h((string) ($provider["model"] ?? "")) ?>" spellcheck="false" autocomplete="off"></label>
+                <label>API key<input class="input" type="password" name="<?= h($field) ?>api_key" maxlength="512" value="" autocomplete="new-password" placeholder="<?= ($providerStatus["token_configured"] ?? false) ? "Configured; leave blank to keep" : "Not configured" ?>"></label>
+                <label class="developer-workspace-check"><input type="checkbox" name="<?= h($field) ?>remove_key" value="1">Remove stored API key</label>
+                <label>Maximum output tokens<input class="input" type="number" name="<?= h($field) ?>max_output_tokens" min="64" max="8192" required value="<?= (int) ($provider["max_output_tokens"] ?? 1024) ?>"></label>
+                <label>Timeout (seconds)<input class="input" type="number" name="<?= h($field) ?>timeout_seconds" min="1" max="60" required value="<?= (int) ($provider["timeout_seconds"] ?? 30) ?>"></label>
+              </div>
+            </fieldset>
+            <?php endforeach; ?>
+            <button class="btn btn-primary" type="submit">Save AI settings</button>
+          </form>
         </section>
 
         <div class="modal developer-kanban-modal developer-integrations-modal" id="developer-integration-ga4-settings" data-fnlla-modal role="dialog" aria-modal="true" aria-labelledby="developer-integration-ga4-settings-title" hidden>
@@ -288,10 +324,10 @@ require __DIR__ . "/panel-header.php";
           <div class="modal-content developer-kanban-modal-content">
             <div class="developer-kanban-modal-head">
               <div>
-                <p class="feature-kicker mb-2">Fionn</p>
+                <p class="feature-kicker mb-2 fnlla-fionn-name">FIONN AI</p>
                 <h2 class="content-title mb-0" id="developer-integration-fionn-settings-title">Adapter settings</h2>
               </div>
-              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close Fionn settings"><span aria-hidden="true">x</span></button>
+              <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close FIONN AI settings"><span aria-hidden="true">x</span></button>
             </div>
             <form class="form developer-integrations-modal-form" action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post" novalidate>
               <?= csrf_field() ?>
@@ -299,11 +335,11 @@ require __DIR__ . "/panel-header.php";
               <label class="developer-workspace-check developer-integrations-wide">
                 <input type="hidden" name="ai_fionn_enabled" value="0">
                 <input type="checkbox" name="ai_fionn_enabled" value="1" <?= (bool) ($fionnConfig["enabled"] ?? false) ? "checked" : "" ?>>
-                <span>Fionn bridge enabled</span>
+                <span>FIONN AI bridge enabled</span>
               </label>
               <div class="form-group developer-integrations-wide">
-                <label class="label" for="ai-fionn-endpoint">Fionn endpoint</label>
-                <input class="input" id="ai-fionn-endpoint" name="ai_fionn_endpoint" type="url" maxlength="240" value="<?= h((string) ($fionnConfig["endpoint"] ?? "")) ?>" placeholder="http://127.0.0.1:11434" data-fnlla-modal-initial-focus>
+                <label class="label" for="ai-fionn-endpoint">FIONN AI endpoint</label>
+                <input class="input" id="ai-fionn-endpoint" name="ai_fionn_endpoint" type="url" maxlength="240" value="<?= h((string) ($fionnConfig["endpoint"] ?? "")) ?>" placeholder="Endpoint supplied with your API access" data-fnlla-modal-initial-focus>
               </div>
               <div class="form-group">
                 <label class="label" for="ai-fionn-chat-path">Chat path</label>
@@ -323,7 +359,7 @@ require __DIR__ . "/panel-header.php";
                 <span>Allow insecure localhost endpoint</span>
               </label>
               <div class="developer-kanban-modal-actions developer-integrations-wide">
-                <button class="btn btn-primary" type="submit">Save Fionn settings</button>
+                <button class="btn btn-primary" type="submit">Save FIONN AI settings</button>
                 <button class="btn btn-ghost" type="button" data-fnlla-modal-close>Cancel</button>
               </div>
             </form>

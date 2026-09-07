@@ -2,12 +2,15 @@
 
 ## Release Boundary
 
-Target: stable **2.2.0**. Source and runtime metadata identify the **2.2.0 candidate**;
-the last public release remains **2.1.3**. Do not retag or reuse a published version.
+Edition **2.2.0** is the current development target, not a published release.
+The last public release is **2.1.3**. Do not retag or reuse a published version.
 
 The [JSON ledger](../resources/modernization-tasks.json) is the sole live register.
 Current totals: **19 done, 4 partial, 2 open, 1 blocked**. Document consolidation
-does not change acceptance or erase unfinished work.
+does not change acceptance or erase unfinished work. In particular, the 2.2.0
+database defaults, updated security policy, tooling fixes and unified brand kit
+are implemented improvements, not evidence that the seven remaining architecture
+criteria have passed.
 
 ## Remaining Acceptance
 

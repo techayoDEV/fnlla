@@ -52,7 +52,7 @@ final class TechAyoRemoteControlPlugin
                 "authorize which project can be remotely controlled",
                 "return only the public disable state required by FNLLA",
                 "store the central audit trail outside the public project",
-                "avoid sending private customer or Fionn knowledge to FNLLA",
+                "avoid sending private customer or FIONN AI knowledge to FNLLA",
             ],
             "project_responsibilities" => [
                 "configure endpoint, project id, token and optional signature secret",

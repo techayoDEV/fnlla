@@ -177,6 +177,8 @@ final class OperationsTest extends TestCase
         self::assertTrue(in_array("developer.analytics", (array) ($payload["data"] ?? []), true));
         self::assertTrue(in_array("developer.analytics_settings", (array) ($payload["data"] ?? []), true));
         self::assertSame("fnlla.framework_identity.v1", $payload["framework_identity"]["schema"] ?? null);
+        self::assertSame("Marcin Kordyaczny", $payload["framework_identity"]["lead_name"] ?? null);
+        self::assertSame("Lead Developer / Product Manager", $payload["framework_identity"]["lead_role"] ?? null);
         self::assertSame("https://fnlla.com", $payload["framework_identity"]["official_url"] ?? null);
         self::assertSame("support@fnlla.com", $payload["framework_identity"]["support_email"] ?? null);
         self::assertSame("techayoDEV/fnlla", $payload["framework_identity"]["repository"] ?? null);

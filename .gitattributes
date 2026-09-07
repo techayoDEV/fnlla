@@ -27,9 +27,17 @@
 *.woff2 binary
 *.ttf binary
 *.eot binary
+*.pdf binary
+*.psd binary
+*.docx binary
+
+# Preserve upstream font-license text, including its original whitespace.
+*-OFL.txt whitespace=-blank-at-eol
 
 # Editable brand masters stay in Git, not in framework source archives.
 /branding/ export-ignore
+/scripts/branding/ export-ignore
+/tests/RuntimeBrandTest.php export-ignore
 .env export-ignore
 .env.* export-ignore
 .env.example -export-ignore

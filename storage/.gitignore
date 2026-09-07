@@ -1,0 +1,4 @@
+# Runtime data is private, including files created by future modules.
+*
+!*/
+!.gitignore

@@ -36,7 +36,7 @@ final class ReleaseWorkflowTest extends TestCase
         self::assertStringContainsString("composer audit --locked", $workflow);
         self::assertStringContainsString("--testsuite framework --fail-on-skipped", $workflow);
         self::assertStringContainsString("composer run lint", $workflow);
-        self::assertStringContainsString("php ./scripts/build-docs.php --check", $workflow);
+        self::assertStringContainsString("php ./scripts/check-docs.php", $workflow);
         self::assertStringContainsString("php ./fnlla release:prepare --skip-tests", $workflow);
         self::assertStringContainsString("php ./fnlla security:audit --strict", $workflow);
         self::assertStringContainsString("php ./fnlla ops:backup-plan --verify --output=framework/backup-plan.json", $workflow);
@@ -77,12 +77,13 @@ final class ReleaseWorkflowTest extends TestCase
 
     public function testBusinessReferenceBlueprintCoversProfessionalApplicationSurface(): void
     {
-        $manifest = json_decode((string) file_get_contents(base_path("resources/business-reference/2.1/MANIFEST.json")), true);
-        $blueprint = json_decode((string) file_get_contents(base_path("resources/business-reference/2.1/blueprint.json")), true);
-        $readme = (string) file_get_contents(base_path("resources/business-reference/2.1/README.md"));
+        $manifest = json_decode((string) file_get_contents(base_path("resources/business-reference/MANIFEST.json")), true);
+        $blueprint = json_decode((string) file_get_contents(base_path("resources/business-reference/blueprint.json")), true);
+        $readme = (string) file_get_contents(base_path("resources/business-reference/README.md"));
 
         self::assertSame("fnlla.business_reference.v1", $manifest["schema"] ?? null);
-        self::assertSame("2.1.1", $manifest["version"] ?? null);
+        self::assertSame(trim((string) file(base_path("VERSION"))[0]), $manifest["version"] ?? null);
+        self::assertSame($manifest["version"], $blueprint["version"] ?? null);
 
         foreach (["login", "roles", "crud", "dashboard", "business_form", "log_mailer", "migrations", "seeders", "queue", "health", "maintenance_preview", "backup_restore", "production_security"] as $capability) {
             self::assertTrue(in_array($capability, (array) ($manifest["capabilities"] ?? []), true), $capability);
@@ -93,6 +94,19 @@ final class ReleaseWorkflowTest extends TestCase
         }
 
         self::assertSame("fnlla.business_app_blueprint.v1", $blueprint["schema"] ?? null);
+        $gates = array_column($blueprint["gates"], null, "name");
+        foreach ($blueprint["routes"] as $route) {
+            foreach ($route["middleware"] as $middleware) {
+                if (str_starts_with($middleware, "authorize:")) {
+                    $gate = $gates[substr($middleware, strlen("authorize:"))] ?? null;
+                    self::assertTrue(is_array($gate), "Route references an undeclared gate: " . $middleware);
+                    self::assertTrue(in_array($route["role"], $gate["roles"], true));
+                }
+            }
+            if ($route["method"] === "POST") {
+                self::assertTrue(in_array("csrf", $route["middleware"], true));
+            }
+        }
         self::assertStringContainsString("make:project", $readme);
         self::assertStringContainsString("security:audit --strict", $readme);
     }
@@ -100,7 +114,7 @@ final class ReleaseWorkflowTest extends TestCase
     public function testUpdatePathAndPerformanceBaselinePolicyAreReleaseVisible(): void
     {
         $workflow = (string) file_get_contents(base_path(".github/workflows/fnlla-release-gate.yml"));
-        $policy = json_decode((string) file_get_contents(base_path("resources/performance-baselines/2.1-policy.json")), true);
+        $policy = json_decode((string) file_get_contents(base_path("resources/performance-baselines/policy.json")), true);
 
         self::assertStringContainsString("v2.0.3", $workflow);
         self::assertStringContainsString("upgrade:check --target=2.2.0", $workflow);

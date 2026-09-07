@@ -27,8 +27,6 @@ $needsDeveloperStyles = $isDeveloperPanelChrome || $isClientPreviewChrome || iss
     || str_starts_with($routeName, "developer.") || str_starts_with($routeName, "customer.")
     || str_starts_with($routeName, "maintenance.") || $routeName === "health";
 $currentPath = current_path();
-$hasDocumentationWorkspace = has_local_docs_workspace();
-$isDocsPath = $currentPath === "/docs" || str_starts_with($currentPath, "/docs/");
 $maintenanceAccess = maintenance_access();
 $developerAccess = developer_access();
 $isMaintenanceLocked = $maintenanceAccess->enabled() && !$maintenanceAccess->isUnlocked();

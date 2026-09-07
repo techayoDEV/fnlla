@@ -41,7 +41,7 @@ first decisions are usually:
 - mail transport;
 - maintenance/client-preview password;
 - developer maintenance access;
-- whether runtime AI stays local or uses the Fionn bridge.
+- whether runtime AI stays local or uses the FIONN AI bridge.
 
 Everything else has framework defaults in `config/*.php`. Keep `.env` focused on
 values that really differ per environment.
@@ -154,13 +154,13 @@ MAIL_HTTP_ALLOWED_HOSTS=mail-relay.example.com
 
 Production-specific secrets should come from the platform secret store where
 possible. A committed file should never contain database passwords, API tokens,
-private keys, customer data, backup credentials or Fionn service tokens.
+private keys, customer data, backup credentials or FIONN AI service tokens.
 
 `APP_TAGLINE` is optional and is appended only to browser document titles. For
 example, `Contact | Example Business App - Operations delivered clearly`. Leave
 it empty if the product already has a short enough project name. `APP_BRAND_LOGO`
 points to the public asset used as the header and browser icon mark. The default
-`auto` value uses `assets/fnlla-logo.png` only while `APP_NAME` is still `FNLLA`;
+`auto` value uses the canonical outline favicon only while `APP_NAME` is still `FNLLA`;
 after the project is named, the public brand mark falls back to generated
 initials unless the project sets its own public asset path or URL. Set the value
 to `none` or leave it empty when no image mark should be rendered.
@@ -354,13 +354,13 @@ AI_RUNTIME_LEARNING_ENABLED=false
 Local runtime AI uses framework and project-owned knowledge only. It does not
 call a model provider.
 
-## Fionn Bridge
+## FIONN AI Bridge
 
-Fionn is intentionally more provocative than a generic chatbot integration:
-FNLLA exposes a contract for connecting a business application to a separate,
-owned intelligence service without surrendering the application boundary to a
-third-party SDK. The idea is simple but opinionated: your web framework should
-know how to talk to intelligence, but it should not contain the intelligence.
+**FIONN AI is created by TechAyo.** The full starter ships its dedicated gateway
+as part of FNLLA. Connect a separately operated AI brain through explicit server
+configuration; its models and memory are not copied into the framework.
+The local assistant stays the default. OpenAI API and Anthropic API are
+additional optional integrations described in [AI configuration](AI-CONTEXT.md#openai-api-and-anthropic-api).
 
 The public FNLLA repository contains only the bridge:
 
@@ -374,7 +374,7 @@ The public FNLLA repository contains only the bridge:
 - `ai:providers` status for CI and operators;
 - `security:audit --strict` policy checks.
 
-The Fionn brain stays outside FNLLA:
+The FIONN AI brain stays outside FNLLA:
 
 - model files;
 - memory;
@@ -384,7 +384,7 @@ The Fionn brain stays outside FNLLA:
 - admin/training controls;
 - private implementation code.
 
-Local Fionn bridge example:
+Local FIONN AI bridge example:
 
 ```dotenv
 AI_RUNTIME_DRIVER=fionn
@@ -395,7 +395,7 @@ AI_FIONN_ALLOWED_HOSTS=127.0.0.1,localhost
 AI_FIONN_ALLOW_INSECURE_LOCALHOST=true
 ```
 
-Non-local Fionn bridge example:
+Non-local FIONN AI bridge example:
 
 ```dotenv
 AI_RUNTIME_DRIVER=fionn
@@ -414,7 +414,7 @@ php fnlla ai:providers --json
 php fnlla security:audit --strict
 ```
 
-If Fionn is selected, the provider must report `provider_ready=true` and
+If FIONN AI is selected, the provider must report `provider_ready=true` and
 `endpoint_allowed=true`.
 
 ## Operational Rule

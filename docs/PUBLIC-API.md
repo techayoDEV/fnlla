@@ -8,6 +8,16 @@ unless a release note promotes it.
 
 ## Stable Runtime Surface
 
+Edition 2.2.0 adds `openai` (OpenAI API) and `anthropic` (Anthropic API)
+to the existing `local` and `fionn` (FIONN AI, created by TechAyo)
+runtime AI drivers. `RuntimeAiProviderInterface` is unchanged. The answer schema
+uses nullable token counts when a cloud provider omits usage and nullable
+`estimated_cost_gbp` when cost is unknown, including FIONN AI. Consumers must not
+cast unknown cost to a displayed zero. Cloud confidence is explicitly unmeasured;
+see [AI request and response boundaries](AI-CONTEXT.md#request-and-response-boundaries).
+Unknown driver names now fail closed. `ai:triage` remains local regardless of
+the selected runtime provider; `ai:ask` uses the selected provider.
+
 - Public entrypoints: `public/index.php`, `public/router.php`.
 - Project routes: `routes/web.php`, plus route names generated through `route()`.
 - Consent telemetry endpoint: `POST /fnlla/consent`, used by the built-in cookie
@@ -57,7 +67,7 @@ The shared generator, migration, application identity v1 and cache behavior is
 specified in [CLI And Runtime Contracts](framework/RUNTIME-CONTRACTS.md). These
 changes are prepared for 2.2.0, not a declaration of publication. Application
 identity verification now rejects removed/mismatched accounts. Non-local migration
-writes require explicit `--force`; update deployment automation before upgrading.
+and `db:seed` writes require explicit `--force`; update deployment automation before upgrading.
 
 Both presets expose `make:controller`, `make:middleware`, `make:command`,
 `make:factory`, `make:seeder`, `make:migration`, `migrate`, `migrate:rollback`,
@@ -212,12 +222,12 @@ with `PROJECT_LEADERSHIP_VISIBILITY=admin` or disable it entirely.
 
 Optional integrations are public configuration contracts only when explicitly
 enabled by project developers. FNLLA ships disabled adapters for privacy-light
-analytics, error reporting, consent-aware heatmaps, API hooks, Fionn and the
+analytics, error reporting, consent-aware heatmaps, API hooks, FIONN AI and the
 TechAyo remote-control bridge; private provider logic and secrets stay outside
 the framework repository.
 
 It must not contain customer data, product CRM/CMS logic, billing, bookings,
-private client workflows or the private Fionn brain. Those belong to the
+private client workflows or the private FIONN AI brain. Those belong to the
 downstream application repository or to an external service accessed through an
 explicit adapter contract.
 
@@ -254,7 +264,7 @@ must point at the local, staging or production URL for the current installation.
 
 ## Internal By Default
 
-Classes under `src/Support/`, release scripts, generated docs, generated cache
+Classes under `src/Support/`, release scripts, documentation tooling, generated cache
 files, tests, blueprint fixtures and the internal shape of runtime guard state
 may change between releases.
 

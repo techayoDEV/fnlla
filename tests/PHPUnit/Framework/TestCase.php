@@ -28,6 +28,7 @@ abstract class TestCase
 {
     private static int $assertionCount = 0;
     private ?string $expectedException = null;
+    private ?string $expectedExceptionMessage = null;
 
     public static function assertionCount(): int
     {
@@ -44,25 +45,41 @@ abstract class TestCase
         $this->expectedException = $exceptionClass;
     }
 
+    public function expectExceptionMessage(string $message): void
+    {
+        $this->expectedExceptionMessage = $message;
+    }
+
     public function runTestMethod(string $method): void
     {
         $this->expectedException = null;
+        $this->expectedExceptionMessage = null;
 
         try {
             $this->setUp();
-            $reflectionMethod = new ReflectionMethod($this, $method);
-            $reflectionMethod->invoke($this);
-
-            if ($this->expectedException !== null) {
-                self::fail("Expected exception {$this->expectedException} was not thrown.");
-            }
-        } catch (Throwable $exception) {
-            if ($this->expectedException !== null && is_a($exception, $this->expectedException)) {
-                self::incrementAssertions();
-                return;
+            $caught = null;
+            try {
+                (new ReflectionMethod($this, $method))->invoke($this);
+            } catch (Throwable $exception) {
+                $caught = $exception;
             }
 
-            throw $exception;
+            // Evaluate outside the catch: a failed expectation is not the expected exception.
+            $expectsException = $this->expectedException !== null || $this->expectedExceptionMessage !== null;
+            if ($caught === null && $expectsException) {
+                self::fail("Expected exception was not thrown.");
+            }
+            if ($caught !== null) {
+                if (!$expectsException || ($this->expectedException !== null && !is_a($caught, $this->expectedException))) {
+                    throw $caught;
+                }
+                if ($this->expectedExceptionMessage !== null) {
+                    self::assertStringContainsString($this->expectedExceptionMessage, $caught->getMessage());
+                }
+                if ($this->expectedException !== null) {
+                    self::incrementAssertions();
+                }
+            }
         } finally {
             $this->tearDown();
         }
@@ -91,6 +108,30 @@ abstract class TestCase
 
         if ($expected === $actual) {
             self::fail($message !== "" ? $message : "Failed asserting that two values are not the same.");
+        }
+    }
+
+    public static function assertNull(mixed $actual, string $message = ""): void
+    {
+        self::assertSame(null, $actual, $message);
+    }
+
+    public static function assertContains(mixed $needle, iterable $haystack, string $message = ""): void
+    {
+        self::incrementAssertions();
+        foreach ($haystack as $value) {
+            if ($value === $needle) { return; }
+        }
+        self::fail($message !== "" ? $message : "Expected item was not found.");
+    }
+
+    public static function assertNotContains(mixed $needle, iterable $haystack, string $message = ""): void
+    {
+        self::incrementAssertions();
+        foreach ($haystack as $value) {
+            if ($value === $needle) {
+                self::fail($message !== "" ? $message : "Unexpected item was found.");
+            }
         }
     }
 
@@ -164,6 +205,11 @@ abstract class TestCase
         if (!$actual instanceof $expectedClass) {
             self::fail($message !== "" ? $message : "Failed asserting that value is instance of {$expectedClass}.");
         }
+    }
+
+    public static function assertFileDoesNotExist(string $path, string $message = ""): void
+    {
+        self::assertFalse(is_file($path), $message !== "" ? $message : "File unexpectedly exists: {$path}");
     }
 
     public static function assertIsString(mixed $value, string $message = ""): void

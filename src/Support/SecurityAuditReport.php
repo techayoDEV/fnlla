@@ -73,8 +73,8 @@ final class SecurityAuditReport
             $this->check("native_mail_explicit", $mailDriver !== "native" || $nativeMailEnabled, "fail", "Native PHP mail must be explicitly enabled after the server transport is configured."),
             $this->check("http_mail_transport", $mailDriver !== "http" || ($mailHttpEndpoint !== "" && $mailHttpRequiresHttps), "fail", "HTTP mail transport must have an endpoint and require HTTPS outside localhost."),
             $this->check("http_mail_host_allowlist", !$isProduction || $mailDriver !== "http" || $mailHttpAllowedHosts !== [], "warning", "Production HTTP mail transport should pin allowed provider or relay hosts."),
-            $this->check("runtime_ai_bundle", !$runtimeAiEnabled || $runtimeAiDriver === "fionn" || $this->runtimeAiBundleIsPresent(), "fail", "Local runtime AI requires the integrated framework runtime intelligence bundle."),
-            $this->check("runtime_ai_local_driver", !$runtimeAiEnabled || $this->runtimeAiDriverIsAllowed($runtimeAiDriver), "fail", "Runtime AI must use the local driver or the audited opt-in Fionn bridge policy."),
+            $this->check("runtime_ai_bundle", !$runtimeAiEnabled || in_array($runtimeAiDriver, ["fionn", "openai", "anthropic"], true) || $this->runtimeAiBundleIsPresent(), "fail", "Local runtime AI requires the integrated framework runtime intelligence bundle."),
+            $this->check("runtime_ai_local_driver", !$runtimeAiEnabled || $this->runtimeAiDriverIsAllowed($runtimeAiDriver), "fail", "Runtime AI must use local knowledge, the built-in FIONN AI gateway by TechAyo, or an explicitly configured OpenAI API or Anthropic API integration."),
             $this->check("runtime_ai_learning_path", !$runtimeAiEnabled || $this->runtimeAiLearningPathIsSafe(), "fail", "Runtime AI learning data must stay inside storage."),
             $this->check("developer_control_remote_https", !$developerControlRemoteEnabled || str_starts_with(strtolower($developerControlRemoteEndpoint), "https://"), "fail", "Remote developer control must use HTTPS."),
             $this->check("developer_control_remote_allowlist", !$developerControlRemoteEnabled || $this->developerControlRemoteHostAllowed($developerControlRemoteEndpoint, $developerControlAllowedHosts), "fail", "Remote developer control must pin an allowed host."),
@@ -142,11 +142,11 @@ final class SecurityAuditReport
             return true;
         }
 
-        if ($driver !== "fionn") {
+        if (!in_array($driver, ["fionn", "openai", "anthropic"], true)) {
             return false;
         }
 
-        $status = (new FionnRuntimeBridge())->status();
+        $status = (new \Fnlla\Php\Ai\RuntimeAiProviderRegistry())->status($driver);
 
         return ($status["enabled"] ?? false) === true
             && ($status["provider_ready"] ?? false) === true

@@ -1,6 +1,6 @@
 # Business App Reference
 
-FNLLA 2.1 ships a reference blueprint for a small professional web application.
+Edition **2.2.0**. FNLLA includes a reference blueprint for a small professional web application.
 It is intentionally plain PHP and MySQL: the goal is to prove the framework
 surface needed for business delivery without turning FNLLA into a heavy product
 starter kit.
@@ -12,11 +12,11 @@ Start from a normal project export:
 ```bash
 php fnlla make:project ../fnlla-business-reference "FNLLA Business Reference"
 cd ../fnlla-business-reference
-php fnlla project:claim --product "FNLLA Business Reference" --owner "Example LTD" --developer "Developer LTD"
+php fnlla project:claim --product "FNLLA Business Reference" --owner "Example Company" --developer "Developer"
 php fnlla project:acceptance --json
 ```
 
-Use `resources/business-reference/2.1/blueprint.json` as the implementation
+Use `resources/business-reference/blueprint.json` as the implementation
 map. The blueprint names the routes, tables, roles, gates, tests and production
 checks that a complete business application should contain.
 
@@ -96,7 +96,7 @@ final class ClientRepository
 }
 ```
 
-The framework query builder remains intentionally small. Public 2.1 data
+The framework query builder remains intentionally small. Edition 2.2.0 data
 contracts are `db()`, `DatabaseManager::transaction()`,
 `QueryBuilder::offset()` and `QueryBuilder::paginate()`.
 
@@ -129,7 +129,7 @@ A reference product is useful evidence only when a fresh developer can:
 - run `project:claim`;
 - run `project:acceptance`;
 - run migrations and seeders;
-- log in with seeded users;
+- log in with explicitly provisioned test users, never a shipped shared credential;
 - exercise each role;
 - create, edit and delete a business record;
 - submit a validated business form;
@@ -146,9 +146,10 @@ Use the same workflow for every business form:
 2. Validate request values and uploaded files.
 3. Store validation errors and old input in session flash.
 4. Redirect back on failure.
-5. Wrap database writes and side effects in a transaction where consistency
-   matters.
-6. Queue follow-up work or write log-mailer output.
+5. Wrap related database writes in a transaction where consistency matters.
+6. Dispatch external effects only after commit. For reliable delivery, record an
+   application-owned outbox entry in the same transaction and process it with an
+   idempotent job. A rollback cannot undo an email or payment already sent.
 7. Redirect to a named route with a success flash message.
 
 For uploads, store only server-generated filenames, reject executable
@@ -177,7 +178,7 @@ php scripts/test.php
 php scripts/lint.php
 php scripts/validate-version-manifest.php
 php scripts/validate-release-metadata.php
-php scripts/build-docs.php --check
+php scripts/check-docs.php
 php fnlla project:acceptance --json
 php fnlla ops:backup-plan --verify --output=framework/backup-plan.json
 php fnlla security:audit --strict

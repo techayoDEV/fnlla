@@ -234,6 +234,46 @@ final class DeveloperToolsTest extends TestCase
         self::assertSame([], $history->entries());
     }
 
+    public function testAiSettingsRequireCapabilityAndCsrfWithoutWritingEnvironment(): void
+    {
+        $path = $this->directory . "/ai.env";
+        config_set("maintenance.env_path", $path);
+        $application = $this->application("observer");
+        $response = $application->handle(new Request("POST", "/developer/panel/integrations/ai", [], ["_token" => csrf_token(), "ai_runtime_driver" => "local"]));
+        self::assertSame(302, $response->status());
+        self::assertFileDoesNotExist($path);
+        $application = $this->application("admin");
+        self::assertSame(419, $application->handle(new Request("POST", "/developer/panel/integrations/ai", [], [], [], ["accept" => "application/json"]))->status());
+        self::assertFileDoesNotExist($path);
+        $response = $application->handle(new Request("POST", "/developer/panel/integrations/ai", [], ["_token" => csrf_token(), "ai_runtime_driver" => "unsupported"]));
+        self::assertSame(302, $response->status());
+        self::assertFileDoesNotExist($path);
+    }
+
+    public function testIntegrationViewNeverPrefillsCloudApiKeys(): void
+    {
+        $application = $this->application("admin");
+        config_set("ai.runtime.openai.api_key", "private-test-provider-key");
+        config_set("ai.runtime.anthropic.api_key", "private-test-provider-key");
+        $response = $application->handle(new Request("GET", "/developer/panel/integrations"));
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString('id="ai-providers-title"', $response->body());
+        self::assertStringContainsString('Configured; leave blank to keep', $response->body());
+        self::assertStringNotContainsString("private-test-provider-key", $response->body());
+    }
+
+    public function testIntegrationViewDistinguishesReferenceLookupFromAccountBackedAi(): void
+    {
+        $application = $this->application("admin");
+        $response = $application->handle(new Request("GET", "/developer/panel/integrations"));
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString('>Local reference (no AI model)</option>', $response->body());
+        self::assertStringContainsString("Persistent Personal Intelligence by TechAyo", $response->body());
+        self::assertStringContainsString("FIONN developer account and API access required", $response->body());
+        self::assertStringContainsString("Anthropic API", $response->body());
+        self::assertStringNotContainsString("Claude Platform API", $response->body());
+    }
+
     public function testHistoryFailureDoesNotBreakApplicationResponses(): void
     {
         $this->application("admin");

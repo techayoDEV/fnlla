@@ -114,7 +114,7 @@ final class MakeProjectCommand extends Command
         $this->line("");
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
-        $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner LTD\" --developer \"Developer LTD\".");
+        $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner\" --developer \"Developer\".");
         $this->line("3. Copy .env.example to .env. Use .env.full.example only as the advanced environment reference.");
         $this->line("4. Leave ASSET_URL empty unless browser assets are served from a separate asset domain or CDN.");
         $this->line("5. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
@@ -244,6 +244,7 @@ final class MakeProjectCommand extends Command
     private function sanitizeExportedStorage(string $targetRoot): void
     {
         $keepFiles = [
+            "storage/.gitignore" => "# Runtime data is private, including files created by future modules.\n*\n!*/\n!.gitignore\n",
             "storage/app/.gitignore" => "*\n!.gitignore\n",
             "storage/uploads/.gitignore" => "*\n!.gitignore\n",
             "public/uploads/.gitignore" => "*\n!.gitignore\n",
@@ -258,11 +259,13 @@ final class MakeProjectCommand extends Command
             $absolutePath = $targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
             $directory = dirname($absolutePath);
 
-            if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
                 throw new RuntimeException("Unable to create storage directory during export: " . $directory);
             }
 
-            file_put_contents($absolutePath, $contents);
+            if (file_put_contents($absolutePath, $contents) === false) {
+                throw new RuntimeException("Unable to protect exported storage: " . $relativePath);
+            }
         }
     }
 
@@ -462,7 +465,10 @@ final class MakeProjectCommand extends Command
             throw new RuntimeException("Unable to read project export template: " . $relativePath);
         }
 
-        file_put_contents($targetPath, strtr($contents, $tokens) . PHP_EOL);
+        // Templates own their line endings; host-specific suffixes make exports differ.
+        if (file_put_contents($targetPath, strtr($contents, $tokens)) === false) {
+            throw new RuntimeException("Unable to write project export template: " . $relativePath);
+        }
     }
 
     private function resolveTargetPath(string $targetArgument): string

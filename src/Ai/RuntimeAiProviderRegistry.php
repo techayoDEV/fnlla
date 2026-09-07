@@ -21,7 +21,7 @@ use Throwable;
 
 final class RuntimeAiProviderRegistry
 {
-    private const ALLOWED_DRIVERS = ["fionn", "local"];
+    public const ALLOWED_DRIVERS = ["local", "fionn", "openai", "anthropic"];
 
     public function __construct(private ?Container $container = null)
     {
@@ -100,7 +100,7 @@ final class RuntimeAiProviderRegistry
         if (!in_array($driver, self::ALLOWED_DRIVERS, true)) {
             return array_merge($base, [
                 "integration_state" => "blocked",
-                "reason" => "FNLLA allows only the local runtime assistant and the reserved Fionn AI provider boundary.",
+                "reason" => "Unknown runtime AI driver; choose local, fionn, openai or anthropic.",
             ]);
         }
 
@@ -127,7 +127,7 @@ final class RuntimeAiProviderRegistry
         } catch (Throwable $exception) {
             return array_merge($base, [
                 "integration_state" => "error",
-                "reason" => $exception->getMessage(),
+                "reason" => "Provider status could not be resolved; inspect server-side configuration.",
             ]);
         }
 

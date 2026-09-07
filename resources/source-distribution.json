@@ -11,6 +11,8 @@
     "test-results/",
     "playwright-report/",
     "branding/",
+    "scripts/branding/",
+    "tests/RuntimeBrandTest.php",
     "dist/",
     "vendor/",
     "node_modules/",

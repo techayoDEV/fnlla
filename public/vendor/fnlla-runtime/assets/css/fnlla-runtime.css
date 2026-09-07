@@ -36,21 +36,22 @@
   /* ==========================================================================
      COLORS
      ========================================================================== */
+  /* BEGIN GENERATED BRAND default */
   --fnlla-color-scheme: light;
   --fnlla-color-primary: #2563eb;
-  --fnlla-color-secondary: #15304f;
-  --fnlla-color-accent: #2f70e8;
-  --fnlla-color-text: #10233f;
-  --fnlla-color-muted: #5f6f85;
-  --fnlla-color-border: rgba(16, 35, 63, 0.14);
-  --fnlla-color-border-strong: rgba(16, 35, 63, 0.24);
-  --fnlla-color-bg: #f5f8fc;
-  --fnlla-color-bg-alt: #fbfdff;
-  --fnlla-color-section-alt: #f3f8fe;
+  --fnlla-color-secondary: #0b1220;
+  --fnlla-color-accent: #1d4ed8;
+  --fnlla-color-text: #374151;
+  --fnlla-color-muted: #5f6775;
+  --fnlla-color-border: #e5e7eb;
+  --fnlla-color-border-strong: #6b7280;
+  --fnlla-color-bg: #ffffff;
+  --fnlla-color-bg-alt: #f1f3f5;
+  --fnlla-color-section-alt: #f1f3f5;
   --fnlla-color-surface: #ffffff;
-  --fnlla-color-surface-soft: rgba(255, 255, 255, 0.88);
-  --fnlla-color-surface-strong: rgba(255, 255, 255, 0.96);
-  --fnlla-color-primary-soft: rgba(37, 99, 235, 0.12);
+  --fnlla-color-surface-soft: #fafafa;
+  --fnlla-color-surface-strong: #ffffff;
+  --fnlla-color-primary-soft: #eff6ff;
   --fnlla-color-accent-soft: rgba(47, 112, 232, 0.12);
   --fnlla-color-primary-border: rgba(37, 99, 235, 0.16);
   --fnlla-color-accent-border: rgba(47, 112, 232, 0.18);
@@ -58,44 +59,47 @@
   --fnlla-color-info-soft: rgba(37, 99, 235, 0.12);
   --fnlla-color-info-border: rgba(37, 99, 235, 0.2);
   --fnlla-color-info-text: #1742a0;
-  --fnlla-color-success: #2563eb;
-  --fnlla-color-success-soft: rgba(37, 99, 235, 0.1);
-  --fnlla-color-success-border: rgba(37, 99, 235, 0.2);
-  --fnlla-color-success-text: #1d4ed8;
-  --fnlla-color-warning: #2563eb;
-  --fnlla-color-warning-soft: rgba(37, 99, 235, 0.1);
-  --fnlla-color-warning-border: rgba(37, 99, 235, 0.2);
-  --fnlla-color-warning-text: #1d4ed8;
+  --fnlla-color-success: #15803d;
+  --fnlla-color-success-soft: #f0fdf4;
+  --fnlla-color-success-border: #86cda0;
+  --fnlla-color-success-text: #15803d;
+  --fnlla-color-warning: #a16207;
+  --fnlla-color-warning-soft: #fffbeb;
+  --fnlla-color-warning-border: #d6b36c;
+  --fnlla-color-warning-text: #854d0e;
   --fnlla-color-overlay: rgba(15, 23, 42, 0.56);
-  --fnlla-color-code-bg: rgba(16, 35, 63, 0.08);
-  --fnlla-color-code-surface: #f8fbff;
-  --fnlla-color-code-text: #15304f;
-  --fnlla-color-focus-ring: rgba(37, 99, 235, 0.28);
-  --fnlla-color-placeholder: rgba(95, 111, 133, 0.78);
-  --fnlla-color-danger: #1d4ed8;
-  --fnlla-color-danger-soft: rgba(37, 99, 235, 0.1);
-  --fnlla-color-danger-border: rgba(37, 99, 235, 0.2);
-  --fnlla-color-danger-text: #15304f;
+  --fnlla-color-code-bg: #f1f3f5;
+  --fnlla-color-code-surface: #fafafa;
+  --fnlla-color-code-text: #0b1220;
+  --fnlla-color-focus-ring: #2563eb;
+  --fnlla-color-placeholder: #6b7280;
+  --fnlla-color-danger: #d12d2d;
+  --fnlla-color-danger-soft: #fef2f2;
+  --fnlla-color-danger-border: #efa3a3;
+  --fnlla-color-danger-text: #d12d2d;
+  --fnlla-color-action: #2563eb;
+  --fnlla-color-action-hover: #1d4ed8;
   --fnlla-color-on-dark: #ffffff;
+  /* END GENERATED BRAND default */
 
   /* ==========================================================================
      TYPOGRAPHY
      Keep heading sizes explicit and predictable instead of fluid.
      ========================================================================== */
-  --fnlla-font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --fnlla-font-heading: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --fnlla-font-mono: "Cascadia Code", "Consolas", "Courier New", monospace;
-  --fnlla-font-size-base: 0.875rem;
-  --fnlla-font-size-sm: 0.72rem;
-  --fnlla-font-size-h1: 2.25rem;
+  --fnlla-font-base: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+  --fnlla-font-heading: var(--fnlla-font-base);
+  --fnlla-font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --fnlla-font-size-base: 1rem;
+  --fnlla-font-size-sm: 0.875rem;
+  --fnlla-font-size-h1: 2rem;
   --fnlla-font-size-h2: 1.5rem;
-  --fnlla-font-size-h3: 0.95rem;
-  --fnlla-line-height-base: 1.7;
-  --fnlla-line-height-heading: 1.05;
+  --fnlla-font-size-h3: 1.25rem;
+  --fnlla-line-height-base: 1.5;
+  --fnlla-line-height-heading: 1.25;
   --fnlla-font-weight-regular: 400;
   --fnlla-font-weight-semibold: 600;
-  --fnlla-font-weight-bold: 700;
-  --fnlla-font-weight-heavy: 800;
+  --fnlla-font-weight-bold: 600;
+  --fnlla-font-weight-heavy: 600;
 
   /* ==========================================================================
      SPACING
@@ -113,9 +117,9 @@
      ========================================================================== */
   --fnlla-size-btn-xs: 1.75rem;
   --fnlla-size-btn-sm: 2rem;
-  --fnlla-size-btn-md: 2.35rem;
-  --fnlla-size-btn-lg: 2.7rem;
-  --fnlla-size-btn-xl: 3.05rem;
+  --fnlla-size-btn-md: 2.75rem;
+  --fnlla-size-btn-lg: 3rem;
+  --fnlla-size-btn-xl: 3.25rem;
   --fnlla-size-field-min: 3.25rem;
   --fnlla-size-nav-item: 2.75rem;
   --fnlla-size-badge-min: 2rem;
@@ -150,9 +154,9 @@
      BORDER RADIUS
      Buttons are intentionally less rounded than before.
      ========================================================================== */
-  --fnlla-radius-sm: 0.75rem;
-  --fnlla-radius-md: 0.75rem;
-  --fnlla-radius-lg: 0.75rem;
+  --fnlla-radius-sm: 0.25rem;
+  --fnlla-radius-md: 0.25rem;
+  --fnlla-radius-lg: 0.5rem;
   --fnlla-radius-pill: 999rem;
 
   /* ==========================================================================
@@ -207,20 +211,21 @@
 }
 
 [data-fnlla-theme="dark"] {
+  /* BEGIN GENERATED BRAND dark */
   --fnlla-color-scheme: dark;
   --fnlla-color-primary: #60a5fa;
-  --fnlla-color-secondary: #e2ecff;
+  --fnlla-color-secondary: #f5f6f8;
   --fnlla-color-accent: #2563eb;
-  --fnlla-color-text: #e5eefc;
-  --fnlla-color-muted: #a9bad2;
-  --fnlla-color-border: rgba(226, 236, 255, 0.16);
-  --fnlla-color-border-strong: rgba(226, 236, 255, 0.28);
-  --fnlla-color-bg: #0b1220;
-  --fnlla-color-bg-alt: #10192d;
-  --fnlla-color-section-alt: #0c1525;
-  --fnlla-color-surface: #121b2f;
-  --fnlla-color-surface-soft: rgba(18, 27, 47, 0.88);
-  --fnlla-color-surface-strong: rgba(18, 27, 47, 0.96);
+  --fnlla-color-text: #e5e7eb;
+  --fnlla-color-muted: #b5bdc9;
+  --fnlla-color-border: #444b56;
+  --fnlla-color-border-strong: #8c96a6;
+  --fnlla-color-bg: #16181d;
+  --fnlla-color-bg-alt: #1d2026;
+  --fnlla-color-section-alt: #1d2026;
+  --fnlla-color-surface: #24282f;
+  --fnlla-color-surface-soft: #24282f;
+  --fnlla-color-surface-strong: #2c313a;
   --fnlla-color-primary-soft: rgba(96, 165, 250, 0.18);
   --fnlla-color-accent-soft: rgba(37, 99, 235, 0.16);
   --fnlla-color-primary-border: rgba(96, 165, 250, 0.28);
@@ -229,24 +234,25 @@
   --fnlla-color-info-soft: rgba(96, 165, 250, 0.18);
   --fnlla-color-info-border: rgba(96, 165, 250, 0.28);
   --fnlla-color-info-text: #bfdbfe;
-  --fnlla-color-success: #60a5fa;
-  --fnlla-color-success-soft: rgba(96, 165, 250, 0.16);
-  --fnlla-color-success-border: rgba(96, 165, 250, 0.28);
-  --fnlla-color-success-text: #bfdbfe;
-  --fnlla-color-warning: #60a5fa;
-  --fnlla-color-warning-soft: rgba(96, 165, 250, 0.16);
-  --fnlla-color-warning-border: rgba(96, 165, 250, 0.28);
-  --fnlla-color-warning-text: #bfdbfe;
+  --fnlla-color-success: #86efac;
+  --fnlla-color-success-soft: #123522;
+  --fnlla-color-success-border: #378554;
+  --fnlla-color-success-text: #86efac;
+  --fnlla-color-warning: #fcd34d;
+  --fnlla-color-warning-soft: #382c13;
+  --fnlla-color-warning-border: #9b7926;
+  --fnlla-color-warning-text: #fcd34d;
   --fnlla-color-overlay: rgba(2, 6, 23, 0.76);
   --fnlla-color-code-bg: rgba(226, 236, 255, 0.1);
-  --fnlla-color-code-surface: #0f1729;
-  --fnlla-color-code-text: #e2ecff;
-  --fnlla-color-focus-ring: rgba(96, 165, 250, 0.36);
-  --fnlla-color-placeholder: rgba(169, 186, 210, 0.78);
-  --fnlla-color-danger: #93c5fd;
-  --fnlla-color-danger-soft: rgba(96, 165, 250, 0.16);
-  --fnlla-color-danger-border: rgba(96, 165, 250, 0.3);
-  --fnlla-color-danger-text: #dbeafe;
+  --fnlla-color-code-surface: #1d2026;
+  --fnlla-color-code-text: #e5e7eb;
+  --fnlla-color-focus-ring: #60a5fa;
+  --fnlla-color-placeholder: #b5bdc9;
+  --fnlla-color-danger: #fca5a5;
+  --fnlla-color-danger-soft: #421d22;
+  --fnlla-color-danger-border: #b45a63;
+  --fnlla-color-danger-text: #fca5a5;
+  /* END GENERATED BRAND dark */
   --fnlla-shadow-sm: none;
   --fnlla-shadow-md: none;
   --fnlla-bg-radial-primary: rgba(96, 165, 250, 0.16);
@@ -275,10 +281,7 @@ body {
   line-height: var(--fnlla-line-height-base);
   color: var(--fnlla-color-text);
   color-scheme: var(--fnlla-color-scheme);
-  background:
-    radial-gradient(circle at top left, var(--fnlla-bg-radial-primary), transparent 24%),
-    radial-gradient(circle at right 18%, var(--fnlla-bg-radial-secondary), transparent 20%),
-    linear-gradient(180deg, var(--fnlla-bg-gradient-start) 0%, var(--fnlla-bg-gradient-mid) 42%, var(--fnlla-bg-gradient-end) 100%);
+  background: var(--fnlla-color-bg);
   transition:
     background var(--fnlla-transition-slow),
     color var(--fnlla-transition-base);
@@ -322,7 +325,7 @@ h6 {
   margin: 0 0 var(--fnlla-space-3);
   font-family: var(--fnlla-font-heading);
   line-height: var(--fnlla-line-height-heading);
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   color: var(--fnlla-color-secondary);
 }
 
@@ -654,7 +657,7 @@ textarea {
 
 .btn:hover,
 .btn:focus-visible {
-  transform: translateY(-2px);
+  transform: none;
   text-decoration: none;
 }
 
@@ -663,7 +666,7 @@ textarea {
 .dropdown-item:focus-visible,
 .accordion-button:focus-visible,
 .tab-button:focus-visible {
-  outline: 3px solid var(--fnlla-color-primary-soft);
+  outline: 2px solid var(--fnlla-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -671,19 +674,19 @@ textarea {
    BUTTON VARIANTS
    ========================================================================== */
 .btn-primary {
-  background: var(--fnlla-color-primary);
+  background: var(--fnlla-color-action);
   color: var(--fnlla-color-on-dark);
 }
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  background: var(--fnlla-color-secondary);
+  background: var(--fnlla-color-action-hover);
   color: var(--fnlla-color-on-dark);
 }
 
 [data-fnlla-theme="dark"] .btn-primary:hover,
 [data-fnlla-theme="dark"] .btn-primary:focus-visible {
-  background: var(--fnlla-color-accent);
+  background: var(--fnlla-color-action-hover);
   color: var(--fnlla-color-on-dark);
 }
 
@@ -707,7 +710,7 @@ textarea {
 [data-fnlla-theme="dark"] .btn-secondary:hover,
 [data-fnlla-theme="dark"] .btn-secondary:focus-visible {
   border-color: var(--fnlla-color-primary);
-  background: var(--fnlla-color-primary);
+  background: var(--fnlla-color-action);
   color: var(--fnlla-color-on-dark);
 }
 
@@ -741,19 +744,19 @@ textarea {
 .btn-xs {
   min-height: var(--fnlla-size-btn-xs);
   padding: 0.28rem 0.62rem;
-  font-size: 0.7rem;
+  font-size: var(--fnlla-font-size-sm);
 }
 
 .btn-sm {
   min-height: var(--fnlla-size-btn-sm);
   padding: 0.38rem 0.72rem;
-  font-size: 0.74rem;
+  font-size: var(--fnlla-font-size-sm);
 }
 
 .btn-lg {
   min-height: var(--fnlla-size-btn-lg);
   padding: 0.58rem 1rem;
-  font-size: 0.86rem;
+  font-size: var(--fnlla-font-size-sm);
 }
 
 .btn-xl {
@@ -904,7 +907,7 @@ textarea {
 .message-header strong,
 .message-header .content-title {
   display: block;
-  font-size: 0.82rem;
+  font-size: var(--fnlla-font-size-sm);
   line-height: 1.1;
 }
 
@@ -955,7 +958,7 @@ textarea {
   color: var(--fnlla-color-muted);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1810,7 +1813,7 @@ textarea {
   justify-content: center;
   min-height: var(--fnlla-size-field-min);
   padding: 0.95rem 1rem;
-  border: 1px solid var(--fnlla-color-border);
+  border: 1px solid var(--fnlla-color-border-strong);
   background: var(--fnlla-color-bg-alt);
   color: var(--fnlla-color-secondary);
   font-weight: var(--fnlla-font-weight-semibold);
@@ -1841,7 +1844,7 @@ textarea {
   width: 100%;
   min-height: var(--fnlla-size-field-min);
   padding: 0.95rem 1rem;
-  border: 1px solid var(--fnlla-color-border);
+  border: 1px solid var(--fnlla-color-border-strong);
   border-radius: var(--fnlla-radius-md);
   background: var(--fnlla-color-surface-strong);
   color: var(--fnlla-color-text);
@@ -1877,7 +1880,7 @@ textarea {
 }
 
 .select:not([disabled]):hover {
-  border-color: var(--fnlla-color-primary-border);
+  border-color: var(--fnlla-color-primary);
   background-color: var(--fnlla-color-surface);
 }
 
@@ -1931,7 +1934,7 @@ textarea {
   width: 100%;
   min-height: calc(var(--fnlla-size-field-min) * 0.75);
   padding: 0.35rem 3rem 0.35rem 1rem;
-  border: 1px solid var(--fnlla-color-border);
+  border: 1px solid var(--fnlla-color-border-strong);
   border-radius: var(--fnlla-radius-md);
   background: var(--fnlla-color-surface-strong);
   color: var(--fnlla-color-text);
@@ -2077,7 +2080,7 @@ textarea {
   color: var(--fnlla-color-muted);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -2249,12 +2252,12 @@ textarea {
   min-width: 3.85rem;
   min-height: 2.05rem;
   padding: 0.28rem 0.72rem;
-  border: 1px solid var(--fnlla-color-border);
+  border: 1px solid var(--fnlla-color-border-strong);
   border-radius: var(--fnlla-radius-md);
   background: var(--fnlla-color-surface);
   color: var(--fnlla-color-primary);
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: var(--fnlla-font-size-sm);
+  font-weight: var(--fnlla-font-weight-semibold);
   line-height: 1;
 }
 
@@ -2332,16 +2335,16 @@ textarea {
 
 .input:focus,
 .textarea:focus {
-  border-color: var(--fnlla-color-primary-border);
+  border-color: var(--fnlla-color-primary);
   background: var(--fnlla-color-surface);
-  outline: 3px solid var(--fnlla-color-primary-soft);
+  outline: 2px solid var(--fnlla-color-focus-ring);
   outline-offset: 2px;
 }
 
 .select:focus {
-  border-color: var(--fnlla-color-primary-border);
+  border-color: var(--fnlla-color-primary);
   background-color: var(--fnlla-color-surface);
-  outline: 3px solid var(--fnlla-color-primary-soft);
+  outline: 2px solid var(--fnlla-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -2349,7 +2352,7 @@ textarea {
 .textarea[aria-invalid="true"]:focus,
 .select[aria-invalid="true"]:focus {
   border-color: var(--fnlla-color-danger);
-  outline: 3px solid var(--fnlla-color-danger-soft);
+  outline: 2px solid var(--fnlla-color-danger);
   outline-offset: 2px;
 }
 
@@ -3026,7 +3029,7 @@ textarea {
   color: var(--fnlla-color-muted);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -3832,13 +3835,13 @@ textarea {
 .offcanvas-panel .btn {
   min-height: 1.9rem;
   padding: 0.3rem 0.68rem;
-  font-size: 0.74rem;
+  font-size: var(--fnlla-font-size-sm);
 }
 
 .offcanvas-panel .btn-sm {
   min-height: 1.72rem;
   padding: 0.24rem 0.58rem;
-  font-size: 0.69rem;
+  font-size: var(--fnlla-font-size-sm);
 }
 
 .offcanvas-kicker,
@@ -3885,7 +3888,7 @@ textarea {
   box-shadow:
     0 1rem 2.4rem rgba(15, 23, 42, 0.16),
     0 0 0 1px rgba(255, 255, 255, 0.68) inset;
-  font-size: 0.78rem;
+  font-size: var(--fnlla-font-size-sm);
   font-weight: 520;
   letter-spacing: 0;
   line-height: 1.45;
@@ -4058,7 +4061,7 @@ textarea {
   color: var(--fnlla-color-primary);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -4693,7 +4696,7 @@ textarea {
   color: var(--fnlla-color-secondary);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -4889,7 +4892,7 @@ textarea {
   color: var(--fnlla-color-secondary);
   font-size: var(--fnlla-font-size-sm);
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -5202,7 +5205,7 @@ textarea {
   border-radius: var(--fnlla-radius-pill);
   font-size: 0.88rem;
   font-weight: var(--fnlla-font-weight-bold);
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .badge {

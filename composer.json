@@ -1,14 +1,18 @@
 {
     "name": "techayodev/fnlla",
-    "description": "AI-ready server-rendered PHP framework for building operated web products with a private developer operations panel.",
+    "description": "AI-ready web framework with a PHP foundation, integrated developer operations and opt-in AI providers.",
     "type": "project",
     "license": "MIT",
-    "homepage": "https://techayo.co.uk",
+    "homepage": "https://fnlla.com",
     "authors": [
         {
             "name": "TechAyo LTD",
             "homepage": "https://techayo.co.uk",
             "role": "Producer, maintainer and distributor"
+        },
+        {
+            "name": "Marcin Kordyaczny",
+            "role": "Lead Developer / Product Manager"
         }
     ],
     "support": {
@@ -17,6 +21,9 @@
     },
     "require": {
         "php": "^8.3"
+    },
+    "suggest": {
+        "ext-curl": "Required only for the optional OpenAI and Anthropic text-generation providers."
     },
     "require-dev": {
         "nyholm/psr7": "^1.8",

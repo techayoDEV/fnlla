@@ -424,10 +424,10 @@ function framework_brand_color(string $key, string $default = ""): string
     return preg_match('/^#[0-9A-Fa-f]{6}$/', $configured) === 1 ? strtoupper($configured) : $default;
 }
 
+/** Older project-owned layouts still call this helper after a framework update. */
 function has_local_docs_workspace(): bool
 {
-    return is_dir(base_path("docs"))
-        && is_file(base_path("docs/index.html"));
+    return false;
 }
 
 function page_meta(array $overrides = []): array
@@ -464,7 +464,7 @@ function project_brand_logo_asset(?string $path = null): ?string
 
     if (strtolower($configured) === "auto") {
         $appName = strtolower(trim((string) config("app.name", "FNLLA")));
-        $configured = $appName === "fnlla" ? "assets/fnlla-logo.png" : "";
+        $configured = $appName === "fnlla" ? "assets/brand/fnlla/favicon.svg" : "";
     }
 
     if ($configured === "") {

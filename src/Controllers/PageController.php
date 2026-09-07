@@ -35,8 +35,8 @@ final class PageController extends Controller
             "pageTitleHome" => true,
             "heroStats" => [
                 [
-                    "value" => "AI",
-                    "label" => "local runtime guidance",
+                    "value" => "Setup",
+                    "label" => "project identity and private access",
                 ],
                 [
                     "value" => "OPS",
@@ -50,13 +50,13 @@ final class PageController extends Controller
             "proofPoints" => [
                 [
                     "number" => "01",
-                    "title" => "Start from an operated product base",
+                    "title" => "Start with application foundations",
                     "text" => "The exported project keeps public pages, private flows, customer review and operational controls in one inspectable PHP application.",
                 ],
                 [
                     "number" => "02",
                     "title" => "Use AI where it is accountable",
-                    "text" => "Runtime AI starts local and deterministic; Fionn is available only through an audited opt-in bridge instead of hidden external calls.",
+                    "text" => "Local project knowledge is not an AI model. The built-in FIONN AI gateway connects to TechAyo's separate AI service with a developer account and API access; OpenAI API and Anthropic API are optional integrations.",
                 ],
                 [
                     "number" => "03",
@@ -74,8 +74,8 @@ final class PageController extends Controller
                     "text" => "Named developer access, setup, preview, service control, audit export, notifications, analytics and framework updates stay in the panel.",
                 ],
                 [
-                    "title" => "AI-assisted maintenance",
-                    "text" => "Local AI context, triage, review packs, provider readiness and technical-debt checks help teams review changes without exposing secrets by default.",
+                    "title" => "Review changes with context",
+                    "text" => "Project context, triage, review packs and technical-debt checks support maintenance. Remote AI assistance requires a separately configured provider and explicit access.",
                 ],
             ],
         ]);

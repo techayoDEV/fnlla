@@ -225,10 +225,10 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $response->status());
-        if (strcasecmp($this->expectedProjectName(), "FNLLA") === 0 && is_file(public_path("assets/fnlla-logo.png"))) {
-            self::assertStringContainsString("rel=\"icon\" type=\"image/png\" href=\"/assets/fnlla-logo.png?v=", $response->body());
+        if (strcasecmp($this->expectedProjectName(), "FNLLA") === 0) {
+            self::assertStringContainsString("rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/brand/fnlla/favicon.svg?v=", $response->body());
             self::assertStringContainsString("project-brand-mark is-logo\" aria-hidden=\"true\">", $response->body());
-            self::assertStringContainsString("src=\"/assets/fnlla-logo.png?v=", $response->body());
+            self::assertStringContainsString("src=\"/assets/brand/fnlla/favicon.svg?v=", $response->body());
         } else {
             self::assertStringNotContainsString("src=\"/assets/fnlla-logo.png", $response->body());
             self::assertStringContainsString("project-brand-mark is-initials\" aria-hidden=\"true\">", $response->body());
@@ -244,7 +244,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $projectResponse->status());
         self::assertStringNotContainsString("src=\"/assets/fnlla-logo.png", $projectResponse->body());
         self::assertStringContainsString("project-brand-mark is-initials\" aria-hidden=\"true\">", $projectResponse->body());
-        self::assertStringContainsString("An AI-ready framework for operated web products.", $response->body());
+        self::assertStringContainsString('class="starter-hero-title">Qwerty Client Portal</h1>', $projectResponse->body());
+        self::assertStringNotContainsString('local runtime AI', $response->body());
+        self::assertStringNotContainsString('fnlla init --workspace', $response->body());
         self::assertStringContainsString("Services", $response->body());
         self::assertStringContainsString("About", $response->body());
         self::assertStringNotContainsString("project-footer-developer-link", $response->body());
@@ -274,7 +276,7 @@ final class ApplicationSurfaceTest extends TestCase
         $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
 
         self::assertStringContainsString(".password-field .password-toggle {\n  position: absolute;", $css);
-        self::assertStringContainsString("font-size: 0.74rem;\n  font-weight: 600;\n  line-height: 1;", $css);
+        self::assertStringContainsString("font-size: var(--fnlla-font-size-sm);\n  font-weight: 600;\n  line-height: 1;", $css);
         self::assertSame(0, preg_match('/\.password-field \.password-toggle\s*\{[^}]*font-weight:\s*800;/s', $css));
     }
 
@@ -296,8 +298,8 @@ final class ApplicationSurfaceTest extends TestCase
         $css = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         $appCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
 
-        self::assertStringContainsString("--fnlla-brand-font: \"Space Grotesk\"", $css);
-        self::assertStringContainsString("--fnlla-brand-mono: \"JetBrains Mono\"", $css);
+        self::assertStringContainsString("--fnlla-brand-font: var(--fnlla-font-base)", $css);
+        self::assertStringContainsString("--fnlla-brand-mono: var(--fnlla-font-mono)", $css);
         self::assertStringContainsString("--fnlla-workbench-binary-signal:", $css);
         self::assertStringContainsString("--fnlla-workbench-short-signal:", $css);
         self::assertStringNotContainsString("--fnlla-workbench-binary-field:", $css);
@@ -307,28 +309,28 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("--fnlla-workbench-panel-edge:", $css);
         self::assertStringContainsString("Workbench surface contract", $css);
         self::assertStringContainsString("--fnlla-blueprint-panel-bg:", $css);
-        self::assertStringContainsString("--fnlla-radius-md: 0.5rem;", $css);
+        self::assertStringContainsString("--fnlla-radius-md: 0.25rem;", $css);
         self::assertStringContainsString(":where(\n  .site-login-grid > .feature-card,", $css);
-        self::assertStringContainsString("body.developer-workspace-layout::before {\n  position: fixed;", $css);
-        self::assertStringContainsString("body.developer-workspace-layout::after {\n  position: fixed;", $css);
+        self::assertStringContainsString("body.developer-workspace-layout::before {\n  content: none;", $css);
+        self::assertStringContainsString("body.developer-workspace-layout::after {\n  content: none;", $css);
         self::assertStringContainsString(".starter-hero::before,\n.framework-update-stage::before,\n.maintenance-lock-stage::before {", $css);
         self::assertStringContainsString(".starter-hero::after,\n.framework-update-stage::after,\n.maintenance-lock-stage::after {", $css);
         self::assertStringContainsString(".site-login-grid > .project-setup-hero-card", $css);
         self::assertStringContainsString(".project-setup-visual", $css);
-        self::assertStringContainsString(".project-setup-window", $css);
+        self::assertStringContainsString(".fnlla-framework-wordmark", $css);
+        self::assertStringContainsString(".developer-brand-signature", $css);
         self::assertStringContainsString(".project-setup-flow", $css);
         self::assertStringContainsString(".project-setup-contract-list", $css);
-        self::assertStringContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $css);
-        self::assertStringContainsString("content: \"\";\n  opacity: 0.95;", $css);
+        self::assertStringNotContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $css);
         self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-field);", $appCss);
         self::assertStringNotContainsString("text-shadow: var(--fnlla-workbench-binary-field-shadow);", $appCss);
         self::assertStringNotContainsString("24rem 0 0 currentColor,", $appCss);
-        self::assertStringContainsString("content: var(--fnlla-workbench-short-signal);", $css);
+        self::assertStringNotContainsString("content: var(--fnlla-workbench-short-signal);", $css);
         self::assertStringContainsString(".framework-update-status-grid > .feature-card", $css);
         self::assertStringContainsString(".project-blueprint-list {\n  display: grid;", $css);
         self::assertStringContainsString(".project-blueprint-list li {\n  display: grid;\n  grid-template-columns: minmax(8.4rem, auto) 1fr;", $css);
         self::assertStringContainsString(".project-blueprint-list li > code {\n  display: inline-flex;", $css);
-        self::assertStringContainsString("font-family: var(--fnlla-brand-mono);\n  font-size: 0.72rem;", $css);
+        self::assertStringContainsString("font-family: var(--fnlla-brand-mono);\n  font-size: var(--fnlla-font-size-sm);", $css);
         self::assertStringContainsString("font-weight: 600;\n  line-height: 1.35;", $css);
         self::assertStringContainsString("@media (max-width: 640px) {\n  .project-blueprint-list li {\n    grid-template-columns: 1fr;", $css);
     }
@@ -353,6 +355,12 @@ final class ApplicationSurfaceTest extends TestCase
         }
 
         self::assertSame("#2563EB", framework_brand_color("blue", ""));
+        self::assertSame("2.2.0", config("framework.brand.version"));
+        self::assertSame("#15803D", framework_brand_color("success", ""));
+        self::assertSame("#D12D2D", framework_brand_color("danger", ""));
+        foreach (["SpaceGrotesk-Regular", "SpaceGrotesk-SemiBold", "JetBrainsMono-Regular", "JetBrainsMono-SemiBold"] as $font) {
+            self::assertFileExists(public_path("assets/brand/fnlla/fonts/" . $font . ".woff2"));
+        }
         self::assertSame("", framework_brand_color("missing", ""));
 
         $manifest = json_decode((string) file_get_contents(public_path((string) $assets["webmanifest"])), true, 512, JSON_THROW_ON_ERROR);
@@ -971,6 +979,32 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Compare the local project file with the maintained source version", $response->body());
     }
 
+    public function testFrameworkUpdateTargetDefaultsToInstalledMetadata(): void
+    {
+        config_set('framework_update.ui_enabled', true);
+        $response = $this->makeApplication()->handle(new Request('GET', '/maintenance/framework-update'));
+        self::assertSame(200, $response->status());
+        $expectedVersion = preg_quote(trim((string) file(base_path('VERSION'), FILE_IGNORE_NEW_LINES)[0]), '/');
+        self::assertSame(1, preg_match('/id="framework-upgrade-target"[^>]*value="' . $expectedVersion . '"/', $response->body()));
+        self::assertStringNotContainsString('1.x to 2.0', $response->body());
+        self::assertStringNotContainsString('assets/app.css', $response->body());
+        $withoutLock = \Fnlla\Php\View\View::render('maintenance/framework-update', [], null);
+        self::assertSame(1, preg_match('/id="framework-upgrade-target"[^>]*value="' . $expectedVersion . '"/', $withoutLock));
+    }
+
+    public function testFrameworkUpdateTargetUsesNewerCacheButHonoursExplicitReport(): void
+    {
+        $this->makeApplication();
+        foreach ([['2.1.3', null, '2.2.0'], ['2.3.0', null, '2.3.0'], ['2.3.0', '2.2.4', '2.2.4']] as [$cached, $explicit, $expected]) {
+            $html = \Fnlla\Php\View\View::render('maintenance/framework-update', [
+                'frameworkUpdateLock' => ['framework_base' => ['framework' => ['version' => '2.2.0']]],
+                'frameworkUpdateCachedRelease' => ['version' => $cached],
+                'frameworkUpgradeReport' => $explicit === null ? null : ['target_version' => $explicit],
+            ], null);
+            self::assertSame(1, preg_match('/id="framework-upgrade-target"[^>]*value="' . preg_quote($expected, '/') . '"/', $html));
+        }
+    }
+
     public function testFrameworkUpdatePageIncludesMajorUpgradeGui(): void
     {
         config_set("framework_update", array_merge((array) config("framework_update", []), [
@@ -1204,7 +1238,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("An AI-ready framework for operated web products.", $homeResponse->body());
+        self::assertStringContainsString('class="starter-hero-title">' . h($this->expectedProjectName()) . '</h1>', $homeResponse->body());
     }
 
     private function expectedProjectName(): string
@@ -1235,6 +1269,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertStringContainsString("Preview Title", $response->body());
         self::assertStringContainsString("client-preview-access", $response->body());
+        self::assertStringContainsString('assets/developer-panel.css', $response->body());
+        self::assertStringNotContainsString('assets/app.css', $response->body());
         self::assertStringContainsString("Unlock preview", $response->body());
         self::assertStringNotContainsString("maintenance-unlock-modal", $response->body());
     }
@@ -1732,7 +1768,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Adapter settings", $integrationsResponse->body());
         self::assertStringContainsString("action=\"/developer/panel/integrations/settings\"", $integrationsResponse->body());
         self::assertStringContainsString("Save GA4 settings", $integrationsResponse->body());
-        self::assertStringContainsString("Save Fionn settings", $integrationsResponse->body());
+        self::assertStringContainsString("Save FIONN AI settings", $integrationsResponse->body());
         self::assertStringContainsString("name=\"ai_fionn_enabled\"", $integrationsResponse->body());
         self::assertStringContainsString("Leave blank to keep current token", $integrationsResponse->body());
         self::assertStringContainsString("TechAyo Remote Control plugin", $integrationsResponse->body());
@@ -1762,25 +1798,25 @@ final class ApplicationSurfaceTest extends TestCase
         $developerCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         $developerPanelCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/developer-panel.css")));
         self::assertStringContainsString("body.developer-workspace-layout {\n  position: relative;\n  min-height: 100vh;", $developerCss);
-        self::assertStringContainsString("linear-gradient(90deg, rgba(219, 234, 254, 0.5)", $developerPanelCss);
-        self::assertStringContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $developerPanelCss);
-        self::assertStringContainsString("repeating-linear-gradient(180deg, transparent 0 2.75rem", $developerPanelCss);
+        self::assertStringContainsString("background: var(--fnlla-color-bg-alt);", $developerPanelCss);
+        self::assertStringNotContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $developerPanelCss);
+        self::assertStringNotContainsString("repeating-linear-gradient(180deg, transparent 0 2.75rem", $developerPanelCss);
         self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-field);", $developerPanelCss);
         self::assertStringNotContainsString("text-shadow: var(--fnlla-workbench-binary-field-shadow);", $developerPanelCss);
         self::assertStringContainsString(".developer-dashboard-section::before {\n  position: absolute;", $developerCss);
-        self::assertStringContainsString("content: var(--fnlla-workbench-binary-signal);", $developerCss);
+        self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-signal);", $developerCss);
         self::assertStringContainsString(".developer-panel-page-head::after {\n  width: fit-content;", $developerCss);
-        self::assertStringContainsString("border-left: 3px solid var(--fnlla-workbench-rail);", $developerCss);
-        self::assertStringContainsString(".starter-hero-screen::before {", $developerCss);
-        self::assertStringContainsString("content: \"fnlla init --workspace\";", $developerCss);
+        self::assertStringContainsString("border-bottom: 1px solid var(--fnlla-color-border);", $developerCss);
+        self::assertStringNotContainsString(".starter-hero-screen::before {", $developerCss);
+        self::assertStringNotContainsString("fnlla init --workspace", $developerCss);
         self::assertStringContainsString(".framework-update-status-grid > .feature-card::after", $developerCss);
         self::assertStringNotContainsString("linear-gradient(var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
         self::assertStringNotContainsString("linear-gradient(90deg, var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
-        self::assertStringContainsString("box-shadow: var(--fnlla-blueprint-shadow);", $developerCss);
-        self::assertStringContainsString(".developer-dashboard-section-title {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.18rem;\n  font-weight: 650;", $developerCss);
-        self::assertStringContainsString(".developer-dashboard-card h3,\n.developer-dashboard-status-card h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.12rem;\n  font-weight: 650;", $developerCss);
-        self::assertStringContainsString(".developer-policy-zone h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.25rem;\n  font-weight: 650;", $developerCss);
-        self::assertStringContainsString(".starter-kicker,\n.process-kicker,\n.feature-kicker {\n  color: var(--fnlla-color-primary);\n  font-size: 0.78rem;\n  font-weight: 650;", $developerCss);
+        self::assertStringContainsString("--fnlla-blueprint-shadow: none;", $developerCss);
+        self::assertStringContainsString(".developer-dashboard-section-title {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.18rem;\n  font-weight: 600;", $developerCss);
+        self::assertStringContainsString(".developer-dashboard-card h3,\n.developer-dashboard-status-card h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.12rem;\n  font-weight: 600;", $developerCss);
+        self::assertStringContainsString(".developer-policy-zone h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.25rem;\n  font-weight: 600;", $developerCss);
+        self::assertStringContainsString(".starter-kicker,\n.process-kicker,\n.feature-kicker {\n  color: var(--fnlla-color-primary);\n  font-size: var(--fnlla-font-size-sm);\n  font-weight: 600;", $developerCss);
         self::assertStringNotContainsString("font-weight: 900;\n  letter-spacing: 0.05em;\n  text-transform: uppercase;", $developerCss);
         self::assertStringNotContainsString("font-weight: 800;\n  letter-spacing: 0.06em;\n  text-transform: uppercase;", $developerCss);
         self::assertStringContainsString(".developer-kanban-column-add {\n  flex: 0 0 auto;\n  position: relative;\n  display: inline-grid;\n  place-items: center;", $developerCss);
@@ -1817,8 +1853,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("support@fnlla.com", $aboutFnllaResponse->body());
         self::assertStringContainsString("https://github.com/techayoDEV/fnlla", $aboutFnllaResponse->body());
         self::assertStringContainsString("techayo.co.uk", $aboutFnllaResponse->body());
-        self::assertStringContainsString("<span>" . $frameworkVersion . "</span>", $aboutFnllaResponse->body());
-        self::assertStringContainsString("<span>" . $runtimeVersion . "</span>", $aboutFnllaResponse->body());
+        self::assertStringContainsString("Lead Developer / Product Manager - Marcin Kordyaczny", $aboutFnllaResponse->body());
+        self::assertStringContainsString('<span class="fnlla-literal">' . $frameworkVersion . "</span>", $aboutFnllaResponse->body());
+        self::assertStringContainsString('<span class="fnlla-literal">' . $runtimeVersion . "</span>", $aboutFnllaResponse->body());
         self::assertStringNotContainsString("<span>unknown</span>", $aboutFnllaResponse->body());
         self::assertStringContainsString("Project Kanban", $workspaceResponse->body());
         self::assertStringNotContainsString("My to-do", $workspaceResponse->body());
@@ -2184,7 +2221,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $homeResponse->status());
-        self::assertStringContainsString("An AI-ready framework for operated web products.", $homeResponse->body());
+        self::assertStringContainsString('class="starter-hero-title">' . h($this->expectedProjectName()) . '</h1>', $homeResponse->body());
         self::assertStringContainsString("googletagmanager.com/gtag/js", $homeResponse->body());
         self::assertStringContainsString("fnlla.integration_event.v1", $homeResponse->body());
     }

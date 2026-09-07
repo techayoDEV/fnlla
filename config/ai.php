@@ -12,6 +12,7 @@ Copyright (c) 2026 TechAyo LTD (techayo.co.uk). Released under the MIT License.
 Purpose:
 - Defines local runtime intelligence settings for applications that need
   user-facing guidance without depending on an external model provider.
+- Keeps FIONN AI and cloud text-generation integrations explicit and disabled by default.
 */
 
 return [
@@ -32,6 +33,14 @@ return [
             "fallback" => (string) env("AI_RUNTIME_FALLBACK", "I do not know that from the local project knowledge yet."),
         ],
         "providers" => [
+            "openai" => [
+                "class" => \Fnlla\Php\Ai\OpenAiRuntimeProvider::class,
+                "external_calls" => false,
+            ],
+            "anthropic" => [
+                "class" => \Fnlla\Php\Ai\AnthropicRuntimeProvider::class,
+                "external_calls" => false,
+            ],
             "local" => [
                 "class" => \Fnlla\Php\Ai\LocalRuntimeAssistant::class,
                 "external_calls" => false,
@@ -42,6 +51,21 @@ return [
                 "enabled" => (bool) env("AI_FIONN_BRIDGE_ENABLED", false),
                 "integration_state" => "available_opt_in",
             ],
+        ],
+        // Cloud models and credentials are intentionally not preselected or bundled.
+        "openai" => [
+            "enabled" => (bool) env("AI_OPENAI_ENABLED", false),
+            "api_key" => (string) env("AI_OPENAI_API_KEY", ""),
+            "model" => (string) env("AI_OPENAI_MODEL", ""),
+            "max_output_tokens" => (int) env("AI_OPENAI_MAX_OUTPUT_TOKENS", 1024),
+            "timeout_seconds" => (int) env("AI_OPENAI_TIMEOUT_SECONDS", 30),
+        ],
+        "anthropic" => [
+            "enabled" => (bool) env("AI_ANTHROPIC_ENABLED", false),
+            "api_key" => (string) env("AI_ANTHROPIC_API_KEY", ""),
+            "model" => (string) env("AI_ANTHROPIC_MODEL", ""),
+            "max_output_tokens" => (int) env("AI_ANTHROPIC_MAX_OUTPUT_TOKENS", 1024),
+            "timeout_seconds" => (int) env("AI_ANTHROPIC_TIMEOUT_SECONDS", 30),
         ],
         "fionn" => [
             "enabled" => (bool) env("AI_FIONN_BRIDGE_ENABLED", false),

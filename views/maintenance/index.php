@@ -373,31 +373,8 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
           </div>
 
           <div class="project-setup-visual" aria-hidden="true">
-            <div class="project-setup-window">
-              <div class="project-setup-window-bar">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div class="project-setup-window-body">
-                <div class="project-setup-title-line">
-                  <span><?= h((string) ($projectSetup["name"] ?? "FNLLA Project")) ?></span>
-                  <strong>/developer</strong>
-                </div>
-                <div class="project-setup-metric-row">
-                  <span class="is-active"></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <div class="project-setup-access-card">
-                  <span class="project-setup-lock-shape"></span>
-                  <div>
-                    <strong>Private access</strong>
-                    <small>Named account, hashed password, session controls</small>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <?php require dirname(__DIR__) . "/partials/framework-wordmark.php"; ?>
+            <img class="developer-brand-signature" src="<?= h(asset("assets/brand/fnlla/binary-signature.png")) ?>" alt="" width="640" height="360">
             <div class="project-setup-flow">
               <span><strong>01</strong> Identity</span>
               <span><strong>02</strong> Access</span>

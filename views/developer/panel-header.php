@@ -221,7 +221,7 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
         </nav>
       </div>
       <div class="developer-panel-sidebar-bottom">
-        <small><a class="developer-workspace-brand-link" href="<?= h($frameworkOfficialUrl) ?>" target="_blank" rel="noopener noreferrer">FNLLA <?= h($developerFrameworkVersion) ?></a> by <a class="developer-workspace-brand-link" href="<?= h($frameworkMaintainerUrl) ?>" target="_blank" rel="noopener noreferrer">TechAyo Limited</a></small>
+        <small><a class="developer-workspace-brand-link" href="<?= h($frameworkOfficialUrl) ?>" target="_blank" rel="noopener noreferrer">FNLLA <span class="fnlla-literal"><?= h($developerFrameworkVersion) ?></span></a> by <a class="developer-workspace-brand-link" href="<?= h($frameworkMaintainerUrl) ?>" target="_blank" rel="noopener noreferrer">TechAyo</a></small>
       </div>
 
     </aside>

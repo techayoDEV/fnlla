@@ -202,7 +202,7 @@ $countdown = $clientPreview["countdown"] ?? ["hours" => "00", "minutes" => "00",
             }
           </style>
         </noscript>
-        <script>
+        <script nonce="<?= h(csp_nonce()) ?>">
           window.addEventListener("DOMContentLoaded", function () {
             var countdownSource = document.getElementById("client-preview-countdown-source");
             var countdownHours = document.getElementById("client-preview-countdown-hours");

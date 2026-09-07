@@ -6,6 +6,26 @@ compatibility and upgrade procedures rather than maintaining one file per releas
 
 ## Compatibility Notes
 
+The 2.2.0 default database seeder no longer creates a demo administrator. Existing
+accounts are untouched: audit any accounts created by older demo seeders and
+explicitly revoke or rotate them. Do not delete an account based on its email
+alone. Application-owned seeders remain the application's responsibility.
+Outside local/development/testing, `db:seed` now requires `--force`, just like
+mutating migration commands. Update reviewed deployment scripts accordingly.
+
+The current business blueprint now lives at `resources/business-reference/`, and
+the active performance policy at `resources/performance-baselines/policy.json`.
+Their manifests declare edition 2.2.0; historical changelog entries and published
+migration identifiers remain unchanged.
+
+The 2.2.0 candidate retires the repository's generated HTML documentation and
+local `/docs` endpoints. Read the Markdown guides until the new fnlla.com
+documentation site is published. Application-owned routes and layouts are not
+overwritten during updates: remove old `DocsController` imports and documentation
+links from customized copies. The compatibility helper `has_local_docs_workspace()`
+returns false so older layouts and conditional routes continue to load safely.
+The private Developer Panel's contextual documentation is unaffected.
+
 For 2.2.0, enable `ext-fileinfo` wherever upload MIME validation runs.
 `UploadedFile::detectedMimeType()` now throws when detection is unavailable;
 it no longer falls back to the client-provided Content-Type. Keep `mimeType()`
@@ -142,26 +162,26 @@ Files that require special care:
 - `storage/`, `dist/`, logs, sessions, uploads and backups should not be used as
   source-of-truth framework files.
 
-## Recommended Current Update Flow
+## Verify The 2.2.0 Update
 
-Use this flow for maintained 2.x applications moving to the latest public
-release, currently `2.1.3`:
+Run readiness checks on a staging copy with the candidate tooling. These commands
+do not establish that 2.2.0 has been published:
 
 ```bash
 php fnlla version:status
-php fnlla framework:update --check
-php fnlla framework:update --dry-run
-php fnlla upgrade:check --target=2.1.3
-php fnlla upgrade:plan --target=2.1.3
-php fnlla ai:upgrade-brief --target=2.1.3
+php fnlla upgrade:check --target=2.2.0
+php fnlla upgrade:plan --target=2.2.0
+php fnlla ai:upgrade-brief --target=2.2.0
 ```
 
-If the dry-run report has no conflicts and the upgrade plan contains only safe
-actions you accept, apply the update:
+After the official 2.2.0 release exists, follow the pinned updater procedure in
+[Upgrading A 2.1.3 Project](#upgrading-a-213-project). Review its dry-run before
+applying. The unpinned update channel still resolves the latest published release,
+not this source candidate. The separate readiness helper only applies actions
+explicitly marked safe; it is not a framework package installer:
 
 ```bash
-php fnlla framework:update --apply
-php fnlla upgrade:apply --target=2.1.3 --yes
+php fnlla upgrade:apply --target=2.2.0 --yes
 ```
 
 Then validate the product:
@@ -227,7 +247,7 @@ For a maintained commercial product:
 php fnlla version:status
 php fnlla framework:update --check
 php fnlla framework:update --dry-run
-php fnlla upgrade:check --target=2.1.3
+php fnlla upgrade:check --target=2.2.0
 php fnlla project:acceptance --json
 php scripts/test.php
 php scripts/lint.php
@@ -243,7 +263,7 @@ FNLLA does not send application data to an AI provider. Generate local artefacts
 and decide explicitly what to share:
 
 ```bash
-php fnlla ai:review-pack --target=2.1.3
+php fnlla ai:review-pack --target=2.2.0
 php fnlla ai:redact --input storage/framework/cache/ai-review-pack.json
 ```
 
@@ -254,7 +274,8 @@ Good review prompt:
 
 ## Release Owner Checklist
 
-- Run `php fnlla release:prepare --major --target=2.1.3`.
+- Run `php fnlla release:prepare` for the 2.2.0 candidate. Use `--major` only
+  when intentionally requesting the additional major-upgrade analysis.
 - Confirm generated SBOM and checksums are attached to the public release.
 - Confirm `CHANGELOG.md` has a dated entry for the tag.
 - Confirm this migration guide matches the final public behaviour.

@@ -67,7 +67,7 @@ final class VersionSetCommand extends Command
         $this->line("Integrated built-in UI surface version: " . $manifest["ui_runtime"]["version"]);
         $this->line("");
         $this->line("Recommended release checks:");
-        $this->line("- php scripts/build-docs.php");
+        $this->line("- php scripts/check-docs.php");
         $this->line("- php scripts/test.php");
         $this->line("- php scripts/lint.php");
         $this->line("- php scripts/validate-fnlla-runtime.php");

@@ -67,9 +67,9 @@ jobs:
         shell: pwsh
         run: php vendor/phpunit/phpunit/phpunit --testsuite framework --fail-on-skipped
 
-      - name: Validate docs sync
+      - name: Validate documentation hygiene
         shell: pwsh
-        run: php ./scripts/build-docs.php --check
+        run: php ./scripts/check-docs.php
 
       - name: Validate runtime contract
         shell: pwsh

@@ -34,7 +34,7 @@ final class FrameworkUpdateController extends Controller
 {
     public function show(Request $request): Response
     {
-        return $this->view("maintenance/framework-update", $this->viewData($request));
+        return $this->view("maintenance/framework-update", $this->viewData($request), 200, "layouts/developer");
     }
 
     public function viewData(Request $request, array $overrides = []): array

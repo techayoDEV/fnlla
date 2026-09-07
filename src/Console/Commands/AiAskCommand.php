@@ -15,7 +15,7 @@ final class AiAskCommand extends Command
 
     public function description(): string
     {
-        return "Ask the local project AI runtime a question.";
+        return "Ask the selected runtime AI provider a question (cloud providers are opt-in).";
     }
 
     public function handle(array $arguments): int
@@ -39,7 +39,9 @@ final class AiAskCommand extends Command
         }
 
         $this->line((string) ($answer["answer"] ?? ""));
-        $this->line("Confidence: " . (string) ($answer["confidence"] ?? 0) . "%");
+        $this->line(($answer["provider"]["confidence_measured"] ?? true) === false
+            ? "Confidence: not measured; review generated answers."
+            : "Confidence: " . (string) ($answer["confidence"] ?? 0) . "%");
 
         if (($answer["actions"] ?? []) !== []) {
             $this->line("Actions:");

@@ -6,7 +6,7 @@ declare(strict_types=1);
 function fnlla_documentation_issues(string $root): array
 {
     $root = rtrim(str_replace("\\", "/", $root), "/");
-    $skip = [".git", "vendor", "node_modules", "storage", "dist", ".fnlla", "branding", ".idea", ".vscode", "framework"];
+    $skip = [".git", "vendor", "node_modules", "storage", "dist", ".fnlla", ".idea", ".vscode", "framework"];
     $iterator = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(
         new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
         static function (SplFileInfo $file) use ($root, $skip): bool {
@@ -28,12 +28,15 @@ function fnlla_documentation_issues(string $root): array
     foreach ($iterator as $file) {
         $relative = substr(str_replace("\\", "/", $file->getPathname()), strlen($root) + 1);
         $extension = strtolower($file->getExtension());
-        if ($extension !== "md" && !($extension === "html" && str_starts_with($relative, "docs/"))) { continue; }
+        if ($extension === "html" && str_starts_with($relative, "docs/")) {
+            $issues[] = $relative . ": retired HTML documentation";
+            continue;
+        }
+        if ($extension !== "md") { continue; }
         $content = (string) file_get_contents($file->getPathname());
         foreach ($patterns as $reason => $pattern) {
             if (preg_match($pattern, $content) === 1) { $issues[] = $relative . ": " . $reason; }
         }
-        if ($extension !== "md") { continue; }
         preg_match_all('~\\[[^\\]\\r\\n]*\\]\\(([^\\s)]+)\\)~', $content, $links);
         foreach ($links[1] as $target) {
             $target = trim($target, "<>");

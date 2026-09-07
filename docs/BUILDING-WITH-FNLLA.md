@@ -1,5 +1,7 @@
 # Building Websites and Web Apps with FNLLA
 
+![Full starter: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with diagnostics and update checks. Plain is core-only.](assets/brand/fnlla-workflow.png)
+
 ## What this guide is for
 
 This guide explains how to build new server-rendered websites and web applications on top of `fnlla`.
@@ -460,6 +462,11 @@ php fnlla migrate:rollback
 php fnlla migrate:status
 php fnlla db:seed
 ```
+
+These mutating commands require `--force` outside local/development/testing.
+Review the migration or seeder and backup plan before confirming. The default
+seeder creates no accounts; provision application identities explicitly and keep
+test credentials out of production. See [runtime contracts](framework/RUNTIME-CONTRACTS.md).
 
 Where the database work lives:
 

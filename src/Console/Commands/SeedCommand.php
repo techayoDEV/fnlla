@@ -21,6 +21,7 @@ Purpose:
 namespace Fnlla\Php\Console\Commands;
 
 use Fnlla\Php\Console\Command;
+use Fnlla\Php\Console\Input;
 use Fnlla\Php\Database\Seeders\Seeder;
 use RuntimeException;
 
@@ -36,13 +37,28 @@ final class SeedCommand extends Command
         return "Run database seeders.";
     }
 
+    public function usage(): string
+    {
+        return "db:seed [SeederClass] [--force] [--help]";
+    }
+
     public function handle(array $arguments): int
     {
-        $class = $arguments[0] ?? "Database\\Seeders\\DatabaseSeeder";
+        $input = Input::parse($arguments, ["force" => false], 1);
+        if ($input->option("help", false)) { $this->printHelp(); return 0; }
+        if (!in_array(app_environment(), ["local", "development", "testing"], true) && !$input->option("force", false)) {
+            throw new RuntimeException("Non-local seeding requires --force after reviewing the seeder and backup plan.");
+        }
+        $class = $input->arguments[0] ?? "Database\\Seeders\\DatabaseSeeder";
         $class = str_replace("/", "\\", (string) $class);
 
         if (!class_exists($class)) {
             throw new RuntimeException("Seeder class not found: " . $class);
+        }
+
+        // Reject unrelated classes before the container can run their constructors.
+        if (!is_subclass_of($class, Seeder::class)) {
+            throw new RuntimeException("Seeder must extend " . Seeder::class . ": " . $class);
         }
 
         $seeder = $this->container->make($class);

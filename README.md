@@ -1,37 +1,40 @@
 # FNLLA
 
-![FNLLA framework cover](./docs/assets/brand/fnlla-cover.jpg)
+[![FNLLA web framework: PHP foundations, Project Setup, a private Developer Panel, diagnostics and controlled updates. Created and maintained by TechAyo.](./docs/assets/brand/fnlla-cover.jpg)](https://fnlla.com)
 
-[![Version](https://img.shields.io/badge/version-2.2.0-0f766e?style=flat-square)](./VERSION)
+[![Source candidate](https://img.shields.io/badge/candidate-2.2.0-2563eb?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md#performance-baselines-and-budgets)
 [![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
-[![Release Gate](https://img.shields.io/badge/release%20gate-Ubuntu%20%7C%20macOS%20%7C%20Windows-0f766e?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md)
+[![Release Gate on main](https://github.com/techayoDEV/fnlla/actions/workflows/fnlla-release-gate.yml/badge.svg?branch=main)](https://github.com/techayoDEV/fnlla/actions/workflows/fnlla-release-gate.yml?query=branch%3Amain)
 [![UI Runtime](https://img.shields.io/badge/UI-integrated%20FNLLA%20runtime-18352f?style=flat-square)](./public/vendor/fnlla-runtime/README.md)
 
-FNLLA is an AI-ready PHP framework for building operated web products: public
-pages, private workflows, customer review surfaces and the developer operations
-layer needed to keep a product understandable after launch. It is not just a
-thin routing skeleton. FNLLA ships a local runtime AI surface, a private
-Developer Operations Panel, maintenance and preview controls, release evidence,
-first-party aggregate analytics, audit trails and update checks as one
-maintained stack.
+**Web framework. PHP foundation. Developer tools built in.**
 
-The honest positioning is simple: FNLLA helps a delivery team keep the client
-and the live product at the centre. The product itself still belongs in the
-exported project repository, but the framework keeps setup, preview, service
-control, operations, handover evidence and AI-assisted review close enough that
-they can be used from the first release.
+Build from blueprint. FNLLA brings application foundations, Project Setup and a
+private Developer Panel into one maintained stack. Spend less time connecting
+the basics: routing, data access, diagnostics, previews and update tooling are
+already part of the integrated starter. Your application keeps its own identity.
 
-FNLLA is produced, maintained and distributed by TechAyo LTD
-([techayo.co.uk](https://techayo.co.uk)). It is released under the MIT License.
+**Build with continuity.** Connect **FIONN AI, Persistent Personal Intelligence
+created by TechAyo**, through the built-in gateway. An appropriate FIONN developer
+account and API access are required; memory and permissions belong to the connected
+service, not the framework. **OpenAI API** and **Anthropic API** are additional,
+optional text-generation integrations requiring your model and API key.
+External calls are disabled by default. FNLLA does not bundle a language model or
+make application decisions autonomously. See the [AI contract](./docs/AI-CONTEXT.md).
 
-Official framework website: [fnlla.com](https://fnlla.com).
+Created & maintained by **TechAyo** ([`techayo.co.uk`](https://techayo.co.uk)).
+Contact: [`hello@techayo.co.uk`](mailto:hello@techayo.co.uk). Code is MIT licensed.
+Lead Developer / Product Manager - **Marcin Kordyaczny**. The name comes from
+Finella Gardens, Dundee, Scotland, where the idea originated and FNLLA was first written.
+
+Official framework website: [`fnlla.com`](https://fnlla.com).
 Official source repository: [techayoDEV/fnlla](https://github.com/techayoDEV/fnlla).
 
 ## What Matters
 
-- **AI-ready framework, not finished product:** this repository is the
+- **Integrated framework, not a finished application:** this repository is the
   framework source and project-export base. Product code belongs in the
   exported project.
 - **Server-rendered PHP:** routes, controllers and plain PHP views are the
@@ -39,23 +42,26 @@ Official source repository: [techayoDEV/fnlla](https://github.com/techayoDEV/fnl
 - **Developer Operations Panel:** the private panel is the technical control
   centre for setup, preview, maintenance, customer review, operations,
   analytics, audit, release-readiness and framework updates.
-- **Runtime AI:** the default AI driver is local and deterministic. The Fionn
-  bridge is an opt-in provider boundary, not bundled private intelligence.
+- **AI on your terms:** a dedicated FIONN AI gateway by TechAyo and optional
+  OpenAI API / Anthropic API adapters. No local AI model is bundled.
+  Project files and sessions are never implicitly sent to cloud providers.
 - **Integrated UI runtime:** `public/vendor/fnlla-runtime/` is part of the
   official stack and should stay the shared UI foundation.
-- **Commercial readiness:** FNLLA includes routing, middleware, auth
+- **Application foundations:** FNLLA includes routing, middleware, auth
   foundations, CSRF, sessions, MySQL access, migrations, queue primitives,
   health checks, maintenance preview, security audit, performance budget and
   release operations.
-- **Verified exports:** from 2.1.1, `project:acceptance` checks a generated
+- **Verified exports:** `project:acceptance` checks a generated
   project base before business-specific code is added.
 
 ## Start A Real Project
 
+![Full starter workflow: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with the Developer Panel, diagnostics and update checks. Plain is the advanced core-only option.](./docs/assets/brand/fnlla-workflow.png)
+
 ```bash
 php fnlla make:project ../my-product "My Product"
 cd ../my-product
-php fnlla project:claim --product "My Product" --owner "Owner LTD" --developer "Developer LTD"
+php fnlla project:claim --product "My Product" --owner "Owner" --developer "Developer"
 php fnlla project:acceptance --json
 php scripts/test.php
 php scripts/lint.php
@@ -67,6 +73,15 @@ real website or application there. Do not build commercial product code inside
 
 Read the full workflow in
 [`docs/STARTING-A-NEW-PROJECT.md`](./docs/STARTING-A-NEW-PROJECT.md).
+
+## Connected Intelligence
+
+[![FNLLA includes a FIONN AI gateway, not a local model. Connect the separate TechAyo service with a developer account, API access and explicit activation. OpenAI API and Anthropic API are optional.](./docs/assets/brand/fnlla-ai-boundary.png)](./docs/AI-CONTEXT.md)
+
+The gateway does not automatically ingest your repository or write service
+memory. FIONN AI memory depends on the connected account and its permissions.
+For configuration, request boundaries and provider controls, read the
+[AI integration contract](./docs/AI-CONTEXT.md).
 
 ## Essential Commands
 
@@ -106,20 +121,20 @@ documentation set:
   contract, storage, diagnostics, recovery, technical debt and
   framework-vs-product boundary.
 - [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
-  `.env.full.example`, client preview and the Fionn bridge boundary.
+  `.env.full.example`, client preview and the FIONN AI bridge boundary.
 - [`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) for the
   reference business-application checklist.
-- [`resources/business-reference/2.1/`](./resources/business-reference/2.1/) for
+- [`resources/business-reference/`](./resources/business-reference/) for
   the machine-readable blueprint behind the reference checklist.
 - [`docs/AI-CONTEXT.md`](./docs/AI-CONTEXT.md) for local, redacted AI review
-  packs and the opt-in Fionn bridge contract.
+  packs and the opt-in FIONN AI bridge contract.
 
-The generated HTML documentation lives in `docs/*.html` and is rebuilt from the
-Markdown sources with:
+The repository maintains Markdown documentation. A new documentation website
+is planned for [fnlla.com](https://fnlla.com); no HTML documentation site or
+local `/docs` endpoint is bundled. Validate the current reference with:
 
 ```bash
-php scripts/build-docs.php
-php scripts/build-docs.php --check
+php scripts/check-docs.php
 ```
 
 ## Repository Shape
@@ -127,7 +142,7 @@ php scripts/build-docs.php --check
 - `bootstrap/` - application bootstrap and runtime wiring.
 - `config/` - environment-driven framework configuration.
 - `database/` - migrations, seeders and factories.
-- `docs/` - source and generated documentation.
+- `docs/` - maintained Markdown guides and public API reference.
 - `public/` - HTTP entrypoints, project assets and integrated UI runtime.
 - `resources/` - local runtime bundles, reference manifests and export
   templates.

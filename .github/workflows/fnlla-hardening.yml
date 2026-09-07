@@ -60,9 +60,9 @@ jobs:
         shell: pwsh
         run: php .\scripts\lint.php
 
-      - name: Check documentation sync
+      - name: Check documentation hygiene
         shell: pwsh
-        run: php .\scripts\build-docs.php --check
+        run: php .\scripts\check-docs.php
 
       - name: Validate FNLLA Runtime contract
         shell: pwsh

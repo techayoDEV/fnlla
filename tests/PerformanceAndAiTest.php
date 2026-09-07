@@ -487,7 +487,7 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame("fnlla.technical_debt_report.v1", $report["schema"] ?? null);
         self::assertTrue(in_array("explicit-debt-markers", $ids, true));
         self::assertTrue(in_array("runtime-residue", $ids, true));
-        self::assertSame(!is_file(base_path(".fnlla/framework-lock.json")), in_array("generated-docs-sync", $ids, true));
+        self::assertSame(!is_file(base_path(".fnlla/framework-lock.json")), in_array("documentation-hygiene", $ids, true));
         self::assertTrue(in_array("ai-product-runtime", $ids, true));
         self::assertStringContainsString("FNLLA_TECH_DEBT_REPORT:BEGIN", $snapshot);
         self::assertStringContainsString("php fnlla tech-debt:update --check", $snapshot);

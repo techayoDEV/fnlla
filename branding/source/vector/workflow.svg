@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1600" height="480" viewBox="0 0 1600 480">
+<title>FNLLA workflow / editable vector source</title><defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,0,480)" d="M1280 372H1533V445H1280Z" clip-rule="evenodd" />
+</clipPath>
+</defs>
+<path transform="matrix(1,0,0,-1,0,480)" d="M0 0H1600V480H0Z" fill="#ffffff" fill-rule="evenodd" />
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="46" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-396" x="64">From first setup to daily operations.</tspan></text>
+<g clip-path="url(#clip_1)">
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1289.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1299">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1308.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1318">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1327.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1337">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1346.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1384.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1394">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1403.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1413">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1422.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1432">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1441.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1470">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1479.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1489">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1508">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-435" x="1517.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1280">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1289.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1299">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1308.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1318">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1327.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1337">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1346.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1375">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1384.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1394">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1403.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1413">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1422.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1432">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1441.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1479.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1489">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1498.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1508">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-418" x="1517.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1280">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1289.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1299">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1308.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1327.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1337">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1346.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1375">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1384.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1394">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1403.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1413">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1422.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1432">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1470">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1479.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1489">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1498.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1508">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-401" x="1517.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1280">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1289.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1299">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1308.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1318">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1327.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1337">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1346.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1375">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1384.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1394">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1403.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1413">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1422.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1432">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1441.5">1</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1470">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1489">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1498.5">0</tspan></text>
+<text fill="#dce9fc" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="10" font-family="JetBrains Mono" style="font-kerning:none;letter-spacing:0"><tspan y="-384" x="1517.5">1</tspan></text>
+</g>
+<path transform="matrix(1,0,0,-1,0,480)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#e5e7eb" d="M64 344H520" />
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="58" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-256" x="64">01</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="36" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-264" x="176">Start</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-184" x="64">Project setup. Private access.</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-140" x="64">Your application identity.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,480)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#e5e7eb" d="M568 344H1024" />
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="58" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-256" x="568">02</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="36" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-264" x="680">Build</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-184" x="568">Routes. Controllers. PHP views.</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-140" x="568">Data, sessions and queues.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,480)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#e5e7eb" d="M1072 344H1528" />
+<text fill="#2563eb" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="58" font-family="JetBrains Mono" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-256" x="1072">03</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="36" font-family="Space Grotesk" font-weight="600" style="font-kerning:none;letter-spacing:0"><tspan y="-264" x="1184">Operate</tspan></text>
+<text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-184" x="1072">Developer Panel. Diagnostics.</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-140" x="1072">Updates and release checks.</tspan></text>
+<path transform="matrix(1,0,0,-1,0,480)" d="M0 0H1600V72H0Z" fill="#f1f3f5" fill-rule="evenodd" />
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="24" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-24" x="64">Full: the integrated starter. Plain: an advanced core-only option.</tspan></text>
+</svg>

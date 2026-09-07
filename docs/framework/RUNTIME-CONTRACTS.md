@@ -59,6 +59,30 @@ does not run migrations but the existing Migrator may create its ledger table.
 Run one migrator at a time; named connections do not provide distributed
 transactions or migration serialization. Back up before destructive schema work.
 
+## Database And Private Storage Defaults
+
+Edition 2.2.0 creates no default accounts when `db:seed` runs. The maintainer's
+example factory generates an unknown random credential with a least-privilege
+role; authentication tests must explicitly supply a test-only password hash.
+The factory is not exported to new projects. Keep application seeders intentional
+and provision privileged identities through a reviewed application workflow.
+
+`php fnlla db:seed [SeederClass] [--force]` accepts one optional class and uses
+the same non-local confirmation boundary as migrations. Production, staging and
+unknown environments require `--force`; `--help` performs no writes. Unknown,
+duplicate or extra options are rejected before resolving the seeder. A custom
+seeder may call external services: the flag is confirmation, not a transaction,
+an idempotency guarantee or permission to provision demo users.
+
+Published migration filenames are historical identifiers, not release labels.
+Do not rename or replay them to make the database appear newer. Existing users,
+sessions, queues, uploads and configuration are not reset by a version change.
+
+`storage/.gitignore` excludes runtime files from both starter profiles, including
+future module directories. It is not an access-control mechanism. Serve only
+`public/`; verify private POSIX ownership/modes or Windows ACLs. Do not commit or
+ship live storage, and do not erase queues or uploads as a cache-cleaning step.
+
 ## Bootstrap Cache
 
 `config:cache` accepts finite scalar values, null and nested arrays. Objects,

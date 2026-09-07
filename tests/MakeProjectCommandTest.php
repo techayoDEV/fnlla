@@ -65,6 +65,7 @@ final class MakeProjectCommandTest extends TestCase
         $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
         self::assertSame(0, $command->handle([$this->targetPath, "Plain test", "--profile=plain"]));
         $this->assertExportBudget(400000, 160);
+        $this->assertPrivateStorageAndWindowsLauncher();
         foreach (["views/developer", "views/customer", "views/maintenance", "routes/maintenance.php", "src/Controllers/DeveloperAccessController.php", "public/assets/developer-panel.css"] as $path) {
             self::assertFalse(file_exists($this->targetPath . "/" . $path), $path);
         }
@@ -102,6 +103,20 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
         $this->assertExportBudget(4000000, 430);
+        foreach (["src/Ai/AiProviderSettings.php", "src/Ai/CloudRuntimeProvider.php", "src/Ai/OpenAiRuntimeProvider.php",
+            "src/Ai/AnthropicRuntimeProvider.php", "src/Controllers/DeveloperAiSettingsController.php",
+            "public/assets/brand/fnlla/fonts/SpaceGrotesk-Regular.woff2", "public/assets/brand/fnlla/fonts/SpaceGrotesk-SemiBold.woff2",
+            "public/assets/brand/fnlla/fonts/JetBrainsMono-Regular.woff2", "public/assets/brand/fnlla/fonts/SpaceGrotesk-OFL.txt",
+            "public/assets/brand/fnlla/fonts/JetBrainsMono-OFL.txt"] as $path) {
+            self::assertFileExists($this->targetPath . "/" . $path);
+            self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/" . $path));
+        }
+        foreach (["public/assets/brand/fnlla/binary-signature.png", "public/assets/developer-panel.css",
+            "public/assets/app-base.css", "public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css"] as $path) {
+            self::assertFileExists($this->targetPath . "/" . $path);
+            self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/" . $path));
+        }
+        self::assertFalse(is_dir($this->targetPath . "/branding"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "LICENSE.md");
         self::assertFileExists($this->targetPath . "/docs/framework/SUPPORT.md");
         self::assertFileExists($this->targetPath . "/docs/framework/TRADEMARKS.md");
@@ -152,6 +167,7 @@ final class MakeProjectCommandTest extends TestCase
             glob($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "sessions" . DIRECTORY_SEPARATOR . "sess_*") ?: []
         );
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "framework" . DIRECTORY_SEPARATOR . "sessions" . DIRECTORY_SEPARATOR . ".gitignore");
+        $this->assertPrivateStorageAndWindowsLauncher();
         foreach (["scripts/windows/test-project.cmd", "scripts/windows/lint-project.cmd", "scripts/windows/update-fnlla-runtime.cmd"] as $launcher) {
             self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $launcher), $launcher);
         }
@@ -340,6 +356,11 @@ final class MakeProjectCommandTest extends TestCase
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
         self::assertFalse(is_file($this->targetPath . "/public/assets/fnlla-logo.png"));
+        self::assertFalse(is_file($this->targetPath . "/public/assets/brand/fnlla-mark.svg"));
+        self::assertFalse(is_file($this->targetPath . "/public/assets/brand/fnlla/fnlla-blueprint-pattern.svg"));
+        self::assertFileExists($this->targetPath . "/public/assets/brand/fnlla/wordmark.svg");
+        self::assertFileExists($this->targetPath . "/public/assets/brand/fnlla/wordmark-on-black.svg");
+        self::assertArrayHasKey("views/partials/framework-wordmark.php", $frameworkLock["framework_base"]["managed_files"]);
 
         [$exitCode, $output] = $this->runPhpScript(
             $this->targetPath . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "validate-version-manifest.php"
@@ -371,9 +392,9 @@ final class MakeProjectCommandTest extends TestCase
                 "--id",
                 "CLAIMED_PROJECT",
                 "--owner",
-                "Owner LTD",
+                "Owner",
                 "--developer",
-                "Developer LTD",
+                "Developer",
                 "--maintainer",
                 "Maintenance LTD",
                 "--summary",
@@ -417,8 +438,8 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame(2, $claimedManifest["schema_version"] ?? null);
         self::assertSame("claimed_project", $claimedManifest["manifest_type"] ?? null);
         self::assertSame("CLAIMED_PROJECT", $claimedManifest["product"]["identifier"] ?? null);
-        self::assertSame("Owner LTD", $claimedManifest["product"]["owner"]["name"] ?? null);
-        self::assertSame("Developer LTD", $claimedManifest["product"]["developer"]["name"] ?? null);
+        self::assertSame("Owner", $claimedManifest["product"]["owner"]["name"] ?? null);
+        self::assertSame("Developer", $claimedManifest["product"]["developer"]["name"] ?? null);
         self::assertSame("Maintenance LTD", $claimedManifest["product"]["maintenance_provider"]["name"] ?? null);
         self::assertSame("TechAyo LTD (techayo.co.uk)", $claimedManifest["framework"]["creator"] ?? null);
         self::assertSame("https://fnlla.com", $claimedManifest["framework"]["website"] ?? null);
@@ -572,6 +593,15 @@ final class MakeProjectCommandTest extends TestCase
         }
         self::assertTrue($bytes <= $maxBytes, "Export exceeds its byte budget: " . $bytes . " > " . $maxBytes);
         self::assertTrue($count <= $maxFiles, "Export exceeds its file budget: " . $count . " > " . $maxFiles);
+    }
+
+    private function assertPrivateStorageAndWindowsLauncher(): void
+    {
+        self::assertSame("# Runtime data is private, including files created by future modules.\n*\n!*/\n!.gitignore\n", file_get_contents($this->targetPath . "/storage/.gitignore"));
+        self::assertSame(file_get_contents(base_path("resources/project-templates/v1/fnlla.cmd")), file_get_contents($this->targetPath . "/fnlla.cmd"));
+        [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["db:seed", "--help"]);
+        self::assertSame(0, $exit, $output);
+        self::assertStringContainsString("--force", $output);
     }
 
     public function testFailedCacheRebuildsPreservePreviouslyWorkingExports(): void

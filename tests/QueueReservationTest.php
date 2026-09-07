@@ -41,6 +41,8 @@ final class QueueReservationTest extends TestCase
         self::assertSame(null, $second->pop());
         self::assertSame(1, $first->pendingCount());
         sleep(2);
+        // Only the abandoned lease should expire; acknowledgement is not a one-second performance test.
+        config_set("queue.visibility_timeout_seconds", 30);
         $new = $second->pop();
         self::assertSame($id, $new["id"]);
         self::assertSame(2, $new["attempts"]);
@@ -81,6 +83,7 @@ final class QueueReservationTest extends TestCase
         self::assertSame(23, proc_close($process), $errors);
         self::assertSame($id, $output);
         sleep(2);
+        config_set("queue.visibility_timeout_seconds", 30);
         $recovered = $queue->pop();
         self::assertSame($id, $recovered["id"]);
         $queue->complete($recovered);

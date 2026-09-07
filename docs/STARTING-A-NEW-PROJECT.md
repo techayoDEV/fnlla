@@ -169,7 +169,7 @@ It also avoids copying framework-maintainer-only surfaces such as:
 - `.git`
 - `.github`
 - framework browser docs under `docs/`
-- the maintainer docs builder `scripts/build-docs.php`
+- the maintainer documentation checks and Markdown reference library
 - local runtime residue from `storage/` such as logs, cache entries, queue files, session files and guard state
 - framework governance files
 

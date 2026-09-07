@@ -3,12 +3,13 @@
 Before every GitHub release, review and update the documentation for changed
 behavior. Cover first-run setup, configuration defaults, public API/CLI changes,
 upgrade steps, security/operational requirements and known limitations. Update
-release notes for the actual approved version. Generated HTML must match Markdown.
+release notes for the actual approved version. Markdown in `docs/` is the maintained
+reference until the separate documentation website is published on fnlla.com.
+Do not generate or ship an HTML documentation site in this repository.
 
-Run `php scripts/build-docs.php`, `php scripts/build-docs.php --check`,
-`php scripts/check-docs.php`, `php scripts/check-modernization.php` and the
+Run `php scripts/check-docs.php`, `php scripts/check-modernization.php` and the
 relevant tests before release preparation. `php fnlla release:prepare` enforces
-documentation synchronization, hygiene and ledger validation for maintainer
+documentation hygiene and ledger validation for maintainer
 releases, including `--skip-tests`.
 Automated checks do not replace a human review of documentation completeness.
 Do not publish, tag or push without explicit authorization.

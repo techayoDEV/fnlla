@@ -30,7 +30,9 @@ final class FrameworkIdentity
     public const SUPPORT_EMAIL = "support@fnlla.com";
     public const MAIL_FROM_ADDRESS = "noreply@fnlla.com";
     public const MAINTAINER_LEGAL = "TechAyo LTD";
-    public const MAINTAINER_NAME = "TechAyo Limited";
+    public const MAINTAINER_NAME = "TechAyo";
+    public const LEAD_NAME = "Marcin Kordyaczny";
+    public const LEAD_ROLE = "Lead Developer / Product Manager";
     public const MAINTAINER_URL = "https://techayo.co.uk";
     public const ORIGIN = "Finella Gardens in Dundee, UK";
     public const REPOSITORY = "techayoDEV/fnlla";

@@ -62,7 +62,8 @@ final class AiTriageCommand extends Command
                 "source_files_included" => false,
             ],
             "input" => $input,
-            "answer" => \framework_runtime_ai_provider($this->container)->answer($input, [
+            // Diagnostic triage stays local even when application text generation uses a cloud provider.
+            "answer" => $this->container->make(\Fnlla\Php\Ai\LocalRuntimeAssistant::class)->answer($input, [
                 "command" => "ai:triage",
                 "environment" => app_environment(),
             ]),

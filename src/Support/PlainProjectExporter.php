@@ -54,6 +54,8 @@ final class PlainProjectExporter
         }
         $this->copy(base_path("resources/project-templates/v1"), "database/seeders/DatabaseSeeder.php", $target . "/database/seeders/DatabaseSeeder.php");
         $this->copy(base_path("resources/project-templates/v1"), "phpunit.xml", $target . "/phpunit.xml");
+        $this->copy(base_path("resources/project-templates/v1"), "fnlla.cmd", $target . "/fnlla.cmd");
+        $this->write($target . "/storage/.gitignore", "# Runtime data is private, including files created by future modules.\n*\n!*/\n!.gitignore\n");
         $this->write($target . "/.fnlla/project-profile", "plain\n");
         $env = (string) file_get_contents($target . "/.env.example");
         $this->write($target . "/.env.example", str_replace("{{APP_NAME}}", str_replace(['"', "\r", "\n"], ["", "", ""], $name), $env));

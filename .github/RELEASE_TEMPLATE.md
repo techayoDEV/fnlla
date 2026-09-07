@@ -15,7 +15,7 @@ Highlights
 
 Operational notes
 - README.md, VERSION, LICENSE.md and docs/framework policy documents are aligned for the release line
-- release metadata, docs sync and published runtime export have been validated for the release line
+- release metadata, documentation hygiene and published runtime export have been validated for the release line
 - Follow-up cleanup and hardening work is tracked in GitHub after publication when needed
 ```
 
