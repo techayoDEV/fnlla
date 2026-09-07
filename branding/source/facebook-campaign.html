@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>FNLLA / {{LABEL}}</title>
+<style>
+@font-face{font-family:Space;src:url('{{ASSETS}}/fonts/SpaceGrotesk-Regular.ttf');font-weight:400}
+@font-face{font-family:Space;src:url('{{ASSETS}}/fonts/SpaceGrotesk-SemiBold.ttf');font-weight:600}
+@font-face{font-family:Mono;src:url('{{ASSETS}}/fonts/JetBrainsMono-SemiBold.ttf');font-weight:600}
+*{box-sizing:border-box;letter-spacing:0}html,body{margin:0;width:1080px;height:{{HEIGHT}}px;overflow:hidden}
+:root{ {{COLORS}} }
+body{font:400 28px/1.4 Space,sans-serif;background:var(--white);color:var(--ink)}
+main{width:1080px;height:1350px;position:relative;border-top:10px solid var(--blue)}
+body.story main{margin-top:250px}
+.logo{position:absolute;top:54px;left:64px;width:300px;height:auto}
+.version{position:absolute;right:64px;top:80px;font:600 24px Mono,monospace;color:var(--blue)}
+.label{position:absolute;left:64px;top:198px;margin:0;font:600 23px Mono,monospace;color:var(--blue)}
+h1{position:absolute;left:64px;right:64px;top:248px;height:164px;margin:0;font-size:68px;font-weight:600;line-height:1.12;white-space:pre-line}
+.lead{position:absolute;left:64px;right:64px;top:432px;height:88px;margin:0;font-size:30px;line-height:1.4;color:var(--text)}
+.visual{position:absolute;left:0;top:560px;width:1080px;height:530px;background:var(--campaign-surface);border-block:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:28px 52px}
+.binary{position:absolute;right:0;bottom:0;width:410px;opacity:.48}
+.screen{position:relative;max-width:100%;max-height:100%;height:auto;width:auto;border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 16px #0B122014}
+.note{position:absolute;top:1106px;left:64px;right:64px;margin:0;font-size:20px;color:var(--supporting-text)}
+footer{position:absolute;left:64px;right:64px;top:1176px;border-top:1px solid var(--border);padding-top:22px}
+.domain{font:600 32px Mono,monospace;color:var(--blue);margin:0 0 12px}.credit{margin:0;font-size:23px}.creator{font:600 21px Mono,monospace;color:var(--supporting-text)}
+.connection{position:relative;width:100%;padding:20px 24px;background:white;border-block:3px solid var(--blue)}
+.connection h2{font:600 40px Mono,monospace;color:var(--blue);margin:0 0 12px}.connection p{margin:0 0 18px;font-size:26px}.connection .boundary{border-top:1px solid var(--border);padding-top:22px;margin-top:22px}
+.connection small{font-size:22px;color:var(--text)}
+</style></head><body class="{{CLASS}}"><main>
+<img class="logo" src="{{ASSETS}}/logo/outline/wordmark-blue.svg" alt="FNLLA"><span class="version">{{EDITION}}</span>
+<p class="label">{{LABEL}}</p><h1>{{TITLE}}</h1><p class="lead">{{LEAD}}</p>
+<section class="visual"><img class="binary" src="{{ASSETS}}/patterns/binary-signature.png" alt="">{{VISUAL}}</section>
+<p class="note">{{NOTE}}</p><footer><p class="domain">fnlla.com</p><p class="credit">Created &amp; maintained by TechAyo</p><span class="creator">techayo.co.uk</span></footer>
+</main></body></html>

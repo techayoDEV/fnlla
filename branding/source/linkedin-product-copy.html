@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FNLLA / {{PLATFORM}} Content Kit</title>
+<style>
+{{FONTS}}
+*{box-sizing:border-box;letter-spacing:0}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;color:#0B1220;background:#fff;font:400 16px/1.65 'Space Grotesk',sans-serif}
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);max-width:1440px;margin:auto}
+aside{background:#F1F3F5;border-right:1px solid #E5E7EB;padding:28px 24px;position:sticky;top:0;height:100vh;overflow:auto}
+.kit-label{font:600 15px/1.5 'JetBrains Mono',monospace;margin:0 0 20px;color:#1D4ED8}
+nav ul{padding:0;list-style:none}nav li{margin:8px 0}nav a{font-size:14px;text-decoration:none;color:#374151}
+nav ul ul{padding-left:12px;border-left:1px solid #cbd0d8}nav>div>ul>li>ul{padding-left:0;border:0}
+nav>div>ul>li>a{display:none}nav ul ul ul a{font-size:14px}
+main{padding:40px 48px 80px;min-width:0;max-width:1050px}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;border-bottom:1px solid #E5E7EB;padding-bottom:28px;margin-bottom:32px}
+.masthead img{width:240px;height:auto}.actions{display:flex;gap:20px;flex-wrap:wrap;font-size:14px}
+a{color:#1D4ED8;text-underline-offset:3px;overflow-wrap:anywhere}a:hover{text-decoration-thickness:2px}
+h1{font-size:30px;line-height:1.25;font-weight:600;margin:0 0 20px}h2{font-size:25px;font-weight:600;line-height:1.3;margin:52px 0 20px;padding-top:24px;border-top:1px solid #E5E7EB}
+h3{font-size:20px;line-height:1.4;font-weight:600;margin:32px 0 14px}p{margin:14px 0}strong{font-weight:600}
+li{margin:6px 0}code{font-family:'JetBrains Mono',monospace;font-size:.9em;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:20px;background:#EFF6FF;border-left:3px solid #2563EB;font:400 16px/1.7 'Space Grotesk',sans-serif}
+pre code{font:inherit}.copy-block{margin:20px 0 28px}.copy-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0}
+.count{font:400 12px 'JetBrains Mono',monospace;color:#5F6775}
+button{font:600 14px 'Space Grotesk',sans-serif;cursor:pointer;color:#1D4ED8;background:#fff;border:1px solid #6B7280;border-radius:4px;padding:7px 12px;min-height:36px;white-space:nowrap}
+button:hover{background:#EFF6FF}button:focus-visible,a:focus-visible{outline:3px solid #2563EB;outline-offset:3px}
+.inline-copy{margin:0 0 12px}.table-scroll{overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:12px;text-align:left;border-bottom:1px solid #E5E7EB;vertical-align:top;overflow-wrap:anywhere}th{background:#F1F3F5;font-weight:600}
+td button{display:block;margin-top:10px}td code{word-break:break-word}
+.media-preview{display:block;width:100%;height:auto;border:1px solid #E5E7EB;margin:16px 0}
+#status{position:fixed;bottom:20px;right:20px;max-width:calc(100vw - 40px);padding:10px 16px;background:#0B1220;color:white;border-radius:4px;font-size:14px;z-index:2}
+#status:empty{display:none}
+dialog{border:1px solid #6B7280;border-radius:8px;padding:24px;width:min(640px,calc(100vw - 32px));color:#0B1220}dialog::backdrop{background:#0B122060}dialog textarea{display:block;width:100%;height:240px;margin:16px 0;padding:12px;font:16px/1.6 'Space Grotesk',sans-serif;border:1px solid #6B7280}dialog h2{margin:0;padding:0;border:0}
+@media(max-width:850px){.shell{display:block}aside{position:relative;height:auto;padding:20px;border-right:0;border-bottom:1px solid #E5E7EB}aside details:not([open]) nav{display:none}main{padding:28px 20px 64px}h1{font-size:26px}h2{font-size:23px}.masthead{gap:20px}}
+@media print{aside,.actions,button,.count,#status{display:none!important}.shell{display:block}main{max-width:none;padding:0}pre{break-inside:avoid}h2,h3{break-after:avoid}}
+</style>
+</head>
+<body>
+{{SWITCHER}}
+<div class="shell">
+<aside><p class="kit-label">{{PLATFORM}} / CONTENT KIT</p><details open><summary>Sections / Sekcje</summary><nav aria-label="Sections">{{TOC}}</nav></details></aside>
+<main>
+<header class="masthead"><img src="{{LOGO_URL}}" alt="FNLLA"><div class="actions">{{ACTIONS}}</div></header>
+<article>{{CONTENT}}</article>
+</main>
+</div>
+<div id="status" role="status" aria-live="polite"></div>
+<dialog id="manual-copy" aria-labelledby="manual-title"><h2 id="manual-title">Kopiowanie tekstu</h2><p>Nacisnij Ctrl+C lub Cmd+C.</p><textarea id="manual-text" readonly aria-label="Tekst do skopiowania"></textarea><form method="dialog"><button>Zamknij</button></form></dialog>
+<script>
+const status = document.getElementById('status');
+let statusTimer;
+function announce(message) {
+  clearTimeout(statusTimer); status.textContent = message;
+  statusTimer = setTimeout(() => { status.textContent = ''; }, 4000);
+}
+function copyButton(text, source) {
+  const button = document.createElement('button'); button.type = 'button';
+  button.textContent = 'Kopiuj'; button.dataset.copy = text;
+  button.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text); announce('Skopiowano do schowka.'); }
+    catch {
+      const temporary = document.createElement('textarea');
+      temporary.value = text; temporary.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.append(temporary); temporary.select();
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch { /* Manual selection remains available. */ }
+      temporary.remove();
+      if (copied) { button.focus(); announce('Skopiowano do schowka.'); }
+      else {
+        const dialog = document.getElementById('manual-copy');
+        const field = document.getElementById('manual-text');
+        field.value = text; dialog.showModal(); field.focus(); field.select();
+      }
+    }
+  });
+  return button;
+}
+document.querySelectorAll('pre').forEach(pre => {
+  const text = pre.textContent.replace(/\n$/, '');
+  const wrapper = document.createElement('div'); wrapper.className = 'copy-block';
+  pre.before(wrapper); wrapper.append(pre);
+  const actions = document.createElement('div'); actions.className = 'copy-actions';
+  const count = document.createElement('span'); count.className = 'count'; count.textContent = text.length + ' characters';
+  actions.append(count, copyButton(text, pre)); wrapper.append(actions);
+});
+document.querySelectorAll('article p').forEach(paragraph => {
+  const label = paragraph.querySelector(':scope > strong:first-child');
+  if (label && /^(Title|Caption|Alt text):$/.test(label.textContent.trim())) {
+    const text = paragraph.textContent.slice(label.textContent.length).trim();
+    const payload = document.createElement('span'); payload.textContent = text;
+    paragraph.replaceChildren(label, document.createTextNode(' '), payload);
+    const actions = document.createElement('div'); actions.className = 'inline-copy';
+    actions.append(copyButton(text, payload)); paragraph.after(actions);
+  }
+});
+const platforms = document.querySelectorAll('article [data-platform]');
+const profileTables = platforms.length ? [...platforms].map(section => section.querySelector('table')).filter(Boolean) : [document.querySelector('article table')];
+profileTables.forEach(profileTable => profileTable.querySelectorAll('tbody tr').forEach(row => {
+  const cell = row.cells[1]; const source = document.createElement('span');
+  while (cell.firstChild) source.append(cell.firstChild);
+  cell.append(source);
+  const code = source.querySelector('code'); const link = source.querySelector('a');
+  const strong = source.querySelector('strong');
+  const text = code ? code.textContent : link ? link.getAttribute('href') : strong ? strong.textContent : source.textContent.trim();
+  cell.append(copyButton(text, source));
+}));
+document.querySelectorAll('table').forEach(table => {
+  const wrapper = document.createElement('div'); wrapper.className = 'table-scroll';
+  table.before(wrapper); wrapper.append(table);
+});
+document.querySelectorAll('article a').forEach(link => {
+  if (link.textContent === 'Upload image') {
+    const image = document.createElement('img'); image.className = 'media-preview';
+    image.src = link.getAttribute('href'); image.alt = link.closest('p').previousElementSibling.textContent;
+    image.loading = 'lazy'; link.append(image);
+  }
+});
+if (matchMedia('(max-width:850px)').matches) document.querySelector('aside details').open = false;
+</script>
+</body>
+</html>

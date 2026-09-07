@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FNLLA / SOCIAL Content Kit</title>
+<style>
+@font-face{font-family:'Space Grotesk';font-weight:400;src:url('../assets/fonts/SpaceGrotesk-Regular.ttf')}
+@font-face{font-family:'Space Grotesk';font-weight:600;src:url('../assets/fonts/SpaceGrotesk-SemiBold.ttf')}
+@font-face{font-family:'JetBrains Mono';font-weight:400;src:url('../assets/fonts/JetBrainsMono-Regular.ttf')}
+@font-face{font-family:'JetBrains Mono';font-weight:600;src:url('../assets/fonts/JetBrainsMono-SemiBold.ttf')}
+*{box-sizing:border-box;letter-spacing:0}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;color:#0B1220;background:#fff;font:400 16px/1.65 'Space Grotesk',sans-serif}
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);max-width:1440px;margin:auto}
+aside{background:#F1F3F5;border-right:1px solid #E5E7EB;padding:28px 24px;position:sticky;top:0;height:100vh;overflow:auto}
+.kit-label{font:600 15px/1.5 'JetBrains Mono',monospace;margin:0 0 20px;color:#1D4ED8}
+nav ul{padding:0;list-style:none}nav li{margin:8px 0}nav a{font-size:14px;text-decoration:none;color:#374151}
+nav ul ul{padding-left:12px;border-left:1px solid #cbd0d8}nav>div>ul>li>ul{padding-left:0;border:0}
+nav>div>ul>li>a{display:none}nav ul ul ul a{font-size:14px}
+main{padding:40px 48px 80px;min-width:0;max-width:1050px}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;border-bottom:1px solid #E5E7EB;padding-bottom:28px;margin-bottom:32px}
+.masthead img{width:240px;height:auto}.actions{display:flex;gap:20px;flex-wrap:wrap;font-size:14px}
+a{color:#1D4ED8;text-underline-offset:3px;overflow-wrap:anywhere}a:hover{text-decoration-thickness:2px}
+h1{font-size:30px;line-height:1.25;font-weight:600;margin:0 0 20px}h2{font-size:25px;font-weight:600;line-height:1.3;margin:52px 0 20px;padding-top:24px;border-top:1px solid #E5E7EB}
+h3{font-size:20px;line-height:1.4;font-weight:600;margin:32px 0 14px}p{margin:14px 0}strong{font-weight:600}
+li{margin:6px 0}code{font-family:'JetBrains Mono',monospace;font-size:.9em;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:20px;background:#EFF6FF;border-left:3px solid #2563EB;font:400 16px/1.7 'Space Grotesk',sans-serif}
+pre code{font:inherit}.copy-block{margin:20px 0 28px}.copy-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0}
+.count{font:400 12px 'JetBrains Mono',monospace;color:#5F6775}
+button{font:600 14px 'Space Grotesk',sans-serif;cursor:pointer;color:#1D4ED8;background:#fff;border:1px solid #6B7280;border-radius:4px;padding:7px 12px;min-height:36px;white-space:nowrap}
+button:hover{background:#EFF6FF}button:focus-visible,a:focus-visible{outline:3px solid #2563EB;outline-offset:3px}
+.inline-copy{margin:0 0 12px}.table-scroll{overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:12px;text-align:left;border-bottom:1px solid #E5E7EB;vertical-align:top;overflow-wrap:anywhere}th{background:#F1F3F5;font-weight:600}
+td button{display:block;margin-top:10px}td code{word-break:break-word}
+.media-preview{display:block;width:100%;height:auto;border:1px solid #E5E7EB;margin:16px 0}
+#status{position:fixed;bottom:20px;right:20px;max-width:calc(100vw - 40px);padding:10px 16px;background:#0B1220;color:white;border-radius:4px;font-size:14px;z-index:2}
+#status:empty{display:none}
+dialog{border:1px solid #6B7280;border-radius:8px;padding:24px;width:min(640px,calc(100vw - 32px));color:#0B1220}dialog::backdrop{background:#0B122060}dialog textarea{display:block;width:100%;height:240px;margin:16px 0;padding:12px;font:16px/1.6 'Space Grotesk',sans-serif;border:1px solid #6B7280}dialog h2{margin:0;padding:0;border:0}
+@media(max-width:850px){.shell{display:block}aside{position:relative;height:auto;padding:20px;border-right:0;border-bottom:1px solid #E5E7EB}aside details:not([open]) nav{display:none}main{padding:28px 20px 64px}h1{font-size:26px}h2{font-size:23px}.masthead{gap:20px}}
+@media print{aside,.actions,button,.count,#status{display:none!important}.shell{display:block}main{max-width:none;padding:0}pre{break-inside:avoid}h2,h3{break-after:avoid}}
+</style>
+<style>
+[hidden]{display:none!important}.platform-tabs{position:sticky;top:0;z-index:3;display:flex;gap:8px;padding:12px 24px;background:#fff;border-bottom:1px solid #E5E7EB;height:64px}
+.platform-tabs button[aria-selected=true]{background:#2563EB;border-color:#2563EB;color:white}
+aside{top:64px;height:calc(100vh - 64px)}html{scroll-padding-top:88px}.actions{display:none}
+nav [data-platform]>.toc>ul>li>a{display:none}nav [data-platform]>.toc>ul>li>ul{padding-left:0;border:0}
+.asset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.asset-grid figure{margin:0}.asset-grid img{width:100%;height:auto}.asset-grid figcaption{font-size:14px;overflow-wrap:anywhere}
+@media(max-width:850px){aside{top:0;height:auto}.platform-tabs{padding-inline:20px}.asset-grid{grid-template-columns:1fr}}
+@media print{.platform-tabs{display:none}}
+</style></head>
+<body>
+<div class="platform-tabs" role="tablist" aria-label="Platforma"><button id="tab-linkedin" role="tab" aria-controls="panel-linkedin" data-tab="linkedin">LinkedIn</button><button id="tab-facebook" role="tab" aria-controls="panel-facebook" data-tab="facebook">Facebook</button><button id="tab-gallery" role="tab" aria-controls="panel-gallery" data-tab="gallery">Galeria</button></div>
+<div class="shell">
+<aside><p class="kit-label">SOCIAL / CONTENT KIT</p><details open><summary>Sections / Sekcje</summary><nav aria-label="Sections"><div data-platform="linkedin"><div class="toc">
+<ul>
+<li><a href="#linkedin-fnlla-linkedin-product-page">FNLLA LinkedIn Product Page</a><ul>
+<li><a href="#linkedin-positioning">Positioning</a></li>
+<li><a href="#linkedin-profile-fields">Profile Fields</a><ul>
+<li><a href="#linkedin-about-the-product">About The Product</a></li>
+<li><a href="#linkedin-pricing-overview">Pricing Overview</a></li>
+<li><a href="#linkedin-plans-and-pricing">Plans And Pricing</a></li>
+<li><a href="#linkedin-intended-users">Intended Users</a></li>
+</ul>
+</li>
+<li><a href="#linkedin-product-gallery">Product Gallery</a><ul>
+<li><a href="#linkedin-01-developer-panel">01 / Developer Panel</a></li>
+<li><a href="#linkedin-02-project-setup">02 / Project Setup</a></li>
+<li><a href="#linkedin-03-diagnostics">03 / Diagnostics</a></li>
+<li><a href="#linkedin-04-framework-updates">04 / Framework Updates</a></li>
+<li><a href="#linkedin-05-project-workspace">05 / Project Workspace</a></li>
+<li><a href="#linkedin-media-notes">Media Notes</a></li>
+</ul>
+</li>
+<li><a href="#linkedin-product-highlights">Product Highlights</a><ul>
+<li><a href="#linkedin-post-1-meet-the-product">Post 1 / Meet The Product</a></li>
+<li><a href="#linkedin-post-2-show-the-update-workflow">Post 2 / Show The Update Workflow</a></li>
+<li><a href="#linkedin-post-3-explain-the-ai-boundary">Post 3 / Explain The AI Boundary</a></li>
+</ul>
+</li>
+<li><a href="#linkedin-integrations-and-customers">Integrations And Customers</a></li>
+<li><a href="#linkedin-optional-demo-video">Optional Demo Video</a></li>
+<li><a href="#linkedin-before-submission">Before Submission</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><div data-platform="facebook"><div class="toc">
+<ul>
+<li><a href="#facebook-fnlla-facebook-content-kit">FNLLA / Facebook Content Kit</a><ul>
+<li><a href="#facebook-uzupenienie-strony">Uzupełnienie Strony</a><ul>
+<li><a href="#facebook-bio">Bio</a></li>
+<li><a href="#facebook-about-opis">About / Opis</a></li>
+<li><a href="#facebook-przycisk-i-linki">Przycisk I Linki</a></li>
+</ul>
+</li>
+<li><a href="#facebook-grafiki-i-kolejnosc">Grafiki I Kolejność</a><ul>
+<li><a href="#facebook-01-post-powitalny">01 / Post Powitalny</a></li>
+<li><a href="#facebook-02-pierwszy-projekt">02 / Pierwszy Projekt</a></li>
+<li><a href="#facebook-03-diagnostyka">03 / Diagnostyka</a></li>
+<li><a href="#facebook-04-aktualizacje">04 / Aktualizacje</a></li>
+<li><a href="#facebook-05-organizacja-pracy">05 / Organizacja Pracy</a></li>
+<li><a href="#facebook-06-fionn-ai">06 / FIONN AI</a></li>
+</ul>
+</li>
+<li><a href="#facebook-stories">Stories</a><ul>
+<li><a href="#facebook-story-start">Story / Start</a></li>
+<li><a href="#facebook-story-aktualizacje">Story / Aktualizacje</a></li>
+</ul>
+</li>
+<li><a href="#facebook-plan-na-dwa-tygodnie">Plan Na Dwa Tygodnie</a></li>
+<li><a href="#facebook-gotowe-odpowiedzi">Gotowe Odpowiedzi</a><ul>
+<li><a href="#facebook-czy-framework-jest-bezpatny">Czy Framework Jest Bezpłatny?</a></li>
+<li><a href="#facebook-od-czego-zaczac">Od Czego Zacząć?</a></li>
+<li><a href="#facebook-czy-ai-jest-wbudowane">Czy AI Jest Wbudowane?</a></li>
+<li><a href="#facebook-czy-jest-lepszy-od-laravel-lub-symfony">Czy Jest Lepszy Od Laravel Lub Symfony?</a></li>
+<li><a href="#facebook-zgoszenie-bezpieczenstwa">Zgłoszenie Bezpieczeństwa</a></li>
+</ul>
+</li>
+<li><a href="#facebook-kontrola-przed-publikacja">Kontrola Przed Publikacją</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div><div data-platform="gallery"><p>LinkedIn + Facebook</p><a href="../LINKEDIN-PRODUCT.md">LinkedIn Markdown</a><br><a href="../FACEBOOK-KIT.md">Facebook Markdown</a></div></nav></details></aside>
+<main>
+<header class="masthead"><img src="../assets/logo/outline/wordmark-blue.svg" alt="FNLLA"><div class="actions"></div></header>
+<article><section data-platform="linkedin" id="panel-linkedin" role="tabpanel" aria-labelledby="tab-linkedin"><h1 id="linkedin-fnlla-linkedin-product-page">FNLLA LinkedIn Product Page</h1>
+<p>Product-media handoff for <strong>FNLLA 2.2.0</strong>, prepared 7 September 2026.
+English field copy is ready to paste. Review the current LinkedIn editor before
+submission; field choices and crop behaviour can change. Nothing in this kit
+publishes to LinkedIn or changes the software release.</p>
+<h2 id="linkedin-positioning">Positioning</h2>
+<p><strong>Web framework. PHP foundation. Developer tools built in.</strong></p>
+<p>Lead with the working product: setup, private developer access, diagnostics and
+controlled updates. Use the workspace as a secondary benefit. AI connectivity is
+an extension of that workflow, not a bundled model or the primary product promise.
+The intended next step is a developer downloading FNLLA and trying a fresh project.</p>
+<h2 id="linkedin-profile-fields">Profile Fields</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Recommended value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product name</td>
+<td><strong>FNLLA</strong>, not Fnlla</td>
+</tr>
+<tr>
+<td>Product category</td>
+<td><strong>Web Frameworks</strong>, as offered by the editor</td>
+</tr>
+<tr>
+<td>Product logo</td>
+<td><a href="../assets/social/linkedin-avatar.png">FNLLA avatar, 400 x 400</a>; keep TechAyo as the creator, not the product icon</td>
+</tr>
+<tr>
+<td>Creator</td>
+<td>TechAyo</td>
+</tr>
+<tr>
+<td>Official website</td>
+<td><code>https://fnlla.com</code> once the public HTTPS destination works</td>
+</tr>
+<tr>
+<td>Initial CTA</td>
+<td><strong>Download now</strong>, where available</td>
+</tr>
+<tr>
+<td>CTA destination</td>
+<td><a href="https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0">FNLLA 2.2.0 release and downloads</a></td>
+</tr>
+<tr>
+<td>Pricing</td>
+<td>Free / open source; choose the closest available field value</td>
+</tr>
+<tr>
+<td>Community hashtag</td>
+<td><code>#fnlla</code></td>
+</tr>
+</tbody>
+</table>
+<p>If a separate CTA is unavailable, link the website field to the public repository
+temporarily rather than sending visitors to a non-working destination. Recheck
+fnlla.com from a signed-out browser and mobile network before changing that link.
+Do not use private developer routes or demonstration domains as public links.</p>
+<p>Product and creator have different names: FNLLA and TechAyo. Confirm the product
+name and own logo before submission. Some later name/logo changes are restricted
+or require LinkedIn support; do not publish a placeholder identity.
+See <a href="https://www.linkedin.com/help/linkedin/answer/a548627">LinkedIn's creation and review process</a>.</p>
+<h3 id="linkedin-about-the-product">About The Product</h3>
+<p>427 characters, excluding the surrounding code fence:</p>
+<pre><code class="language-text">FNLLA is an open-source web framework with a PHP foundation and developer tools built in. Its full starter combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates, while your application's identity stays yours. Optional workspace tools and a built-in gateway to FIONN AI by TechAyo extend the workflow. FIONN AI requires a separate developer account and API access. MIT-licensed.
+</code></pre>
+<h3 id="linkedin-pricing-overview">Pricing Overview</h3>
+<pre><code class="language-text">Free, open-source framework under the MIT License. No FNLLA framework licence fee. Hosting, infrastructure and optional external API services are separate. Commercial use is permitted under the licence terms.
+</code></pre>
+<h3 id="linkedin-plans-and-pricing">Plans And Pricing</h3>
+<p>Use <strong>one</strong> entry if the editor requires a plan, not invented tiers:</p>
+<pre><code class="language-text">Name: Open Source
+Price: Free
+Description: FNLLA framework source and starter, licensed under MIT. Hosting, deployment operations and optional external API usage are not included.
+</code></pre>
+<p>Do not describe this as a free trial, hosted subscription or enterprise support
+plan. The MIT licence includes notice requirements and warranty limitations.
+Link the plan to the <a href="https://github.com/techayoDEV/fnlla/blob/v2.2.0/LICENSE.md">public licence</a>.</p>
+<h3 id="linkedin-intended-users">Intended Users</h3>
+<p>Select the closest roles available in the editor, with direct users first:</p>
+<ol>
+<li>PHP Developer</li>
+<li>Back End Developer</li>
+<li>Full Stack Developer</li>
+<li>Web Developer</li>
+<li>Software Engineer</li>
+<li>Technical Lead</li>
+</ol>
+<p>Avoid an indiscriminate list of every IT role. FNLLA is a developer framework,
+not an end-user no-code product or a complete business application.</p>
+<h2 id="linkedin-product-gallery">Product Gallery</h2>
+<p>Upload the five numbered PNGs in this order. The first image should establish the
+working Developer Panel, not repeat the logo or Company Page cover. LinkedIn
+currently supports up to five images or videos in product media.
+<a href="https://business.linkedin.com/advertise/linkedin-pages/product-pages">Product Page media guidance</a>.</p>
+<p>The files are <strong>1920 x 1080 PNG</strong>, each below 3 MB. These are this kit's delivery
+presets, not a claimed official Product Page size requirement. Review LinkedIn's
+upload preview at desktop and mobile sizes; keep the whole 16:9 artboard visible.
+Use the original PNGs, not screenshots of their preview. Do not stretch the images.</p>
+<h3 id="linkedin-01-developer-panel">01 / Developer Panel</h3>
+<p><a href="../assets/social/linkedin-product/01-developer-panel.png">Upload image</a></p>
+<p><strong>Title:</strong> Your project. One operational view.</p>
+<p><strong>Caption:</strong> The private Developer Panel brings framework status, access shortcuts
+and update tools together. This dashboard detail shows an isolated demonstration
+project, not a customer deployment or production-readiness certification.</p>
+<p><strong>Alt text:</strong> FNLLA Developer Panel showing framework version, storage status,
+observability and links to project operations, alongside private navigation.</p>
+<h3 id="linkedin-02-project-setup">02 / Project Setup</h3>
+<p><a href="../assets/social/linkedin-product/02-project-setup.png">Upload image</a></p>
+<p><strong>Title:</strong> Start with your project's identity.</p>
+<p><strong>Caption:</strong> A fresh full starter opens local Project Setup before developer
+sign-in. Set the application identity and create the first named developer account.
+No shared default credentials. The image shows the upper part of the real form.</p>
+<p><strong>Alt text:</strong> First-run FNLLA Project Setup with an outline wordmark, project name,
+optional slogan, public URL and developer email fields in a fresh example project.</p>
+<h3 id="linkedin-03-diagnostics">03 / Diagnostics</h3>
+<p><a href="../assets/social/linkedin-product/03-diagnostics.png">Upload image</a></p>
+<p><strong>Title:</strong> See what your requests are doing.</p>
+<p><strong>Caption:</strong> Inspect status, duration and memory in the development request
+history, with controls in the Developer Panel. The sample comes from local demo
+requests and is not a performance benchmark. Debug access is environment-gated.</p>
+<p><strong>Alt text:</strong> FNLLA request profiler showing development-only controls and a table
+of real local sample requests with status, duration and memory values.</p>
+<h3 id="linkedin-04-framework-updates">04 / Framework Updates</h3>
+<p><a href="../assets/social/linkedin-product/04-framework-updates.png">Upload image</a></p>
+<p><strong>Title:</strong> Check. Dry-run. Then decide.</p>
+<p><strong>Caption:</strong> Inspect the official release, review a dry-run and make an explicit
+apply decision. Customized-file conflicts require review. This is the actual
+update-control screen before a release check, not a fabricated success report.</p>
+<p><strong>Alt text:</strong> FNLLA GitHub release controls with an optional release tag and separate
+Check, Dry-run and Apply buttons. The release has not yet been fetched in this demo.</p>
+<h3 id="linkedin-05-project-workspace">05 / Project Workspace</h3>
+<p><a href="../assets/social/linkedin-product/05-project-workspace.png">Upload image</a></p>
+<p><strong>Title:</strong> Keep delivery work in view.</p>
+<p><strong>Caption:</strong> Track tasks, priorities and review stages in a shared project Kanban
+board alongside the developer tools. Workspace is an optional module. All task
+and account data shown here is synthetic.</p>
+<p><strong>Alt text:</strong> FNLLA Project Kanban showing Backlog, Ready, In progress, Review and
+Done columns with example engineering tasks and priority filters.</p>
+<h3 id="linkedin-media-notes">Media Notes</h3>
+<p>The <a href="../assets/social/linkedin-product/screenshots/">screenshots folder</a> contains
+the five unframed full-page PNGs and the precise detail crops used in the artwork.
+Use full-page images for closer inspection or a future article, not as tiny
+gallery thumbnails. Raw screenshots contain only the isolated example project.
+The crop and typography belong to the editorial frame; the application UI has
+not been repainted, rearranged or replaced with an invented interface.</p>
+<p>These are real PHP-rendered views with the released runtime CSS, fonts and
+JavaScript. The configured preview uses a synthetic session-only developer
+account. The separate setup capture is made first, without that account.
+Fixture HTML, session material and local paths are excluded from the handoff.
+The displayed diagnostics are local fixture measurements, not production data.</p>
+<p>Do not put a QR on every product screenshot. Keep the product interface legible
+and use the page's clickable CTA. The existing Company Page cover is a different
+asset and should not occupy a product-gallery slot.</p>
+<h2 id="linkedin-product-highlights">Product Highlights</h2>
+<p>These are <strong>draft posts</strong>, not existing customer recommendations. Publish them
+from the appropriate FNLLA/TechAyo account, then feature eligible posts through
+the editor. Start with the first two; the third can introduce the optional AI
+connection after the core workflow is clear.</p>
+<h3 id="linkedin-post-1-meet-the-product">Post 1 / Meet The Product</h3>
+<p>Use gallery image 01.</p>
+<pre><code class="language-text">Your next web application needs more than a first page.
+
+FNLLA brings a PHP foundation and developer operations together: Project Setup, private developer access, request diagnostics and controlled framework updates.
+
+The full starter gives you a working place to begin. Your application keeps its own identity. FNLLA is open source and MIT-licensed.
+
+Explore FNLLA 2.2.0 and build your first project:
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+
+Created &amp; maintained by TechAyo.
+#FNLLA #PHP #WebDevelopment #OpenSource
+</code></pre>
+<h3 id="linkedin-post-2-show-the-update-workflow">Post 2 / Show The Update Workflow</h3>
+<p>Use gallery image 04.</p>
+<pre><code class="language-text">Framework updates should begin with a review, not a blind overwrite.
+
+In FNLLA, the Developer Panel exposes separate Check, Dry-run and Apply steps. Inspect the official release and review changes before applying an update. Customized-file conflicts stay explicit and require attention.
+
+The workflow supports deliberate updates. It does not replace application tests, backups or deployment review.
+
+See FNLLA 2.2.0:
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+
+#FNLLA #PHP #DeveloperExperience
+</code></pre>
+<h3 id="linkedin-post-3-explain-the-ai-boundary">Post 3 / Explain The AI Boundary</h3>
+<p>Use a text post, not an invented connected-AI screenshot.</p>
+<pre><code class="language-text">AI connectivity should be a choice, not a hidden dependency.
+
+FNLLA's full starter includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. The gateway is built in; the separate AI service is not. A suitable FIONN developer account and API access are required.
+
+OpenAI API and Anthropic API adapters are additional opt-in connections. No language model or provider credits are bundled with FNLLA.
+
+The framework's development workflow remains useful without connecting an AI service.
+
+https://github.com/techayoDEV/fnlla
+#FNLLA #DeveloperTools #AIIntegration
+</code></pre>
+<h2 id="linkedin-integrations-and-customers">Integrations And Customers</h2>
+<p>Use <strong>Featured integrations</strong> only when the editor offers the correct product
+entity and the relationship can be described accurately. An API adapter does
+not establish a commercial partnership or provider endorsement.</p>
+<table>
+<thead>
+<tr>
+<th>Name in copy</th>
+<th>Accurate description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIONN AI</td>
+<td>Built-in gateway in the full starter; separate TechAyo service, appropriate developer account and API access required</td>
+</tr>
+<tr>
+<td>OpenAI API</td>
+<td>Additional opt-in integration; developer-provided API credentials and model configuration</td>
+</tr>
+<tr>
+<td>Anthropic API</td>
+<td>Additional opt-in integration; developer-provided API credentials and model configuration</td>
+</tr>
+</tbody>
+</table>
+<p>Do not invent a FIONN developer-portal URL. Until a public access route is
+available, describe the requirement and direct genuine enquiries to TechAyo at
+<code>hello@techayo.co.uk</code>. Do not promise access, pricing or availability on its behalf.
+Do not select consumer ChatGPT or Claude subscriptions as equivalent API access.</p>
+<p>Leave <strong>Featured customers</strong> empty until an actual customer has approved public
+attribution. The example project is not a customer. TechAyo is the creator and
+maintainer, not fabricated external social proof.</p>
+<h2 id="linkedin-optional-demo-video">Optional Demo Video</h2>
+<p>A later 35-45 second recording can replace gallery image 05 while retaining the
+first four product screenshots. Record an actual fresh demo, not animated mock UI.</p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Actual screen/action</th>
+<th>Voiceover direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-6 s</td>
+<td>Project Setup, empty credential fields</td>
+<td>Your application starts with its own identity and developer access.</td>
+</tr>
+<tr>
+<td>6-16 s</td>
+<td>Explicit cut to a configured demo dashboard</td>
+<td>Keep developer operations close to the project.</td>
+</tr>
+<tr>
+<td>16-26 s</td>
+<td>Open Debug and inspect local request history</td>
+<td>Inspect requests during development.</td>
+</tr>
+<tr>
+<td>26-36 s</td>
+<td>Open Framework Updates; point to the three steps</td>
+<td>Check and review before applying an update.</td>
+</tr>
+<tr>
+<td>36-42 s</td>
+<td>Closing wordmark and GitHub release destination</td>
+<td>Explore FNLLA. PHP foundation. Developer tools built in.</td>
+</tr>
+</tbody>
+</table>
+<p>Do not record password entry, mailboxes, API keys, workstation paths or production
+customer data. The cut between fresh setup and a configured demo must not imply
+instant installation or a measured setup time. Caption the spoken content.</p>
+<h2 id="linkedin-before-submission">Before Submission</h2>
+<ol>
+<li>Confirm FNLLA name, FNLLA product logo and TechAyo creator relationship.</li>
+<li>Paste the About text, choose the category and relevant user roles.</li>
+<li>Upload the numbered graphics 01-05 and check the preview crops.</li>
+<li>Add the free/open-source pricing description without invented paid plans.</li>
+<li>Test the public download link without signing in; verify fnlla.com before using it as the landing page.</li>
+<li>Add only real integrations and consented customer references.</li>
+<li>Submit for LinkedIn review, then complete the platform's separate publication step when approved.</li>
+</ol>
+<p>Created &amp; maintained by <strong>TechAyo</strong> - <code>techayo.co.uk</code> - <code>hello@techayo.co.uk</code>.
+<strong>Lead Developer / Product Manager - Marcin Kordyaczny</strong>.</p></section><section data-platform="facebook" id="panel-facebook" role="tabpanel" aria-labelledby="tab-facebook"><h1 id="facebook-fnlla-facebook-content-kit">FNLLA / Facebook Content Kit</h1>
+<p>Pakiet dla strony <strong>FNLLA</strong>, <code>facebook.com/fnllaframework</code>, dla wydania <strong>2.2.0</strong>.
+Instrukcje są po polsku, a gotowe teksty publiczne po angielsku. Pakiet nie
+publikuje postów, nie uruchamia reklam i nie zmienia ustawień konta.</p>
+<h2 id="facebook-uzupenienie-strony">Uzupełnienie Strony</h2>
+<table>
+<thead>
+<tr>
+<th>Pole</th>
+<th>Wartość</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nazwa</td>
+<td><strong>FNLLA</strong></td>
+</tr>
+<tr>
+<td>Nazwa użytkownika</td>
+<td><code>fnllaframework</code></td>
+</tr>
+<tr>
+<td>Kategoria</td>
+<td><strong>Software</strong>, zgodnie z obecną stroną; wybierz najbliższą dostępną kategorię oprogramowania</td>
+</tr>
+<tr>
+<td>Strona WWW</td>
+<td><code>https://fnlla.com</code> po potwierdzeniu działania publicznego HTTPS</td>
+</tr>
+<tr>
+<td>Kontakt</td>
+<td><code>hello@techayo.co.uk</code></td>
+</tr>
+<tr>
+<td>Twórca</td>
+<td><strong>TechAyo</strong></td>
+</tr>
+<tr>
+<td>Strona twórcy</td>
+<td><code>https://techayo.co.uk</code></td>
+</tr>
+<tr>
+<td>Przycisk strony</td>
+<td><strong>Learn more</strong>, jeżeli jest dostępny w edytorze</td>
+</tr>
+<tr>
+<td>Adres przycisku</td>
+<td><code>https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Na przesłanym screenie nazwa, avatar i cover są już spójne. Nie trzeba ich
+ponownie zmieniać. W paczce są oryginalne pliki na wypadek ponownego uploadu:
+<a href="../assets/social/facebook-avatar.png">avatar</a> i <a href="../assets/social/facebook-cover.png">cover</a>.
+Wgrywaj PNG, nie screenshot strony Facebooka. Sprawdź kadr na telefonie; interfejs
+Facebooka może nałożyć własne przyciemnienie lub przyciąć tło.</p>
+<h3 id="facebook-bio">Bio</h3>
+<p>Krótka wersja do pola bio; nie wklejaj tam całego opisu produktu:</p>
+<pre><code class="language-text">Open-source web framework. PHP foundation. Developer tools built in. Created by TechAyo.
+</code></pre>
+<h3 id="facebook-about-opis">About / Opis</h3>
+<pre><code class="language-text">FNLLA is an open-source web framework built on PHP, with developer tools built in.
+
+Its full starter combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates. Build your own web application while keeping its identity and application code your own.
+
+Optional workspace tools support delivery work. A built-in gateway connects to FIONN AI, Persistent Personal Intelligence by TechAyo, with a separate developer account and API access. OpenAI API and Anthropic API adapters are additional opt-in integrations. No language model or provider credits are bundled.
+
+FNLLA is MIT-licensed. Hosting, deployment operations and optional external services are separate.
+
+Created &amp; maintained by TechAyo.
+Lead Developer / Product Manager - Marcin Kordyaczny.
+https://techayo.co.uk
+</code></pre>
+<h3 id="facebook-przycisk-i-linki">Przycisk I Linki</h3>
+<p>Edytuj przycisk strony z poziomu profilu FNLLA, nie profilu osobistego. Wybierz
+<strong>Learn more</strong> lub najbliższą dostępną akcję prowadzącą do strony WWW. Nazwy opcji
+zależą od wersji interfejsu i uprawnień. Meta opisuje zmianę przycisku w
+<a href="https://www.facebook.com/help/1638565256396310">centrum pomocy</a>.</p>
+<pre><code class="language-text">https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+</code></pre>
+<p>Ten adres pozwala zobaczyć wydanie i pobrać źródła. Przed publikacją sprawdź go
+w oknie prywatnym. Nie kieruj ludzi do lokalnego projektu ani prywatnego panelu.
+<code>fnlla.com</code> pozostaje domeną marki, ale nie używaj jej jako jedynej drogi do
+pobrania, dopóki strona nie działa poprawnie z zewnętrznej sieci. Dotyczy to też
+QR w istniejącym coverze. Nie wymyślaj publicznego adresu portalu FIONN AI.</p>
+<h2 id="facebook-grafiki-i-kolejnosc">Grafiki I Kolejność</h2>
+<p>Pakiet zawiera <strong>sześć grafik do postów 1080 x 1350</strong>, <strong>dwie plansze Stories
+1080 x 1920</strong> oraz istniejący avatar i cover. To nasze formaty dostarczenia,
+nie gwarancja identycznego kadrowania we wszystkich miejscach Facebooka.</p>
+<p>Publikuj pojedynczą grafikę z przypisanym tekstem. Nie dodawaj wszystkich ośmiu
+do jednego posta. Grafiki 01-05 wykorzystują prawdziwe, wcześniej sprawdzone
+ekrany FNLLA 2.2.0 z izolowanego demo. Zrzuty są kadrowane lub skalowane, bez
+przerysowywania UI. Grafika 06 przedstawia granicę integracji, nie działającą
+rozmowę z modelem. Dane demo i pomiary nie są wynikami produkcyjnymi.</p>
+<h3 id="facebook-01-post-powitalny">01 / Post Powitalny</h3>
+<p><a href="../assets/social/facebook-kit/01-launch.png">Upload image</a></p>
+<p>Opublikuj jako pierwszy. Następnie wyróżnij lub przypnij go, jeżeli odpowiednia
+opcja jest dostępna w menu posta na Twojej stronie.</p>
+<pre><code class="language-text">Meet FNLLA: a web framework with a PHP foundation and developer tools built in.
+
+Start with your project's identity. Set up private developer access. Inspect requests. Review framework updates before applying them.
+
+FNLLA 2.2.0 brings these workflows together in its full starter, while your application stays your own. Open source. MIT-licensed.
+
+Explore the release and start a project:
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+
+Created &amp; maintained by TechAyo.
+#FNLLA #PHP #WebDevelopment
+</code></pre>
+<p><strong>Alt text:</strong> FNLLA web framework announcement with an actual demo Developer Panel showing runtime status and operational shortcuts. PHP foundation and developer tools built in.</p>
+<h3 id="facebook-02-pierwszy-projekt">02 / Pierwszy Projekt</h3>
+<p><a href="../assets/social/facebook-kit/02-setup.png">Upload image</a></p>
+<pre><code class="language-text">Your project should start with your identity, not somebody else's demo account.
+
+A fresh FNLLA full starter opens local Project Setup before developer sign-in. Set the project name and create your own developer access. No shared default credentials.
+
+Then build the application your project needs.
+
+Start with FNLLA 2.2.0:
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+
+#FNLLA #PHP #DeveloperExperience
+</code></pre>
+<p><strong>Alt text:</strong> A detail of the actual FNLLA first-run setup form with project identity fields and outline branding. The demo has no preconfigured developer account.</p>
+<h3 id="facebook-03-diagnostyka">03 / Diagnostyka</h3>
+<p><a href="../assets/social/facebook-kit/03-diagnostics.png">Upload image</a></p>
+<pre><code class="language-text">What happened during that request?
+
+FNLLA's development request history shows status, duration and memory, with controls in the private Developer Panel. Keep useful diagnostics close to the application you are building.
+
+The image shows real local demo requests, not a performance benchmark. Debug access is environment-gated.
+
+Explore FNLLA:
+https://github.com/techayoDEV/fnlla
+
+#FNLLA #PHP #DeveloperTools
+</code></pre>
+<p><strong>Alt text:</strong> FNLLA development request profiler with controls and sample request history. The timing values come from a local demo and are not a benchmark.</p>
+<h3 id="facebook-04-aktualizacje">04 / Aktualizacje</h3>
+<p><a href="../assets/social/facebook-kit/04-updates.png">Upload image</a></p>
+<pre><code class="language-text">Check. Dry-run. Then decide.
+
+FNLLA exposes separate update steps so you can review framework changes before applying them. Customized-file conflicts remain explicit and need attention.
+
+Controlled updates support your workflow. They do not replace application tests, backups or deployment review.
+
+See FNLLA 2.2.0:
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+
+#FNLLA #PHP #SoftwareDevelopment
+</code></pre>
+<p><strong>Alt text:</strong> Actual FNLLA update controls with separate Check, Dry-run and Apply buttons. No release has been fetched in this demonstration state.</p>
+<h3 id="facebook-05-organizacja-pracy">05 / Organizacja Pracy</h3>
+<p><a href="../assets/social/facebook-kit/05-workspace.png">Upload image</a></p>
+<pre><code class="language-text">Keep delivery work in view, alongside the tools you use to build.
+
+FNLLA's optional workspace module includes a shared Kanban board for tasks, priorities and review stages. Use it when it fits your project; it is not a requirement to build with the framework.
+
+The screenshot uses synthetic tasks and a demo account.
+
+https://github.com/techayoDEV/fnlla
+#FNLLA #DeveloperTools #WebDevelopment
+</code></pre>
+<p><strong>Alt text:</strong> FNLLA project workspace with a shared Kanban board and example engineering tasks. Workspace is an optional module and all task data is synthetic.</p>
+<h3 id="facebook-06-fionn-ai">06 / FIONN AI</h3>
+<p><a href="../assets/social/facebook-kit/06-fionn-ai.png">Upload image</a></p>
+<pre><code class="language-text">A built-in gateway. A separate AI service.
+
+FNLLA's full starter includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. Connecting requires a suitable FIONN developer account and API access.
+
+The gateway is included. The AI service, language model and provider credits are not. OpenAI API and Anthropic API adapters are additional opt-in connections.
+
+You can build with FNLLA without connecting an AI service.
+
+https://github.com/techayoDEV/fnlla
+#FNLLA #FIONNAI #DeveloperTools
+</code></pre>
+<p><strong>Alt text:</strong> A labelled graphic distinguishes the FNLLA built-in gateway from the separate FIONN AI service by TechAyo. A developer account and API access are required.</p>
+<p>Ten post publikuj po pokazaniu podstawowej wartości frameworka. Nie deklaruj
+automatycznej pamięci repozytorium, autonomicznego programowania, bezpłatnego
+dostępu do FIONN AI ani partnerstwa z OpenAI lub Anthropic.</p>
+<h2 id="facebook-stories">Stories</h2>
+<p>To <strong>statyczne plansze</strong>, nie gotowe filmy ani Reels. Wgraj je do Stories i
+sprawdź podgląd przed publikacją. Kluczowa treść ma zapas u góry i u dołu,
+ale nakładki Facebooka nadal wymagają sprawdzenia na urządzeniu.</p>
+<h3 id="facebook-story-start">Story / Start</h3>
+<p><a href="../assets/social/facebook-kit/story-01-launch.png">Plansza</a></p>
+<pre><code class="language-text">Meet FNLLA 2.2.0. PHP foundation. Developer tools built in.
+</code></pre>
+<h3 id="facebook-story-aktualizacje">Story / Aktualizacje</h3>
+<p><a href="../assets/social/facebook-kit/story-04-updates.png">Plansza</a></p>
+<pre><code class="language-text">Check. Dry-run. Then decide. Explore FNLLA's update workflow.
+</code></pre>
+<p>Jeśli edytor udostępnia naklejkę z linkiem, użyj publicznego adresu wydania.
+Jeśli nie, udostępnij opublikowany post strony w Stories. Nie dodawaj fałszywego
+„Swipe up” ani narysowanego przycisku sugerującego działający odnośnik.</p>
+<h2 id="facebook-plan-na-dwa-tygodnie">Plan Na Dwa Tygodnie</h2>
+<p>To propozycja redakcyjna, nie obietnica zasięgu. Godziny dobierz do odbiorców;
+nie ma jeszcze danych uzasadniających konkretną „najlepszą godzinę”.</p>
+<table>
+<thead>
+<tr>
+<th>Dzień</th>
+<th>Materiał</th>
+<th>Cel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Post 01, wyróżnienie i Story Start</td>
+<td>Wyjaśnić, czym jest FNLLA i gdzie zacząć</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Post 02</td>
+<td>Pokazać pierwszy krok developera</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Post 03</td>
+<td>Pokazać konkretną funkcję diagnostyczną</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Post 04 i Story Aktualizacje</td>
+<td>Wyjaśnić kontrolowany update</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Post 05</td>
+<td>Przedstawić opcjonalny workspace</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Post 06</td>
+<td>Wyjaśnić FIONN AI bez mylenia bramki z modelem</td>
+</tr>
+</tbody>
+</table>
+<p>W Meta Business Suite wybierz właściwą stronę, utwórz szkic i dodaj pojedynczą
+grafikę oraz odpowiadający jej tekst. Jeśli dostępna jest opcja planowania,
+sprawdź strefę czasową i zaplanowany termin. Po zapisaniu upewnij się, że wpis
+widnieje w harmonogramie. Dostępność i nazwy kontrolek mogą się różnić.
+Nie uruchamiaj przy okazji przycisku Advertise/Boost; ten pakiet nie zakłada
+płatnej kampanii ani budżetu reklamowego.</p>
+<h2 id="facebook-gotowe-odpowiedzi">Gotowe Odpowiedzi</h2>
+<h3 id="facebook-czy-framework-jest-bezpatny">Czy Framework Jest Bezpłatny?</h3>
+<pre><code class="language-text">Yes. FNLLA is open source under the MIT License. Hosting, deployment operations and optional external API services are separate. The licence terms apply.
+</code></pre>
+<h3 id="facebook-od-czego-zaczac">Od Czego Zacząć?</h3>
+<pre><code class="language-text">Start with the FNLLA 2.2.0 release. Download fnlla-source.zip, verify the supplied checksum and follow the installation instructions. PHP 8.3 or later is required.
+https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
+</code></pre>
+<h3 id="facebook-czy-ai-jest-wbudowane">Czy AI Jest Wbudowane?</h3>
+<pre><code class="language-text">The full starter includes a gateway to FIONN AI by TechAyo, not a bundled language model. The separate service requires an appropriate developer account and API access. Other API integrations are opt-in.
+</code></pre>
+<h3 id="facebook-czy-jest-lepszy-od-laravel-lub-symfony">Czy Jest Lepszy Od Laravel Lub Symfony?</h3>
+<pre><code class="language-text">FNLLA focuses on bringing a PHP application foundation and developer operations together in its full starter. Choose a framework against your application's requirements, ecosystem needs and support expectations. We do not claim universal superiority or unverified performance advantages.
+</code></pre>
+<h3 id="facebook-zgoszenie-bezpieczenstwa">Zgłoszenie Bezpieczeństwa</h3>
+<pre><code class="language-text">Please do not post credentials, exploit details or private application data here. Use private vulnerability reporting for the FNLLA repository, or contact hello@techayo.co.uk.
+https://github.com/techayoDEV/fnlla/security
+</code></pre>
+<p>Nie proś o tokeny API w komentarzach ani Messengerze. Nie obiecuj czasu odpowiedzi,
+SLA lub dostępności usługi, których faktycznie nie zapewniasz.</p>
+<h2 id="facebook-kontrola-przed-publikacja">Kontrola Przed Publikacją</h2>
+<ol>
+<li>Potwierdź, że publikujesz jako FNLLA na <code>facebook.com/fnllaframework</code>.</li>
+<li>Uzupełnij bio, kontakt, opis oraz działający odnośnik.</li>
+<li>Otwórz grafikę w pełnym rozmiarze i sprawdź kadr na telefonie.</li>
+<li>Skopiuj tekst przypisany do tej grafiki, bez instrukcji redakcyjnych.</li>
+<li>Dodaj alt text, jeśli edytor go udostępnia; kluczowy przekaz pozostaje też w treści posta.</li>
+<li>Sprawdź link do pobrania bez logowania i dopiero wtedy publikuj lub zaplanuj wpis.</li>
+<li>Obejrzyj opublikowany wpis jako odbiorca. Nie kopiuj pozorowanych opinii ani klientów.</li>
+</ol>
+<p>Po dwóch tygodniach oceń kliknięcia prowadzące do projektu i rzeczowe pytania,
+nie tylko polubienia. Dopiero na tej podstawie zdecyduj o kolejnych tematach.</p>
+<p>Created &amp; maintained by <strong>TechAyo</strong> - <code>techayo.co.uk</code> - <code>hello@techayo.co.uk</code>.
+<strong>Lead Developer / Product Manager - Marcin Kordyaczny</strong>.</p></section><section data-platform="gallery" id="panel-gallery" role="tabpanel" aria-labelledby="tab-gallery"><h1>Galeria / Social assets</h1><h2>LinkedIn</h2><div class="asset-grid"><figure><a href="../assets/social/linkedin-product/01-developer-panel.png"><img src="../assets/social/linkedin-product/01-developer-panel.png" loading="lazy" alt="01-developer-panel"></a><figcaption><a href="../assets/social/linkedin-product/01-developer-panel.png" download>01-developer-panel.png</a></figcaption></figure><figure><a href="../assets/social/linkedin-product/02-project-setup.png"><img src="../assets/social/linkedin-product/02-project-setup.png" loading="lazy" alt="02-project-setup"></a><figcaption><a href="../assets/social/linkedin-product/02-project-setup.png" download>02-project-setup.png</a></figcaption></figure><figure><a href="../assets/social/linkedin-product/03-diagnostics.png"><img src="../assets/social/linkedin-product/03-diagnostics.png" loading="lazy" alt="03-diagnostics"></a><figcaption><a href="../assets/social/linkedin-product/03-diagnostics.png" download>03-diagnostics.png</a></figcaption></figure><figure><a href="../assets/social/linkedin-product/04-framework-updates.png"><img src="../assets/social/linkedin-product/04-framework-updates.png" loading="lazy" alt="04-framework-updates"></a><figcaption><a href="../assets/social/linkedin-product/04-framework-updates.png" download>04-framework-updates.png</a></figcaption></figure><figure><a href="../assets/social/linkedin-product/05-project-workspace.png"><img src="../assets/social/linkedin-product/05-project-workspace.png" loading="lazy" alt="05-project-workspace"></a><figcaption><a href="../assets/social/linkedin-product/05-project-workspace.png" download>05-project-workspace.png</a></figcaption></figure></div><h2>Facebook</h2><div class="asset-grid"><figure><a href="../assets/social/facebook-kit/01-launch.png"><img src="../assets/social/facebook-kit/01-launch.png" loading="lazy" alt="01-launch"></a><figcaption><a href="../assets/social/facebook-kit/01-launch.png" download>01-launch.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/02-setup.png"><img src="../assets/social/facebook-kit/02-setup.png" loading="lazy" alt="02-setup"></a><figcaption><a href="../assets/social/facebook-kit/02-setup.png" download>02-setup.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/03-diagnostics.png"><img src="../assets/social/facebook-kit/03-diagnostics.png" loading="lazy" alt="03-diagnostics"></a><figcaption><a href="../assets/social/facebook-kit/03-diagnostics.png" download>03-diagnostics.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/04-updates.png"><img src="../assets/social/facebook-kit/04-updates.png" loading="lazy" alt="04-updates"></a><figcaption><a href="../assets/social/facebook-kit/04-updates.png" download>04-updates.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/05-workspace.png"><img src="../assets/social/facebook-kit/05-workspace.png" loading="lazy" alt="05-workspace"></a><figcaption><a href="../assets/social/facebook-kit/05-workspace.png" download>05-workspace.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/06-fionn-ai.png"><img src="../assets/social/facebook-kit/06-fionn-ai.png" loading="lazy" alt="06-fionn-ai"></a><figcaption><a href="../assets/social/facebook-kit/06-fionn-ai.png" download>06-fionn-ai.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/story-01-launch.png"><img src="../assets/social/facebook-kit/story-01-launch.png" loading="lazy" alt="story-01-launch"></a><figcaption><a href="../assets/social/facebook-kit/story-01-launch.png" download>story-01-launch.png</a></figcaption></figure><figure><a href="../assets/social/facebook-kit/story-04-updates.png"><img src="../assets/social/facebook-kit/story-04-updates.png" loading="lazy" alt="story-04-updates"></a><figcaption><a href="../assets/social/facebook-kit/story-04-updates.png" download>story-04-updates.png</a></figcaption></figure></div><h2>Avatary i covery</h2><div class="asset-grid"><figure><a href="../assets/social/linkedin-avatar.png"><img src="../assets/social/linkedin-avatar.png" loading="lazy" alt="linkedin-avatar"></a><figcaption><a href="../assets/social/linkedin-avatar.png" download>linkedin-avatar.png</a></figcaption></figure><figure><a href="../assets/social/linkedin-cover.png"><img src="../assets/social/linkedin-cover.png" loading="lazy" alt="linkedin-cover"></a><figcaption><a href="../assets/social/linkedin-cover.png" download>linkedin-cover.png</a></figcaption></figure><figure><a href="../assets/social/facebook-avatar.png"><img src="../assets/social/facebook-avatar.png" loading="lazy" alt="facebook-avatar"></a><figcaption><a href="../assets/social/facebook-avatar.png" download>facebook-avatar.png</a></figcaption></figure><figure><a href="../assets/social/facebook-cover.png"><img src="../assets/social/facebook-cover.png" loading="lazy" alt="facebook-cover"></a><figcaption><a href="../assets/social/facebook-cover.png" download>facebook-cover.png</a></figcaption></figure></div></section></article>
+</main>
+</div>
+<div id="status" role="status" aria-live="polite"></div>
+<dialog id="manual-copy" aria-labelledby="manual-title"><h2 id="manual-title">Kopiowanie tekstu</h2><p>Nacisnij Ctrl+C lub Cmd+C.</p><textarea id="manual-text" readonly aria-label="Tekst do skopiowania"></textarea><form method="dialog"><button>Zamknij</button></form></dialog>
+<script>
+const status = document.getElementById('status');
+let statusTimer;
+function announce(message) {
+  clearTimeout(statusTimer); status.textContent = message;
+  statusTimer = setTimeout(() => { status.textContent = ''; }, 4000);
+}
+function copyButton(text, source) {
+  const button = document.createElement('button'); button.type = 'button';
+  button.textContent = 'Kopiuj'; button.dataset.copy = text;
+  button.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text); announce('Skopiowano do schowka.'); }
+    catch {
+      const temporary = document.createElement('textarea');
+      temporary.value = text; temporary.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.append(temporary); temporary.select();
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch { /* Manual selection remains available. */ }
+      temporary.remove();
+      if (copied) { button.focus(); announce('Skopiowano do schowka.'); }
+      else {
+        const dialog = document.getElementById('manual-copy');
+        const field = document.getElementById('manual-text');
+        field.value = text; dialog.showModal(); field.focus(); field.select();
+      }
+    }
+  });
+  return button;
+}
+document.querySelectorAll('pre').forEach(pre => {
+  const text = pre.textContent.replace(/\n$/, '');
+  const wrapper = document.createElement('div'); wrapper.className = 'copy-block';
+  pre.before(wrapper); wrapper.append(pre);
+  const actions = document.createElement('div'); actions.className = 'copy-actions';
+  const count = document.createElement('span'); count.className = 'count'; count.textContent = text.length + ' characters';
+  actions.append(count, copyButton(text, pre)); wrapper.append(actions);
+});
+document.querySelectorAll('article p').forEach(paragraph => {
+  const label = paragraph.querySelector(':scope > strong:first-child');
+  if (label && /^(Title|Caption|Alt text):$/.test(label.textContent.trim())) {
+    const text = paragraph.textContent.slice(label.textContent.length).trim();
+    const payload = document.createElement('span'); payload.textContent = text;
+    paragraph.replaceChildren(label, document.createTextNode(' '), payload);
+    const actions = document.createElement('div'); actions.className = 'inline-copy';
+    actions.append(copyButton(text, payload)); paragraph.after(actions);
+  }
+});
+const platforms = document.querySelectorAll('article [data-platform]');
+const profileTables = platforms.length ? [...platforms].map(section => section.querySelector('table')).filter(Boolean) : [document.querySelector('article table')];
+profileTables.forEach(profileTable => profileTable.querySelectorAll('tbody tr').forEach(row => {
+  const cell = row.cells[1]; const source = document.createElement('span');
+  while (cell.firstChild) source.append(cell.firstChild);
+  cell.append(source);
+  const code = source.querySelector('code'); const link = source.querySelector('a');
+  const strong = source.querySelector('strong');
+  const text = code ? code.textContent : link ? link.getAttribute('href') : strong ? strong.textContent : source.textContent.trim();
+  cell.append(copyButton(text, source));
+}));
+document.querySelectorAll('table').forEach(table => {
+  const wrapper = document.createElement('div'); wrapper.className = 'table-scroll';
+  table.before(wrapper); wrapper.append(table);
+});
+document.querySelectorAll('article a').forEach(link => {
+  if (link.textContent === 'Upload image') {
+    const image = document.createElement('img'); image.className = 'media-preview';
+    image.src = link.getAttribute('href'); image.alt = link.closest('p').previousElementSibling.textContent;
+    image.loading = 'lazy'; link.append(image);
+  }
+});
+if (matchMedia('(max-width:850px)').matches) document.querySelector('aside details').open = false;
+</script>
+<script>
+const tabs = [...document.querySelectorAll('[data-tab]')];
+function activate(key, scroll=false) {
+ document.querySelectorAll('[data-platform]').forEach(e=>e.hidden=e.dataset.platform!==key);
+ tabs.forEach(t=>{t.setAttribute('aria-selected',t.dataset.tab===key);t.tabIndex=t.dataset.tab===key?0:-1;});
+ if(scroll) window.scrollTo(0,0);
+}
+function fromHash(){const h=location.hash.slice(1);activate(h.startsWith('facebook')?'facebook':h.startsWith('gallery')?'gallery':'linkedin');}
+tabs.forEach((tab,index)=>{
+ tab.addEventListener('click',()=>{location.hash=tab.dataset.tab;activate(tab.dataset.tab,true);});
+ tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();tabs[next].focus();});
+});
+document.querySelector('aside details').open=!matchMedia('(max-width:850px)').matches;
+window.addEventListener('hashchange',fromHash);fromHash();
+</script></body>
+</html>
