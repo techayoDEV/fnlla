@@ -2,18 +2,28 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Setup";
-$developerPanelLead = "Readiness checklist, project identity, leadership visibility and client preview controls.";
+$developerPanelTitle = "Project Identity";
+$developerPanelLead = "Project name, runtime posture, ownership and preview controls in one focused place.";
 $projectName = (string) ($projectSettings["name"] ?? config("app.name", "FNLLA Project"));
 $projectTagline = (string) ($projectSettings["tagline"] ?? "");
 $projectUrl = (string) ($projectSettings["url"] ?? "");
+$runtimeEnvironment = is_array($projectSettings["runtime_environment"] ?? null) ? (array) $projectSettings["runtime_environment"] : [];
+$runtimeMode = (string) old("runtime_environment", (string) ($runtimeEnvironment["mode"] ?? (app_environment() === "production" ? "production" : "development")));
+$runtimeMode = in_array($runtimeMode, ["development", "production"], true) ? $runtimeMode : "development";
+$runtimeTrustedHostsValue = (string) old("runtime_trusted_hosts", (string) ($runtimeEnvironment["trusted_hosts_value"] ?? ""));
+$runtimeCheckbox = static fn (string $key, bool $current): bool => (string) old($key, $current ? "1" : "0") === "1";
+$runtimeDebugEnabled = $runtimeCheckbox("runtime_debug_enabled", (bool) ($runtimeEnvironment["debug_enabled"] ?? app_debug()));
+$runtimeDebugToolbarEnabled = $runtimeCheckbox("runtime_debug_toolbar_enabled", (bool) ($runtimeEnvironment["debug_toolbar_enabled"] ?? config("debug.toolbar", false)));
+$runtimeRequestHistoryEnabled = $runtimeCheckbox("runtime_request_history_enabled", (bool) ($runtimeEnvironment["request_history_enabled"] ?? config("debug.history.enabled", false)));
+$runtimeProductionReady = (bool) ($runtimeEnvironment["production_ready"] ?? false);
+$runtimeChecks = array_values((array) ($runtimeEnvironment["checks"] ?? []));
 $projectLeadership = is_array($projectSettings["leadership"] ?? null) ? (array) $projectSettings["leadership"] : project_leadership("admin");
 $projectLeadershipStatus = (string) ($projectLeadership["status"] ?? "pending");
 $projectLeadershipVisibility = (string) ($projectLeadership["visibility"] ?? "disabled");
 $projectLeadershipConfigured = (bool) ($projectLeadership["configured"] ?? false);
 $projectLeadershipPublic = (bool) ($projectLeadership["public_visible"] ?? false);
 $projectLeadershipManager = new \Fnlla\Php\Support\ProjectLeadership();
-$projectLeadershipCanConfirm = $projectLeadershipManager->canConfirm($projectLeadership, (array) ($developerAccess["current_developer"] ?? []));
+$projectLeadershipCanConfirm = $projectLeadershipManager->canConfirm($projectLeadership, (array) ($developerAccess["current_developer"] ?? []), (array) ($developerAccess["current_capabilities"] ?? []));
 $projectLeadershipVisibilityPreview = match ($projectLeadershipVisibility) {
     "public" => $projectLeadershipPublic ? "Public visitors can see the confirmed responsibility record." : "Public visitors will not see this until the named person confirms it.",
     "admin" => "Only developer-panel users can see the responsibility record.",
@@ -37,6 +47,12 @@ $maintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
 $maintenanceConfigured = (bool) ($maintenanceAccess["configured"] ?? false);
 $serviceDisabled = (bool) ($developerControl["disabled"] ?? false);
 $remoteEnabled = (bool) ($developerControl["remote_enabled"] ?? false);
+$identitySections = [
+    ["href" => "#developer-project-identity", "label" => "Identity", "text" => "Name, slogan and URL"],
+    ["href" => "#runtime-environment", "label" => "Runtime", "text" => "Environment, debug and hosts"],
+    ["href" => "#project-leadership", "label" => "Ownership", "text" => "Lead record and visibility"],
+    ["href" => "#developer-access-preview", "label" => "Preview", "text" => "Client lock and service state"],
+];
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -44,16 +60,22 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Project setup</p>
-              <h2 class="developer-dashboard-section-title">One handover surface for checklist, identity and private client preview.</h2>
-              <p class="content-text mb-0">These project-level settings are usually reviewed together before sharing a build or moving toward release.</p>
+              <h2 class="developer-dashboard-section-title">Set the public identity, keep the build private, then hand it over cleanly.</h2>
+              <p class="content-text mb-0">Start with the name and runtime posture. Add ownership and preview controls only when the project needs them.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="#developer-setup-checklist">Checklist</a>
-              <a class="btn btn-outline btn-sm" href="#developer-access-preview">Preview</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Security</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Open public site</a>
             </div>
           </div>
+
+          <nav class="developer-project-identity-nav" aria-label="Project identity sections">
+            <?php foreach ($identitySections as $section): ?>
+            <a href="<?= h((string) $section["href"]) ?>">
+              <strong><?= h((string) $section["label"]) ?></strong>
+              <span><?= h((string) $section["text"]) ?></span>
+            </a>
+            <?php endforeach; ?>
+          </nav>
 
           <div class="developer-dashboard-status-grid" id="developer-setup-checklist">
             <article class="developer-dashboard-status-card developer-setup-progress-card">
@@ -81,6 +103,14 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
 
+          <details class="developer-project-identity-drawer">
+            <summary>
+              <span>
+                <strong>Readiness checklist</strong>
+                <small><?= h((string) $readyCount) ?> of <?= h((string) $totalCount) ?> project setup checks are ready.</small>
+              </span>
+              <em>Open checklist</em>
+            </summary>
           <div class="developer-setup-checklist-grid">
             <?php foreach ($checklistItems as $item): ?>
             <?php
@@ -99,6 +129,7 @@ require __DIR__ . "/panel-header.php";
             </article>
             <?php endforeach; ?>
           </div>
+          </details>
 
           <div class="developer-dashboard-section-head mt-3">
             <h2 class="developer-dashboard-section-title">Project identity</h2>
@@ -171,6 +202,98 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
+        <section class="developer-dashboard-section" id="runtime-environment" aria-label="Runtime environment">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Runtime environment</h2>
+            <span class="developer-dashboard-refresh">APP_ENV and diagnostics</span>
+          </div>
+
+          <div class="developer-dashboard-status-grid">
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Mode</strong><span class="developer-dashboard-ok"><?= h(strtoupper((string) ($runtimeEnvironment["mode"] ?? $runtimeMode))) ?></span></div>
+              <h3><?= h((string) ($runtimeEnvironment["label"] ?? ucfirst($runtimeMode))) ?></h3>
+              <p><?= ((string) ($runtimeEnvironment["mode"] ?? $runtimeMode)) === "production" ? "Setup UI is closed and production guards apply." : "Local setup and developer diagnostics can stay available." ?></p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Debug exposure</strong><span class="developer-dashboard-ok"><?= (bool) ($runtimeEnvironment["diagnostics_safe"] ?? false) ? "OFF" : "ON" ?></span></div>
+              <h3><?= (bool) ($runtimeEnvironment["debug_enabled"] ?? false) ? "APP_DEBUG on" : "APP_DEBUG off" ?></h3>
+              <p>Production save forces APP_DEBUG, toolbar and request history off.</p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Trusted hosts</strong><span class="developer-dashboard-ok"><?= h((string) count((array) ($runtimeEnvironment["trusted_hosts"] ?? []))) ?></span></div>
+              <h3><?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? "Pinned host boundary" : "Not configured" ?></h3>
+              <p><?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? h(implode(", ", (array) ($runtimeEnvironment["trusted_hosts"] ?? []))) : "Set this before a real production deployment." ?></p>
+            </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Production readiness</strong><span class="developer-dashboard-ok"><?= $runtimeProductionReady ? "READY" : "REVIEW" ?></span></div>
+              <h3><?= $runtimeProductionReady ? "Runtime switches align" : "Review required" ?></h3>
+              <ul class="developer-dashboard-check-list">
+                <?php foreach ($runtimeChecks as $check): ?>
+                <li><?= ($check["ready"] ?? false) ? "OK" : "Review" ?>: <?= h((string) ($check["label"] ?? "Check")) ?> - <?= h((string) ($check["value"] ?? "")) ?></li>
+                <?php endforeach; ?>
+              </ul>
+            </article>
+          </div>
+
+          <div class="developer-panel-form-grid">
+            <article class="developer-panel-fieldset-card">
+              <p class="feature-kicker">Runtime mode</p>
+              <h2 class="content-title">Switch environment</h2>
+              <form class="form stack gap-md" action="<?= h(route("developer.settings.runtime_environment")) ?>" method="post" novalidate>
+                <?= csrf_field() ?>
+                <div class="developer-runtime-mode-options" role="radiogroup" aria-label="Runtime environment mode">
+                  <label class="developer-runtime-mode-option">
+                    <input type="radio" name="runtime_environment" value="development" <?= $runtimeMode === "development" ? "checked" : "" ?>>
+                    <strong>Development</strong>
+                    <span>Local setup, detailed errors and optional debug tools.</span>
+                  </label>
+                  <label class="developer-runtime-mode-option">
+                    <input type="radio" name="runtime_environment" value="production" <?= $runtimeMode === "production" ? "checked" : "" ?>>
+                    <strong>Production</strong>
+                    <span>Public runtime posture with diagnostics forced off.</span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="runtime-trusted-hosts">Trusted hosts <span class="content-text">(comma separated)</span></label>
+                  <input class="input" id="runtime-trusted-hosts" name="runtime_trusted_hosts" type="text" value="<?= h($runtimeTrustedHostsValue) ?>" maxlength="512" placeholder="fnlla.com,www.fnlla.com">
+                  <p class="help-text">Use host names without paths. Wildcard subdomains such as <code>*.example.com</code> are supported.</p>
+                </div>
+                <div class="developer-runtime-switch-grid">
+                  <label class="developer-analytics-toggle">
+                    <input type="checkbox" name="runtime_debug_enabled" value="1" <?= $runtimeDebugEnabled ? "checked" : "" ?>>
+                    <span><strong>APP_DEBUG</strong><small>Detailed error output for development only.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="checkbox" name="runtime_debug_toolbar_enabled" value="1" <?= $runtimeDebugToolbarEnabled ? "checked" : "" ?>>
+                    <span><strong>Debug toolbar</strong><small>Developer-only toolbar when debug mode is available.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="checkbox" name="runtime_request_history_enabled" value="1" <?= $runtimeRequestHistoryEnabled ? "checked" : "" ?>>
+                    <span><strong>Request history</strong><small>Private aggregate request timing during local diagnostics.</small></span>
+                  </label>
+                </div>
+                <button class="btn btn-primary" type="submit">Save runtime environment</button>
+              </form>
+            </article>
+
+            <article class="developer-panel-fieldset-card">
+              <p class="feature-kicker">What changes</p>
+              <h2 class="content-title">Environment file writes</h2>
+              <div class="developer-dashboard-glance-table">
+                <div class="developer-dashboard-glance-row"><strong>APP_ENV</strong><span><?= h((string) ($runtimeEnvironment["environment"] ?? app_environment())) ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>APP_DEBUG</strong><span><?= (bool) ($runtimeEnvironment["debug_enabled"] ?? false) ? "true" : "false" ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>DEBUG_TOOLBAR</strong><span><?= (bool) ($runtimeEnvironment["debug_toolbar_enabled"] ?? false) ? "true" : "false" ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>DEBUG_REQUEST_HISTORY</strong><span><?= (bool) ($runtimeEnvironment["request_history_enabled"] ?? false) ? "true" : "false" ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>TRUSTED_HOSTS</strong><span><?= h((string) ($runtimeEnvironment["trusted_hosts_value"] ?? "")) ?></span></div>
+              </div>
+              <div class="developer-panel-status-note">
+                <strong>Production note</strong>
+                <span>Switching to production is real: setup screens are no longer available to public visitors, debug output is off and production readiness checks become stricter.</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section class="developer-dashboard-section" id="project-leadership" aria-label="Project leadership">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Project leadership</h2>
@@ -215,7 +338,7 @@ require __DIR__ . "/panel-header.php";
                 <div class="form-group">
                   <label class="label" for="project-leadership-person-email">Confirmation email</label>
                   <input class="input" id="project-leadership-person-email" name="project_leadership_person_email" type="email" value="<?= h((string) ($projectLeadership["person_email"] ?? "")) ?>" maxlength="160" autocomplete="email" placeholder="lead@example.com">
-                  <p class="help-text">The named person must sign in with this developer email to confirm or reject the responsibility.</p>
+                  <p class="help-text">The named person can confirm with this developer email. Lead developers can also approve the responsibility record.</p>
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-leadership-person-role">Role or position</label>

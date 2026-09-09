@@ -57,8 +57,9 @@ Persistent sessions now enforce idle and absolute time limits on the server.
 Review `SESSION_LIFETIME_MINUTES` and `SESSION_ABSOLUTE_LIFETIME_MINUTES` before
 deployment and expect a fresh login for expired or malformed legacy sessions.
 Start session-dependent workflows before emitting response output.
-New integrated exports enable all modules. Project Setup and Panel Settings can
-disable unwanted modules; updating an existing project's code preserves its settings.
+New integrated exports enable all modules. Panel Settings and explicit
+environment values can disable unwanted modules; updating an existing project's
+code preserves its settings.
 `make:project` no longer prompts automatically. Use `--interactive` for the retained
 advanced chooser or `--profile=plain` for an explicit core-only export.
 

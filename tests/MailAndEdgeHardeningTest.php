@@ -163,7 +163,6 @@ final class MailAndEdgeHardeningTest extends TestCase
         self::assertArrayHasKey("runtime_ai_learning_path", $checks);
         self::assertArrayHasKey("developer_control_remote_https", $checks);
         self::assertArrayHasKey("developer_control_remote_allowlist", $checks);
-        self::assertArrayHasKey("integration_sentry_https", $checks);
         self::assertArrayHasKey("integration_api_hooks_https", $checks);
     }
 
@@ -190,8 +189,6 @@ final class MailAndEdgeHardeningTest extends TestCase
 
     public function testSecurityAuditBlocksUnsafeEnabledIntegrationEndpoints(): void
     {
-        config_set("integrations.sentry.enabled", true);
-        config_set("integrations.sentry.dsn", "http://sentry.example.test/1");
         config_set("integrations.api_hooks.enabled", true);
         config_set("integrations.api_hooks.endpoint", "http://hooks.example.test/fnlla");
 
@@ -202,7 +199,6 @@ final class MailAndEdgeHardeningTest extends TestCase
             $checks[$check["id"]] = $check;
         }
 
-        self::assertSame("fail", $checks["integration_sentry_https"]["status"] ?? null);
         self::assertSame("fail", $checks["integration_api_hooks_https"]["status"] ?? null);
     }
 }

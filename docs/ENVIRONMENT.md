@@ -21,8 +21,9 @@ maintainers and teams enabling optional adapters should review
 ## Why The Starter Is Short
 
 New integrated exports leave `FNLLA_MODULE_WORKSPACE`, `FNLLA_MODULE_ANALYTICS`,
-`FNLLA_MODULE_HEATMAP` and `FNLLA_MODULE_CUSTOMER_PORTAL` true. Project Setup and
-Panel Settings can disable unwanted modules without installing a second framework.
+`FNLLA_MODULE_HEATMAP` and `FNLLA_MODULE_CUSTOMER_PORTAL` true. Panel Settings
+and explicit environment values can disable unwanted modules without installing
+a second framework.
 Selecting heatmaps also enables analytics; disabling modules preserves data.
 Updates preserve explicit settings and the opt-in marker used by earlier exports.
 Enabling modules does not bypass authentication, privacy consent or debug guards.
@@ -187,7 +188,7 @@ Visibility modes:
 - `disabled` keeps the block off.
 - `admin` shows the record only in the Developer Panel and documentation.
 - `public` allows public display only after the named person confirms it from a
-  matching developer account.
+  matching developer account or a lead developer approves the project record.
 
 Changing the named person, email, role, organisation, responsibility scope or
 profile URL resets confirmation to `pending`. This lets a project developer
@@ -244,6 +245,7 @@ DEVELOPER_ACTIVITY_LOG_PATH=framework/developer/activity.jsonl
 DEVELOPER_ACCESS_TOTP_ISSUER="${APP_NAME}"
 DEVELOPER_WORKSPACE_DRIVER=file
 DEVELOPER_WORKSPACE_PATH=framework/developer/workspace.json
+DEVELOPER_PRIVATE_TODO_PATH=framework/developer/private-todos.json
 DEVELOPER_NOTIFICATIONS_STATE_PATH=framework/developer/notifications-state.json
 ```
 
@@ -263,6 +265,10 @@ DEVELOPER_ANALYTICS_EVENTS_TABLE=fnlla_developer_analytics_events
 These tables are still technical operations data. Business records, customer
 activity, product audit events and application admin workflows belong to the
 downstream application schema, not to FNLLA core.
+
+`DEVELOPER_PRIVATE_TODO_PATH` stores per-developer private notes and personal
+tasks. It is local technical state, keyed to the signed-in developer email, and
+is separate from the shared Kanban workspace and Customer Portal.
 
 ## Customer Portal Access
 
@@ -310,11 +316,32 @@ OBSERVABILITY_ANALYTICS_BOT_FILTERING=true
 OBSERVABILITY_ANALYTICS_DEVICE_DETECTION=true
 OBSERVABILITY_ANALYTICS_TRACK_QUERY_STRINGS=false
 OBSERVABILITY_SLOW_ROUTE_THRESHOLD_MS=750
+DEBUG_TOOLBAR=false
+DEBUG_REQUEST_HISTORY=false
+DEBUG_RUNTIME_ISSUES=true
 ```
 
-The same values can be changed from `/developer/panel/analytics` by a developer
-role with panel-settings permission. FNLLA writes only these explicit
-environment keys and records the change in the developer audit log.
+The observability analytics values can be changed from
+`/developer/panel/analytics` by a developer role with panel-settings permission.
+FNLLA writes only these explicit environment keys and records the change in the
+developer audit log.
+
+Operations / Error Monitor exposes `/developer/panel/debug/live` for the signed-in
+developer panel and public-page debug toolbar. It returns local aggregate
+diagnostics, bounded request-history entries and runtime issue counts. Runtime
+issue tracking stores deduplicated 500-level issue fingerprints in
+`storage/framework/developer/runtime-issues.json`; it does not store exception
+messages, traces, headers, cookies, bodies, SQL text or bindings. A developer
+with workspace permission can promote a runtime issue candidate into the
+Technical debt register when it represents actual debt and can choose whether a
+linked shared Kanban card should be created.
+
+`/developer/panel/project-identity#runtime-environment` can switch the runtime
+between `development` and `production` for a configured project. The panel writes
+only the controlled runtime keys `APP_ENV`, `APP_DEBUG`, `DEBUG_TOOLBAR`,
+`DEBUG_REQUEST_HISTORY` and `TRUSTED_HOSTS`. Selecting `production` forces debug
+output, the toolbar and request history off, then surfaces HTTPS `APP_URL` and
+trusted-host readiness in the setup checklist.
 
 Developer service control is a stronger lock than client preview:
 

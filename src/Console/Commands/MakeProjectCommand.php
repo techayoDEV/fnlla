@@ -334,9 +334,23 @@ final class MakeProjectCommand extends Command
 
         $decoded["name"] = "project/" . $packageSlug;
         $decoded["description"] = $appName . " built on FNLLA and its integrated UI surface.";
-        unset($decoded["autoload-dev"]);
+        unset($decoded["autoload-dev"], $decoded["require-dev"]);
         $decoded["autoload"]["psr-4"]["App\\"] = "app/";
-        $decoded["require-dev"] = ["phpstan/phpstan" => "^2.1", "phpunit/phpunit" => "^12.5"];
+        $decoded["suggest"]["phpstan/phpstan"] = "Optional deeper static analysis. The exported starter runs a dependency-light baseline without it.";
+        $decoded["suggest"]["phpunit/phpunit"] = "Optional full PHPUnit runner. The exported starter ships a dependency-light local smoke-test harness.";
+        $decoded["scripts"] = [
+            "console" => "@php fnlla",
+            "test" => "@php scripts/test.php",
+            "analyse" => "@php scripts/static-analysis.php",
+            "doctor" => "@php fnlla doctor",
+            "app:map" => "@php fnlla app:map",
+            "security" => "@php fnlla security:audit",
+            "lint" => [
+                "@php scripts/lint.php",
+                "@php scripts/validate-fnlla-runtime.php",
+                "@php scripts/validate-version-manifest.php",
+            ],
+        ];
 
         file_put_contents(
             $path,

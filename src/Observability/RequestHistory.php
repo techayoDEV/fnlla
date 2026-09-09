@@ -38,6 +38,11 @@ final class RequestHistory
         if (!$this->enabled()) {
             return;
         }
+
+        if ((string) ($_SERVER["FNLLA_ROUTE_NAME"] ?? "") === "developer.panel.debug.live") {
+            return;
+        }
+
         // Whitelist only aggregate values: URLs, IDs, headers, SQL and bodies can contain secrets.
         $method = $request->method();
         $entry = [

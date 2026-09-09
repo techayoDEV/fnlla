@@ -77,7 +77,7 @@ return [
             "wordmark" => "assets/brand/fnlla/wordmark.svg",
             "wordmark_dark" => "assets/brand/fnlla/wordmark-on-black.svg",
             // Compatibility alias; the retired rotated-logo pattern is no longer shipped.
-            "blueprint_pattern" => "assets/brand/fnlla/binary-signature.png",
+            "blueprint_pattern" => "assets/brand/fnlla/binary-field.png",
             "favicon" => "assets/brand/fnlla/favicon.svg",
             "apple_touch_icon" => "assets/brand/fnlla/apple-touch-icon.png",
             "open_graph" => "assets/brand/fnlla/fnlla-open-graph-v3-1200x630.png",

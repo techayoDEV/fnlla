@@ -21,6 +21,13 @@ final class DeveloperNavigationTest extends TestCase
             $operator = DeveloperNavigation::groups(["operations.view", "policy.view"], static fn (string $route): string => "/" . $route);
             self::assertSame("/developer.panel.debug", $operator["Operations"]["debug"]["href"]);
             self::assertTrue(isset($operator["Workspace"]["technical-debt"]));
+            self::assertFalse(isset($operator["Workspace"]["workspace"]));
+            self::assertFalse(isset($operator["Workspace"]["private-todo"]));
+            config_set("modules.workspace", true);
+            $workspace = DeveloperNavigation::groups(["operations.view"], static fn (string $route): string => "/" . $route);
+            self::assertSame("/developer.panel.workspace", $workspace["Workspace"]["workspace"]["href"]);
+            self::assertFalse(isset($workspace["Workspace"]["private-todo"]));
+            self::assertSame("Error monitor", $workspace["Operations"]["debug"]["label"]);
         } finally { config_set("modules", $saved); }
     }
 }

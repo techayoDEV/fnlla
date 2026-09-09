@@ -32,6 +32,7 @@ abstract class DeveloperPanelController extends Controller
             "name" => (string) config("app.name", "FNLLA Project"),
             "tagline" => (string) config("app.tagline", ""),
             "url" => (string) config("app.base_url", ""),
+            "runtime_environment" => $this->runtimeEnvironmentSettings(),
             "leadership" => $leadership ?? project_leadership("admin"),
         ];
     }
@@ -39,9 +40,11 @@ abstract class DeveloperPanelController extends Controller
     protected function developerDashboard(array $developerAccess, array $maintenanceAccess, ?array $leadership = null): array
     {
         $versions = $this->fnllaVersionFacts();
+        $runtimeEnvironment = $this->runtimeEnvironmentSettings();
 
         return [
-            "environment" => app_environment(),
+            "environment" => $runtimeEnvironment["environment"],
+            "runtime_environment" => $runtimeEnvironment,
             "project_name" => (string) config("app.name", "FNLLA Project"),
             "project_tagline" => (string) config("app.tagline", ""),
             "project_url" => (string) config("app.base_url", ""),
@@ -67,6 +70,119 @@ abstract class DeveloperPanelController extends Controller
             "framework_version" => $this->readVersionFile(base_path("VERSION")) ?? "unknown",
             "runtime_version" => $this->readVersionFile(public_path("vendor/fnlla-runtime/VERSION")) ?? "unknown",
         ];
+    }
+
+    protected function runtimeEnvironmentSettings(): array
+    {
+        $environment = strtolower(trim(app_environment()));
+        $mode = $environment === "production" ? "production" : "development";
+        $debugEnabled = app_debug();
+        $debugToolbarEnabled = (bool) config("debug.toolbar", false);
+        $requestHistoryEnabled = (bool) config("debug.history.enabled", false);
+        $trustedHosts = $this->normalizeRuntimeTrustedHosts((array) config("security.trusted_hosts", []));
+        $appUrl = trim((string) config("app.base_url", ""));
+        $appUrlIsHttps = str_starts_with(strtolower($appUrl), "https://");
+        $diagnosticsSafe = !$debugEnabled && !$debugToolbarEnabled && !$requestHistoryEnabled;
+        $productionReady = $mode !== "production" || ($diagnosticsSafe && $appUrlIsHttps && $trustedHosts !== []);
+
+        return [
+            "environment" => $environment !== "" ? $environment : $mode,
+            "mode" => $mode,
+            "label" => ucfirst($mode),
+            "debug_enabled" => $debugEnabled,
+            "debug_toolbar_enabled" => $debugToolbarEnabled,
+            "request_history_enabled" => $requestHistoryEnabled,
+            "trusted_hosts" => $trustedHosts,
+            "trusted_hosts_value" => implode(",", $trustedHosts),
+            "app_url" => $appUrl,
+            "app_url_https" => $appUrlIsHttps,
+            "diagnostics_safe" => $diagnosticsSafe,
+            "production_ready" => $productionReady,
+            "checks" => [
+                [
+                    "label" => "APP_DEBUG",
+                    "value" => $debugEnabled ? "On" : "Off",
+                    "ready" => $mode !== "production" || !$debugEnabled,
+                    "text" => $mode === "production" ? "Must be off in production." : "Detailed errors are allowed during development.",
+                ],
+                [
+                    "label" => "Debug tools",
+                    "value" => ($debugToolbarEnabled || $requestHistoryEnabled) ? "On" : "Off",
+                    "ready" => $mode !== "production" || (!$debugToolbarEnabled && !$requestHistoryEnabled),
+                    "text" => "Toolbar and request history are forced off when production is selected here.",
+                ],
+                [
+                    "label" => "APP_URL",
+                    "value" => $appUrlIsHttps ? "HTTPS" : ($appUrl !== "" ? "HTTP/local" : "Not set"),
+                    "ready" => $mode !== "production" || $appUrlIsHttps,
+                    "text" => "Production deployments should use an HTTPS public URL.",
+                ],
+                [
+                    "label" => "TRUSTED_HOSTS",
+                    "value" => $trustedHosts !== [] ? (string) count($trustedHosts) : "None",
+                    "ready" => $mode !== "production" || $trustedHosts !== [],
+                    "text" => "Production deployments should pin the accepted host names.",
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param string|array<array-key, mixed> $hosts
+     * @return list<string>
+     */
+    protected function normalizeRuntimeTrustedHosts(string|array $hosts): array
+    {
+        $raw = is_array($hosts)
+            ? implode(",", array_map(static fn (mixed $host): string => (string) $host, $hosts))
+            : $hosts;
+        $entries = preg_split('/[\s,;]+/', $raw) ?: [];
+        $normalized = [];
+
+        foreach ($entries as $entry) {
+            $host = strtolower(trim((string) $entry));
+
+            if ($host === "" || str_contains($host, "\r") || str_contains($host, "\n") || str_contains($host, "\0")) {
+                continue;
+            }
+
+            if (str_contains($host, "://")) {
+                $parsedHost = parse_url($host, PHP_URL_HOST);
+                $host = is_string($parsedHost) ? strtolower(trim($parsedHost)) : "";
+            }
+
+            if ($host === "") {
+                continue;
+            }
+
+            $host = explode("/", $host, 2)[0];
+
+            if (str_starts_with($host, "[")) {
+                $end = strpos($host, "]");
+                $host = $end === false ? "" : substr($host, 0, $end + 1);
+            } elseif (substr_count($host, ":") === 1 && preg_match('/:\d+$/', $host) === 1) {
+                $host = (string) preg_replace('/:\d+$/', "", $host);
+            }
+
+            $host = trim($host, ". \t\n\r\0\x0B");
+
+            if (
+                $host === ""
+                || strlen($host) > 120
+                || (
+                    $host !== "*"
+                    && preg_match('/^\*\.[a-z0-9.-]+$/', $host) !== 1
+                    && preg_match('/^[a-z0-9.-]+$/', $host) !== 1
+                    && preg_match('/^\[[a-f0-9:]+\]$/', $host) !== 1
+                )
+            ) {
+                continue;
+            }
+
+            $normalized[$host] = $host;
+        }
+
+        return array_values($normalized);
     }
 
     protected function renderDeveloperPanel(
@@ -126,6 +242,9 @@ abstract class DeveloperPanelController extends Controller
                 "health" => route("developer.panel.release_readiness"),
                 "framework_updates" => route("developer.panel.framework_updates"),
                 "framework_updates_run" => route("developer.panel.framework_updates.run"),
+                "technical_debt" => route("developer.panel.technical_debt"),
+                "debug" => route("developer.panel.debug"),
+                "debug_live" => route("developer.panel.debug.live"),
                 "operations" => route("developer.panel.operations"),
                 "project_logs" => route("developer.panel.project_logs"),
                 "analytics" => route("developer.panel.analytics"),
@@ -135,6 +254,7 @@ abstract class DeveloperPanelController extends Controller
                 "release_readiness" => route("developer.panel.release_readiness"),
                 "integrations" => route("developer.panel.integrations"),
                 "workspace" => route("developer.panel.workspace"),
+                "private_todo" => route("developer.panel.private_todo"),
                 "policy" => route("developer.panel.policy"),
                 "documentation" => route("developer.panel.documentation"),
                 "about" => route("developer.panel.about"),
@@ -164,6 +284,9 @@ abstract class DeveloperPanelController extends Controller
         $leadershipConfigured = (bool) ($leadership["configured"] ?? false);
         $leadershipVisibility = (string) ($leadership["visibility"] ?? "disabled");
         $leadershipStatus = (string) ($leadership["status"] ?? "pending");
+        $runtimeEnvironment = $this->runtimeEnvironmentSettings();
+        $runtimeMode = (string) ($runtimeEnvironment["mode"] ?? "development");
+        $runtimeProductionReady = (bool) ($runtimeEnvironment["production_ready"] ?? false);
         $developerPathIsDefault = $developerPath === "/developer";
         $maintenanceConfigured = (bool) ($maintenanceAccess["configured"] ?? false);
         $maintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
@@ -210,6 +333,15 @@ abstract class DeveloperPanelController extends Controller
                 "status_label" => $developerNavMode === "developer_session_only" ? "Hidden" : "Visible",
                 "text" => $developerNavMode === "developer_session_only" ? "Public footer stays clean." : "Footer link appears after developer setup.",
                 "href" => route("developer.panel.settings"),
+            ],
+            [
+                "label" => "Runtime environment",
+                "status" => $runtimeProductionReady ? ($runtimeMode === "production" ? "ready" : "review") : "attention",
+                "status_label" => ucfirst($runtimeMode),
+                "text" => $runtimeMode === "production"
+                    ? ($runtimeProductionReady ? "Production-safe runtime switches are applied." : "Review HTTPS URL, trusted hosts or debug switches.")
+                    : "Development keeps setup and diagnostics available for local work.",
+                "href" => route("developer.panel.project_identity") . "#runtime-environment",
             ],
             [
                 "label" => "Leadership visibility",

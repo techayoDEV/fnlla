@@ -64,12 +64,23 @@ final class ProjectLeadership
         ];
     }
 
-    public function canConfirm(array $state, array $developer): bool
+    public function canConfirm(array $state, array $developer, array $capabilities = []): bool
     {
+        if (($state["configured"] ?? false) !== true) {
+            return false;
+        }
+
         $developerEmail = strtolower(trim((string) ($developer["email"] ?? "")));
         $leadEmail = strtolower(trim((string) ($state["person_email"] ?? "")));
 
-        return $leadEmail !== "" && $developerEmail !== "" && hash_equals($leadEmail, $developerEmail);
+        if ($leadEmail !== "" && $developerEmail !== "" && hash_equals($leadEmail, $developerEmail)) {
+            return true;
+        }
+
+        $role = strtolower(trim((string) ($developer["role"] ?? "")));
+
+        return in_array($role, ["owner_developer", "lead_developer", "admin"], true)
+            && in_array("project.identity.write", $capabilities, true);
     }
 
     public function sameIdentity(array $current, array $next): bool

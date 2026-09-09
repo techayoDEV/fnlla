@@ -26,6 +26,10 @@ final class MetricsRecorder
             return;
         }
 
+        if ($this->routeName() === "developer.panel.debug.live") {
+            return;
+        }
+
         $this->locked(function () use ($request, $response, $durationMs): void {
             $metrics = $this->read();
             $recordedAt = gmdate(DATE_ATOM);

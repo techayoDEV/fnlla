@@ -119,7 +119,7 @@ def identity(doc):
     p.paragraph_format.tab_stops.clear_all()
     p.paragraph_format.tab_stops.add_tab_stop(Mm(166), WD_TAB_ALIGNMENT.RIGHT)
     p.add_run().add_picture(str(BRAND / "assets/logo/wordmark-transparent.png"), width=Mm(49))
-    p.add_run("\t").add_picture(str(BRAND / "assets/patterns/binary-signature.png"), width=Mm(30))
+    p.add_run("\t").add_picture(str(BRAND / "assets/patterns/binary-field.png"), width=Mm(30))
     footer = section.footer
     p = footer.paragraphs[0]
     p.paragraph_format.space_after = Pt(5)

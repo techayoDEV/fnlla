@@ -53,7 +53,11 @@
     ],
     "schemas": [
         "fnlla.technical_debt_report.v1",
-        "fnlla.technical_debt_update.v1"
+        "fnlla.technical_debt_update.v1",
+        "fnlla.debug_report.v1",
+        "fnlla.debug_live.v1",
+        "fnlla.runtime_issue_tracker.v1",
+        "fnlla.developer_private_todo.v1"
     ],
     "data": [
         "framework.identity",
@@ -65,6 +69,8 @@
         "developer.activity_export",
         "developer.activity_csv_export",
         "developer.activity",
+        "developer.debug_live",
+        "developer.runtime_issues",
         "developer.analytics",
         "developer.analytics_settings",
         "developer.cookie_consent_event",
@@ -74,9 +80,11 @@
         "developer.operations",
         "developer.policy_boundary",
         "developer.project_leadership",
+        "developer.runtime_environment",
         "developer.security",
         "developer.storage_install",
         "developer.workspace",
+        "developer.private_todo",
         "customer.access",
         "customer.workspace",
         "customer.analytics",

@@ -18,7 +18,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
   <div class="debt-toolbar">
     <h2 id="debt-title">Register <small><?= count($debtItems) ?></small></h2>
     <form method="get">
-      <label>Status <select name="status"><option value="">All</option><?php foreach (TechnicalDebtRegistry::STATUSES as $status): ?><option value="<?= h($status) ?>" <?= $statusFilter === $status ? "selected" : "" ?>><?= h(ucwords(str_replace("_", " ", $status))) ?></option><?php endforeach; ?></select></label>
+      <label>Status <select class="select" name="status"><option value="">All</option><?php foreach (TechnicalDebtRegistry::STATUSES as $status): ?><option value="<?= h($status) ?>" <?= $statusFilter === $status ? "selected" : "" ?>><?= h(ucwords(str_replace("_", " ", $status))) ?></option><?php endforeach; ?></select></label>
       <button class="btn btn-outline btn-sm" type="submit">Filter</button>
     </form>
     <?php if ($canManageDebt): ?>
@@ -39,7 +39,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
   </details>
   <?php endforeach; ?>
   <?php if ($canManageDebt): ?>
-  <details class="debt-row"><summary>Add debt item</summary>
+  <details class="debt-row debt-add-row"><summary class="debt-add-summary">Add debt item</summary>
     <?php $item = ["id" => "", "title" => "", "status" => "open", "priority" => "normal", "owner" => "", "notes" => "", "due_date" => ""]; require VIEW_ROOT . "/developer/technical-debt-form.php"; ?>
   </details>
   <?php endif; ?>

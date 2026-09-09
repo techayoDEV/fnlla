@@ -19,7 +19,6 @@ final class DeveloperWorkspaceBoard
 {
     private const COLUMNS = [
         "backlog" => "Backlog",
-        "todo" => "Ready",
         "in_progress" => "In progress",
         "review" => "Review",
         "done" => "Done",
@@ -143,16 +142,63 @@ final class DeveloperWorkspaceBoard
         return $this->mutate(fn (array $state): array => $this->createTask($state, $payload, $developer));
     }
 
+    public function createRuntimeIssueTask(array $issue, string $debtItemId, array $developer = []): array
+    {
+        $fingerprint = trim((string) ($issue["fingerprint"] ?? $issue["id"] ?? $debtItemId));
+        $taskId = "runtime-" . substr(hash("sha256", $fingerprint), 0, 16);
+        $route = trim((string) ($issue["route"] ?? "unmatched"));
+        $location = trim((string) ($issue["file"] ?? "")) . ":" . (string) max(0, (int) ($issue["line"] ?? 0));
+        $occurrences = max(1, (int) ($issue["occurrences"] ?? 1));
+        $payload = [
+            "id" => $taskId,
+            "title" => (string) ($issue["title"] ?? "Review runtime issue"),
+            "notes" => "Runtime issue triage. Route: {$route}. Location: {$location}. Occurrences: {$occurrences}.",
+            "status" => "backlog",
+            "priority" => $occurrences >= 3 ? "urgent" : "high",
+            "type" => "bug",
+            "color" => "red",
+            "assignee" => (string) ($developer["email"] ?? ""),
+            "client_visible" => false,
+            "checklist" => implode("\n", [
+                "[ ] Reproduce the failing route",
+                "[ ] Review the linked technical debt item",
+                "[ ] Confirm the runtime issue stops recurring",
+            ]),
+            "attachment_label" => "Technical debt item",
+            "attachment_url" => "#debt-" . substr(preg_replace('/[^A-Za-z0-9_-]/', "-", $debtItemId) ?: "runtime", 0, 64),
+        ];
+
+        $tasks = $this->mutate(function (array $state) use ($taskId, $payload, $developer): array {
+            $tasks = $this->normaliseTasks((array) ($state["tasks"] ?? []));
+
+            foreach ($tasks as $task) {
+                if (($task["id"] ?? "") === $taskId) {
+                    return $tasks;
+                }
+            }
+
+            return $this->createTask(["tasks" => $tasks], $payload, $developer);
+        });
+
+        foreach ($tasks as $task) {
+            if (($task["id"] ?? "") === $taskId) {
+                return $task;
+            }
+        }
+
+        return [];
+    }
+
     private function createTask(array $state, array $payload, array $developer): array
     {
         $tasks = $this->normaliseTasks((array) ($state["tasks"] ?? []));
         $now = gmdate(DATE_ATOM);
 
         $tasks[] = [
-            "id" => bin2hex(random_bytes(8)),
+            "id" => $this->clean((string) ($payload["id"] ?? bin2hex(random_bytes(8))), 32),
             "title" => $this->clean((string) ($payload["title"] ?? ""), 120),
             "notes" => $this->clean((string) ($payload["notes"] ?? ""), 280),
-            "status" => $this->status((string) ($payload["status"] ?? "todo")),
+            "status" => $this->status((string) ($payload["status"] ?? "backlog")),
             "position" => $this->position($payload["position"] ?? (count($tasks) + 1) * 100),
             "priority" => $this->priority((string) ($payload["priority"] ?? "normal")),
             "type" => $this->type((string) ($payload["type"] ?? "task")),
@@ -324,7 +370,7 @@ final class DeveloperWorkspaceBoard
         $grouped = array_fill_keys(array_keys(self::COLUMNS), []);
 
         foreach ($tasks as $task) {
-            $status = $this->status((string) ($task["status"] ?? "todo"));
+            $status = $this->status((string) ($task["status"] ?? "backlog"));
             $grouped[$status][] = $task;
         }
 
@@ -361,7 +407,7 @@ final class DeveloperWorkspaceBoard
                 "id" => $this->clean((string) ($task["id"] ?? bin2hex(random_bytes(8))), 32),
                 "title" => $title,
                 "notes" => $this->clean((string) ($task["notes"] ?? ""), 280),
-                "status" => $this->status((string) ($task["status"] ?? "todo")),
+                "status" => $this->status((string) ($task["status"] ?? "backlog")),
                 "position" => $this->position($task["position"] ?? (count($normalised) + 1) * 100),
                 "priority" => $this->priority((string) ($task["priority"] ?? "normal")),
                 "type" => $this->type((string) ($task["type"] ?? "task")),
@@ -424,7 +470,7 @@ final class DeveloperWorkspaceBoard
                 "id" => "starter-identity",
                 "title" => "Confirm project identity",
                 "notes" => "Set project name, URL and browser-title slogan before sharing the build.",
-                "status" => "todo",
+                "status" => "backlog",
                 "position" => 100,
                 "priority" => "normal",
                 "type" => "task",
@@ -503,7 +549,11 @@ final class DeveloperWorkspaceBoard
     {
         $value = strtolower(str_replace([" ", "-"], "_", trim($value)));
 
-        return array_key_exists($value, self::COLUMNS) ? $value : "todo";
+        if ($value === "todo") {
+            return "backlog";
+        }
+
+        return array_key_exists($value, self::COLUMNS) ? $value : "backlog";
     }
 
     private function priority(string $value): string
@@ -765,7 +815,13 @@ final class DeveloperWorkspaceBoard
 
     private function path(): string
     {
-        return storage_path(ltrim((string) config("developer_workspace.path", "framework/developer/workspace.json"), "\\/"));
+        $path = (string) config("developer_workspace.path", "framework/developer/workspace.json");
+
+        if (preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1 || str_starts_with($path, "/") || str_starts_with($path, "\\")) {
+            return $path;
+        }
+
+        return storage_path(ltrim($path, "\\/"));
     }
 
     private function driver(): string

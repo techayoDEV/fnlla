@@ -23,6 +23,11 @@ final class TechnicalDebtRegistry
         return $this->store->read() + ["revision" => 0, "items" => [], "history" => []];
     }
 
+    public static function runtimeIssueDebtId(string $fingerprint): string
+    {
+        return hash("sha256", "runtime-issue:" . $fingerprint);
+    }
+
     public function save(array $input, int $revision, string $actor): array
     {
         foreach (["id", "title", "status", "priority", "owner", "notes", "due_date"] as $field) {
@@ -80,6 +85,54 @@ final class TechnicalDebtRegistry
                 $state["items"][$id]["last_seen_at"] = gmdate(DATE_ATOM);
             }
             $state["scanned_at"] = gmdate(DATE_ATOM);
+            return $state;
+        });
+    }
+
+    public function promoteRuntimeIssue(array $issue, int $revision, string $actor): array
+    {
+        $fingerprint = trim((string) ($issue["fingerprint"] ?? $issue["id"] ?? ""));
+
+        if ($fingerprint === "" || strlen($fingerprint) > 128) {
+            throw new InvalidArgumentException("Runtime issue fingerprint is invalid.");
+        }
+
+        $id = self::runtimeIssueDebtId($fingerprint);
+        $title = trim((string) ($issue["title"] ?? "Review runtime issue"));
+        $title = $title !== "" ? substr($title, 0, 160) : "Review runtime issue";
+        $occurrences = max(1, (int) ($issue["occurrences"] ?? 1));
+        $priority = "high";
+        $notes = substr(implode("\n", array_filter([
+            "Promoted from the runtime issue tracker.",
+            "Fingerprint: " . $fingerprint,
+            "Occurrences: " . (string) $occurrences,
+            "Route: " . trim((string) ($issue["route"] ?? "")),
+            "Location: " . trim((string) ($issue["file"] ?? "")) . ":" . (string) max(0, (int) ($issue["line"] ?? 0)),
+            "Last request: " . trim((string) ($issue["last_request_id"] ?? "")),
+        ], static fn (string $line): bool => trim($line) !== "")), 0, 2000);
+
+        return $this->mutate($revision, $actor, "promote_runtime_issue", function (array $state) use ($id, $fingerprint, $title, $priority, $notes, $issue, $occurrences): array {
+            $previous = is_array($state["items"][$id] ?? null) ? (array) $state["items"][$id] : [
+                "id" => $id,
+                "source" => "runtime_issue",
+                "created_at" => gmdate(DATE_ATOM),
+                "status" => "open",
+                "priority" => $priority,
+                "owner" => "",
+                "notes" => $notes,
+                "due_date" => "",
+            ];
+
+            $state["items"][$id] = array_merge($previous, [
+                "id" => $id,
+                "title" => $title,
+                "source" => "runtime_issue",
+                "runtime_issue_id" => $fingerprint,
+                "runtime_issue_last_seen_at" => (string) ($issue["last_seen_at"] ?? ""),
+                "runtime_issue_occurrences" => $occurrences,
+                "updated_at" => gmdate(DATE_ATOM),
+            ]);
+
             return $state;
         });
     }

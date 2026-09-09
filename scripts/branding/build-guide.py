@@ -28,8 +28,6 @@ from svglib.svglib import svg2rlg
 from PIL import Image
 import zxingcpp
 from fontTools.ttLib import TTFont as WebFont
-from fontTools.pens.reportLabPen import ReportLabPen
-from fontTools.pens.transformPen import TransformPen
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -42,7 +40,7 @@ MAINTAINER = "Created & maintained by " + TOKENS["maintainer"]
 LEAD = "Lead Developer / Product Manager - " + TOKENS["lead"]
 DOMAIN = TOKENS["domain"]
 CREATOR_DOMAIN = TOKENS["maintainer_domain"]
-BINARY_SIGNATURE = "".join(f"{value:08b}" for value in b"FNLLA")
+BINARY_BYTES = "".join(f"{value:08b}" for value in b"FNLLA")
 SOURCE_ART = {}
 OUTLINE_STYLES = {
     "blue": ("blue", None), "black": ("logo_black", None), "grey": ("logo_grey", None),
@@ -167,33 +165,8 @@ class Page:
                 strength = 1 if continuous else min(1, edge/3) * (0.55 if (row // 7 + col // 10) % 3 else 1)
                 self.pdf.setFillAlpha(strength)
                 index = row*cols+col if continuous else row*8 + col-col//10*2
-                bit = BINARY_SIGNATURE[index % len(BINARY_SIGNATURE)]
+                bit = BINARY_BYTES[index % len(BINARY_BYTES)]
                 self.text(bit, x+col*size*column_step, y+row*size*row_step, size, "Code", ink)
-        self.pdf.restoreState()
-
-    def binary_signature(self, x, y, width, height, size=7):
-        """Clip the decorative FNLLA bytes to actual Mono glyphs, not a substitute logo."""
-        class ClipPen(ReportLabPen):
-            def _closePath(self):
-                self.path.close()
-
-        self.pdf.saveState()
-        glyph_size = min(width / pdfmetrics.stringWidth("01", "CodeBold", 1), height / 0.76)
-        path = self.pdf.beginPath()
-        with WebFont(BRAND / "assets/fonts/JetBrainsMono-SemiBold.ttf") as font:
-            glyphs, cmap = font.getGlyphSet(), font.getBestCmap()
-            scale = glyph_size / font["head"].unitsPerEm
-            cursor = x
-            for char in "01":
-                glyph = glyphs[cmap[ord(char)]]
-                glyph.draw(TransformPen(ClipPen(glyphs, path), (scale, 0, 0, scale, cursor, self.h-y-height)))
-                cursor += glyph.width*scale
-        self.pdf.setFillColor(colour("blue"))
-        self.pdf.setFillAlpha(0.18)
-        self.pdf.drawPath(path, fill=1, stroke=0)
-        self.pdf.setFillAlpha(1)
-        self.pdf.clipPath(path, stroke=0, fill=0)
-        self.binary_field(x, y, width, height, size=size, ink="blue", continuous=True)
         self.pdf.restoreState()
 
     def qr(self, target, x, y, size):
@@ -319,16 +292,16 @@ def illustration(page, number):
         page.text("fnlla.com  /  hello@techayo.co.uk", 558, 357, 13, "CodeBold", "blue")
         page.text("URLs, email, code, metadata and FIONN AI", 558, 387, 11, ink="muted")
     elif number == 7:
-        for x, label in [(48, "01 / SIGNATURE"), (344, "02 / FIELD"), (640, "03 / BAND")]:
+        for x, label in [(48, "01 / DETAIL"), (344, "02 / FIELD"), (640, "03 / BAND")]:
             page.text(label, x, 182, 12, "Code", "blue")
-        page.binary_signature(62, 232, 232, 129, size=4.4)
+        page.binary_field(62, 232, 232, 129, size=4.4)
         page.binary_field(354, 231, 252, 126, size=8)
         page.rect(640, 227, 272, 139, "campaign_surface")
         page.rect(640, 227, 4, 139, "blue")
         page.text("Blue identifies.", 663, 249, 20, "BrandBold", "blue")
         page.text("Grey carries.", 663, 287, 20, "BrandBold")
         page.text(DOMAIN, 663, 335, 12, "CodeBold", "blue")
-        page.text("Campaigns only. Not a new logo.", 48, 391, 10, ink="text")
+        page.text("Small bytes. Generous clear space.", 48, 391, 10, ink="text")
         page.text("Decorative bytes. Not live data.", 344, 391, 10, ink="text")
         page.text("Reading first. Colour by role.", 640, 391, 10, ink="text")
     elif number == 8:
@@ -438,7 +411,7 @@ def social_outputs():
         p.rect(0, 0, width, height)
         if width == 1200:
             p.rect(0, 0, 16, height, "blue")
-            p.binary_signature(805, 146, 290, 145, size=5.8)
+            p.binary_field(805, 146, 290, 145, size=5.8)
             p.logo("wordmark", 80, 73, 570)
             p.text("WEB FRAMEWORK", 913, 90, 16, "Code", "muted")
             p.text("Build with continuity.", 80, 328, 54, "BrandBold")
@@ -518,7 +491,7 @@ def repository_outputs():
         p.text("FNLLA / AI-READY WEB FRAMEWORK", 72, 43, 21, "Code", "text")
         p.text(DOMAIN, 1305, 40, 28, "CodeBold", "blue")
         p.logo("wordmark", 70, 136, 770)
-        p.binary_signature(1060, 148, 456, 280, size=8)
+        p.binary_field(1060, 148, 456, 280, size=8)
         p.text("Build from blueprint.", 72, 441, 72, "BrandBold")
         p.text("Setup. Private panel. Diagnostics. Updates.", 76, 552, 32, ink="text")
         p.text("FIONN AI", 76, 604, 24, "CodeBold", "blue")
@@ -622,7 +595,7 @@ def campaign_outputs(cover_band="campaign_surface"):
         q = Page(p.pdf, 2100, p.h/factor)
         q.rect(0, 0, q.w, q.h)
         q.rect(0, 0, q.w, 9, "blue")
-        q.binary_signature(40, 65, 220, 136, size=4.2)
+        q.binary_field(40, 65, 220, 136, size=4.2)
         q.binary_field(1946, 36, 125, 165, size=12)
         q.logo("wordmark", 350, 46, 330, style="blue")
         q.text(DOMAIN, 350, 179, 34, "BrandBold", "blue")
@@ -642,7 +615,7 @@ def campaign_outputs(cover_band="campaign_surface"):
     def facebook(p):
         p.rect(0, 0, p.w, p.h)
         p.rect(0, 0, p.w, 12, "blue")
-        p.binary_signature(46, 78, 210, 138, size=4.6)
+        p.binary_field(46, 78, 210, 138, size=4.6)
         p.binary_field(46, 276, 210, 106, size=12)
         p.binary_field(1424, 38, 180, 348, size=13)
         p.logo("wordmark", 330, 38, 460, style="blue")
@@ -721,14 +694,14 @@ def verify_masters():
                    ("success_text", "success_surface"), ("danger_text", "danger_surface")]:
         if contrast(fg, bg) < 4.5:
             raise ValueError(f"Text contrast below 4.5:1: {fg} / {bg}")
-    # Catch clipping/font regressions that leave an otherwise populated cover without its motif.
-    signature = Image.open(BytesIO(render_art(
-        300, 200, lambda page: page.binary_signature(10, 10, 280, 170), background="white"))).convert("RGB")
+    # Check both sides of the quiet field for missing fonts or blank rendering.
+    field = Image.open(BytesIO(render_art(
+        300, 200, lambda page: page.binary_field(10, 10, 280, 170), background="white"))).convert("RGB")
     for left in (0, 150):
-        pixels = signature.crop((left, 0, left+150, 200)).get_flattened_data()
-        blue_pixels = sum(b > r+40 and b > g+25 for r, g, b in pixels)
+        pixels = field.crop((left, 0, left+150, 200)).get_flattened_data()
+        blue_pixels = sum(b > r+8 and b > g+3 for r, g, b in pixels)
         if not 100 < blue_pixels < 15_000:
-            raise ValueError("The decorative 01 signature must retain two nonblank, digit-built glyphs")
+            raise ValueError("The decorative binary field must retain readable microtype")
 
 
 def build_pdf():
@@ -869,10 +842,10 @@ def main():
     outputs.update(campaign_outputs())
     outputs.update(repository_outputs())
     outputs.update(webfont_outputs())
-    signature = render_art(640, 360, lambda page: page.binary_signature(12, 12, 616, 326, size=10),
-                           transparent=True, source_name="binary-signature")
-    outputs[BRAND / "assets/patterns/binary-signature.png"] = signature
-    outputs[ROOT / "public/assets/brand/fnlla/binary-signature.png"] = signature
+    signature = render_art(640, 360, lambda page: page.binary_field(12, 12, 616, 326, size=10),
+                           transparent=True, source_name="binary-field")
+    outputs[BRAND / "assets/patterns/binary-field.png"] = signature
+    outputs[ROOT / "public/assets/brand/fnlla/binary-field.png"] = signature
     outputs[ROOT / "public/assets/brand/fnlla/wordmark.svg"] = outline_svg("wordmark", "blue")
     outputs[ROOT / "public/assets/brand/fnlla/wordmark-on-black.svg"] = outline_svg("wordmark", "on-black")
     posters = {}

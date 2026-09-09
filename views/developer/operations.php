@@ -139,10 +139,10 @@ require __DIR__ . "/panel-header.php";
             </article>
 
             <article class="developer-dashboard-card">
-              <p class="feature-kicker">Opt-in heatmaps</p>
+              <p class="feature-kicker">FNLLA Heatmap</p>
               <h3><?= h(ucfirst((string) ($heatmaps["status"] ?? "disabled"))) ?></h3>
               <p class="content-text"><?= h((string) ($heatmaps["notes"] ?? "Heatmaps stay outside the framework core.")) ?></p>
-              <p class="developer-dashboard-status is-neutral"><?= h((string) ($heatmaps["mode"] ?? "opt-in adapter")) ?></p>
+              <p class="developer-dashboard-status is-active"><?= h((string) ($heatmaps["mode"] ?? "first-party aggregate heatmap")) ?></p>
             </article>
           </div>
           <?php if ($auditLog !== []): ?>

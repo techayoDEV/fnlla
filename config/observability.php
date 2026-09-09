@@ -68,10 +68,10 @@ return [
     ],
     "heatmap" => [
         /*
-        First-party behavior telemetry is the local alternative to Clarity-style
-        click and scroll maps. It records aggregate page zones and depth buckets
-        after analytics consent, without session replay, raw cursor trails,
-        keystrokes, IP addresses, user agents or visitor fingerprints.
+        First-party behavior telemetry powers local click and scroll maps. It
+        records aggregate page zones and depth buckets after analytics consent,
+        without session replay, raw cursor trails, keystrokes, IP addresses,
+        user agents or visitor fingerprints.
         */
         "enabled" => (bool) env("OBSERVABILITY_HEATMAP_ENABLED", true),
         "sample_rate" => max(1, min(100, (int) env("OBSERVABILITY_HEATMAP_SAMPLE_RATE", 100))),

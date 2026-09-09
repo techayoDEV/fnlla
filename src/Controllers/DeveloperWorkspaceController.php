@@ -17,6 +17,7 @@ use Fnlla\Php\Support\DeveloperAnalyticsReport;
 use Fnlla\Php\Support\DeveloperHeatmapReport;
 use Fnlla\Php\Support\DeveloperNotificationCenter;
 use Fnlla\Php\Support\DeveloperOperationsReport;
+use Fnlla\Php\Support\DeveloperPrivateTodo;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkIdentity;
@@ -38,6 +39,76 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
                 "workspaceBoard" => $workspace->state($developerAccess->currentDeveloper()),
             ]
         );
+    }
+
+    public function privateTodo(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess, DeveloperPrivateTodo $todo): Response
+    {
+        return $this->renderDeveloperPanel(
+            $developerAccess,
+            $maintenanceAccess,
+            "developer/private-todo",
+            "My To-do",
+            "private-todo",
+            [
+                "privateTodo" => $todo->state($developerAccess->currentDeveloper()),
+            ]
+        );
+    }
+
+    public function createPrivateTodo(Request $request, DeveloperAccessManager $developerAccess, DeveloperPrivateTodo $todo): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "workspace.write")) {
+            return $this->redirect(route("developer.panel.private_todo"));
+        }
+
+        try {
+            $todo->create([
+                "title" => trim((string) $request->input("developer_private_todo_title", "")),
+                "notes" => trim((string) $request->input("developer_private_todo_notes", "")),
+                "priority" => trim((string) $request->input("developer_private_todo_priority", "normal")),
+                "due_date" => trim((string) $request->input("developer_private_todo_due_date", "")),
+            ], $developerAccess->currentDeveloper());
+        } catch (\InvalidArgumentException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Private to-do needs a title",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.private_todo"));
+        }
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Private to-do saved",
+            "text" => "This item is visible only in your developer session.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.private_todo"));
+    }
+
+    public function togglePrivateTodo(Request $request, DeveloperAccessManager $developerAccess, DeveloperPrivateTodo $todo): Response
+    {
+        if ($this->ensureDeveloperCapability($developerAccess, "workspace.write")) {
+            $todo->toggle(trim((string) $request->input("developer_private_todo_id", "")), $developerAccess->currentDeveloper());
+        }
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.private_todo"));
+    }
+
+    public function deletePrivateTodo(Request $request, DeveloperAccessManager $developerAccess, DeveloperPrivateTodo $todo): Response
+    {
+        if ($this->ensureDeveloperCapability($developerAccess, "workspace.write")) {
+            $todo->delete(trim((string) $request->input("developer_private_todo_id", "")), $developerAccess->currentDeveloper());
+        }
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.private_todo"));
     }
 
     public function createWorkspaceTask(Request $request, DeveloperAccessManager $developerAccess, DeveloperWorkspaceBoard $workspace): Response
@@ -177,7 +248,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         return [
             "title" => trim((string) $request->input("developer_workspace_title", "")),
             "notes" => trim((string) $request->input("developer_workspace_notes", "")),
-            "status" => trim((string) $request->input("developer_workspace_status", "todo")),
+            "status" => trim((string) $request->input("developer_workspace_status", "backlog")),
             "priority" => trim((string) $request->input("developer_workspace_priority", "normal")),
             "type" => trim((string) $request->input("developer_workspace_type", "task")),
             "color" => trim((string) $request->input("developer_workspace_color", "blue")),

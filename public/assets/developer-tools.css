@@ -2,7 +2,7 @@
 .debt-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .debt-toolbar h2 { margin-right: auto; font-size: 20px; }
 .debt-toolbar form { display: flex; align-items: center; gap: 8px; }
-.debt-toolbar select { min-height: 40px; padding: 4px 8px; border: 1px solid var(--fnlla-color-border-strong); border-radius: var(--fnlla-radius-sm); background: var(--fnlla-color-surface-strong); color: var(--fnlla-color-text); font: inherit; }
+body.developer-workspace-layout .developer-workspace .debt-toolbar select { height: var(--fnlla-size-btn-sm); min-height: var(--fnlla-size-btn-sm); padding-block: 0; }
 .debt-row { border-top: 1px solid var(--fnlla-color-border); padding: 12px 0; }
 .debt-row summary { display: grid; grid-template-columns: minmax(0, 1fr) 80px 100px 140px; gap: 12px; cursor: pointer; font-size: var(--fnlla-font-size-sm); }
 .debt-row summary > * { overflow-wrap: anywhere; min-width: 0; }
@@ -10,5 +10,10 @@
 .debt-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; max-width: 760px; }
 .debt-form label { display: grid; gap: 4px; font-size: var(--fnlla-font-size-sm); }
 .debt-form input, .debt-form select, .debt-form textarea { width: 100%; min-width: 0; min-height: 40px; box-sizing: border-box; border: 1px solid var(--fnlla-color-border-strong); border-radius: var(--fnlla-radius-sm); padding: 8px; background: var(--fnlla-color-surface-strong); color: var(--fnlla-color-text); font: inherit; }
+.debt-form select { appearance: none; -webkit-appearance: none; -moz-appearance: none; min-height: var(--fnlla-size-btn-md); padding: 0.48rem 2.35rem 0.48rem 0.72rem; border-color: rgba(37, 99, 235, 0.22); border-radius: var(--fnlla-radius-md); background-color: var(--fnlla-color-surface); background-image: linear-gradient(45deg, transparent 50%, var(--fnlla-color-primary) 50%), linear-gradient(135deg, var(--fnlla-color-primary) 50%, transparent 50%), linear-gradient(180deg, rgba(37, 99, 235, 0.18), rgba(37, 99, 235, 0.18)); background-position: calc(100% - 1.08rem) calc(50% - 0.08rem), calc(100% - 0.82rem) calc(50% - 0.08rem), calc(100% - 1.75rem) 50%; background-size: 0.36rem 0.36rem, 0.36rem 0.36rem, 1px 1.15rem; background-repeat: no-repeat; font-size: var(--fnlla-font-size-sm); line-height: 1; }
+.debt-add-row { border-top: 0; padding-top: 4px; }
+.debt-add-summary { display: inline-flex; width: fit-content; align-items: center; justify-content: center; min-height: var(--fnlla-size-btn-sm); padding: 0.38rem 0.72rem; border: 1px solid var(--fnlla-color-primary); border-radius: var(--fnlla-radius-md); background: var(--fnlla-color-primary); color: var(--fnlla-color-on-dark); font-size: var(--fnlla-font-size-sm); font-weight: 600; line-height: 1; cursor: pointer; list-style: none; }
+.debt-add-summary::-webkit-details-marker { display: none; }
+.debt-add-summary:hover, .debt-add-summary:focus-visible { border-color: var(--fnlla-color-secondary); background: var(--fnlla-color-action-hover); color: var(--fnlla-color-on-dark); outline: none; }
 .debt-form-wide { grid-column: 1 / -1; }
 @media (max-width: 700px) { .debt-row summary { grid-template-columns: minmax(0, 1fr) 90px; } .debt-form { grid-template-columns: minmax(0, 1fr); } }

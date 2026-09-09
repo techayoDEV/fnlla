@@ -137,9 +137,9 @@ Use `LICENSE.md`, `docs/framework/SUPPORT.md` and `docs/framework/TRADEMARKS.md`
 
 ## Useful commands
 
-- `composer install` installs development tools; commit the generated application `composer.lock`.
-- `composer test:unit` runs real PHPUnit; `composer analyse` runs PHPStan level 5.
-- `composer install --no-dev --optimize-autoloader` excludes tools from production.
+- `composer install` builds the project autoloader without downloading heavy dev tools by default; commit the generated application `composer.lock`.
+- `php scripts/test.php` runs the bundled project smoke harness; `composer analyse` runs PHPStan/Psalm when added and otherwise uses the bundled baseline.
+- `composer install --no-dev --optimize-autoloader` is still the production install form.
 - Authenticated panel layout is `views/layouts/developer.php`; public layout/CSS changes do not override it.
 
 The application base keeps only the project-facing scripts, smoke tests and commands:
@@ -148,7 +148,7 @@ The application base keeps only the project-facing scripts, smoke tests and comm
 `tests/BootstrapAutoloadTest.php` covers the shipped namespaces. Extend these tests
 with application behavior. Framework internals and demonstration-specific tests
 stay upstream. Tests belong to this application and are not replaced by runtime
-updates. Real PHPUnit remains the preferred runner after `composer install`.
+updates. Add full PHPUnit deliberately when the project needs that runner.
 
 - `php scripts/test.php` runs the project-local smoke test harness kept under `tests/`
 - `php scripts/lint.php` runs PHP syntax lint across the maintained project tree

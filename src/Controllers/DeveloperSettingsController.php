@@ -68,17 +68,8 @@ final class DeveloperSettingsController extends DeveloperPanelController
         $requestPayload = $request->all();
         $fionnToken = trim((string) $request->input("ai_fionn_api_token", ""));
         $values = [
-            "FNLLA_INTEGRATION_GA4_ENABLED" => (string) $request->input("fnlla_integration_ga4_enabled", "0") === "1",
-            "FNLLA_INTEGRATION_GA4_MEASUREMENT_ID" => trim((string) $request->input("fnlla_integration_ga4_measurement_id", "")),
-            "FNLLA_INTEGRATION_CLARITY_ENABLED" => (string) $request->input("fnlla_integration_clarity_enabled", "0") === "1",
-            "FNLLA_INTEGRATION_CLARITY_PROJECT_ID" => trim((string) $request->input("fnlla_integration_clarity_project_id", "")),
-            "FNLLA_INTEGRATION_SENTRY_ENABLED" => (string) $request->input("fnlla_integration_sentry_enabled", "0") === "1",
-            "FNLLA_INTEGRATION_SENTRY_DSN" => trim((string) $request->input("fnlla_integration_sentry_dsn", "")),
-            "FNLLA_INTEGRATION_SENTRY_ENVIRONMENT" => trim((string) $request->input("fnlla_integration_sentry_environment", app_environment())),
             "FNLLA_INTEGRATION_API_HOOKS_ENABLED" => (string) $request->input("fnlla_integration_api_hooks_enabled", "0") === "1",
             "FNLLA_INTEGRATION_API_HOOKS_ENDPOINT" => trim((string) $request->input("fnlla_integration_api_hooks_endpoint", "")),
-            "FNLLA_INTEGRATION_HEATMAPS_ENABLED" => (string) $request->input("fnlla_integration_heatmaps_enabled", "0") === "1",
-            "FNLLA_INTEGRATION_HEATMAPS_PROVIDER" => trim((string) $request->input("fnlla_integration_heatmaps_provider", "")),
             "DEVELOPER_CONTROL_REMOTE_ENABLED" => (string) $request->input("developer_control_remote_enabled", "0") === "1",
             "DEVELOPER_CONTROL_REMOTE_ENDPOINT" => trim((string) $request->input("developer_control_remote_endpoint", "")),
             "DEVELOPER_CONTROL_REMOTE_PROJECT_ID" => trim((string) $request->input("developer_control_remote_project_id", "")),
@@ -101,12 +92,7 @@ final class DeveloperSettingsController extends DeveloperPanelController
         ];
 
         foreach ([
-            "FNLLA_INTEGRATION_GA4_MEASUREMENT_ID",
-            "FNLLA_INTEGRATION_CLARITY_PROJECT_ID",
-            "FNLLA_INTEGRATION_SENTRY_DSN",
-            "FNLLA_INTEGRATION_SENTRY_ENVIRONMENT",
             "FNLLA_INTEGRATION_API_HOOKS_ENDPOINT",
-            "FNLLA_INTEGRATION_HEATMAPS_PROVIDER",
             "DEVELOPER_CONTROL_REMOTE_ENDPOINT",
             "DEVELOPER_CONTROL_REMOTE_PROJECT_ID",
             "AI_FIONN_ENDPOINT",
@@ -129,6 +115,17 @@ final class DeveloperSettingsController extends DeveloperPanelController
 
         try {
             $environmentFileManager->write($values);
+            $environmentFileManager->remove([
+                "FNLLA_INTEGRATION_GA4_ENABLED",
+                "FNLLA_INTEGRATION_GA4_MEASUREMENT_ID",
+                "FNLLA_INTEGRATION_CLARITY_ENABLED",
+                "FNLLA_INTEGRATION_CLARITY_PROJECT_ID",
+                "FNLLA_INTEGRATION_SENTRY_ENABLED",
+                "FNLLA_INTEGRATION_SENTRY_DSN",
+                "FNLLA_INTEGRATION_SENTRY_ENVIRONMENT",
+                "FNLLA_INTEGRATION_HEATMAPS_ENABLED",
+                "FNLLA_INTEGRATION_HEATMAPS_PROVIDER",
+            ]);
             $environmentFileManager->apply($values);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
@@ -142,17 +139,8 @@ final class DeveloperSettingsController extends DeveloperPanelController
             return $this->redirect(route("developer.panel.integrations"));
         }
 
-        config_set("integrations.ga4.enabled", $values["FNLLA_INTEGRATION_GA4_ENABLED"]);
-        config_set("integrations.ga4.measurement_id", $values["FNLLA_INTEGRATION_GA4_MEASUREMENT_ID"]);
-        config_set("integrations.clarity.enabled", $values["FNLLA_INTEGRATION_CLARITY_ENABLED"]);
-        config_set("integrations.clarity.project_id", $values["FNLLA_INTEGRATION_CLARITY_PROJECT_ID"]);
-        config_set("integrations.sentry.enabled", $values["FNLLA_INTEGRATION_SENTRY_ENABLED"]);
-        config_set("integrations.sentry.dsn", $values["FNLLA_INTEGRATION_SENTRY_DSN"]);
-        config_set("integrations.sentry.environment", $values["FNLLA_INTEGRATION_SENTRY_ENVIRONMENT"]);
         config_set("integrations.api_hooks.enabled", $values["FNLLA_INTEGRATION_API_HOOKS_ENABLED"]);
         config_set("integrations.api_hooks.endpoint", $values["FNLLA_INTEGRATION_API_HOOKS_ENDPOINT"]);
-        config_set("integrations.heatmaps.enabled", $values["FNLLA_INTEGRATION_HEATMAPS_ENABLED"]);
-        config_set("integrations.heatmaps.provider", $values["FNLLA_INTEGRATION_HEATMAPS_PROVIDER"]);
         config_set("developer_control.remote.enabled", $values["DEVELOPER_CONTROL_REMOTE_ENABLED"]);
         config_set("developer_control.remote.endpoint", $values["DEVELOPER_CONTROL_REMOTE_ENDPOINT"]);
         config_set("developer_control.remote.project_id", $values["DEVELOPER_CONTROL_REMOTE_PROJECT_ID"]);

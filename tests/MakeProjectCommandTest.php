@@ -77,6 +77,12 @@ final class MakeProjectCommandTest extends TestCase
         $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true);
         self::assertArrayHasKey("techayodev/fnlla-core", $composer["require"]);
         self::assertSame("app/", $composer["autoload"]["psr-4"]["App\\"]);
+        self::assertArrayNotHasKey("require-dev", $composer);
+        self::assertArrayNotHasKey("test:unit", $composer["scripts"]);
+        self::assertSame("@php scripts/test.php", $composer["scripts"]["test"] ?? null);
+        self::assertSame("@php scripts/static-analysis.php", $composer["scripts"]["analyse"] ?? null);
+        self::assertArrayHasKey("phpstan/phpstan", $composer["suggest"]);
+        self::assertArrayHasKey("phpunit/phpunit", $composer["suggest"]);
         foreach (["scripts/test.php", "scripts/lint.php"] as $script) {
             [$exit, $output] = $this->runPhpScript($this->targetPath . "/" . $script);
             self::assertSame(0, $exit, $output);
@@ -103,6 +109,13 @@ final class MakeProjectCommandTest extends TestCase
 
         self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
         $this->assertExportBudget(4000000, 430);
+        $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayNotHasKey("require-dev", $composer);
+        self::assertArrayNotHasKey("test:unit", $composer["scripts"]);
+        self::assertSame("@php scripts/test.php", $composer["scripts"]["test"] ?? null);
+        self::assertSame("@php scripts/static-analysis.php", $composer["scripts"]["analyse"] ?? null);
+        self::assertArrayHasKey("phpstan/phpstan", $composer["suggest"]);
+        self::assertArrayHasKey("phpunit/phpunit", $composer["suggest"]);
         foreach (["src/Ai/AiProviderSettings.php", "src/Ai/CloudRuntimeProvider.php", "src/Ai/OpenAiRuntimeProvider.php",
             "src/Ai/AnthropicRuntimeProvider.php", "src/Controllers/DeveloperAiSettingsController.php",
             "public/assets/brand/fnlla/fonts/SpaceGrotesk-Regular.woff2", "public/assets/brand/fnlla/fonts/SpaceGrotesk-SemiBold.woff2",
@@ -111,7 +124,7 @@ final class MakeProjectCommandTest extends TestCase
             self::assertFileExists($this->targetPath . "/" . $path);
             self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/" . $path));
         }
-        foreach (["public/assets/brand/fnlla/binary-signature.png", "public/assets/developer-panel.css",
+        foreach (["public/assets/brand/fnlla/binary-field.png", "public/assets/developer-panel.css",
             "public/assets/app-base.css", "public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css"] as $path) {
             self::assertFileExists($this->targetPath . "/" . $path);
             self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/" . $path));
@@ -266,6 +279,42 @@ final class MakeProjectCommandTest extends TestCase
             "project-setup-visual",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
         );
+        self::assertStringContainsString(
+            "Prepare the handoff in private.",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringContainsString(
+            "Framework created &amp; maintained by",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringContainsString(
+            "Build from blueprint.",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "Local first",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringContainsString(
+            "Optional information",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "Optional responsibility information",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "project-setup-flow",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "Modules move to the panel",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
+        self::assertStringNotContainsString(
+            "fnlla_module_workspace",
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
+        );
         self::assertStringNotContainsString(
             "developer_operations_nav_mode",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "maintenance" . DIRECTORY_SEPARATOR . "index.php")
@@ -329,6 +378,18 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertArrayHasKey(
             "views/developer/profile.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "views/developer/private-todo.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "src/Support/DeveloperPrivateTodo.php",
+            (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+        );
+        self::assertArrayHasKey(
+            "src/Observability/RuntimeIssueTracker.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
         self::assertArrayHasKey(

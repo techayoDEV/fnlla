@@ -43,6 +43,30 @@ final class RuntimeBrandTest extends TestCase
         self::assertTrue(\Fnlla\Php\Support\ProjectProfile::isPanelFile('views/partials/framework-wordmark.php'));
     }
 
+    public function testDeveloperPanelTooltipContractIsStableInScrollableLayouts(): void
+    {
+        $script = (string) file_get_contents(public_path('assets/developer-panel.js'));
+        self::assertStringContainsString("document.addEventListener('pointerover'", $script);
+        self::assertStringContainsString("document.addEventListener('pointerout'", $script);
+        self::assertStringContainsString("document.addEventListener('pointermove'", $script);
+        self::assertStringContainsString(".developer-info-tip[aria-label]", $script);
+        self::assertStringContainsString("data-fnlla-tooltip-ready", $script);
+        self::assertStringContainsString("new MutationObserver", $script);
+        self::assertStringContainsString("requestAnimationFrame(positionTooltip)", $script);
+        self::assertStringContainsString("window.addEventListener('scroll', schedulePosition, true);", $script);
+        self::assertStringContainsString("target.setAttribute('aria-describedby'", $script);
+        self::assertStringContainsString("tooltip.setAttribute('data-placement'", $script);
+        self::assertStringNotContainsString("window.addEventListener('scroll', hideTooltip, true);", $script);
+
+        $css = (string) file_get_contents(public_path('assets/developer-panel.css'));
+        self::assertStringContainsString('body.developer-workspace-layout [data-fnlla-tooltip-ready="true"]', $css);
+        self::assertStringContainsString('.developer-info-tip.is-fnlla-tooltip-enhanced::after', $css);
+        self::assertSame(
+            1,
+            preg_match('/\.developer-tooltip,\s*body\.developer-workspace-layout > \.developer-tooltip\s*\{[^}]*position:\s*fixed;[^}]*z-index:\s*2500;[^}]*width:\s*max-content;[^}]*font-size:\s*var\(--fnlla-font-size-sm\);[^}]*overflow-wrap:\s*break-word;[^}]*word-break:\s*normal;/s', $css)
+        );
+    }
+
     public function testRuntimeUsesBrandRolesWithoutMarketingAssetsInTheExport(): void
     {
         $tokens = json_decode((string) file_get_contents(base_path('branding/tokens.json')), true, 512, JSON_THROW_ON_ERROR);
@@ -53,7 +77,7 @@ final class RuntimeBrandTest extends TestCase
         self::assertStringContainsString('outline: 2px solid var(--fnlla-color-focus-ring);', $css);
         self::assertStringContainsString('background: var(--fnlla-color-action);', $css);
         $exports = json_decode((string) file_get_contents(base_path('resources/project-templates/v1/export-files.json')), true, 512, JSON_THROW_ON_ERROR)['files'];
-        self::assertTrue(in_array('public/assets/brand/fnlla/binary-signature.png', $exports, true));
+        self::assertTrue(in_array('public/assets/brand/fnlla/binary-field.png', $exports, true));
         self::assertNotContains('public/assets/brand/fnlla-mark.svg', $exports);
         self::assertNotContains('public/assets/brand/fnlla/fnlla-blueprint-pattern.svg', $exports);
         self::assertContains('views/partials/framework-wordmark.php', $exports);

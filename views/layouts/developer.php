@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 // Framework-owned shell: never load public application CSS, navigation or analytics here.
 $pageStatus = flash("status");
+$pageStatusAutohide = is_array($pageStatus) && (bool) ($pageStatus["toast"] ?? false);
 $pageMeta = page_meta([
     "page" => (string) ($pageTitle ?? ""),
     "section" => (string) ($pageTitleSection ?? "Developer Panel"),
@@ -38,7 +39,7 @@ $faviconType = str_ends_with(strtolower((string) parse_url((string) $favicon, PH
 </head>
 <body data-fnlla-theme="default" class="developer-workspace-layout">
   <?php if (is_array($pageStatus) && isset($pageStatus["title"], $pageStatus["text"])): ?>
-  <section class="section pt-1 pb-0 developer-workspace-alert-section" id="page-status">
+  <section class="section pt-1 pb-0 developer-workspace-alert-section" id="page-status"<?= $pageStatusAutohide ? ' data-fnlla-alert-autohide="true"' : "" ?>>
     <div class="developer-workspace-alert-container">
       <div class="alert alert-dismissible alert-<?= h((string) ($pageStatus["variant"] ?? "info")) ?>" role="<?= in_array($pageStatus["variant"] ?? "", ["danger", "warning"], true) ? "alert" : "status" ?>" data-fnlla-alert>
         <div><h2 class="alert-title"><?= h((string) $pageStatus["title"]) ?></h2><p class="alert-text"><?= h((string) $pageStatus["text"]) ?></p></div>
@@ -50,7 +51,20 @@ $faviconType = str_ends_with(strtolower((string) parse_url((string) $favicon, PH
   <main><?= $content ?></main>
   <script nonce="<?= h(csp_nonce()) ?>" src="<?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?>"></script>
   <script nonce="<?= h(csp_nonce()) ?>">
-    document.addEventListener("click", function (event) {
+    (function () {
+      var pageStatus = document.getElementById("page-status");
+
+      function dismissAlert(alert) {
+        if (!alert) {
+          return;
+        }
+
+        var target = alert.closest("#page-status") || alert;
+        target.hidden = true;
+        target.setAttribute("aria-hidden", "true");
+      }
+
+      document.addEventListener("click", function (event) {
       var toggle = event.target && event.target.closest ? event.target.closest("[data-developer-password-toggle]") : null;
       if (toggle) {
         var input = document.getElementById(toggle.getAttribute("data-developer-password-toggle"));
@@ -65,11 +79,19 @@ $faviconType = str_ends_with(strtolower((string) parse_url((string) $favicon, PH
       var button = event.target && event.target.closest ? event.target.closest("[data-fnlla-alert-close]") : null;
       var alert = button ? button.closest("[data-fnlla-alert]") : null;
       if (alert) {
-        var target = alert.closest("#page-status") || alert;
-        target.hidden = true;
-        target.setAttribute("aria-hidden", "true");
+        event.preventDefault();
+        dismissAlert(alert);
       }
-    });
+      });
+
+      if (pageStatus && pageStatus.getAttribute("data-fnlla-alert-autohide") === "true") {
+        var pageAlert = pageStatus.querySelector("[data-fnlla-alert], .alert");
+        var delay = pageAlert && (pageAlert.classList.contains("alert-warning") || pageAlert.classList.contains("alert-danger")) ? 10000 : 7000;
+        window.setTimeout(function () {
+          dismissAlert(pageAlert);
+        }, delay);
+      }
+    })();
   </script>
 </body>
 </html>

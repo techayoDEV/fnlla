@@ -118,6 +118,18 @@ Created and maintained by **TechAyo**. Lead Developer / Product Manager: **Marci
   terminal command and distinguish FNLLA's built-in tools from optional FIONN AI
   access. Derive upgrade targets from version metadata and show live main-branch
   CI status separately from the unreleased source candidate.
+- Add a Project Setup runtime environment switch that writes the controlled
+  `.env` runtime keys, forces diagnostic tools off in production and lets lead
+  developers approve project leadership responsibility records.
+- Expand Operations / Error Monitor with a live JSON endpoint, live toolbar counters,
+  runtime issue fingerprinting and manual promotion from issue candidate to
+  Technical debt.
+- Simplify the shared Project Kanban flow to Backlog, In progress, Review and
+  Done while mapping legacy `todo` cards into Backlog.
+- Make FNLLA Analytics, FNLLA Heatmap and Error Monitor the first-party
+  observability workflow, remove built-in vendor tracking adapters, add a header
+  command palette and runtime badge, and add private developer My to-do outside
+  the shared Kanban.
 
 - Align runtime and full-starter UI with the outline brand, neutral light/dark
   surfaces, semantic status colours and visible keyboard focus. Keep Plain's
@@ -268,7 +280,7 @@ breaking operational changes before updating an existing application.
 ### Added
 
 - Developer panel analytics and heatmap surfaces backed by FNLLA observability
-  data, keeping GA4 and Microsoft Clarity as optional external adapters.
+  data and local first-party aggregate storage.
 - Project leadership/system information configuration for discreet, confirmed
   responsibility disclosure across public, administrator-only and disabled
   visibility modes.

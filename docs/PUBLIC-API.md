@@ -38,11 +38,15 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `/developer/panel/project-identity`, `/developer/panel/setup-checklist`,
   `/developer/panel/project-settings`,
   `/developer/panel/access`, `/developer/panel/profile`,
-  `/developer/panel/settings`, `/developer/panel/workspace`, `/developer/panel/operations`,
+  `/developer/panel/settings`, `/developer/panel/workspace`,
+  `/developer/panel/my-todo`, `/developer/panel/operations`,
   `/developer/panel/analytics`, `/developer/panel/notifications`,
   `/developer/panel/release-readiness`, `/developer/panel/integrations`,
   `/developer/panel/policy`,
+  `/developer/panel/debug/live`,
+  `/developer/panel/debug/runtime-issues/promote`,
   `/developer/panel/integrations/settings`,
+  `/developer/panel/settings/runtime-environment`,
   `/developer/panel/settings/project-leadership`,
   `/developer/panel/settings/project-leadership/confirmation` and
   `/developer/panel/framework-updates`.
@@ -180,6 +184,9 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.developer_activity.v1`
 - `fnlla.developer_activity_export.v1`
 - `fnlla.developer_operations.v1`
+- `fnlla.debug_report.v1`
+- `fnlla.debug_live.v1`
+- `fnlla.runtime_issue_tracker.v1`
 - `fnlla.developer_analytics.v1`
 - `fnlla.developer_analytics_settings.v1`
 - `fnlla.cookie_consent_event.v1`
@@ -191,6 +198,7 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.developer_security.v1`
 - `fnlla.developer_storage_install.v1`
 - `fnlla.developer_workspace.v1`
+- `fnlla.developer_private_todo.v1`
 - `fnlla.customer_access.v1`
 - `fnlla.customer_workspace.v1`
 - `fnlla.remote_control_plugin.v1`
@@ -215,16 +223,26 @@ and a preview link. It must not expose Developer Panel actions, framework
 updates, audit export, service control, private developer notes or customer
 business records.
 
+The shared workspace Kanban exposes the same delivery state to developers and
+customer-visible review cards. Its supported card columns are `backlog`,
+`in_progress`, `review` and `done`; legacy `todo` card states are normalised into
+`backlog` when existing project data is read.
+
+The private developer to-do surface is separate from the shared Kanban. Its
+stable data key is `developer.private_todo`, its schema is
+`fnlla.developer_private_todo.v1`, and its contents are scoped to the signed-in
+developer rather than the project team or customer.
+
 The optional project leadership block names a real person responsible for
 product direction, roadmap, delivery or technical leadership. It is neutral
 system information, not a branding device. Client projects can keep it private
 with `PROJECT_LEADERSHIP_VISIBILITY=admin` or disable it entirely.
 
 Optional integrations are public configuration contracts only when explicitly
-enabled by project developers. FNLLA ships disabled adapters for privacy-light
-analytics, error reporting, consent-aware heatmaps, API hooks, FIONN AI and the
-TechAyo remote-control bridge; private provider logic and secrets stay outside
-the framework repository.
+enabled by project developers. FNLLA Analytics, FNLLA Heatmap and FNLLA Error
+Monitor remain the first-party observability source of truth; API hooks, FIONN
+AI and the TechAyo remote-control bridge are opt-in adapters. Private provider
+logic and secrets stay outside the framework repository.
 
 It must not contain customer data, product CRM/CMS logic, billing, bookings,
 private client workflows or the private FIONN AI brain. Those belong to the

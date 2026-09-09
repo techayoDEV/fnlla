@@ -189,6 +189,15 @@ abstract class TestCase
         }
     }
 
+    public static function assertStringStartsWith(string $prefix, string $string, string $message = ""): void
+    {
+        self::incrementAssertions();
+
+        if (!str_starts_with($string, $prefix)) {
+            self::fail($message !== "" ? $message : "Failed asserting that string starts with " . self::export($prefix) . ".");
+        }
+    }
+
     public static function assertFileExists(string $path, string $message = ""): void
     {
         self::incrementAssertions();
@@ -218,6 +227,15 @@ abstract class TestCase
 
         if (!is_string($value)) {
             self::fail($message !== "" ? $message : "Failed asserting that value is a string.");
+        }
+    }
+
+    public static function assertIsArray(mixed $value, string $message = ""): void
+    {
+        self::incrementAssertions();
+
+        if (!is_array($value)) {
+            self::fail($message !== "" ? $message : "Failed asserting that value is an array.");
         }
     }
 

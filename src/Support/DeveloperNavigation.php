@@ -10,16 +10,16 @@ final class DeveloperNavigation
     private const ITEMS = [
         ["Workspace", "workspace", "Project Kanban", "workspace", null, "workspace"],
         ["Workspace", "technical-debt", "Technical debt", "technical_debt", "operations.view", null],
-        ["Project setup", "identity", "Project setup", "project_identity", null, null],
-        ["Operations", "debug", "Debug", "debug", "operations.view", null],
+        ["Project setup", "identity", "Project identity", "project_identity", null, null],
+        ["Project setup", "access", "Access & security", "access", null, null],
+        ["Project setup", "settings", "Panel settings", "settings", null, null],
+        ["Operations", "debug", "Error monitor", "debug", "operations.view", null],
+        ["Operations", "analytics", "Traffic analytics", "analytics", "operations.view", "analytics"],
+        ["Operations", "heatmap", "Behavior heatmap", "heatmap", "operations.view", "heatmap"],
         ["Operations", "release-readiness", "Readiness & health", "release_readiness", "operations.view", null],
         ["Operations", "framework-updates", "Framework updates", "framework_updates", null, null],
         ["Operations", "project-logs", "Project logs", "project_logs", "operations.view", null],
-        ["Operations", "analytics", "Analytics", "analytics", "operations.view", "analytics"],
-        ["Operations", "heatmap", "Heatmap", "heatmap", "operations.view", "heatmap"],
-        ["Operations", "integrations", "Integrations", "integrations", "operations.view", null],
-        ["Security", "access", "Access & security", "access", null, null],
-        ["Security", "settings", "Runtime & storage", "settings", null, null],
+        ["Operations", "integrations", "API hooks & AI", "integrations", "operations.view", null],
         ["Reference", "documentation", "Documentation & policy", "documentation", "policy.view", null],
     ];
 

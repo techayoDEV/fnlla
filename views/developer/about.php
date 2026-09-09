@@ -28,7 +28,7 @@ $projectLeadership = project_leadership("admin");
 $principles = [
     ["title" => "Portable framework layer", "text" => "FNLLA keeps reusable runtime, maintenance, developer access and release readiness behavior separate from product-specific application code."],
     ["title" => "Private Developer Panel", "text" => "The panel is an operational workspace for trusted developers: identity, access, preview, analytics, heatmap, readiness, integrations, updates and policy controls."],
-    ["title" => "First-party observability", "text" => "The built-in analytics and heatmap modules provide local aggregate insight so projects can run without mandatory Google Analytics or Microsoft Clarity accounts."],
+    ["title" => "First-party observability", "text" => "The built-in analytics, heatmap and error monitor modules provide local aggregate insight without mandatory vendor tracking accounts."],
 ];
 
 require __DIR__ . "/panel-header.php";

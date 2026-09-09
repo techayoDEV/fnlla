@@ -103,6 +103,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
         config_set("developer_workspace", array_merge((array) config("developer_workspace", []), [
             "path" => "framework/testing/developer-workspace-default.json",
+            "private_todo_path" => "framework/testing/developer-private-todo-default.json",
             "notifications_state_path" => "framework/testing/developer-notifications-default.json",
         ]));
         config_set("client_preview", array_merge((array) config("client_preview", []), [
@@ -143,6 +144,7 @@ final class ApplicationSurfaceTest extends TestCase
 
         foreach ([
             storage_path("framework/testing/developer-workspace-default.json"),
+            storage_path("framework/testing/developer-private-todo-default.json"),
             storage_path("framework/testing/customer-workspace.json"),
             storage_path("framework/testing/developer-notifications-default.json"),
             storage_path("framework/testing/developer-control-default.json"),
@@ -311,6 +313,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("--fnlla-blueprint-panel-bg:", $css);
         self::assertStringContainsString("--fnlla-radius-md: 0.25rem;", $css);
         self::assertStringContainsString(":where(\n  .site-login-grid > .feature-card,", $css);
+        self::assertStringContainsString(".site-login-grid {\n  align-items: stretch;", $css);
         self::assertStringContainsString("body.developer-workspace-layout::before {\n  content: none;", $css);
         self::assertStringContainsString("body.developer-workspace-layout::after {\n  content: none;", $css);
         self::assertStringContainsString(".starter-hero::before,\n.framework-update-stage::before,\n.maintenance-lock-stage::before {", $css);
@@ -318,8 +321,15 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString(".site-login-grid > .project-setup-hero-card", $css);
         self::assertStringContainsString(".project-setup-visual", $css);
         self::assertStringContainsString(".fnlla-framework-wordmark", $css);
-        self::assertStringContainsString(".developer-brand-signature", $css);
-        self::assertStringContainsString(".project-setup-flow", $css);
+        self::assertStringContainsString(".developer-brand-field", $css);
+        self::assertStringContainsString(".project-setup-brand-stage", $css);
+        self::assertStringContainsString(".project-setup-brand-stage::before", $css);
+        self::assertStringContainsString('mask-image: url("brand/fnlla/binary-field.png");', $css);
+        self::assertStringContainsString(".project-setup-brand-copy", $css);
+        self::assertStringContainsString(".project-setup-brand-meta", $css);
+        self::assertStringContainsString(".project-setup-visual .fnlla-framework-wordmark img { margin: 7% 14% 7% 0; }", $css);
+        self::assertStringNotContainsString(".project-setup-local-badge", $css);
+        self::assertStringNotContainsString(".project-setup-flow", $css);
         self::assertStringContainsString(".project-setup-contract-list", $css);
         self::assertStringNotContainsString("repeating-linear-gradient(90deg, transparent 0 10rem", $css);
         self::assertStringNotContainsString("content: var(--fnlla-workbench-binary-field);", $appCss);
@@ -664,15 +674,31 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("data-fnlla-cookie-consent", $response->body());
         self::assertStringContainsString("Project name", $response->body());
         self::assertStringContainsString("Public URL", $response->body());
-        self::assertStringContainsString("Project identity and private developer entry, set before handoff.", $response->body());
+        self::assertStringContainsString("Name the project and create private developer access.", $response->body());
+        self::assertStringContainsString("Start locally with the identity and first developer login. The public site stays clean while setup continues inside the panel.", $response->body());
+        self::assertStringNotContainsString("Local first", $response->body());
         self::assertStringContainsString("project-setup-visual", $response->body());
-        self::assertStringContainsString("project-setup-flow", $response->body());
+        self::assertStringContainsString("project-setup-brand-stage", $response->body());
+        self::assertStringContainsString("Build from blueprint.", $response->body());
+        self::assertStringContainsString("Framework created &amp; maintained by", $response->body());
+        self::assertStringContainsString(">TechAyo</a>", $response->body());
+        self::assertStringContainsString("Prepare the handoff in private.", $response->body());
+        self::assertStringNotContainsString("Build quietly. Launch clearly.", $response->body());
+        self::assertStringNotContainsString("Private build space", $response->body());
+        self::assertStringNotContainsString("project-setup-flow", $response->body());
         self::assertStringContainsString("Save project setup and private access", $response->body());
         self::assertStringContainsString("project-note-list project-blueprint-list", $response->body());
-        self::assertStringContainsString("<code>identity.title</code><span>Browser title, header, operations.</span>", $response->body());
-        self::assertStringContainsString("<code>protection.mode</code><span>Maintenance and preview stay off until enabled.</span>", $response->body());
+        self::assertStringContainsString("<strong>Name the project</strong><span>Set the visible title used by pages, browser tabs and operation screens.</span>", $response->body());
+        self::assertStringContainsString("<strong>Create developer access</strong><span>One named account opens the private panel for the next setup decisions.</span>", $response->body());
+        self::assertStringContainsString("<strong>Keep the screen focused</strong><span>Optional details stay folded away until they are useful.</span>", $response->body());
+        self::assertStringNotContainsString("Modules move to the panel", $response->body());
+        self::assertStringNotContainsString('name="fnlla_module_workspace"', $response->body());
+        self::assertStringNotContainsString("<code>identity.title</code>", $response->body());
         self::assertStringNotContainsString("The project name is used in browser titles, the header and framework operation screens.", $response->body());
-        self::assertStringContainsString("Optional responsibility information", $response->body());
+        self::assertStringContainsString("Optional information", $response->body());
+        self::assertStringContainsString("Add a slogan, public URL or delivery lead details only when they are ready.", $response->body());
+        self::assertStringNotContainsString("Optional responsibility information", $response->body());
+        self::assertStringNotContainsString("Name the real product or delivery lead only when the person can confirm that responsibility from a matching developer account.", $response->body());
         self::assertStringNotContainsString("Optional system information", $response->body());
 
         $entry = $application->handle(Request::capture("", [
@@ -1375,7 +1401,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(200, $pageResponse->status());
-        self::assertStringContainsString("Project identity and private developer entry, set before handoff.", $pageResponse->body());
+        self::assertStringContainsString("Name the project and create private developer access.", $pageResponse->body());
         self::assertStringContainsString("project-setup-visual", $pageResponse->body());
         self::assertStringContainsString("Save project setup and private access", $pageResponse->body());
         self::assertStringNotContainsString("Configure maintenance access", $pageResponse->body());
@@ -1442,6 +1468,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-workspace-layout", $developerResponse->body());
         self::assertStringContainsString("developer-workspace-header", $developerResponse->body());
         self::assertStringContainsString("project-navbar-actions", $developerResponse->body());
+        self::assertStringContainsString("developer-environment-strip", $developerResponse->body());
+        self::assertStringContainsString("Change runtime", $developerResponse->body());
         self::assertFileExists(public_path("assets/brand/fnlla/favicon.svg"));
         self::assertStringNotContainsString("src=\"/assets/fnlla-logo.png", $developerResponse->body());
         self::assertStringContainsString("project-brand-mark is-initials\" aria-hidden=\"true\">", $developerResponse->body());
@@ -1451,9 +1479,15 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("FNLLA " . $frameworkVersion, $developerResponse->body());
         self::assertStringContainsString("href=\"https://fnlla.com\"", $developerResponse->body());
         self::assertStringContainsString("developer-header-tools", $developerResponse->body());
+        self::assertStringContainsString("developer-runtime-header-badge", $developerResponse->body());
+        self::assertStringContainsString("data-developer-command-open", $developerResponse->body());
+        self::assertStringContainsString("developer-command-palette", $developerResponse->body());
+        self::assertStringContainsString("Search developer panel", $developerResponse->body());
+        self::assertStringContainsString("Jump search", $developerResponse->body());
+        self::assertStringContainsString("developer-command-shortcuts", $developerResponse->body());
         self::assertStringContainsString("aria-label=\"Open notification center\"", $developerResponse->body());
-        self::assertStringNotContainsString("aria-label=\"Open developer to-do list\"", $developerResponse->body());
-        self::assertStringNotContainsString("My to-do", $developerResponse->body());
+        self::assertStringContainsString("aria-label=\"Open developer to-do list\"", $developerResponse->body());
+        self::assertStringContainsString("My to-do", $developerResponse->body());
         self::assertStringContainsString("developer-dropdown-avatar", $developerResponse->body());
         self::assertStringNotContainsString("developer-topbar-session", $developerResponse->body());
         self::assertStringContainsString("developer-dropdown-session-icon", $developerResponse->body());
@@ -1477,9 +1511,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("href=\"/developer/panel/setup-checklist\"", $developerResponse->body());
         self::assertStringNotContainsString("href=\"/developer/panel/project-settings\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/workspace\"", $developerResponse->body());
+        self::assertStringContainsString("href=\"/developer/panel/my-todo\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/profile\"", $developerResponse->body());
         self::assertStringContainsString(">Developer profile</a>", $developerResponse->body());
-        self::assertSame(1, substr_count($developerResponse->body(), "href=\"/developer/panel/profile\""));
         self::assertStringContainsString("href=\"/developer/panel/analytics\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/notifications\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/release-readiness\"", $developerResponse->body());
@@ -1494,8 +1528,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString(">Workspace<", $developerResponse->body());
         self::assertStringContainsString("Project Kanban", $developerResponse->body());
         self::assertStringContainsString(">Project setup<", $developerResponse->body());
+        self::assertStringContainsString("Access &amp; security", $developerResponse->body());
         self::assertStringContainsString(">Operations<", $developerResponse->body());
-        self::assertStringContainsString(">Security<", $developerResponse->body());
+        self::assertStringNotContainsString(">Security<", $developerResponse->body());
         self::assertStringContainsString(">Reference<", $developerResponse->body());
         self::assertStringContainsString("Documentation &amp; policy", $developerResponse->body());
         self::assertStringNotContainsString(">Operations hub</a>", $developerResponse->body());
@@ -1511,6 +1546,10 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Operational snapshot for identity, access, preview mode and framework readiness.", $developerResponse->body());
         self::assertStringContainsString("Framework lock", $developerResponse->body());
         self::assertStringContainsString("Developer activity", $developerResponse->body());
+        self::assertStringContainsString("Project identity", $developerResponse->body());
+        self::assertStringContainsString("Client preview", $developerResponse->body());
+        self::assertStringContainsString("Developer access", $developerResponse->body());
+        self::assertStringContainsString("System information", $developerResponse->body());
         self::assertStringNotContainsString("project-footer", $developerResponse->body());
         self::assertStringNotContainsString("<form class=\"form stack gap-md\" action=\"/developer/panel/settings/project\"", $developerResponse->body());
 
@@ -1589,6 +1628,11 @@ final class ApplicationSurfaceTest extends TestCase
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
+        $privateTodoResponse = $developerApplication->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/my-todo",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
         $policyResponse = $developerApplication->handle(Request::capture("", [
             "REQUEST_URI" => "/developer/panel/policy",
             "REQUEST_METHOD" => "GET",
@@ -1645,6 +1689,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $operationsResponse->status());
         self::assertSame(200, $projectLogsResponse->status());
         self::assertSame(200, $workspaceResponse->status());
+        self::assertSame(200, $privateTodoResponse->status());
         self::assertSame(200, $policyResponse->status());
         self::assertSame(200, $documentationResponse->status());
         self::assertSame(200, $aboutFnllaResponse->status());
@@ -1664,6 +1709,7 @@ final class ApplicationSurfaceTest extends TestCase
             $operationsResponse,
             $projectLogsResponse,
             $workspaceResponse,
+            $privateTodoResponse,
             $policyResponse,
             $documentationResponse,
             $aboutFnllaResponse,
@@ -1672,8 +1718,11 @@ final class ApplicationSurfaceTest extends TestCase
         }
         self::assertSame("application/json; charset=UTF-8", $auditExportResponse->headers()["Content-Type"] ?? null);
         self::assertSame("text/csv; charset=UTF-8", $auditCsvExportResponse->headers()["Content-Type"] ?? null);
-        self::assertStringContainsString("<title>Project Setup | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $identityResponse->body());
-        self::assertStringContainsString("One handover surface for checklist, identity and private client preview.", $identityResponse->body());
+        self::assertStringContainsString("<title>Project Identity | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $identityResponse->body());
+        self::assertStringContainsString("Project name, runtime posture, ownership and preview controls in one focused place.", $identityResponse->body());
+        self::assertStringContainsString("developer-project-identity-nav", $identityResponse->body());
+        self::assertStringContainsString("developer-project-identity-drawer", $identityResponse->body());
+        self::assertStringContainsString("Readiness checklist", $identityResponse->body());
         self::assertStringContainsString("id=\"developer-setup-checklist\"", $identityResponse->body());
         self::assertStringContainsString("Setup progress", $identityResponse->body());
         self::assertStringContainsString("Footer Developer link", $identityResponse->body());
@@ -1688,6 +1737,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("<title>Operations | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $operationsResponse->body());
         self::assertStringContainsString("<title>Project Logs | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $projectLogsResponse->body());
         self::assertStringContainsString("<title>Project Kanban | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $workspaceResponse->body());
+        self::assertStringContainsString("<title>My To-do | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $privateTodoResponse->body());
         self::assertStringContainsString("<title>Policy Boundary | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $policyResponse->body());
         self::assertStringContainsString("<title>Heatmap | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $heatmapResponse->body());
         self::assertStringContainsString("<title>Documentation &amp; Policy | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $documentationResponse->body());
@@ -1714,7 +1764,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Open project logs", $operationsResponse->body());
         self::assertStringContainsString("Release readiness", $operationsResponse->body());
         self::assertStringContainsString("Consent-aware integrations", $operationsResponse->body());
-        self::assertStringContainsString("Opt-in heatmaps", $operationsResponse->body());
+        self::assertStringContainsString("FNLLA Heatmap", $operationsResponse->body());
         self::assertStringContainsString("Export audit log", $operationsResponse->body());
         self::assertStringContainsString("Export CSV", $operationsResponse->body());
         self::assertStringContainsString("Readable timeline of project changes", $projectLogsResponse->body());
@@ -1732,7 +1782,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString('aria-label="Close developer account modal"><span aria-hidden="true">x</span></button>', $securityResponse->body());
         self::assertStringContainsString("developer-account-row", $securityResponse->body());
         self::assertStringContainsString("Save developer account", $securityResponse->body());
-        self::assertStringContainsString("Privacy-light traffic cockpit", $analyticsResponse->body());
+        self::assertStringContainsString("First-party traffic, conversion, consent and performance intelligence", $analyticsResponse->body());
         self::assertStringContainsString("Notification center", $notificationsResponse->body());
         self::assertStringContainsString("Open alerts", $notificationsResponse->body());
         self::assertStringContainsString("developer-notification-list", $notificationsResponse->body());
@@ -1760,14 +1810,21 @@ final class ApplicationSurfaceTest extends TestCase
         $versionLines = file(base_path("VERSION"), FILE_IGNORE_NEW_LINES);
         self::assertStringContainsString("FNLLA " . trim((string) ($versionLines[0] ?? "")), $releaseReadinessResponse->body());
         self::assertStringContainsString("No external calls by default", $integrationsResponse->body());
+        self::assertStringContainsString("FNLLA observability", $integrationsResponse->body());
+        self::assertStringContainsString("FNLLA Analytics", $integrationsResponse->body());
+        self::assertStringContainsString("FNLLA Error Monitor", $integrationsResponse->body());
+        self::assertStringContainsString("Project-owned adapters", $integrationsResponse->body());
+        self::assertStringContainsString("Vendor tracking adapters", $integrationsResponse->body());
         self::assertStringContainsString("Why \"No external calls by default\"?", $integrationsResponse->body());
         self::assertStringContainsString("developer-integrations-stack", $integrationsResponse->body());
         self::assertStringContainsString("developer-integrations-actions", $integrationsResponse->body());
-        self::assertStringContainsString("data-fnlla-modal-open=\"#developer-integration-ga4-settings\"", $integrationsResponse->body());
+        self::assertStringNotContainsString("developer-integration-ga4-settings", $integrationsResponse->body());
+        self::assertStringNotContainsString("developer-integration-sentry-settings", $integrationsResponse->body());
+        self::assertStringContainsString("data-fnlla-modal-open=\"#developer-integration-api-hooks-settings\"", $integrationsResponse->body());
         self::assertStringContainsString("data-fnlla-modal-open=\"#developer-integration-fionn-settings\"", $integrationsResponse->body());
         self::assertStringContainsString("Adapter settings", $integrationsResponse->body());
         self::assertStringContainsString("action=\"/developer/panel/integrations/settings\"", $integrationsResponse->body());
-        self::assertStringContainsString("Save GA4 settings", $integrationsResponse->body());
+        self::assertStringContainsString("Save API hook settings", $integrationsResponse->body());
         self::assertStringContainsString("Save FIONN AI settings", $integrationsResponse->body());
         self::assertStringContainsString("name=\"ai_fionn_enabled\"", $integrationsResponse->body());
         self::assertStringContainsString("Leave blank to keep current token", $integrationsResponse->body());
@@ -1776,6 +1833,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Analytics command center", $analyticsResponse->body());
         self::assertStringContainsString("developer-analytics-blueprint", $analyticsResponse->body());
         self::assertStringContainsString("Traffic, timing and consent signals", $analyticsResponse->body());
+        self::assertStringContainsString("Replacement signals", $analyticsResponse->body());
+        self::assertStringContainsString("Consent trend", $analyticsResponse->body());
+        self::assertStringContainsString("Consent counts", $analyticsResponse->body());
         self::assertStringContainsString("developer-analytics-metric-grid", $analyticsResponse->body());
         self::assertStringContainsString("developer-analytics-workbench", $analyticsResponse->body());
         self::assertStringContainsString("Traffic timeline", $analyticsResponse->body());
@@ -1791,7 +1851,11 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-analytics-blueprint-heatmap", $heatmapResponse->body());
         self::assertStringContainsString("Public page zones, scroll depth and device signals", $heatmapResponse->body());
         self::assertStringContainsString("first-party aggregate heatmap", $heatmapResponse->body());
+        self::assertStringContainsString("Behavior intelligence", $heatmapResponse->body());
+        self::assertStringContainsString("Coverage model", $heatmapResponse->body());
         self::assertStringContainsString("Public click intensity", $heatmapResponse->body());
+        self::assertStringContainsString("Top public page click map</p>", $heatmapResponse->body());
+        self::assertStringContainsString("data-fnlla-tooltip=\"Each cell shows aggregate click volume for the top public page.", $heatmapResponse->body());
         self::assertStringContainsString("action=\"/developer/panel/heatmap/settings\"", $heatmapResponse->body());
         self::assertStringContainsString("/fnlla/analytics/event", $heatmapResponse->body());
         self::assertStringContainsString("No external calls by default", $heatmapResponse->body());
@@ -1821,6 +1885,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("font-weight: 800;\n  letter-spacing: 0.06em;\n  text-transform: uppercase;", $developerCss);
         self::assertStringContainsString(".developer-kanban-column-add {\n  flex: 0 0 auto;\n  position: relative;\n  display: inline-grid;\n  place-items: center;", $developerCss);
         self::assertStringContainsString(".developer-kanban-column-add::before,\n.developer-kanban-column-add::after", $developerCss);
+        self::assertStringContainsString(".developer-dashboard-overview-grid {\n  grid-template-columns: repeat(4, minmax(0, 1fr));", $developerPanelCss);
+        self::assertStringContainsString(".developer-private-todo-form", $developerPanelCss);
         self::assertStringContainsString("Policy contract active", $policyResponse->body());
         self::assertStringContainsString("Technical schema", $policyResponse->body());
         self::assertStringContainsString("developer-policy-map", $policyResponse->body());
@@ -1835,6 +1901,11 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Upload size cap", $documentationResponse->body());
         self::assertStringContainsString("Operational runbooks", $documentationResponse->body());
         self::assertStringContainsString("Release and update runbook", $documentationResponse->body());
+        self::assertStringContainsString("developer-documentation-layout", $documentationResponse->body());
+        self::assertStringContainsString("FNLLA manual index", $documentationResponse->body());
+        self::assertStringContainsString("docs/DEVELOPER-PANEL.md", $documentationResponse->body());
+        self::assertStringContainsString("FNLLA changelog", $documentationResponse->body());
+        self::assertStringContainsString("CHANGELOG.md in the maintained FNLLA repository", $documentationResponse->body());
         self::assertStringContainsString("Configuration and data map", $documentationResponse->body());
         self::assertStringContainsString("Data and storage map", $documentationResponse->body());
         self::assertStringContainsString("DEVELOPER_ACCESS_USERS", $documentationResponse->body());
@@ -1858,11 +1929,19 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString('<span class="fnlla-literal">' . $runtimeVersion . "</span>", $aboutFnllaResponse->body());
         self::assertStringNotContainsString("<span>unknown</span>", $aboutFnllaResponse->body());
         self::assertStringContainsString("Project Kanban", $workspaceResponse->body());
-        self::assertStringNotContainsString("My to-do", $workspaceResponse->body());
+        self::assertStringContainsString("href=\"/developer/panel/my-todo\"", $workspaceResponse->body());
+        self::assertStringNotContainsString("Private developer notes and personal tasks outside the shared project Kanban.", $workspaceResponse->body());
+        self::assertStringContainsString("Private developer notes and personal tasks outside the shared project Kanban.", $privateTodoResponse->body());
+        self::assertStringContainsString("developer-private-todo-form", $privateTodoResponse->body());
+        self::assertStringContainsString("action=\"/developer/panel/my-todo/items\"", $privateTodoResponse->body());
         self::assertStringContainsString("Assigned to me", $workspaceResponse->body());
         self::assertStringContainsString("data-developer-kanban", $workspaceResponse->body());
         self::assertStringContainsString("data-developer-kanban-task", $workspaceResponse->body());
-        self::assertStringContainsString("data-developer-kanban-modal", $workspaceResponse->body());
+        self::assertStringContainsString("developer-kanban-timeline", $workspaceResponse->body());
+        self::assertStringContainsString("Timeline / Gantt", $workspaceResponse->body());
+        self::assertStringNotContainsString("data-developer-kanban-modal", $workspaceResponse->body());
+        self::assertStringContainsString("data-developer-kanban-filter=\"mine\"", $workspaceResponse->body());
+        self::assertStringContainsString("developer-kanban-insights", $workspaceResponse->body());
         self::assertStringContainsString("data-developer-kanban-search", $workspaceResponse->body());
         self::assertStringContainsString("data-developer-kanban-move-form", $workspaceResponse->body());
         self::assertStringContainsString("type=\"hidden\" name=\"developer_workspace_status\"", $workspaceResponse->body());
@@ -1894,9 +1973,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-kanban-subtask-remove", $workspaceResponse->body());
         self::assertStringContainsString("name=\"developer_workspace_attachment_file\"", $workspaceResponse->body());
         self::assertStringContainsString("developer-kanban-task-menu", $workspaceResponse->body());
-        self::assertStringContainsString("aria-label=\"Task actions\"", $workspaceResponse->body());
-        self::assertStringContainsString("data-fnlla-tooltip=\"Task actions\"", $workspaceResponse->body());
-        self::assertStringContainsString("data-fnlla-tooltip-position=\"top\"", $workspaceResponse->body());
+        self::assertStringContainsString("aria-label=\"Task actions\" data-fnlla-tooltip=\"Task actions\" data-fnlla-tooltip-position=\"left\"", $workspaceResponse->body());
+        self::assertStringContainsString("developer-kanban-modal-section-heading", $workspaceResponse->body());
+        self::assertStringContainsString("developer-kanban-triage-strip", $workspaceResponse->body());
         self::assertStringNotContainsString("developer-kanban-quick-create", $workspaceResponse->body());
         self::assertStringNotContainsString("developer-kanban-subtask-form", $workspaceResponse->body());
         self::assertStringNotContainsString("developer-kanban-task-editor", $workspaceResponse->body());
@@ -2183,10 +2262,8 @@ final class ApplicationSurfaceTest extends TestCase
             "REMOTE_ADDR" => "127.0.0.1",
         ], [], [
             "_token" => csrf_token(),
-            "fnlla_integration_ga4_enabled" => "1",
-            "fnlla_integration_ga4_measurement_id" => "G-TEST12345",
-            "fnlla_integration_sentry_enabled" => "1",
-            "fnlla_integration_sentry_dsn" => "https://public@example.invalid/1",
+            "fnlla_integration_api_hooks_enabled" => "1",
+            "fnlla_integration_api_hooks_endpoint" => "https://hooks.example.test/fnlla",
             "developer_control_remote_enabled" => "1",
             "developer_control_remote_endpoint" => "https://techayo.co.uk/admin/api/fnlla-control",
             "developer_control_remote_project_id" => "qwerty",
@@ -2200,8 +2277,8 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(302, $integrationUpdateResponse->status());
         self::assertSame("/developer/panel/integrations", $integrationUpdateResponse->headers()["Location"] ?? null);
-        self::assertSame(true, config("integrations.ga4.enabled"));
-        self::assertSame("G-TEST12345", config("integrations.ga4.measurement_id"));
+        self::assertSame(true, config("integrations.api_hooks.enabled"));
+        self::assertSame("https://hooks.example.test/fnlla", config("integrations.api_hooks.endpoint"));
         self::assertSame(true, config("developer_control.remote.enabled"));
         self::assertSame(true, config("ai.runtime.fionn.enabled"));
         self::assertSame("http://127.0.0.1:11434", config("ai.runtime.fionn.endpoint"));
@@ -2222,7 +2299,8 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $homeResponse->status());
         self::assertStringContainsString('class="starter-hero-title">' . h($this->expectedProjectName()) . '</h1>', $homeResponse->body());
-        self::assertStringContainsString("googletagmanager.com/gtag/js", $homeResponse->body());
+        self::assertStringNotContainsString("googletagmanager.com/gtag/js", $homeResponse->body());
+        self::assertStringNotContainsString("clarity.ms/tag", $homeResponse->body());
         self::assertStringContainsString("fnlla.integration_event.v1", $homeResponse->body());
     }
 
@@ -2273,6 +2351,86 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame("Client Operations Hub", config("app.name"));
         self::assertSame("Client systems without noise", config("app.tagline"));
         self::assertSame("https://client.example.test", config("app.base_url"));
+    }
+
+    public function testDeveloperPanelCanSwitchRuntimeEnvironmentToProduction(): void
+    {
+        $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
+            . DIRECTORY_SEPARATOR
+            . "fnlla-runtime-environment-"
+            . bin2hex(random_bytes(4));
+        mkdir($this->temporaryEnvironmentDirectory, 0777, true);
+        $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
+        $envExamplePath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env.example";
+        file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
+
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => false,
+            "password" => "",
+            "username" => "",
+            "env_path" => $envPath,
+            "env_example_path" => $envExamplePath,
+        ]));
+        config_set("app", array_merge((array) config("app", []), [
+            "environment" => "development",
+            "debug" => true,
+            "base_url" => "https://fnlla.example.test",
+        ]));
+        config_set("debug.toolbar", true);
+        config_set("debug.history.enabled", true);
+        config_set("security.trusted_hosts", []);
+        $developerAccount = $this->configureNamedDeveloperAccess([
+            "operations_nav_mode" => "hidden",
+        ]);
+
+        $application = $this->makeApplication();
+        developer_access()->grantAccess($developerAccount);
+        $identityResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/project-identity",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $identityResponse->status());
+        self::assertStringContainsString("Runtime environment", $identityResponse->body());
+        self::assertStringContainsString("name=\"runtime_environment\" value=\"production\"", $identityResponse->body());
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/settings/runtime-environment",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+            "runtime_environment" => "production",
+            "runtime_debug_enabled" => "1",
+            "runtime_debug_toolbar_enabled" => "1",
+            "runtime_request_history_enabled" => "1",
+            "runtime_trusted_hosts" => "https://fnlla.example.test,www.fnlla.example.test:443",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame("/developer/panel/project-identity#runtime-environment", $response->headers()["Location"] ?? null);
+        $envContents = (string) file_get_contents($envPath);
+        self::assertStringContainsString("APP_ENV=production", $envContents);
+        self::assertStringContainsString("APP_DEBUG=false", $envContents);
+        self::assertStringContainsString("DEBUG_TOOLBAR=false", $envContents);
+        self::assertStringContainsString("DEBUG_REQUEST_HISTORY=false", $envContents);
+        self::assertStringContainsString("TRUSTED_HOSTS=fnlla.example.test,www.fnlla.example.test", $envContents);
+        self::assertSame("production", config("app.environment"));
+        self::assertFalse((bool) config("app.debug"));
+        self::assertFalse((bool) config("debug.toolbar"));
+        self::assertFalse((bool) config("debug.history.enabled"));
+        self::assertSame(["fnlla.example.test", "www.fnlla.example.test"], config("security.trusted_hosts"));
+
+        $dashboardResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $dashboardResponse->status());
+        self::assertStringContainsString("Production (ready)", $dashboardResponse->body());
+        self::assertStringContainsString("Open runtime", $dashboardResponse->body());
     }
 
     public function testProjectLeadershipRequiresNamedPersonConfirmationBeforePublicDisplay(): void
@@ -2410,6 +2568,74 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Qwerty Client Portal is led by", $aboutAfterConfirmation->body());
         self::assertStringContainsString("Marcin Kordyaczny", $aboutAfterConfirmation->body());
         self::assertStringContainsString("responsible for product direction, roadmap and technical delivery", $aboutAfterConfirmation->body());
+    }
+
+    public function testLeadDeveloperCanConfirmProjectLeadershipRecord(): void
+    {
+        $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
+            . DIRECTORY_SEPARATOR
+            . "fnlla-leadership-lead-approval-"
+            . bin2hex(random_bytes(4));
+        mkdir($this->temporaryEnvironmentDirectory, 0777, true);
+        $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
+        $envExamplePath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env.example";
+        file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
+
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => false,
+            "env_path" => $envPath,
+            "env_example_path" => $envExamplePath,
+        ]));
+        config_set("app", array_merge((array) config("app", []), [
+            "name" => "Qwerty Client Portal",
+            "project_leadership" => [
+                "organization" => "TechAyo Limited",
+                "person_name" => "Named Product Lead",
+                "person_email" => "product-lead@example.test",
+                "person_role" => "Product owner",
+                "responsibility" => "product direction and delivery approval",
+                "profile_url" => "",
+                "visibility" => "public",
+                "status" => "pending",
+                "confirmed_by" => "",
+                "confirmed_at" => "",
+            ],
+        ]));
+        $leadDeveloper = $this->developerAccountFixture(
+            "lead@example.test",
+            "Lead Developer",
+            "lead_developer"
+        );
+        $this->configureNamedDeveloperAccess([
+            "operations_nav_mode" => "hidden",
+        ], $leadDeveloper);
+
+        $application = $this->makeApplication();
+        developer_access()->grantAccess($leadDeveloper);
+        $identityResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/project-identity",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $identityResponse->status());
+        self::assertStringContainsString("Confirm responsibility", $identityResponse->body());
+
+        $confirmResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/settings/project-leadership/confirmation",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+            "project_leadership_action" => "confirm",
+        ]));
+
+        self::assertSame(302, $confirmResponse->status());
+        self::assertSame("/developer/panel/project-identity#project-leadership", $confirmResponse->headers()["Location"] ?? null);
+        self::assertSame("confirmed", config("app.project_leadership.status"));
+        self::assertSame("lead@example.test", config("app.project_leadership.confirmed_by"));
+        self::assertStringContainsString("PROJECT_LEADERSHIP_STATUS=confirmed", (string) file_get_contents($envPath));
+        self::assertStringContainsString("PROJECT_LEADERSHIP_CONFIRMED_BY=lead@example.test", (string) file_get_contents($envPath));
     }
 
     public function testDeveloperRoleCapabilitiesBlockRestrictedPanelActions(): void
@@ -2701,8 +2927,6 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_setup_email" => "setup-dev@example.test",
             "developer_setup_password" => "developer-secret",
             "developer_setup_password_confirmation" => "developer-secret",
-            "fnlla_modules_present" => "1",
-            "fnlla_module_workspace" => "1",
         ]));
 
         self::assertSame(302, $activationResponse->status());
@@ -2710,10 +2934,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(true, $_SESSION["developer.access_unlocked"] ?? false);
         self::assertStringContainsString("DEVELOPER_ACCESS_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_EMAIL=setup-dev@example.test", (string) file_get_contents($envPath));
-        self::assertStringContainsString("FNLLA_MODULE_WORKSPACE=true", (string) file_get_contents($envPath));
-        self::assertStringContainsString("FNLLA_MODULE_ANALYTICS=false", (string) file_get_contents($envPath));
-        self::assertTrue(config("modules.workspace"));
-        self::assertFalse(config("modules.analytics"));
+        self::assertStringNotContainsString("FNLLA_MODULE_WORKSPACE=", (string) file_get_contents($envPath));
+        self::assertStringNotContainsString("FNLLA_MODULE_ANALYTICS=", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_USERS=setup-dev@example.test|", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD=", (string) file_get_contents($envPath));
         self::assertStringNotContainsString("DEVELOPER_ACCESS_PASSWORD_HASH=", (string) file_get_contents($envPath));

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $developerPanelTitle = "Heatmap";
-$developerPanelLead = "First-party public-site click and scroll intelligence, aggregated inside FNLLA after analytics consent.";
+$developerPanelLead = "First-party click, scroll, element and device intelligence stored inside FNLLA after analytics consent.";
 $report = is_array($heatmapReport ?? null) ? (array) $heatmapReport : [];
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
@@ -14,6 +14,9 @@ $grid = (array) ($charts["top_page_click_grid"] ?? []);
 $gridRows = (array) ($grid["rows"] ?? []);
 $topPage = (string) ($grid["page"] ?? ($summary["top_page"] ?? "No page yet"));
 $gridMax = max(1, (int) ($grid["max"] ?? 1));
+$topPageClickMapTooltip = $gridRows === []
+    ? "No click zones are available yet. FNLLA will show the top public page click map after consented public-site clicks are recorded."
+    : "Each cell shows aggregate click volume for the top public page. Hover or focus a cell to inspect its zone count.";
 $renderBarList = static function (array $items, string $empty): void { ?>
           <?php if ($items === []): ?>
           <p class="content-text mb-0"><?= h($empty) ?></p>
@@ -63,6 +66,12 @@ $metricCards = [
     ["label" => "Clicks", "value" => (string) ($summary["click_events"] ?? 0), "detail" => "Aggregated into page zones", "status" => "GRID", "tone" => "green"],
     ["label" => "Scrolls", "value" => (string) ($summary["scroll_events"] ?? 0), "detail" => "25/50/75/100 percent buckets", "status" => "DEPTH", "tone" => "amber"],
     ["label" => "Pages", "value" => (string) ($summary["pages_seen"] ?? 0), "detail" => "Pages with behavior data", "status" => "LOCAL", "tone" => "red"],
+];
+$coverageRows = [
+    "Click map" => "Page coordinates are grouped into configurable zones before storage.",
+    "Scroll depth" => "Depth is stored as safe page buckets instead of replay timelines.",
+    "Element labels" => "Buttons and links can be counted by safe label when available.",
+    "Device mix" => "Only desktop, tablet, mobile or unknown buckets are retained.",
 ];
 
 require __DIR__ . "/panel-header.php";
@@ -117,6 +126,41 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
+        <section class="developer-dashboard-section" aria-label="Heatmap replacement signals">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Behavior intelligence</h2>
+            <span class="developer-dashboard-refresh">First-party aggregate capture</span>
+          </div>
+          <div class="developer-dashboard-overview-grid">
+            <article class="developer-dashboard-card developer-dashboard-card-wide">
+              <p class="feature-kicker">Coverage model</p>
+              <div class="developer-dashboard-glance-table">
+                <?php foreach ($coverageRows as $label => $value): ?>
+                <div class="developer-dashboard-glance-row">
+                  <strong><?= h((string) $label) ?></strong>
+                  <span><?= h((string) $value) ?></span>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </article>
+            <article class="developer-dashboard-card">
+              <p class="feature-kicker">Last behavior event</p>
+              <div class="developer-dashboard-glance-table">
+                <?php foreach (["type", "path", "device", "recorded_at_utc"] as $key): ?>
+                <div class="developer-dashboard-glance-row">
+                  <strong><?= h(str_replace("_", " ", ucfirst($key))) ?></strong>
+                  <span><?= h((string) (((array) ($report["last_behavior_event"] ?? []))[$key] ?? "n/a")) ?></span>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </article>
+            <article class="developer-dashboard-card">
+              <p class="feature-kicker">Event mix</p>
+              <?php $renderBarList((array) ($charts["events"] ?? []), "No behavior event mix has been recorded yet."); ?>
+            </article>
+          </div>
+        </section>
+
         <section class="developer-dashboard-section" aria-label="Click intensity map">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Public click intensity</h2>
@@ -124,9 +168,9 @@ require __DIR__ . "/panel-header.php";
           </div>
           <div class="developer-heatmap-workbench">
             <article class="developer-dashboard-card developer-dashboard-card-wide">
-              <p class="feature-kicker">Top public page click map</p>
+              <p class="feature-kicker" data-fnlla-tooltip="<?= h($topPageClickMapTooltip) ?>" data-fnlla-tooltip-position="top" tabindex="0">Top public page click map</p>
               <?php if ($gridRows === []): ?>
-              <p class="content-text mb-0">No click heatmap events have been recorded yet.</p>
+              <p class="content-text mb-0" data-fnlla-tooltip="<?= h($topPageClickMapTooltip) ?>" data-fnlla-tooltip-position="top" tabindex="0">No click heatmap events have been recorded yet.</p>
               <?php else: ?>
               <div class="developer-heatmap-grid" style="--heatmap-columns: <?= h((string) max(1, (int) ($settings["grid_columns"] ?? 5))) ?>;" aria-label="Click heatmap grid for top page">
                 <?php foreach ($gridRows as $row): ?>
@@ -225,7 +269,7 @@ require __DIR__ . "/panel-header.php";
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Data boundary</p>
-              <p class="content-text mb-0">The recorder keeps aggregate counts only. It is a FNLLA-owned alternative to Clarity-style heatmaps, not a session replay recorder.</p>
+              <p class="content-text mb-0">The recorder keeps aggregate counts only. It is a FNLLA-owned behavior map, not a session replay recorder.</p>
               <p class="developer-dashboard-status is-active">No external calls by default</p>
             </article>
           </div>

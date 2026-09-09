@@ -25,19 +25,43 @@ Marcin Kordyaczny** independently of the application's own leadership record.
 
 ## Optional Modules
 
-Project Setup and Panel Settings provide workspace, analytics, heatmap and customer
-portal checkboxes. Only developers with `panel.settings.write` can save panel
-configuration; POST and CSRF remain mandatory. All modules default to on in new full exports. The
-heatmap choice also enables analytics. Older settings submissions without module
-fields preserve their existing values. No switch deletes module code or data.
+Panel Settings provides workspace, analytics, heatmap and customer portal
+checkboxes. First-run Project Setup stores only identity and the first private
+developer account. Only developers with `panel.settings.write` can save panel
+configuration; POST and CSRF remain mandatory. All modules default to on in new
+full exports. The heatmap choice also enables analytics. Older settings
+submissions without module fields preserve their existing values. No switch
+deletes module code or data.
 
-### Debug Request History
+### Error Monitor And Debug Tools
 
-Operations / Debug can independently enable the toolbar and request history.
+Operations / Error Monitor can independently enable the toolbar and request history.
 Both require `APP_DEBUG=true`, a local/development/testing environment and an
 unlocked developer with `operations.view`. Configuration and clearing also require
-`panel.settings.write`, POST and CSRF. Guests and production requests are not
-recorded. Core/plain exports contain neither feature.
+`panel.settings.write`, POST and CSRF. Guests and production requests do not get
+the toolbar or request-history recording. Core/plain exports contain neither
+feature.
+
+The toolbar remains a per-request profiler, but it now polls
+`/developer/panel/debug/live` for live aggregate counts while the signed-in
+developer is browsing public HTML pages. The Error Monitor panel shows the same live
+payload, bounded request history, runtime gate status, slow-route/status/method
+aggregates, error fingerprint summaries and recent protected log errors. The live endpoint is excluded from
+request-history and metrics recording so polling does not dominate the debug
+data.
+
+Unexpected 500-level exceptions are fingerprinted into
+`storage/framework/developer/runtime-issues.json` when
+`DEBUG_RUNTIME_ISSUES=true`. Runtime issue candidates contain exception class,
+relative source location, route, method, status, occurrence counts, first/last
+seen times, severity and the last request id. They do not store exception messages, traces,
+headers, cookies, request bodies, response bodies, SQL text or bindings.
+Developers with `workspace.write` can promote a candidate to the Technical debt
+register and can explicitly create a linked Kanban card during that promotion.
+FNLLA does not automatically turn every runtime error into accepted technical
+debt or shared tasks. The intended workflow is detection, fingerprinting,
+notification, runtime issue candidate, manual Technical debt promotion and
+optional Kanban tracking.
 
 History contains only UTC timestamp, normalized HTTP method, status, elapsed
 milliseconds and PHP peak memory. No URLs, route parameters, IDs, headers, SQL,
@@ -49,8 +73,10 @@ production; an idle file is not removed automatically. Storage failure never
 changes the observed application's response. Private history uses the existing
 locked, atomic JSON store in `storage/framework/developer/request-history.json`.
 
-`DEBUG_REQUEST_HISTORY=false` is the default; the panel's saved switch overrides
-this default. The setting does not enable the toolbar or production profiling.
+`DEBUG_REQUEST_HISTORY=false` and `DEBUG_TOOLBAR=false` are the defaults.
+`DEBUG_RUNTIME_ISSUES=true` records privacy-light issue candidates for developer
+triage. The panel's saved switches override their environment defaults where a
+switch exists.
 
 ### Diagnostic Storage And Limits
 
@@ -64,9 +90,11 @@ configuration after editing environment variables.
 History records only authorized developer requests, including JSON and failed
 responses. It stores timestamp, normalized HTTP method, status, duration and peak
 memory, never paths, IDs, query strings, SQL, bindings, headers, cookies,
-request/response bodies or exception messages. The table shows newest first.
-PHP peak memory is process-scoped; long-lived concurrent HTTP workers are not
-the supported runtime model.
+request/response bodies or exception messages. Runtime issue tracking stores
+deduplicated 500-level issue fingerprints separately and requires developer
+promotion before it becomes Technical debt. The table shows newest first. PHP
+peak memory is process-scoped; long-lived concurrent HTTP workers are not the
+supported runtime model.
 
 `config/debug.php` sets `history.max_entries` (default 200, maximum 1000) and
 `history.retention_seconds` (default 3600, maximum 86400). Entries expire on the
@@ -263,9 +291,9 @@ only protect the technical control surface.
 
 ## Storage Policy
 
-The default Developer Panel workspace and activity log are file-backed JSON
-under `storage/framework/developer`. That keeps `make:project` portable and
-works before an application database exists.
+The default Developer Panel workspace, private developer to-do and activity log
+are file-backed JSON under `storage/framework/developer`. That keeps
+`make:project` portable and works before an application database exists.
 
 For higher-change teams, move long-lived workspace and audit history to
 project-owned database tables. The UI and route contract can stay the same, but
@@ -283,14 +311,19 @@ The installer creates tables for developer activity, workspace state,
 notifications and analytics events. The default remains file-backed storage so
 fresh `make:project` exports work before a database exists.
 
+Private developer to-do items remain file-backed per signed-in developer email
+by default. They are not shared with other developers, are not exposed to the
+Customer Portal and are not part of the public project contract.
+
 ## Navigation Model
 
 The Developer Panel navigation is grouped by intent:
 
 - `Dashboard` is the first standalone sidebar destination.
-- `Workspace` contains Project Kanban for delivery tasks.
-- `Project setup` contains the setup checklist, project identity, preview
-  access, service control and leadership visibility.
+- `Workspace` contains Project Kanban for shared delivery tasks and My to-do
+  for private developer notes.
+- `Project setup` contains the setup checklist, project identity, runtime
+  environment, preview access, service control and leadership visibility.
 - `Operations` contains release readiness, framework updates, project logs,
   analytics, heatmap and integrations.
 - `Security` contains named developer accounts, roles, TOTP, runtime and
@@ -336,9 +369,10 @@ profile URL, visibility and confirmation status.
 Use `admin` visibility for client systems where organization or named-lead details
 should be visible only in private system information and documentation. Use
 `public` only when the public About page should show a small confirmed
-`Product leadership` block. Public display requires the named person to sign in
-with the matching developer email and confirm the record. Rejection keeps the
-record private until the details are corrected.
+`Product leadership` block. Public display requires confirmation by the named
+person signed in with the matching developer email, or by a lead developer
+approving the project responsibility record. Rejection keeps the record private
+until the details are corrected.
 
 ## Security Model
 
@@ -379,10 +413,15 @@ The panel can update the local analytics posture through explicit `.env` keys:
 - `OBSERVABILITY_ANALYTICS_BOT_FILTERING`;
 - `OBSERVABILITY_ANALYTICS_DEVICE_DETECTION`;
 - `OBSERVABILITY_ANALYTICS_TRACK_QUERY_STRINGS`;
+- `OBSERVABILITY_HEATMAP_ENABLED`;
+- `OBSERVABILITY_HEATMAP_SAMPLE_RATE`;
+- `OBSERVABILITY_HEATMAP_GRID_COLUMNS`;
+- `OBSERVABILITY_HEATMAP_GRID_ROWS`;
 - `OBSERVABILITY_SLOW_ROUTE_THRESHOLD_MS`.
 
-The default mode is internal-only. FNLLA does not need GA4, Matomo, Clarity or a
-third-party script to provide the Developer Panel traffic cockpit.
+The default mode is internal-only. FNLLA does not need a third-party analytics
+or session-replay script to provide Developer Panel traffic and behavior
+cockpits.
 
 ## Notification Workflow
 
@@ -407,18 +446,20 @@ must be archived, attached to a change request or reviewed outside the panel.
 
 ## Integrations
 
-FNLLA may expose integration hooks for GA4, Microsoft Clarity, Sentry, FIONN AI and
-generic API callbacks. They must stay disabled by default. When enabled, GA4,
-Clarity, heatmap adapter events and generic browser API hooks run from the
-public layout only after analytics consent. Production CSP must explicitly allow
-the required script or endpoint hosts before those browser adapters can load.
+FNLLA Analytics, FNLLA Heatmap and FNLLA Error Monitor are the first-party
+observability source of truth for the Developer Panel. FNLLA may also expose
+project-owned adapter hooks for FIONN AI, generic API callbacks and TechAyo
+Remote Control. Outbound adapters must stay disabled by default. When enabled,
+generic browser API hooks run from the public layout only after analytics
+consent. Production CSP must explicitly allow the required endpoint hosts before
+browser hooks can send data.
 
 Rules:
 
 - analytics and heatmaps load only after explicit consent;
 - FIONN AI is accessed only through the audited bridge policy;
 - remote service control must use HTTPS and allowed hosts;
-- external adapters belong to project configuration or a separate package, not
+- outbound adapters belong to project configuration or a separate package, not
   hard-coded framework core.
 
 ### Remote Control Adapter
@@ -473,7 +514,7 @@ framework setup and project delivery tasks, not customer work management.
 
 Each card can track:
 
-- column: Backlog, To-do, In progress, Review or Done;
+- column: Backlog, In progress, Review or Done;
 - type: Task, Bug, Security, Release, Content or Research;
 - priority, assignee email, due date, estimate and blocked state;
 - a short checklist using `[ ]` and `[x]` lines, plus per-subtask colour,
@@ -487,6 +528,10 @@ current operational alerts. The state is global for the project, so one
 developer's acknowledgement is visible to other developer sessions. For
 long-lived accountability, the matching action is also written to the Developer
 Panel activity log.
+
+`/developer/panel/my-todo` is a separate private developer list for notes and
+personal follow-up. It is keyed to the signed-in developer and intentionally does
+not create customer-visible cards or shared project tasks.
 
 Teams that need long-lived history should install the database storage contract
 with `php fnlla developer:install-storage`. Teams that need full product

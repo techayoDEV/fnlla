@@ -75,9 +75,46 @@ $headerNotifications = is_array($developerHeaderNotifications ?? null) ? (array)
 $headerNotificationItems = array_values((array) ($headerNotifications["items"] ?? []));
 $headerNotificationCount = max(0, (int) ($headerNotifications["unread_count"] ?? 0));
 $projectBrandLogo = project_brand_logo_asset();
+$developerWorkspaceModuleEnabled = \Fnlla\Php\Support\DeveloperModules::enabled("workspace");
+$developerMyTodoHref = (string) ($developerLinks["private_todo"] ?? route("developer.panel.private_todo"));
 $notificationHref = static function (array $item) use ($developerLinks): string {
     return \Fnlla\Php\Support\DeveloperNotificationCenter::routeFor($item, $developerLinks);
 };
+$headerRuntime = is_array($developerDashboard["runtime_environment"] ?? null) ? (array) $developerDashboard["runtime_environment"] : [];
+$headerRuntimeMode = (string) ($headerRuntime["mode"] ?? (app_environment() === "production" ? "production" : "development"));
+$headerRuntimeReady = (bool) ($headerRuntime["production_ready"] ?? false);
+$headerDebugEnabled = (bool) ($headerRuntime["debug_enabled"] ?? app_debug());
+$headerRuntimeState = $headerRuntimeMode === "production"
+    ? ($headerRuntimeReady ? "Ready" : "Review")
+    : ($headerDebugEnabled ? "Debug on" : "Debug off");
+$developerCommandItems = [];
+$addCommandItem = static function (string $label, string $href, string $group, string $description = "", array $keywords = []) use (&$developerCommandItems): void {
+    if ($href === "") {
+        return;
+    }
+    $search = strtolower(trim(implode(" ", array_merge([$label, $group, $description, $href], $keywords))));
+    $developerCommandItems[$href] = [
+        "label" => $label,
+        "href" => $href,
+        "group" => $group,
+        "description" => $description !== "" ? $description : $group,
+        "search" => $search,
+    ];
+};
+$addCommandItem((string) $dashboardNavigationItem["label"], (string) $dashboardNavigationItem["href"], "Developer Panel", "Operational snapshot, alerts and project status.", ["home", "overview"]);
+$addCommandItem("Public website", (string) ($developerLinks["home"] ?? route("home")), "Project", "Open the public application in a new tab.", ["preview", "site"]);
+if ($developerWorkspaceModuleEnabled) {
+    $addCommandItem("My to-do", $developerMyTodoHref, "Workspace", "Personal developer checklist outside the shared Kanban.", ["todo", "private", "tasks", "checklist"]);
+}
+foreach ($panelNavigationGroups as $groupLabel => $items) {
+    foreach ($items as $item) {
+        $addCommandItem((string) ($item["label"] ?? ""), (string) ($item["href"] ?? ""), (string) $groupLabel, "Open this Developer Panel section.");
+    }
+}
+$addCommandItem("Runtime environment", (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity")) . "#runtime-environment", "Project setup", "Switch development or production runtime posture.", ["app_env", "app_debug", "trusted hosts"]);
+$addCommandItem("Client preview", (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings")), "Project setup", "Maintenance password and public service control.", ["maintenance", "preview"]);
+$addCommandItem("Notifications", (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications")), "Developer Panel", "Review actionable panel alerts.", ["alerts", "bell"]);
+$addCommandItem("Developer profile", (string) ($developerLinks["profile"] ?? route("developer.panel.profile")), "Developer Panel", "Avatar, profile and account settings.", ["account", "password", "totp"]);
 ?>
 <section class="developer-workspace" aria-label="Developer workspace">
   <script src="<?= h(asset("assets/developer-panel.js")) ?>" defer></script>
@@ -98,8 +135,32 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
       </a>
     </div>
     <a class="btn btn-outline btn-sm developer-workspace-public-link" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Go to public website</a>
+    <a class="developer-runtime-header-badge" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment" data-fnlla-tooltip="Runtime environment" data-fnlla-tooltip-position="bottom">
+      <span><?= h(strtoupper($headerRuntimeMode)) ?></span>
+      <strong><?= h($headerRuntimeState) ?></strong>
+    </a>
     <div class="developer-workspace-actions">
       <div class="developer-header-tools" aria-label="Developer quick tools">
+        <button class="developer-header-tool-button" type="button" data-developer-command-open aria-controls="developer-command-palette" aria-expanded="false" aria-label="Open command palette">
+          <span class="developer-header-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.5-3.5"></path>
+            </svg>
+          </span>
+        </button>
+        <?php if ($developerWorkspaceModuleEnabled): ?>
+        <a class="developer-header-tool-button <?= $developerPanelActive === "private-todo" ? "is-active" : "" ?>" href="<?= h($developerMyTodoHref) ?>" aria-label="Open developer to-do list" data-fnlla-tooltip="My to-do" data-fnlla-tooltip-position="bottom">
+          <span class="developer-header-tool-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M9 11l2 2 4-4"></path>
+              <path d="M5 6h14"></path>
+              <path d="M5 18h14"></path>
+              <path d="M5 12h1"></path>
+            </svg>
+          </span>
+        </a>
+        <?php endif; ?>
         <div class="dropdown developer-header-tool-dropdown" data-fnlla-dropdown>
           <button class="developer-header-tool-button" type="button" data-fnlla-dropdown-toggle aria-label="Open notification center">
             <span class="developer-header-tool-icon" aria-hidden="true">
@@ -150,13 +211,15 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
           </button>
           <div class="dropdown-menu project-dropdown-menu" role="menu">
             <div class="developer-dropdown-profile">
-              <span class="developer-dropdown-avatar developer-dropdown-avatar-lg" aria-hidden="true">
+              <a class="developer-dropdown-avatar-link" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>#developer-profile-avatar" aria-label="Change developer avatar">
+                <span class="developer-dropdown-avatar developer-dropdown-avatar-lg" aria-hidden="true">
                 <?php if ($developerAvatarIsUrl): ?>
-                <img src="<?= h($developerAvatar) ?>" alt="">
+                  <img src="<?= h($developerAvatar) ?>" alt="">
                 <?php else: ?>
-                <?= h($developerAvatarMark) ?>
+                  <?= h($developerAvatarMark) ?>
                 <?php endif; ?>
-              </span>
+                </span>
+              </a>
               <div>
                 <strong><?= h((string) ($currentDeveloper["name"] ?? "Developer")) ?></strong>
                 <span><?= h((string) ($currentDeveloper["role_label"] ?? "Developer")) ?></span>
@@ -190,6 +253,37 @@ $notificationHref = static function (array $item) use ($developerLinks): string 
               <button class="dropdown-item project-dropdown-danger" role="menuitem" type="submit">Lock session</button>
             </form>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="developer-command-palette" id="developer-command-palette" data-developer-command-palette hidden>
+      <button class="developer-command-backdrop" type="button" data-developer-command-close aria-label="Close command palette"></button>
+      <div class="developer-command-dialog" role="dialog" aria-modal="true" aria-labelledby="developer-command-title" aria-describedby="developer-command-help">
+        <div class="developer-command-search">
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5"></path>
+          </svg>
+          <label class="visually-hidden" for="developer-command-input">Search developer panel</label>
+          <input id="developer-command-input" type="search" placeholder="Jump to section, setting or tool..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="developer-command-results" aria-expanded="true" data-developer-command-input>
+          <span class="developer-command-shortcuts" aria-hidden="true"><kbd>Ctrl K</kbd><kbd>/</kbd></span>
+        </div>
+        <div class="developer-command-list" id="developer-command-results" role="listbox" aria-labelledby="developer-command-title" data-developer-command-list>
+          <div class="developer-command-list-head">
+            <h2 id="developer-command-title">Jump search</h2>
+            <small id="developer-command-help">Use arrows and Enter, or type a route, setting or tool name.</small>
+          </div>
+          <?php foreach ($developerCommandItems as $item): ?>
+          <?php $commandItemId = "developer-command-item-" . substr(hash("sha256", (string) $item["href"]), 0, 12); ?>
+          <a class="developer-command-item" id="<?= h($commandItemId) ?>" href="<?= h((string) $item["href"]) ?>" role="option" aria-selected="false" data-developer-command-item data-developer-command-search="<?= h((string) $item["search"]) ?>">
+            <span>
+              <strong><?= h((string) $item["label"]) ?></strong>
+              <em><?= h((string) $item["description"]) ?></em>
+            </span>
+            <small><?= h((string) $item["group"]) ?></small>
+          </a>
+          <?php endforeach; ?>
+          <p class="developer-command-empty" data-developer-command-empty hidden>No matching panel destinations.</p>
         </div>
       </div>
     </div>

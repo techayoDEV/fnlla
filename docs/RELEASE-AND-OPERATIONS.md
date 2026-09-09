@@ -394,9 +394,11 @@ The normal downstream command set is:
 | Measure local performance | `php fnlla perf:profile --iterations=5` |
 | Enforce saved performance budgets | `php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000` |
 
-`scripts/test.php` is the dependency-light smoke harness. After `composer install`,
-`composer test:unit` runs real PHPUnit and `composer analyse` runs PHPStan.
-The smoke harness is useful offline, but it is not a full framework CI service.
+`scripts/test.php` is the dependency-light smoke harness and remains the default
+project test entrypoint after export. `composer analyse` delegates to PHPStan or
+Psalm when the project adds one, and otherwise runs the bundled baseline. Add
+full PHPUnit/PHPStan deliberately when a downstream project needs that heavier
+tooling locally or in CI.
 
 `scripts/lint.php` checks PHP syntax in the local project tree and ignores
 dependencies plus runtime storage. It catches parse errors, not behavioral bugs.

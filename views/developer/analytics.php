@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $developerPanelTitle = "Analytics";
-$developerPanelLead = "Privacy-light traffic cockpit inspired by product analytics, without raw IP or fingerprinting.";
+$developerPanelLead = "First-party traffic, conversion, consent and performance intelligence without third-party analytics scripts.";
 $report = is_array($analyticsReport ?? null) ? (array) $analyticsReport : [];
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
@@ -13,6 +13,7 @@ $goals = (array) ($report["goals"] ?? []);
 $insights = (array) ($report["insights"] ?? []);
 $dataQuality = (array) ($report["data_quality"] ?? []);
 $lastRequest = (array) ($report["last_request"] ?? []);
+$lastConsent = (array) ($report["last_consent_event"] ?? []);
 $formatMetric = static fn (mixed $value, string $suffix = ""): string => is_numeric($value) ? rtrim(rtrim((string) round((float) $value, 2), "0"), ".") . $suffix : "0" . $suffix;
 $renderBarList = static function (array $items, string $empty): void { ?>
           <?php if ($items === []): ?>
@@ -87,12 +88,25 @@ $metricCards = [
         "status" => "LOCAL",
         "tone" => "amber",
     ],
+    [
+        "label" => "Consent signal",
+        "value" => $formatMetric($summary["analytics_consent_rate"] ?? 0, "%"),
+        "detail" => (string) ($summary["consent_events"] ?? 0) . " consent events recorded",
+        "status" => "1P",
+        "tone" => "green",
+    ],
 ];
 $qualityRows = [
     "Storage" => (string) ($dataQuality["storage_path"] ?? "storage/framework/metrics.json"),
     "Updated" => (string) (($dataQuality["updated_at_utc"] ?? "") ?: "not recorded yet"),
     "Retention" => (string) ($settings["retention_days"] ?? 90) . " days",
     "Sample" => (string) ($settings["sample_rate"] ?? 100) . "%",
+];
+$journeyRows = [
+    "Visitor source" => "Host-only referrer buckets, campaign-safe direct/search/social/referral groups.",
+    "Route movement" => "Page views, methods, status codes and slow routes are tracked as aggregate counters.",
+    "Conversion path" => "Successful form routes and configured goals are measured without personal identifiers.",
+    "Consent posture" => (string) ($dataQuality["consent_rate_source"] ?? "waiting for consent events"),
 ];
 require __DIR__ . "/panel-header.php";
 ?>
@@ -101,7 +115,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-analytics-commandbar">
             <div>
               <p class="feature-kicker">Analytics command center</p>
-              <h2 class="developer-dashboard-section-title">Privacy-light analytics <span class="developer-info-tip" tabindex="0" aria-label="Local analytics stores aggregate counters inside the project.">i<span>This is FNLLA-owned aggregate analytics. GA4 remains optional and is not required for these charts.</span></span></h2>
+              <h2 class="developer-dashboard-section-title">FNLLA analytics <span class="developer-info-tip" tabindex="0" aria-label="Local analytics stores aggregate counters inside the project.">i<span>This is FNLLA-owned aggregate analytics. No external analytics vendor is required for these charts.</span></span></h2>
               <p class="content-text mb-0">Aggregate traffic, route performance and conversion signals without raw IP addresses, raw user agents or browser fingerprinting.</p>
             </div>
             <div class="developer-analytics-commandbar-panel">
@@ -160,6 +174,10 @@ require __DIR__ . "/panel-header.php";
               <p class="feature-kicker">Last 24 hours</p>
               <?php $renderTimeline((array) ($charts["hourly_page_views"] ?? []), "No hourly page-view history has been recorded yet."); ?>
             </article>
+            <article class="developer-dashboard-card developer-analytics-chart-card">
+              <p class="feature-kicker">Consent trend</p>
+              <?php $renderTimeline((array) ($charts["daily_consent_events"] ?? []), "No consent trend has been recorded yet."); ?>
+            </article>
           </div>
         </section>
 
@@ -208,6 +226,41 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
+        <section class="developer-dashboard-section" aria-label="Analytics replacement signals">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Replacement signals</h2>
+            <span class="developer-dashboard-refresh">Traffic, product and privacy in one local dataset</span>
+          </div>
+          <div class="developer-dashboard-overview-grid">
+            <article class="developer-dashboard-card developer-dashboard-card-wide">
+              <p class="feature-kicker">Measurement model</p>
+              <div class="developer-dashboard-glance-table">
+                <?php foreach ($journeyRows as $label => $value): ?>
+                <div class="developer-dashboard-glance-row">
+                  <strong><?= h((string) $label) ?></strong>
+                  <span><?= h((string) $value) ?></span>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </article>
+            <article class="developer-dashboard-card">
+              <p class="feature-kicker">Consent counts</p>
+              <?php $renderBarList((array) ($charts["consent_counts"] ?? []), "No consent choices have been recorded yet."); ?>
+            </article>
+            <article class="developer-dashboard-card">
+              <p class="feature-kicker">Last consent event</p>
+              <div class="developer-dashboard-glance-table">
+                <?php foreach (["state", "analytics", "marketing", "recorded_at_utc"] as $key): ?>
+                <div class="developer-dashboard-glance-row">
+                  <strong><?= h(str_replace("_", " ", ucfirst($key))) ?></strong>
+                  <span><?= h((string) ($lastConsent[$key] ?? "n/a")) ?></span>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section class="developer-dashboard-section" aria-label="Analytics goals and insights">
           <div class="developer-dashboard-overview-grid">
             <article class="developer-dashboard-card">
@@ -238,7 +291,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Analytics settings">
           <div class="developer-dashboard-section-head">
-              <h2 class="developer-dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage and sampling. They do not enable Google Analytics or Microsoft Clarity.</span></span></h2>
+              <h2 class="developer-dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage, sampling, retention and bot filtering for this project.</span></span></h2>
             <span class="developer-dashboard-refresh">Saved to project .env</span>
           </div>
           <form class="form developer-analytics-settings-form" action="<?= h(route("developer.panel.analytics.settings")) ?>" method="post">
@@ -321,7 +374,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Consent event</p>
               <p><code><?= h((string) ($privacy["analytics_consent_event"] ?? "fnlla:analytics-consent-granted")) ?></code></p>
-              <p class="content-text mb-0">Projects can listen to this event before enabling optional client-side measurements.</p>
+              <p class="content-text mb-0">Projects can listen to this event before enabling first-party client-side measurements.</p>
             </article>
           </div>
         </section>

@@ -87,7 +87,9 @@ application's own logo elsewhere under `public/assets/` and configure its path.
 Existing modified files still require update conflict review; the ownership
 rule does not grant permission to overwrite application edits. Plain updates
 exclude these optional Full-shell assets.
-Setup and sign-in use the outline mark and a small decorative 01 signature.
+Setup and sign-in use the outline wordmark with a quiet binary background field.
+The sign-in form identifies the project by name; the identity panel credits TechAyo
+as the framework creator and maintainer.
 Panel reading surfaces are neutral, with blue actions and distinct success,
 warning and error states. Artwork stays outside forms, tables and navigation.
 
@@ -231,8 +233,8 @@ description and guide, not the cover. The builder limits each cover to eight cop
 lines and 36 words, excluding decorative binary digits. Ink copy and blue accents on grey give the shallow
 covers a quieter hierarchy; the top rule stays blue. Print retains its stronger
 blue band. A repeating ASCII encoding of FNLLA supplies an original JetBrains
-Mono `01` field and a larger digit-built `01` silhouette. Neither is a new logo,
-live data or a memory map. Keep reading areas and QR quiet zones clear. FNLLA
+Mono binary background field. Do not form a large standalone `01` symbol.
+The field is not live data or a memory map. Keep reading areas and QR quiet zones clear. FNLLA
 does not bundle local AI.
 
 The README uses three complementary graphics rather than repeated full-page

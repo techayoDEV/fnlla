@@ -11,7 +11,6 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Support\EnvironmentFileManager;
-use Fnlla\Php\Support\DeveloperModules;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
 use Fnlla\Php\Support\Logger;
@@ -168,12 +167,8 @@ final class OnboardingController extends ProjectAccessController
         ];
 
         try {
-            if ($request->input("fnlla_modules_present") === "1") {
-                $environmentValues += DeveloperModules::environmentValues($request->all());
-            }
             $environmentFileManager->write($environmentValues);
             $environmentFileManager->apply($environmentValues);
-            DeveloperModules::applyEnvironmentValues($environmentValues);
             $environmentFileManager->remove(["DEVELOPER_ACCESS_PASSWORD", "DEVELOPER_ACCESS_PASSWORD_HASH"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [

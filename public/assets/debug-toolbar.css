@@ -1,10 +1,160 @@
-#fnlla-debug-toolbar { position: fixed; z-index: 10000; inset: auto 0 0; background: var(--fnlla-color-surface, #fff); color: var(--fnlla-color-text, #374151); font: var(--fnlla-font-size-sm, 0.875rem)/1.5 var(--fnlla-font-mono, monospace); letter-spacing: 0; border-top: 2px solid var(--fnlla-color-primary, #2563eb); box-shadow: 0 -2px 8px #0002; }
-#fnlla-debug-toolbar summary { cursor: pointer; padding: 8px 16px; min-height: 36px; overflow-wrap: anywhere; }
-#fnlla-debug-toolbar summary:focus-visible { outline: 2px solid var(--fnlla-color-focus-ring, #2563eb); outline-offset: -3px; }
-#fnlla-debug-toolbar .fnlla-debug-content { padding: 12px 16px; max-height: 45vh; overflow: auto; }
-#fnlla-debug-toolbar dl { display: grid; grid-template-columns: minmax(90px, 160px) minmax(0, 1fr); gap: 6px 12px; }
-#fnlla-debug-toolbar dd { margin: 0; overflow-wrap: anywhere; }
-#fnlla-debug-toolbar table { width: 100%; border-collapse: collapse; color: inherit; font: inherit; }
-#fnlla-debug-toolbar td, #fnlla-debug-toolbar th { padding: 6px; text-align: left; border-bottom: 1px solid var(--fnlla-color-border, #e5e7eb); overflow-wrap: anywhere; }
-#fnlla-debug-toolbar caption { text-align: left; padding: 8px 0; color: var(--fnlla-color-muted, #6b7280); }
-body:has(#fnlla-debug-toolbar) { padding-bottom: 60px; }
+#fnlla-debug-toolbar {
+  position: fixed;
+  z-index: 10000;
+  inset: auto 0 0;
+  border-top: 1px solid rgba(37, 99, 235, 0.45);
+  background: var(--fnlla-color-surface, #fff);
+  background: color-mix(in srgb, var(--fnlla-color-surface, #fff) 96%, #2563eb 4%);
+  color: var(--fnlla-color-text, #374151);
+  font: var(--fnlla-font-size-sm, 0.875rem)/1.45 var(--fnlla-font-mono, monospace);
+  letter-spacing: 0;
+  box-shadow: 0 -0.8rem 2rem rgba(11, 18, 32, 0.14);
+}
+
+#fnlla-debug-toolbar summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 16px;
+  cursor: pointer;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+#fnlla-debug-toolbar summary::-webkit-details-marker {
+  display: none;
+}
+
+#fnlla-debug-toolbar summary:focus-visible {
+  outline: 2px solid var(--fnlla-color-focus-ring, #2563eb);
+  outline-offset: -3px;
+}
+
+#fnlla-debug-toolbar summary span {
+  display: inline-flex;
+  min-height: 1.45rem;
+  align-items: center;
+  padding: 0.14rem 0.42rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 999px;
+  background: var(--fnlla-color-surface, #fff);
+  color: var(--fnlla-color-secondary, #4b5563);
+  font-weight: 600;
+}
+
+#fnlla-debug-toolbar .fnlla-debug-brand {
+  border-color: transparent;
+  background: transparent;
+  color: var(--fnlla-color-primary, #2563eb);
+  padding-left: 0;
+}
+
+#fnlla-debug-toolbar .fnlla-debug-pill {
+  border-color: rgba(37, 99, 235, 0.34);
+  background: var(--fnlla-color-primary-soft, #eff6ff);
+  color: var(--fnlla-color-primary, #2563eb);
+}
+
+#fnlla-debug-toolbar .fnlla-debug-content {
+  display: grid;
+  gap: 0.85rem;
+  max-height: min(52vh, 32rem);
+  padding: 0 16px 16px;
+  overflow: auto;
+}
+
+#fnlla-debug-toolbar .fnlla-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+#fnlla-debug-toolbar section {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 6px;
+  background: var(--fnlla-color-surface, #fff);
+}
+
+#fnlla-debug-toolbar h2 {
+  margin: 0 0 0.5rem;
+  color: var(--fnlla-color-primary, #2563eb);
+  font: 700 0.78rem/1.2 var(--fnlla-font-mono, monospace);
+}
+
+#fnlla-debug-toolbar dl {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.38fr) minmax(0, 1fr);
+  gap: 0.32rem 0.6rem;
+  margin: 0;
+}
+
+#fnlla-debug-toolbar dt {
+  color: var(--fnlla-color-muted, #6b7280);
+  font-weight: 600;
+}
+
+#fnlla-debug-toolbar dd {
+  margin: 0;
+  color: var(--fnlla-color-text, #111827);
+  overflow-wrap: anywhere;
+}
+
+#fnlla-debug-toolbar a {
+  color: var(--fnlla-color-primary, #2563eb);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#fnlla-debug-toolbar a:hover,
+#fnlla-debug-toolbar a:focus-visible {
+  text-decoration: underline;
+}
+
+#fnlla-debug-toolbar table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 6px;
+  background: var(--fnlla-color-surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+
+#fnlla-debug-toolbar td,
+#fnlla-debug-toolbar th {
+  padding: 0.48rem 0.55rem;
+  text-align: left;
+  border-bottom: 1px solid var(--fnlla-color-border, #e5e7eb);
+  overflow-wrap: anywhere;
+}
+
+#fnlla-debug-toolbar tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+#fnlla-debug-toolbar th {
+  color: var(--fnlla-color-secondary, #4b5563);
+  background: var(--fnlla-color-bg-alt, #f8fafc);
+  font-weight: 700;
+}
+
+#fnlla-debug-toolbar caption {
+  text-align: left;
+  padding: 0.5rem 0;
+  color: var(--fnlla-color-muted, #6b7280);
+}
+
+body:has(#fnlla-debug-toolbar) {
+  padding-bottom: 60px;
+}
+
+@media (max-width: 760px) {
+  #fnlla-debug-toolbar .fnlla-debug-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 $developerNotice ??= null;
 $developerTotpRequired = (bool) ($developerTotpRequired ?? false);
-$brandIcon = framework_brand_asset("favicon");
 ?>
 <section class="developer-sign-in" aria-labelledby="developer-sign-in-title">
   <?php require __DIR__ . "/access-hero.php"; ?>
   <div class="developer-sign-in-main">
   <div class="developer-sign-in-inner">
     <a class="developer-sign-in-brand" href="<?= h(route("home")) ?>">
-      <?php if ($brandIcon !== null): ?><img src="<?= h($brandIcon) ?>" alt="" width="32" height="32"><?php endif; ?>
       <span><?= h((string) config("app.name", "FNLLA")) ?></span>
     </a>
     <h1 id="developer-sign-in-title">Unlock developer session</h1>

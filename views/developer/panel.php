@@ -13,7 +13,11 @@ $sessionStorageReady = (bool) ($dashboard["session_storage_writable"] ?? false);
 $queueStorageReady = (bool) ($dashboard["queue_storage_writable"] ?? false);
 $allStorageReady = $storageReady && $sessionStorageReady && $queueStorageReady;
 $observabilityEnabled = (bool) ($dashboard["observability_enabled"] ?? false);
-$environment = ucfirst((string) ($dashboard["environment"] ?? app_environment()));
+$runtimeEnvironment = is_array($dashboard["runtime_environment"] ?? null) ? (array) $dashboard["runtime_environment"] : [];
+$runtimeMode = (string) ($runtimeEnvironment["mode"] ?? ((string) ($dashboard["environment"] ?? app_environment()) === "production" ? "production" : "development"));
+$runtimeProductionReady = (bool) ($runtimeEnvironment["production_ready"] ?? false);
+$runtimeDebugEnabled = (bool) ($runtimeEnvironment["debug_enabled"] ?? app_debug());
+$environment = ucfirst($runtimeMode) . ($runtimeMode === "production" ? ($runtimeProductionReady ? " (ready)" : " (review)") : "");
 $sessionMinutes = (int) ($dashboard["developer_session_minutes"] ?? 120);
 $developerCount = (int) ($developerAccess["users_count"] ?? 1);
 $developerControl ??= ["disabled" => false, "source" => "none", "remote_enabled" => false];
@@ -156,50 +160,33 @@ require __DIR__ . "/panel-header.php";
             <h2 class="developer-dashboard-section-title">Environment status</h2>
             <span class="developer-dashboard-refresh">Last checked: just now</span>
           </div>
-          <div class="developer-dashboard-status-grid">
-            <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head">
-                <strong>Framework runtime</strong>
-                <span class="developer-dashboard-ok">OK</span>
-              </div>
-              <h3>FNLLA <?= h((string) ($dashboard["framework_version"] ?? "unknown")) ?></h3>
-              <p>Runtime <?= h((string) ($dashboard["runtime_version"] ?? "unknown")) ?></p>
-              <p class="developer-dashboard-status is-active"><?= $frameworkLockReady ? "Framework lock present" : "Framework lock missing" ?></p>
+          <div class="developer-environment-strip" role="list">
+            <article class="developer-environment-strip-item" role="listitem">
+              <span>Runtime</span>
+              <strong><?= h($environment) ?></strong>
+              <small>APP_DEBUG <?= $runtimeDebugEnabled ? "on" : "off" ?> / hosts <?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? "set" : "unset" ?></small>
             </article>
-
-            <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head">
-                <strong>Writable storage</strong>
-                <span class="developer-dashboard-ok"><?= $allStorageReady ? "OK" : "Check" ?></span>
-              </div>
-              <ul class="developer-dashboard-check-list">
-                <li>Storage: <?= $storageReady ? "OK" : "Needs attention" ?></li>
-                <li>Sessions: <?= $sessionStorageReady ? "OK" : "Needs attention" ?></li>
-                <li>Queue: <?= $queueStorageReady ? "OK" : "Needs attention" ?></li>
-              </ul>
+            <article class="developer-environment-strip-item" role="listitem">
+              <span>Framework</span>
+              <strong>FNLLA <?= h((string) ($dashboard["framework_version"] ?? "unknown")) ?></strong>
+              <small>Runtime <?= h((string) ($dashboard["runtime_version"] ?? "unknown")) ?> / lock <?= $frameworkLockReady ? "present" : "missing" ?></small>
             </article>
-
-            <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head">
-                <strong>Observability</strong>
-                <span class="developer-dashboard-ok">OK</span>
-              </div>
-              <ul class="developer-dashboard-check-list">
-                <li><?= $observabilityEnabled ? "Metrics enabled" : "Metrics disabled" ?></li>
-                <li>Health and acceptance checks active</li>
-              </ul>
+            <article class="developer-environment-strip-item" role="listitem">
+              <span>Storage</span>
+              <strong><?= $allStorageReady ? "Writable" : "Needs attention" ?></strong>
+              <small>storage <?= $storageReady ? "ok" : "check" ?> / sessions <?= $sessionStorageReady ? "ok" : "check" ?> / queue <?= $queueStorageReady ? "ok" : "check" ?></small>
             </article>
-
-            <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head">
-                <strong>Service control</strong>
-                <span class="developer-dashboard-ok"><?= ($developerControl["disabled"] ?? false) ? "Locked" : "OK" ?></span>
-              </div>
-              <ul class="developer-dashboard-check-list">
-                <li><?= ($developerControl["disabled"] ?? false) ? "Public service disabled" : "Public service open" ?></li>
-                <li><?= ($developerControl["remote_enabled"] ?? false) ? "Remote control contract enabled" : "Remote control contract disabled" ?></li>
-              </ul>
+            <article class="developer-environment-strip-item" role="listitem">
+              <span>Observability</span>
+              <strong><?= $observabilityEnabled ? "Enabled" : "Disabled" ?></strong>
+              <small>analytics, heatmap and runtime issue storage stay first-party</small>
             </article>
+            <article class="developer-environment-strip-item" role="listitem">
+              <span>Service</span>
+              <strong><?= ($developerControl["disabled"] ?? false) ? "Stopped" : "Open" ?></strong>
+              <small><?= ($developerControl["remote_enabled"] ?? false) ? "remote contract on" : "local control only" ?></small>
+            </article>
+            <a class="btn btn-outline btn-sm developer-environment-strip-action" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment">Change runtime</a>
           </div>
         </section>
 
@@ -208,11 +195,17 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-dashboard-management-list">
             <article class="developer-dashboard-management-row">
               <div>
+                <strong>Switch runtime environment</strong>
+                <p>Move between development and production while saving debug switches and trusted hosts.</p>
+              </div>
+              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment">Open runtime</a>
+            </article>
+            <article class="developer-dashboard-management-row">
+              <div>
                 <strong>Maintenance access, preview lock and service disable</strong>
                 <p>Prepare client preview access or disable the public service with a developer contact message.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Open preview</a>
-              <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">
               <div>
@@ -220,7 +213,6 @@ require __DIR__ . "/panel-header.php";
                 <p>Use this after changing preview or identity settings.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Open public site</a>
-              <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">
               <div>
@@ -228,7 +220,6 @@ require __DIR__ . "/panel-header.php";
                 <p>Health stays behind developer operations access once the project is configured.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["health"] ?? route("developer.panel.health"))) ?>">Open health</a>
-              <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">
               <div>
@@ -236,7 +227,6 @@ require __DIR__ . "/panel-header.php";
                 <p>Use the update surface before pulling a newer FNLLA base into this application.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"))) ?>">Open update</a>
-              <span aria-hidden="true">-&gt;</span>
             </article>
             <article class="developer-dashboard-management-row">
               <div>
@@ -244,7 +234,6 @@ require __DIR__ . "/panel-header.php";
                 <p>Review actionable panel alerts and privacy-light traffic trends before release work.</p>
               </div>
               <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open alerts</a>
-              <span aria-hidden="true">-&gt;</span>
             </article>
           </div>
         </section>

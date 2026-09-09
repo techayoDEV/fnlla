@@ -19,6 +19,7 @@ Purpose:
 */
 
 $pageStatus = flash("status");
+$pageStatusAutohide = is_array($pageStatus) && (bool) ($pageStatus["toast"] ?? false);
 $layoutChromeMode = (string) ($layoutChromeMode ?? "default");
 $isClientPreviewChrome = $layoutChromeMode === "client-preview";
 $isDeveloperPanelChrome = $layoutChromeMode === "developer-panel";
@@ -59,22 +60,11 @@ $showCookieConsent = !$isClientPreviewChrome && !$isDeveloperPanelChrome && !$is
 /*
 Public integration contract:
 These values are serialized for the vendored runtime only when the page is safe
-for public instrumentation. Internal heatmap data remains first-party and local;
-external providers require explicit config before any script path can activate.
+for public instrumentation. Analytics and heatmap signals remain first-party and
+local; no third-party analytics, replay or error-reporting vendor scripts are
+loaded by the FNLLA core.
 */
 $publicIntegrationConfig = [
-    "ga4" => [
-        "enabled" => (bool) config("integrations.ga4.enabled", false),
-        "measurementId" => (string) config("integrations.ga4.measurement_id", ""),
-    ],
-    "clarity" => [
-        "enabled" => (bool) config("integrations.clarity.enabled", false),
-        "projectId" => (string) config("integrations.clarity.project_id", ""),
-    ],
-    "heatmaps" => [
-        "enabled" => (bool) config("integrations.heatmaps.enabled", false),
-        "provider" => (string) config("integrations.heatmaps.provider", ""),
-    ],
     "apiHooks" => [
         "enabled" => (bool) config("integrations.api_hooks.enabled", false),
         "endpoint" => (string) config("integrations.api_hooks.endpoint", ""),
@@ -92,10 +82,7 @@ $internalHeatmapConfig = [
 $publicIntegrationRuntimeEnabled = !$isClientPreviewChrome && !$isDeveloperPanelChrome && (
     $internalHeatmapConfig["enabled"]
     ||
-    ($publicIntegrationConfig["ga4"]["enabled"] && $publicIntegrationConfig["ga4"]["measurementId"] !== "")
-    || ($publicIntegrationConfig["clarity"]["enabled"] && $publicIntegrationConfig["clarity"]["projectId"] !== "")
-    || ($publicIntegrationConfig["heatmaps"]["enabled"] && $publicIntegrationConfig["heatmaps"]["provider"] !== "")
-    || ($publicIntegrationConfig["apiHooks"]["enabled"] && $publicIntegrationConfig["apiHooks"]["endpoint"] !== "")
+    ($publicIntegrationConfig["apiHooks"]["enabled"] && $publicIntegrationConfig["apiHooks"]["endpoint"] !== "")
 );
 $pageMeta = page_meta([
     "site" => (string) config("app.name"),
@@ -188,7 +175,7 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
   <?php endif; ?>
 
   <?php if (!$isClientPreviewChrome && is_array($pageStatus) && isset($pageStatus["title"], $pageStatus["text"])): ?>
-  <section class="section pt-1 pb-0 <?= $isDeveloperPanelChrome ? "developer-workspace-alert-section" : "" ?>" id="page-status">
+  <section class="section pt-1 pb-0 <?= $isDeveloperPanelChrome ? "developer-workspace-alert-section" : "" ?>" id="page-status"<?= $pageStatusAutohide ? ' data-fnlla-alert-autohide="true"' : "" ?>>
     <div class="<?= $isDeveloperPanelChrome ? "developer-workspace-alert-container" : "container" ?>">
       <div class="alert alert-dismissible alert-<?= h((string) ($pageStatus["variant"] ?? "info")) ?>" role="<?= (($pageStatus["variant"] ?? "") === "danger" || ($pageStatus["variant"] ?? "") === "warning") ? "alert" : "status" ?>" data-fnlla-alert>
         <div>
@@ -267,7 +254,7 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
         <label class="fnlla-cookie-option">
           <span>
             <strong>Analytics cookies</strong>
-            <small>Allow consent-aware analytics or heatmap tools after the developer connects them.</small>
+            <small>Allow first-party aggregate analytics and heatmap measurements for this project.</small>
           </span>
           <input type="checkbox" data-fnlla-cookie-choice="analytics">
         </label>
@@ -292,7 +279,21 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
 
   <script nonce="<?= h(csp_nonce()) ?>" src="<?= h(asset("vendor/fnlla-runtime/assets/js/fnlla-runtime.js")) ?>"></script>
   <script nonce="<?= h(csp_nonce()) ?>">
-    document.addEventListener("click", function (event) {
+    (function () {
+      var pageStatus = document.getElementById("page-status");
+
+      function dismissAlert(alert) {
+        if (!alert) {
+          return;
+        }
+
+        var statusContainer = alert.closest("#page-status");
+        var target = statusContainer || alert;
+        target.hidden = true;
+        target.setAttribute("aria-hidden", "true");
+      }
+
+      document.addEventListener("click", function (event) {
       var closeButton = event.target && event.target.closest ? event.target.closest("[data-fnlla-alert-close]") : null;
 
       if (!closeButton) {
@@ -305,13 +306,18 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
         return;
       }
 
-      var statusContainer = alert.closest("#page-status");
-      var target = statusContainer || alert;
-
       event.preventDefault();
-      target.hidden = true;
-      target.setAttribute("aria-hidden", "true");
-    });
+      dismissAlert(alert);
+      });
+
+      if (pageStatus && pageStatus.getAttribute("data-fnlla-alert-autohide") === "true") {
+        var pageAlert = pageStatus.querySelector("[data-fnlla-alert], .alert");
+        var delay = pageAlert && (pageAlert.classList.contains("alert-warning") || pageAlert.classList.contains("alert-danger")) ? 10000 : 7000;
+        window.setTimeout(function () {
+          dismissAlert(pageAlert);
+        }, delay);
+      }
+    })();
   </script>
   <?php if ($showCookieConsent): ?>
   <script nonce="<?= h(csp_nonce()) ?>">
@@ -518,63 +524,6 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
         }
       }
 
-      function loadScriptOnce(key, src, setup) {
-        if (loaded[key]) {
-          return;
-        }
-
-        loaded[key] = true;
-        if (typeof setup === "function") {
-          setup();
-        }
-
-        var script = document.createElement("script");
-        script.async = true;
-        script.src = src;
-        document.head.appendChild(script);
-      }
-
-      function enableGa4() {
-        var measurementId = config.ga4 && config.ga4.measurementId;
-
-        if (!config.ga4 || config.ga4.enabled !== true || !measurementId) {
-          return;
-        }
-
-        loadScriptOnce("ga4", "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(measurementId), function () {
-          window.dataLayer = window.dataLayer || [];
-          window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
-          window.gtag("js", new Date());
-          window.gtag("config", measurementId, { anonymize_ip: true });
-        });
-      }
-
-      function enableClarity() {
-        var projectId = config.clarity && config.clarity.projectId;
-
-        if (!config.clarity || config.clarity.enabled !== true || !projectId || loaded.clarity) {
-          return;
-        }
-
-        loaded.clarity = true;
-        window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
-        loadScriptOnce("clarity-script", "https://www.clarity.ms/tag/" + encodeURIComponent(projectId));
-      }
-
-      function enableHeatmapAdapter(preferences) {
-        if (!config.heatmaps || config.heatmaps.enabled !== true || !config.heatmaps.provider) {
-          return;
-        }
-
-        window.dispatchEvent(new CustomEvent("fnlla:heatmap-adapter-ready", {
-          detail: {
-            provider: config.heatmaps.provider,
-            consent: preferences,
-            externalRecorder: false
-          }
-        }));
-      }
-
       function shouldSample() {
         var rate = internalHeatmap && Number(internalHeatmap.sampleRate || 100);
 
@@ -760,9 +709,6 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
           return;
         }
 
-        enableGa4();
-        enableClarity();
-        enableHeatmapAdapter(preferences);
         enableFnllaHeatmap(preferences);
         sendApiHook("analytics_consent_granted", preferences);
       }

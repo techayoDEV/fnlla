@@ -7,8 +7,8 @@ analytics, heatmaps, Kanban, customer portal, AI tools or demonstration website.
 
 1. Copy `.env.example` to `.env` and set the application name and database credentials.
 2. Run `composer install`. Core is a local `packages/fnlla-core` path package;
-   downloading development tools requires package access. The fallback bootstrap
-   works offline before Composer installation.
+   the default install stays small and the fallback bootstrap works offline
+   before Composer installation.
 3. Run `php scripts/test.php`, `php scripts/lint.php` and `php fnlla route:list`.
 4. Start `php -S 127.0.0.1:8080 -t public public/router.php` using an available port.
 
@@ -20,9 +20,10 @@ Composer metadata, `.env.example`, `phpunit.xml`, `phpstan.neon`, `README.md`,
 `LICENSE.md` and the `fnlla` launcher remain at root because common PHP tooling
 discovers them there by default.
 
-After installation, `composer test:unit` runs real PHPUnit and `composer analyse`
-runs PHPStan level 5 for app and core. `php scripts/test.php` stays available offline.
-Commit composer.lock; development tools are not production dependencies.
+After installation, `php scripts/test.php` runs the bundled smoke harness and
+`composer analyse` runs PHPStan/Psalm when the project adds one, otherwise it
+uses the bundled baseline. Commit composer.lock; add heavier development tools
+only when the project needs them.
 
 ## Core Updates
 

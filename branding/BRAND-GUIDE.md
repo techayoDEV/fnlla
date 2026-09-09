@@ -172,19 +172,19 @@ A 48 px heading belongs on an editorial cover; use 24-32 px page titles and
 
 ## 09 | Composition & Backgrounds
 
-One binary language, three levels: a campaign signature, a quiet field and a neutral information band.
+One binary language: quiet microtype fields, generous clear space and neutral information bands.
 
 ### Let the work lead
-Use an 8 px spacing rhythm with 4 px adjustments for controls. Campaigns may use
-one large 01 silhouette made of Mono digits, away from the logo and copy. It is
-not a second logo. Ordinary 01 / 02 / 03 labels can give workflow steps a readable
-sequence. In tools, keep forms and data free of decorative binary backgrounds.
+Use an 8 px spacing rhythm with 4 px adjustments for controls. Use small binary
+digits as a background texture, never a large standalone numeral or silhouette.
+Ordinary 01 / 02 / 03 labels can give workflow steps a readable sequence. Keep
+forms and data free of decoration; access screens may use a separate identity field.
 
 ### The 01 campaign field
 The bytes spell FNLLA in ASCII, not live data or AI memory. Use grouped Mono
-octets, #DCE9FC on white, with row breaks and fading edges. The blue 01 silhouette
-uses continuous digits and a faint underlay for reduced-size legibility. Protect
-reading areas, logo clear space and QR quiet zones. Do not animate it.
+octets, #DCE9FC on white or light grey, with row breaks and fading edges. Keep
+the digits small and evenly spaced, without shaping them into a second symbol.
+Protect reading areas, logo clear space and QR quiet zones. Do not animate it.
 
 ### Use real visual evidence
 Use light-grey information bands for social headers and repository art. Retain

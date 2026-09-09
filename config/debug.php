@@ -9,4 +9,8 @@ return [
         "max_entries" => 200,
         "retention_seconds" => 3600,
     ],
+    "runtime_issues" => [
+        "enabled" => (bool) env("DEBUG_RUNTIME_ISSUES", true),
+        "max_items" => 100,
+    ],
 ];

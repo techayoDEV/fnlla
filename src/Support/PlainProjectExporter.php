@@ -31,10 +31,12 @@ final class PlainProjectExporter
             "name" => "project/" . $slug, "description" => $name . " built on FNLLA core", "type" => "project",
             "repositories" => [["type" => "path", "url" => "packages/fnlla-core", "options" => ["symlink" => false]]],
             "require" => ["php" => "^8.3", "techayodev/fnlla-core" => $version],
-            "require-dev" => ["phpunit/phpunit" => "^12.5", "phpstan/phpstan" => "^2.1"],
+            "suggest" => [
+                "phpunit/phpunit" => "Optional full PHPUnit runner. The plain export ships a dependency-light local smoke-test harness.",
+                "phpstan/phpstan" => "Optional deeper static analysis. The plain export runs a dependency-light baseline without it.",
+            ],
             "autoload" => ["psr-4" => ["App\\" => "app/", "Database\\Seeders\\" => "database/seeders/", "Database\\Factories\\" => "database/factories/"]],
-            "scripts" => ["test" => "@php scripts/test.php", "test:unit" => "@php vendor/phpunit/phpunit/phpunit",
-                "analyse" => "@php scripts/static-analysis.php", "lint" => "@php scripts/lint.php"],
+            "scripts" => ["test" => "@php scripts/test.php", "analyse" => "@php scripts/static-analysis.php", "lint" => "@php scripts/lint.php"],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
 
         foreach (["auth", "cache", "cors", "database", "filesystems", "http", "logging", "mail", "queue", "rate_limit", "security", "session"] as $config) {

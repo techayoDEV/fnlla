@@ -362,38 +362,47 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
           <div class="project-setup-hero-content">
             <div class="project-setup-hero-topline">
               <p class="feature-kicker"><?= $freshDeveloperOnboarding ? "Project setup" : "Framework update fallback" ?></p>
-              <span class="project-setup-local-badge">Local first</span>
             </div>
             <h2 class="section-title mb-0"><?= $freshDeveloperOnboarding
-                ? "Project identity and private developer entry, set before handoff."
+                ? "Name the project and create private developer access."
                 : "Activate the developer panel for an existing project that predates this feature." ?></h2>
             <p class="content-text"><?= $freshDeveloperOnboarding
-                ? "This step stores the public identity and creates the first named developer account while keeping maintenance and private preview disabled until you choose otherwise."
+                ? "Start locally with the identity and first developer login. The public site stays clean while setup continues inside the panel."
                 : "Use this once after updating an older FNLLA project. The framework will save a developer password and keep the public project shell clean for the client." ?></p>
           </div>
 
-          <div class="project-setup-visual" aria-hidden="true">
+          <div class="project-setup-visual">
             <?php require dirname(__DIR__) . "/partials/framework-wordmark.php"; ?>
-            <img class="developer-brand-signature" src="<?= h(asset("assets/brand/fnlla/binary-signature.png")) ?>" alt="" width="640" height="360">
-            <div class="project-setup-flow">
-              <span><strong>01</strong> Identity</span>
-              <span><strong>02</strong> Access</span>
-              <span><strong>03</strong> Panel</span>
+            <div class="project-setup-brand-meta">
+              <span>Build from blueprint.</span>
+              <span>Framework created &amp; maintained by <a href="<?= h((string) config("framework.maintainer_url", "https://techayo.co.uk")) ?>" target="_blank" rel="noopener noreferrer">TechAyo</a></span>
+            </div>
+            <div class="project-setup-brand-stage">
+              <img class="developer-brand-field" src="<?= h(asset("assets/brand/fnlla/binary-field.png")) ?>" alt="" width="640" height="360">
+              <div class="project-setup-brand-copy">
+                <?php if ($freshDeveloperOnboarding): ?>
+                <span>Private workspace</span>
+                <strong>Prepare the handoff in private.</strong>
+                <p>Keep drafts, access decisions and operational setup away from the public site until the project is ready.</p>
+                <?php else: ?>
+                <span>Developer surface upgrade</span>
+                <strong>Private panel, steady public site.</strong>
+                <p>Bring an older project into the current developer workflow without changing what visitors see.</p>
+                <?php endif; ?>
+              </div>
             </div>
           </div>
 
           <ul class="project-note-list project-blueprint-list project-setup-contract-list">
             <?php if ($freshDeveloperOnboarding): ?>
-            <li><code>identity.title</code><span>Browser title, header, operations.</span></li>
-            <li><code>identity.slogan?</code><span>Optional title suffix after the site name.</span></li>
-            <li><code>route.private</code><span><code>/developer</code> for technical project work.</span></li>
-            <li><code>protection.mode</code><span>Maintenance and preview stay off until enabled.</span></li>
-            <li><code>developer.password</code><span>Stored as a hash, rotated from the panel.</span></li>
+            <li><strong>Name the project</strong><span>Set the visible title used by pages, browser tabs and operation screens.</span></li>
+            <li><strong>Create developer access</strong><span>One named account opens the private panel for the next setup decisions.</span></li>
+            <li><strong>Keep the screen focused</strong><span>Optional details stay folded away until they are useful.</span></li>
             <?php else: ?>
-            <li><code>route.private</code><span><code>/developer</code> stays the service entry after handoff.</span></li>
-            <li><code>public.chrome</code><span>Developer tools appear only after unlock.</span></li>
-            <li><code>session.tools</code><span>Unlocked sessions can show private navigation.</span></li>
-            <li><code>developer.password</code><span>Stored as a hash, rotated from the panel.</span></li>
+            <li><strong>Private entry</strong><span><code>/developer</code> stays the service entry after handoff.</span></li>
+            <li><strong>Public shell</strong><span>Developer tools appear only after unlock.</span></li>
+            <li><strong>Session tools</strong><span>Unlocked sessions can show private navigation.</span></li>
+            <li><strong>Password storage</strong><span>Stored as a hash, rotated from the panel.</span></li>
             <?php endif; ?>
           </ul>
         </article>
@@ -408,22 +417,22 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
               <input class="input" id="project-setup-name" name="project_name" type="text" value="<?= h((string) ($projectSetup["name"] ?? "")) ?>" autocomplete="organization" required maxlength="80">
               <p class="help-text">Used in browser titles, the header and framework operation screens.</p>
             </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-tagline">Project slogan <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-tagline" name="project_tagline" type="text" value="<?= h((string) ($projectSetup["tagline"] ?? "")) ?>" maxlength="120" placeholder="Business systems delivered clearly">
-              <p class="help-text">Appended to public browser titles, for example: Contact | Project - Slogan.</p>
-            </div>
-            <div class="form-group">
-              <label class="label" for="project-setup-url">Public URL <span class="content-text">(optional)</span></label>
-              <input class="input" id="project-setup-url" name="project_url" type="url" value="<?= h((string) ($projectSetup["url"] ?? "")) ?>" inputmode="url" autocomplete="url" placeholder="https://example.com">
-              <p class="help-text">Leave blank until the project has a real local, staging or production address.</p>
-            </div>
             <details class="developer-optional-section">
               <summary>
-                <strong>Optional responsibility information</strong>
-                <span>Name the real product or delivery lead only when the person can confirm that responsibility from a matching developer account.</span>
+                <strong>Optional information</strong>
+                <span>Add a slogan, public URL or delivery lead details only when they are ready.</span>
               </summary>
               <div class="developer-optional-section-body">
+                <div class="form-group">
+                  <label class="label" for="project-setup-tagline">Project slogan <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-tagline" name="project_tagline" type="text" value="<?= h((string) ($projectSetup["tagline"] ?? "")) ?>" maxlength="120" placeholder="Business systems delivered clearly">
+                  <p class="help-text">Appended to public browser titles, for example: Contact | Project - Slogan.</p>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="project-setup-url">Public URL <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-setup-url" name="project_url" type="url" value="<?= h((string) ($projectSetup["url"] ?? "")) ?>" inputmode="url" autocomplete="url" placeholder="https://example.com">
+                  <p class="help-text">Leave blank until the project has a real local, staging or production address.</p>
+                </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-organization">Delivery organisation <span class="content-text">(optional)</span></label>
                   <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="TechAyo Limited">
@@ -478,7 +487,6 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                 <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#developer-panel-activation-password-confirmation" aria-label="Toggle password visibility">Show</button>
               </div>
             </div>
-            <?php require dirname(__DIR__) . "/developer/module-options.php"; ?>
             <div class="d-flex flex-wrap gap-md">
               <button class="btn btn-primary" type="submit"><?= $freshDeveloperOnboarding ? "Save setup and open developer panel" : "Activate developer panel" ?></button>
             </div>

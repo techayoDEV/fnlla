@@ -32,7 +32,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/project-identity",
-            "Project Setup",
+            "Project Identity",
             "identity"
         );
     }
@@ -185,6 +185,93 @@ final class DeveloperProjectController extends DeveloperPanelController
         return $this->redirect(route("developer.panel.project_identity"));
     }
 
+    public function updateRuntimeEnvironment(
+        Request $request,
+        DeveloperAccessManager $developerAccess,
+        EnvironmentFileManager $environmentFileManager
+    ): Response {
+        if (!$this->ensureDeveloperCapability($developerAccess, "project.identity.write")) {
+            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+        }
+
+        $environment = strtolower(trim((string) $request->input("runtime_environment", "development")));
+        $trustedHostsInput = trim((string) $request->input("runtime_trusted_hosts", ""));
+        $trustedHosts = $this->normalizeRuntimeTrustedHosts($trustedHostsInput);
+
+        if (!in_array($environment, ["development", "production"], true) || strlen($trustedHostsInput) > 512 || ($trustedHostsInput !== "" && $trustedHosts === [])) {
+            flash_set("old", [
+                "runtime_environment" => $environment,
+                "runtime_trusted_hosts" => $trustedHostsInput,
+                "runtime_debug_enabled" => (string) $request->input("runtime_debug_enabled", "0"),
+                "runtime_debug_toolbar_enabled" => (string) $request->input("runtime_debug_toolbar_enabled", "0"),
+                "runtime_request_history_enabled" => (string) $request->input("runtime_request_history_enabled", "0"),
+            ]);
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Runtime environment still needs attention",
+                "text" => "Choose development or production and use comma-separated trusted host names.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+        }
+
+        $production = $environment === "production";
+        $debugEnabled = !$production && (string) $request->input("runtime_debug_enabled", "0") === "1";
+        $debugToolbarEnabled = !$production && (string) $request->input("runtime_debug_toolbar_enabled", "0") === "1";
+        $requestHistoryEnabled = !$production && (string) $request->input("runtime_request_history_enabled", "0") === "1";
+        $environmentValues = [
+            "APP_ENV" => $environment,
+            "APP_DEBUG" => $debugEnabled,
+            "DEBUG_TOOLBAR" => $debugToolbarEnabled,
+            "DEBUG_REQUEST_HISTORY" => $requestHistoryEnabled,
+            "TRUSTED_HOSTS" => implode(",", $trustedHosts),
+        ];
+
+        try {
+            $environmentFileManager->write($environmentValues);
+            $environmentFileManager->apply($environmentValues);
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Runtime environment could not be saved",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+        }
+
+        config_set("app.environment", $environment);
+        config_set("app.debug", $debugEnabled);
+        config_set("debug.toolbar", $debugToolbarEnabled);
+        config_set("debug.history.enabled", $requestHistoryEnabled);
+        config_set("security.trusted_hosts", $trustedHosts);
+        $developerAccess->grantAccess();
+        developer_activity()->record(
+            "runtime_environment",
+            $production ? "Runtime switched to production" : "Runtime switched to development",
+            $production
+                ? "APP_ENV is production, diagnostic switches are off and trusted hosts were saved."
+                : "APP_ENV is development and diagnostic switches were saved from the Developer Panel.",
+            $developerAccess->currentDeveloper()
+        );
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => $production ? "Production mode saved" : "Development mode saved",
+            "text" => $production
+                ? "The environment file now uses production with APP_DEBUG, debug toolbar and request history off."
+                : "The environment file now uses development with the selected diagnostic switches.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+    }
+
     public function updateProjectLeadership(
         Request $request,
         DeveloperAccessManager $developerAccess,
@@ -313,11 +400,11 @@ final class DeveloperProjectController extends DeveloperPanelController
         $developer = $developerAccess->currentDeveloper();
         $action = strtolower(trim((string) $request->input("project_leadership_action", "")));
 
-        if (!$leadership->canConfirm($state, $developer) || !in_array($action, ["confirm", "reject"], true)) {
+        if (!$leadership->canConfirm($state, $developer, $developerAccess->capabilitiesFor($developer)) || !in_array($action, ["confirm", "reject"], true)) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Leadership confirmation was not applied",
-                "text" => "Only the named person, signed in with the matching developer email, can confirm or reject this responsibility.",
+                "text" => "Only the named person or a lead developer can confirm or reject this responsibility.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();

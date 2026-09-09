@@ -6,9 +6,11 @@ Composer installs copies into vendor. The application PageController keeps its
 legacy namespace and src location for route compatibility. UI assets, configuration,
 routes and views are still published project files, not uninstallable packages.
 
-Run composer install, composer test:unit and composer analyse. Production uses
-composer install --no-dev --optimize-autoloader. Do not edit vendor. Package sources
-in packages are a local release channel, not a public registry publication.
+Run composer install, php scripts/test.php and composer analyse. The analysis
+command uses PHPStan/Psalm when the project adds one and otherwise runs the
+bundled baseline. Production uses composer install --no-dev --optimize-autoloader.
+Do not edit vendor. Package sources in packages are a local release channel, not
+a public registry publication.
 
 To upgrade, replace both bundled package directories with a reviewed release,
 update the exact root constraints together, run composer update techayodev/fnlla-core

@@ -56,7 +56,7 @@ final class DebugToolbar
     {
         $data = QueryTelemetry::snapshot();
         QueryTelemetry::reset();
-        if (!$this->authorized() || !$this->enabled() || $request->method() === "HEAD"
+        if (!$this->authorized() || !$this->enabled() || !$this->isPublicDebugSurface($request) || $request->method() === "HEAD"
             || $response->status() < 200 || in_array($response->status(), [204, 205, 304], true)
             || strtolower((string) $request->header("X-Requested-With", "")) === "xmlhttprequest") {
             return $response;
@@ -71,16 +71,49 @@ final class DebugToolbar
             return $response;
         }
         $route = (string) ($_SERVER["FNLLA_ROUTE_NAME"] ?? "unnamed");
-        $summary = sprintf("FNLLA Debug | %s %d | %.1f ms | %.1f MiB | %d queries", $request->method(), $response->status(), $durationMs, memory_get_peak_usage(true) / 1048576, $data["count"]);
+        $path = "/" . trim($request->path(), "/");
+        $path = $path === "/" ? "/" : $path;
+        $memoryMiB = memory_get_peak_usage(true) / 1048576;
+        $databaseMs = (float) ($data["duration_ms"] ?? 0.0);
+        $queryCount = (int) ($data["count"] ?? 0);
+        $liveUrl = route("developer.panel.debug.live");
+        $debugUrl = route("developer.panel.debug");
+        $summary = sprintf("FNLLA Debug | %s %d | %.1f ms | %.1f MiB | %d queries", $request->method(), $response->status(), $durationMs, $memoryMiB, $queryCount);
         $html = '<link rel="stylesheet" href="' . h(asset("assets/debug-toolbar.css")) . '">'
-            . '<details id="fnlla-debug-toolbar"><summary>' . h($summary) . '</summary><div class="fnlla-debug-content">'
-            . '<dl><dt>Route</dt><dd>' . h($route) . '</dd><dt>Request ID</dt><dd>' . h($request->requestId()) . '</dd>'
-            . '<dt>Database execution</dt><dd>' . h((string) $data["duration_ms"]) . ' ms</dd><dt>PHP</dt><dd>' . h(PHP_VERSION) . '</dd></dl>'
+            . '<details id="fnlla-debug-toolbar"><summary aria-label="' . h($summary) . '">'
+            . '<span class="fnlla-debug-brand">FNLLA Debug</span>'
+            . '<span class="fnlla-debug-pill">' . h($request->method()) . ' ' . h((string) $response->status()) . '</span>'
+            . '<span>' . h(number_format($durationMs, 1)) . ' ms</span>'
+            . '<span>' . h((string) $queryCount) . ' queries</span>'
+            . '<span>' . h(number_format($memoryMiB, 1)) . ' MiB</span>'
+            . '<span data-fnlla-debug-live-status>Live ready</span>'
+            . '<span data-fnlla-debug-live-errors>0% errors</span>'
+            . '<span data-fnlla-debug-live-issues>0 issues</span>'
+            . '</summary><div class="fnlla-debug-content">'
+            . '<div class="fnlla-debug-grid">'
+            . '<section><h2>Request</h2><dl><dt>Route</dt><dd>' . h($route) . '</dd><dt>Path</dt><dd>' . h($path) . '</dd><dt>Request ID</dt><dd>' . h($request->requestId()) . '</dd></dl></section>'
+            . '<section><h2>Runtime</h2><dl><dt>PHP</dt><dd>' . h(PHP_VERSION) . '</dd><dt>Environment</dt><dd>' . h(app_environment()) . '</dd><dt>Peak memory</dt><dd>' . h(number_format($memoryMiB, 1)) . ' MiB</dd></dl></section>'
+            . '<section><h2>Database</h2><dl><dt>Queries</dt><dd>' . h((string) $queryCount) . '</dd><dt>Execution</dt><dd>' . h(number_format($databaseMs, 2)) . ' ms</dd><dt>Values</dt><dd>Excluded</dd></dl></section>'
+            . '<section><h2>Live</h2><dl><dt>Total</dt><dd data-fnlla-debug-live-total>Waiting</dd><dt>Issues</dt><dd data-fnlla-debug-live-open>Waiting</dd><dt>Panel</dt><dd><a href="' . h($debugUrl) . '">Open Debug</a></dd></dl></section>'
+            . '</div>'
             . '<table><caption>Query execution (first 100, values excluded)</caption><thead><tr><th>Operation</th><th>Duration</th><th>Result</th></tr></thead><tbody>';
         foreach ($data["queries"] as $query) {
             $html .= '<tr><td>' . h($query["operation"]) . '</td><td>' . h((string) $query["duration_ms"]) . ' ms</td><td>' . ($query["ok"] ? "OK" : "Failed") . '</td></tr>';
         }
-        $html .= '</tbody></table></div></details>';
+        if ($data["queries"] === []) {
+            $html .= '<tr><td colspan="3">No database queries were captured for this request.</td></tr>';
+        }
+        $html .= '</tbody></table></div></details>'
+            . '<script nonce="' . h(csp_nonce()) . '">'
+            . '(function(){var endpoint=' . json_encode($liveUrl, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . ';'
+            . 'var text=function(s,v){var el=document.querySelector(s);if(el)el.textContent=String(v);};'
+            . 'var fmt=function(v){var n=Number(v);return Number.isFinite(n)?String(Math.round(n*100)/100):"0";};'
+            . 'var refresh=function(){var status=document.querySelector("[data-fnlla-debug-live-status]");if(status)status.textContent="Refreshing";'
+            . 'fetch(endpoint,{credentials:"same-origin",headers:{"Accept":"application/json","X-Requested-With":"XMLHttpRequest"}}).then(function(r){if(!r.ok)throw new Error("debug live failed");return r.json();}).then(function(p){var report=p.report||{};var metrics=report.metrics||{};var issues=report.runtime_issues||{};'
+            . 'text("[data-fnlla-debug-live-status]","Live");text("[data-fnlla-debug-live-errors]",fmt(metrics.error_rate)+"% errors");text("[data-fnlla-debug-live-issues]",(issues.open||0)+" issues");text("[data-fnlla-debug-live-total]",(metrics.total_requests||0)+" requests");text("[data-fnlla-debug-live-open]",(issues.open||0)+" open");'
+            . '}).catch(function(){text("[data-fnlla-debug-live-status]","Live paused");});};'
+            . 'window.setInterval(function(){if(!document.hidden)refresh();},5000);refresh();})();'
+            . '</script>';
         $body = substr_replace($response->body(), $html, $position, 0);
         return $response->withBody($body)->withHeader("Cache-Control", "private, no-store")
             ->withoutHeader("ETag")->withoutHeader("Last-Modified")->withoutHeader("Content-Length");
@@ -89,5 +122,24 @@ final class DebugToolbar
     private function store(): LockedJsonStore
     {
         return new LockedJsonStore((string) config("debug.state_path", storage_path("framework/developer/debug-toolbar.json")));
+    }
+
+    private function isPublicDebugSurface(Request $request): bool
+    {
+        $route = (string) ($_SERVER["FNLLA_ROUTE_NAME"] ?? "");
+
+        if ($route !== "" && (
+            str_starts_with($route, "developer.")
+            || str_starts_with($route, "customer.")
+            || str_starts_with($route, "maintenance.")
+            || str_starts_with($route, "api.")
+            || in_array($route, ["developer.setup", "health"], true)
+        )) {
+            return false;
+        }
+
+        $path = "/" . trim($request->path(), "/");
+
+        return !in_array($path, ["/developer-panel-setup", "/health"], true);
     }
 }

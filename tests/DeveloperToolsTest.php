@@ -9,9 +9,13 @@ use Fnlla\Php\Container\Container;
 use Fnlla\Php\Exceptions\ExceptionHandler;
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Http\HttpException;
 use Fnlla\Php\Observability\DebugToolbar;
 use Fnlla\Php\Observability\QueryTelemetry;
 use Fnlla\Php\Observability\RequestHistory;
+use Fnlla\Php\Observability\RuntimeIssueTracker;
+use Fnlla\Php\Support\DeveloperPrivateTodo;
+use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\LockedJsonStore;
 use Fnlla\Php\Support\TechnicalDebtRegistry;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +38,13 @@ final class DeveloperToolsTest extends TestCase
         config_set("app.debug", true);
         config_set("debug", ["toolbar" => true, "state_path" => $this->directory . "/debug.json"]);
         config_set("debug.history.path", $this->directory . "/history.json");
+        config_set("debug.runtime_issues.path", $this->directory . "/issues.json");
         config_set("developer_tools.debt_path", $this->directory . "/debt.json");
+        config_set("developer_workspace", array_merge((array) config("developer_workspace", []), [
+            "driver" => "file",
+            "path" => $this->directory . "/workspace.json",
+            "private_todo_path" => $this->directory . "/private-todos.json",
+        ]));
         $_SESSION = [];
     }
 
@@ -45,6 +55,7 @@ final class DeveloperToolsTest extends TestCase
         $GLOBALS["fnlla_container"] = $this->container;
         $GLOBALS["fnlla_php_container"] = $this->container;
         $_SESSION = $this->session;
+        unset($_SERVER["FNLLA_ROUTE_NAME"]);
         QueryTelemetry::reset();
         foreach (glob($this->directory . "/*") ?: [] as $file) {
             unlink($file);
@@ -130,6 +141,8 @@ final class DeveloperToolsTest extends TestCase
         $html = Response::html("<html><body>Example</body></html>")->withHeader("ETag", "old")->withHeader("Content-Length", "10");
         $response = $toolbar->decorate($request, $html, 10);
         self::assertStringContainsString('id="fnlla-debug-toolbar"', $response->body());
+        self::assertStringContainsString('class="fnlla-debug-grid"', $response->body());
+        self::assertStringContainsString("No database queries were captured for this request.", $response->body());
         self::assertStringNotContainsString("secret-fixture", $response->body());
         self::assertSame("private, no-store", $response->headers()["Cache-Control"]);
         self::assertArrayNotHasKey("ETag", $response->headers());
@@ -140,15 +153,57 @@ final class DeveloperToolsTest extends TestCase
         self::assertSame($html->body(), $toolbar->decorate(new Request("HEAD", "/"), $html, 1)->body());
     }
 
+    public function testDebugToolbarIsLimitedToPublicHtmlSurfaces(): void
+    {
+        $this->application("admin");
+        $toolbar = new DebugToolbar();
+        $publicHtml = Response::html("<html><body>Public page</body></html>");
+        $_SERVER["FNLLA_ROUTE_NAME"] = "home";
+
+        self::assertStringContainsString(
+            'id="fnlla-debug-toolbar"',
+            $toolbar->decorate(new Request("GET", "/"), $publicHtml, 10)->body()
+        );
+
+        foreach ([
+            "developer.panel.notifications" => "/developer/panel/notifications",
+            "customer.panel" => "/client/panel",
+            "maintenance.framework_update" => "/maintenance/framework-update",
+        ] as $routeName => $path) {
+            $internalHtml = Response::html("<html><body>Internal surface</body></html>");
+            $_SERVER["FNLLA_ROUTE_NAME"] = $routeName;
+
+            $response = $toolbar->decorate(new Request("GET", $path), $internalHtml, 10);
+            self::assertSame($internalHtml->body(), $response->body());
+            self::assertStringNotContainsString('id="fnlla-debug-toolbar"', $response->body());
+        }
+    }
+
     public function testDeveloperToolsRoutesEnforcePermissionsAndCsrf(): void
     {
         $application = $this->application("observer");
         $response = $application->handle(new Request("POST", "/developer/panel/debug", [], ["_token" => csrf_token(), "enabled" => "1"]));
         self::assertSame(403, $response->status());
         $application = $this->application("admin");
-        self::assertSame(200, $application->handle(new Request("GET", "/developer/panel/technical-debt"))->status());
+        $technicalDebt = $application->handle(new Request("GET", "/developer/panel/technical-debt"));
+        self::assertSame(200, $technicalDebt->status());
+        self::assertStringContainsString('<select class="select" name="status">', $technicalDebt->body());
+        self::assertStringContainsString('<details class="debt-row debt-add-row"><summary class="debt-add-summary">Add debt item</summary>', $technicalDebt->body());
         self::assertSame(200, $application->handle(new Request("GET", "/developer/panel/debug"))->status());
+        $privateTodo = $application->handle(new Request("GET", "/developer/panel/my-todo"));
+        self::assertSame(200, $privateTodo->status());
+        self::assertStringContainsString("Private developer notes and personal tasks", $privateTodo->body());
+        self::assertStringContainsString("action=\"/developer/panel/my-todo/items\"", $privateTodo->body());
         self::assertSame(419, $application->handle(new Request("POST", "/developer/panel/debug", [], ["enabled" => "1"], [], ["accept" => "application/json"]))->status());
+        $todoResponse = $application->handle(new Request("POST", "/developer/panel/my-todo/items", [], [
+            "_token" => csrf_token(),
+            "developer_private_todo_title" => "Review local debug workflow",
+            "developer_private_todo_notes" => "Do not expose this as shared Kanban work.",
+            "developer_private_todo_priority" => "high",
+        ]));
+        self::assertSame(302, $todoResponse->status());
+        self::assertSame(route("developer.panel.private_todo"), $todoResponse->headers()["Location"]);
+        self::assertSame(1, (new DeveloperPrivateTodo())->state(["email" => "tools@example.test"])["open_count"] ?? null);
         $response = $application->handle(new Request("POST", "/developer/panel/technical-debt", [], [
             "_token" => csrf_token(), "revision" => "0", "title" => "Track release debt", "status" => "open", "priority" => "high",
         ]));
@@ -157,6 +212,102 @@ final class DeveloperToolsTest extends TestCase
         $filtered = $application->handle(new Request("GET", "/developer/panel/technical-debt", ["status" => "resolved"]));
         self::assertSame(200, $filtered->status());
         self::assertStringNotContainsString("Track release debt", $filtered->body());
+    }
+
+    public function testDebugLiveEndpointReportsHistoryAndRuntimeIssuesWithoutMessages(): void
+    {
+        $application = $this->application("admin");
+        $history = new RequestHistory();
+        $history->configure(true);
+        $history->record(new Request("GET", "/private-secret-fixture", ["token" => "secret-fixture"]), Response::empty(), 12.5);
+        $tracker = new RuntimeIssueTracker();
+        $tracker->record(new \RuntimeException("secret-token-fixture"), new Request("GET", "/failing-page"));
+
+        $response = $application->handle(new Request("GET", "/developer/panel/debug/live", [], [], [], ["accept" => "application/json"]));
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString("fnlla.debug_live.v1", $response->body());
+        self::assertStringContainsString("fnlla.debug_report.v1", $response->body());
+        self::assertStringContainsString("\"open\": 1", $response->body());
+        self::assertStringNotContainsString("secret-token-fixture", $response->body());
+        self::assertStringNotContainsString("private-secret-fixture", $response->body());
+    }
+
+    public function testRuntimeIssueTrackerSkipsHttpClientErrorsAndDeduplicatesServerFailures(): void
+    {
+        $tracker = new RuntimeIssueTracker();
+        $tracker->record(new HttpException(404, "Not found"), new Request("GET", "/missing"));
+        self::assertSame([], $tracker->issues());
+
+        $exception = new \RuntimeException("private exception message");
+        $tracker->record($exception, new Request("GET", "/first"));
+        $tracker->record($exception, new Request("GET", "/second"));
+        $issues = $tracker->issues();
+
+        self::assertSame(1, count($issues));
+        self::assertSame(2, (int) $issues[0]["occurrences"]);
+        self::assertStringNotContainsString("private exception message", (string) file_get_contents($this->directory . "/issues.json"));
+    }
+
+    public function testRuntimeIssueCanBePromotedToTechnicalDebt(): void
+    {
+        $application = $this->application("admin");
+        $tracker = new RuntimeIssueTracker();
+        $tracker->record(new \RuntimeException("private promotion message"), new Request("GET", "/broken"));
+        $issue = $tracker->issues()[0];
+
+        $response = $application->handle(new Request("POST", "/developer/panel/debug/runtime-issues/promote", [], [
+            "_token" => csrf_token(),
+            "revision" => "0",
+            "runtime_issue_id" => $issue["id"],
+            "runtime_issue_create_workspace_task" => "1",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame(route("developer.panel.technical_debt"), $response->headers()["Location"]);
+        $debtItemId = TechnicalDebtRegistry::runtimeIssueDebtId((string) $issue["fingerprint"]);
+        $debtItem = (new TechnicalDebtRegistry())->state()["items"][$debtItemId] ?? [];
+        $linkedIssue = (new RuntimeIssueTracker())->find((string) $issue["id"]);
+        $workspaceTaskId = (string) ($linkedIssue["workspace_task_id"] ?? "");
+        $workspaceTask = [];
+        foreach ((new DeveloperWorkspaceBoard())->state(["email" => "tools@example.test"])["tasks"] as $task) {
+            if (($task["id"] ?? "") === $workspaceTaskId) {
+                $workspaceTask = $task;
+                break;
+            }
+        }
+        self::assertSame("runtime_issue", $debtItem["source"] ?? null);
+        self::assertSame($issue["fingerprint"], $debtItem["runtime_issue_id"] ?? null);
+        self::assertSame("linked", $linkedIssue["status"] ?? null);
+        self::assertStringStartsWith("runtime-", $workspaceTaskId);
+        self::assertSame("bug", $workspaceTask["type"] ?? null);
+        self::assertSame("backlog", $workspaceTask["status"] ?? null);
+        self::assertFalse((bool) ($workspaceTask["client_visible"] ?? true));
+        self::assertStringNotContainsString("private promotion message", json_encode($debtItem, JSON_THROW_ON_ERROR));
+    }
+
+    public function testPrivateTodoIsScopedToCurrentDeveloper(): void
+    {
+        $todo = new DeveloperPrivateTodo();
+        $firstDeveloper = ["email" => "first@example.test", "name" => "First"];
+        $secondDeveloper = ["email" => "second@example.test", "name" => "Second"];
+
+        $todo->create(["title" => "Private release note", "priority" => "high"], $firstDeveloper);
+        $todo->create(["title" => "Second developer note", "priority" => "normal"], $secondDeveloper);
+        $firstState = $todo->state($firstDeveloper);
+        $secondState = $todo->state($secondDeveloper);
+        $firstItemId = (string) ($firstState["items"][0]["id"] ?? "");
+
+        $todo->toggle($firstItemId, $firstDeveloper);
+        $firstDoneState = $todo->state($firstDeveloper);
+
+        self::assertSame("fnlla.developer_private_todo.v1", $firstState["schema"] ?? null);
+        self::assertSame(1, $firstState["open_count"] ?? null);
+        self::assertSame(1, $secondState["open_count"] ?? null);
+        self::assertSame("Private release note", $firstState["items"][0]["title"] ?? null);
+        self::assertSame("Second developer note", $secondState["items"][0]["title"] ?? null);
+        self::assertSame(0, $firstDoneState["open_count"] ?? null);
+        self::assertSame(1, $firstDoneState["done_count"] ?? null);
+        self::assertStringNotContainsString("Second developer note", json_encode($firstDoneState, JSON_THROW_ON_ERROR));
     }
 
     public function testQueryTelemetryIsBoundedAndNeverRetainsSqlOrBindings(): void

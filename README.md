@@ -86,8 +86,10 @@ For configuration, request boundaries and provider controls, read the
 ## Essential Commands
 
 Developer tooling and architecture: [Framework development](docs/ARCHITECTURE-ROADMAP.md).
-After `composer install`, use `composer test:unit` for PHPUnit and `composer analyse`
-for PHPStan level 5. `php scripts/test.php` remains the dependency-free smoke runner.
+In this maintainer checkout, install dev dependencies before running the full
+PHPUnit/PHPStan workflow. Exported starters keep `composer install` lightweight
+and use `php scripts/test.php` plus `composer analyse`'s dependency-light
+baseline unless a project deliberately adds heavier tools.
 
 ```bash
 php fnlla list

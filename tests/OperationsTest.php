@@ -301,6 +301,59 @@ final class OperationsTest extends TestCase
         @unlink(storage_path($path));
     }
 
+    public function testDeveloperWorkspaceBoardUsesFourColumnFlowAndNormalisesLegacyTodo(): void
+    {
+        $path = "framework/developer/workspace-legacy-" . bin2hex(random_bytes(4)) . ".json";
+        config_set("developer_workspace.driver", "file");
+        config_set("developer_workspace.path", $path);
+
+        $absolutePath = storage_path($path);
+        $directory = dirname($absolutePath);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0777, true);
+        }
+
+        file_put_contents($absolutePath, json_encode([
+            "schema" => "fnlla.developer_workspace.v1",
+            "tasks" => [
+                [
+                    "id" => "legacy-ready-card",
+                    "title" => "Legacy ready card",
+                    "status" => "todo",
+                    "position" => 100,
+                    "priority" => "normal",
+                    "type" => "task",
+                    "color" => "blue",
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        $board = new DeveloperWorkspaceBoard();
+        $legacyState = $board->state();
+        $legacyTask = $legacyState["columns_with_tasks"]["backlog"][0] ?? [];
+
+        self::assertSame(["backlog", "in_progress", "review", "done"], array_keys((array) ($legacyState["columns"] ?? [])));
+        self::assertFalse(array_key_exists("todo", (array) ($legacyState["columns"] ?? [])));
+        self::assertSame("backlog", $legacyTask["status"] ?? null);
+        self::assertSame("Legacy ready card", $legacyTask["title"] ?? null);
+
+        $board->create(["title" => "New default card"]);
+        $defaultState = $board->state();
+        $defaultTask = null;
+
+        foreach ((array) ($defaultState["columns_with_tasks"]["backlog"] ?? []) as $task) {
+            if (($task["title"] ?? "") === "New default card") {
+                $defaultTask = $task;
+                break;
+            }
+        }
+
+        self::assertIsArray($defaultTask);
+        self::assertSame("backlog", $defaultTask["status"] ?? null);
+
+        @unlink($absolutePath);
+    }
+
     public function testBackupPlanIsRedactedAndProductionActionable(): void
     {
         config_set("database.connections.mysql.password", "do-not-leak");

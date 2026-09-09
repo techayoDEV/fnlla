@@ -49,12 +49,12 @@ final class DeveloperOperationsReport
             "release_readiness" => $this->releaseReadiness($securityAudit, $backupVerification, $acceptance),
             "integrations" => $this->integrations(),
             "heatmaps" => [
-                "status" => (bool) config("integrations.heatmaps.enabled", false) ? "configured" : "disabled",
-                "mode" => "opt-in adapter",
+                "status" => (bool) config("observability.heatmap.enabled", true) ? "active" : "disabled",
+                "mode" => "first-party aggregate heatmap",
                 "consent_event" => "fnlla:analytics-consent-granted",
-                "core_recorder" => false,
-                "provider" => (string) config("integrations.heatmaps.provider", ""),
-                "notes" => "Heatmaps stay outside the framework core and should only load after analytics consent.",
+                "core_recorder" => true,
+                "provider" => "fnlla",
+                "notes" => "FNLLA records aggregate click zones and scroll depth locally after analytics consent.",
             ],
         ];
     }
@@ -167,34 +167,6 @@ final class DeveloperOperationsReport
         $techayoRemoteControl = (new TechAyoRemoteControlPlugin())->manifest();
 
         return [
-            [
-                "name" => "GA4",
-                "status" => $this->integrationStatus((bool) config("integrations.ga4.enabled", false), (string) config("integrations.ga4.measurement_id", "")),
-                "consent_event" => "fnlla:analytics-consent-granted",
-                "external_calls" => (bool) config("integrations.ga4.enabled", false),
-                "settings" => [
-                    "measurement_id" => $this->safeLabel((string) config("integrations.ga4.measurement_id", "")),
-                ],
-            ],
-            [
-                "name" => "Microsoft Clarity",
-                "status" => $this->integrationStatus((bool) config("integrations.clarity.enabled", false), (string) config("integrations.clarity.project_id", "")),
-                "consent_event" => "fnlla:analytics-consent-granted",
-                "external_calls" => (bool) config("integrations.clarity.enabled", false),
-                "settings" => [
-                    "project_id" => $this->safeLabel((string) config("integrations.clarity.project_id", "")),
-                ],
-            ],
-            [
-                "name" => "Sentry",
-                "status" => $this->integrationStatus((bool) config("integrations.sentry.enabled", false), (string) config("integrations.sentry.dsn", "")),
-                "consent_event" => "server-side policy",
-                "external_calls" => (bool) config("integrations.sentry.enabled", false),
-                "settings" => [
-                    "dsn_configured" => trim((string) config("integrations.sentry.dsn", "")) !== "",
-                    "environment" => $this->safeLabel((string) config("integrations.sentry.environment", app_environment())),
-                ],
-            ],
             [
                 "name" => "FIONN AI",
                 "status" => (string) ($fionn["integration_state"] ?? "available_opt_in"),

@@ -64,7 +64,8 @@ Omitting `--profile` creates the integrated FNLLA starter immediately, including
 in a terminal. Project Setup creates the first developer account; the private
 panel, UI runtime, diagnostics and updates are included. Workspace, analytics,
 heatmaps and the customer portal are all enabled by default, including before
-`.env` exists. Uncheck unwanted modules during Project Setup or in Panel Settings.
+`.env` exists. Disable unwanted modules later in Panel Settings or environment
+configuration.
 Heatmaps also require analytics. These switches do not delete code or stored data.
 Updates preserve explicit environment settings and any earlier installation's
 `.fnlla/modules-opt-in` marker; new exports no longer create that marker.
@@ -137,7 +138,7 @@ Acceptance requires a reason. Scans preserve triage; stale edits are rejected.
 The existing `tech-debt:update` report and the triage register are separate:
 accepting an item never suppresses a release check.
 
-Operations / Debug controls an opt-in toolbar. It requires `APP_DEBUG`, a
+Operations / Error Monitor controls an opt-in toolbar. It requires `APP_DEBUG`, a
 local/development/testing environment and a developer session with
 `operations.view`. Changing the switch additionally requires
 `panel.settings.write`. Production, staging, guests, JSON, HEAD and downloads
@@ -147,11 +148,14 @@ The toolbar displays duration, peak memory, route, request ID and database
 execution metrics. It stores no SQL text, bindings, cookies, form data or
 exception messages. At most 100 query summaries are retained per request.
 Direct PDO calls are not instrumented. The toolbar does not replace Xdebug.
-Debug also offers optional bounded request history, disabled by default. It records
-only authorized developer requests in non-production debug environments, including
-JSON responses. It never stores URLs, request IDs, inputs, headers or response bodies.
-The default is 200 entries / one hour, pruned on reads and writes; disabling clears
-the records. This is not production APM. See
+Error Monitor also offers optional bounded request history, disabled by default,
+plus a live JSON endpoint for the signed-in developer panel. It records only
+authorized developer requests in non-production debug environments, including JSON responses.
+It never stores URLs, request IDs, inputs, headers or response bodies. Unexpected
+500-level exceptions are deduplicated as runtime issue candidates and can be
+promoted manually to Technical debt; FNLLA does not auto-accept runtime errors as
+technical debt. The default history window is 200 entries / one hour, pruned on
+reads and writes; disabling clears the records. This is not production APM. See
 `docs/DEVELOPER-PANEL.md#diagnostic-storage-and-limits`.
 
 Private state lives under `storage/framework/developer/` and is not exported.
@@ -225,12 +229,13 @@ silently replace product work or environment data.
 
 ## Definition Of Ready
 
-Both profiles now provide real PHPUnit and PHPStan as development dependencies.
-After `composer install`, run `composer test:unit` and `composer analyse` in the
-export. Keep `php scripts/test.php` for offline smoke checks. Development tools
-require package downloads; the basic bundled runtime can still boot offline.
-Production uses `composer install --no-dev --optimize-autoloader` with the
-application's committed lock file. See [Framework development](ARCHITECTURE-ROADMAP.md).
+Both profiles keep the default Composer install small. After `composer install`,
+run `php scripts/test.php`, `php scripts/lint.php` and `composer analyse` in the
+export. The bundled analysis script uses PHPStan or Psalm when the project adds
+one, and otherwise runs a dependency-light baseline. Projects that need full
+PHPUnit/PHPStan can add those tools deliberately as dev dependencies. Production
+uses `composer install --no-dev --optimize-autoloader` with the application's
+committed lock file. See [Framework development](ARCHITECTURE-ROADMAP.md).
 
 A freshly exported project is ready for commercial product work when:
 

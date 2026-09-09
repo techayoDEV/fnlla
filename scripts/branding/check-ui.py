@@ -21,6 +21,7 @@ if args.screens:
 proof = args.fixtures / 'screenshots'
 proof.mkdir(exist_ok=True)
 errors, results, missing = [], [], []
+allowed_aborted_paths = {'/developer/panel/debug/live'}
 
 # Resolve translucent surfaces before measuring text or input boundaries.
 metrics = r'''(e) => {
@@ -56,6 +57,9 @@ with sync_playwright() as p:
         if target.is_relative_to(public) and target.is_file():
             r.fulfill(path=str(target), content_type=mimetypes.guess_type(target)[0] or 'application/octet-stream')
         else:
+            if path in allowed_aborted_paths:
+                r.abort()
+                return
             # No network requests leave this fixture browser, including optional integrations.
             missing.append(path)
             r.abort()

@@ -180,7 +180,7 @@ input[type="url"] {
 Workbench surface contract
 --------------------------
 Project aliases preserve the public theme contract. Reading surfaces stay
-neutral; the decorative 01 signature is confined to the access identity area.
+neutral; the decorative binary field is confined to the access identity area.
 Semantic colours and typography come from the integrated runtime tokens.
 */
 
