@@ -8,29 +8,117 @@ namespace Fnlla\Php\Support;
 final class DeveloperNavigation
 {
     private const ITEMS = [
-        ["Workspace", "workspace", "Project Kanban", "workspace", null, "workspace"],
-        ["Workspace", "technical-debt", "Technical debt", "technical_debt", "operations.view", null],
-        ["Project setup", "identity", "Project identity", "project_identity", null, null],
-        ["Project setup", "access", "Access & security", "access", null, null],
-        ["Project setup", "settings", "Panel settings", "settings", null, null],
-        ["Operations", "debug", "Error monitor", "debug", "operations.view", null],
-        ["Operations", "analytics", "Traffic analytics", "analytics", "operations.view", "analytics"],
-        ["Operations", "heatmap", "Behavior heatmap", "heatmap", "operations.view", "heatmap"],
-        ["Operations", "release-readiness", "Readiness & health", "release_readiness", "operations.view", null],
-        ["Operations", "framework-updates", "Framework updates", "framework_updates", null, null],
-        ["Operations", "project-logs", "Project logs", "project_logs", "operations.view", null],
-        ["Operations", "integrations", "API hooks & AI", "integrations", "operations.view", null],
-        ["Reference", "documentation", "Documentation & policy", "documentation", "policy.view", null],
+        [
+            "group" => "Workspace",
+            "key" => "identity",
+            "label" => "Project identity",
+            "route" => "project_identity",
+        ],
+        [
+            "group" => "Workspace",
+            "key" => "project-work",
+            "label" => "Project work",
+            "route" => "workspace",
+            "module" => "workspace",
+            "active_aliases" => ["workspace", "technical-debt", "project-changelog"],
+            "children" => [
+                ["key" => "workspace", "label" => "Tasks", "route" => "workspace", "fragment" => "developer-workspace-task-board"],
+                ["key" => "technical-debt", "label" => "Technical debt", "route" => "technical_debt", "capability" => "operations.view"],
+                ["key" => "project-changelog", "label" => "Project changelog", "route" => "changelog", "capability" => "operations.view"],
+            ],
+        ],
+        ["group" => "Operations", "key" => "access", "label" => "Access & security", "route" => "access"],
+        ["group" => "Operations", "key" => "notifications", "label" => "Review queue", "route" => "notifications", "capability" => "operations.view"],
+        [
+            "group" => "Operations",
+            "key" => "release-readiness",
+            "label" => "Release & readiness",
+            "route" => "release_readiness",
+            "capability" => "operations.view",
+            "active_aliases" => ["framework-updates", "health"],
+            "children" => [
+                ["key" => "release-readiness", "label" => "Readiness & health", "route" => "release_readiness", "capability" => "operations.view"],
+                ["key" => "framework-updates", "label" => "Framework updates", "route" => "framework_updates", "capability" => "framework.update"],
+            ],
+        ],
+        [
+            "group" => "Operations",
+            "key" => "observability",
+            "label" => "Observability",
+            "route" => "operations",
+            "capability" => "operations.view",
+            "fragment" => "developer-operations-observability",
+            "active_aliases" => ["operations", "debug", "project-logs", "analytics", "heatmap"],
+            "children" => [
+                ["key" => "project-logs", "label" => "Project logs", "route" => "project_logs", "capability" => "operations.view"],
+                ["key" => "debug", "label" => "Error monitor", "route" => "debug", "capability" => "operations.view"],
+                ["key" => "analytics", "label" => "Traffic analytics", "route" => "analytics", "capability" => "operations.view", "module" => "analytics"],
+                ["key" => "heatmap", "label" => "Behavior heatmap", "route" => "heatmap", "capability" => "operations.view", "module" => "heatmap"],
+            ],
+        ],
+        ["group" => "Operations", "key" => "integrations", "label" => "Adapters & AI", "route" => "integrations", "capability" => "operations.view"],
+        ["group" => "Reference", "key" => "documentation", "label" => "Documentation & policy", "route" => "documentation", "capability" => "policy.view", "active_aliases" => ["policy", "about"]],
     ];
 
     public static function groups(array $capabilities, callable $url): array
     {
         $groups = [];
-        foreach (self::ITEMS as [$group, $key, $label, $route, $capability, $module]) {
-            if ($capability !== null && !in_array($capability, $capabilities, true)) { continue; }
-            if ($module !== null && !DeveloperModules::enabled($module)) { continue; }
-            $groups[$group][$key] = ["label" => $label, "href" => $url("developer.panel." . $route)];
+        foreach (self::ITEMS as $item) {
+            if (!self::visible($item, $capabilities)) {
+                continue;
+            }
+
+            $group = (string) $item["group"];
+            $key = (string) $item["key"];
+            $groups[$group][$key] = self::normalise($item, $url);
+
+            $children = [];
+            foreach ((array) ($item["children"] ?? []) as $child) {
+                if (!self::visible($child, $capabilities)) {
+                    continue;
+                }
+
+                $children[(string) $child["key"]] = self::normalise($child, $url);
+            }
+
+            if ($children !== []) {
+                $groups[$group][$key]["children"] = $children;
+            }
         }
+
         return $groups;
+    }
+
+    private static function visible(array $item, array $capabilities): bool
+    {
+        $capability = $item["capability"] ?? null;
+        $module = $item["module"] ?? null;
+
+        if (is_string($capability) && !in_array($capability, $capabilities, true)) {
+            return false;
+        }
+
+        if (is_string($module) && !DeveloperModules::enabled($module)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static function normalise(array $item, callable $url): array
+    {
+        $href = $url("developer.panel." . (string) $item["route"]);
+        $fragment = trim((string) ($item["fragment"] ?? ""));
+
+        if ($fragment !== "") {
+            $href .= "#" . ltrim($fragment, "#");
+        }
+
+        return [
+            "key" => (string) $item["key"],
+            "label" => (string) $item["label"],
+            "href" => $href,
+            "active_aliases" => array_values(array_filter((array) ($item["active_aliases"] ?? []), static fn (mixed $alias): bool => is_string($alias) && trim($alias) !== "")),
+        ];
     }
 }

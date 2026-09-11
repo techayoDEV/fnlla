@@ -6,7 +6,7 @@ $pageHero = is_array($pageHero ?? null) ? $pageHero : [];
 $pageHeroActions = is_array($pageHero["actions"] ?? null) ? (array) $pageHero["actions"] : [];
 $pageHeroMeta = is_array($pageHero["meta"] ?? null) ? (array) $pageHero["meta"] : [];
 ?>
-<section class="section starter-page-hero">
+<section class="section starter-page-title">
   <div class="container">
     <div class="starter-page-heading">
       <div class="starter-page-heading-copy">

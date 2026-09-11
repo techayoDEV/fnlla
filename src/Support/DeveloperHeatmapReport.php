@@ -19,63 +19,130 @@ final class DeveloperHeatmapReport
 {
     use DeveloperMetricsReportHelpers;
 
-    public function build(): array
+    public function build(string $selectedPage = ""): array
     {
         $metrics = $this->readMetrics();
-        $clickZones = (array) ($metrics["heatmap_click_zones"] ?? []);
-        $clickTargets = (array) ($metrics["heatmap_click_targets"] ?? []);
-        $scrollDepth = (array) ($metrics["heatmap_scroll_depth"] ?? []);
-        $topPage = $this->topPage((array) ($metrics["heatmap_page_counts"] ?? []));
+        $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
+        $enabled = (bool) config("observability.heatmap.enabled", true) && (bool) $telemetryPolicy["heatmap_allowed"];
+        $pageCounts = $this->publicMetricMap((array) ($metrics["heatmap_page_counts"] ?? []));
+        $clickZones = $this->publicNestedMetricMap((array) ($metrics["heatmap_click_zones"] ?? []));
+        $clickTargets = $this->publicNestedMetricMap((array) ($metrics["heatmap_click_targets"] ?? []));
+        $scrollDepth = $this->publicNestedMetricMap((array) ($metrics["heatmap_scroll_depth"] ?? []));
+        $publicPages = $this->publicPageOptions($pageCounts);
+        $selectedPage = $this->selectPage($selectedPage, $publicPages);
+        $topPage = $selectedPage !== "" ? $selectedPage : $this->topPage($pageCounts, $publicPages);
+        $clickEvents = $this->nestedMapTotal($clickZones);
+        $scrollEvents = $this->nestedMapTotal($scrollDepth);
+        $behaviorEvents = array_sum(array_map(static fn (mixed $value): int => max(0, (int) $value), $pageCounts));
+        $eventCounts = [
+            "click" => $clickEvents,
+            "scroll" => $scrollEvents,
+            "view" => max(0, $behaviorEvents - $clickEvents - $scrollEvents),
+        ];
+        $lastBehaviorEvent = (array) ($metrics["last_behavior_event"] ?? []);
+        if ($this->isPrivateMetricKey((string) ($lastBehaviorEvent["path"] ?? ""))) {
+            $lastBehaviorEvent = [];
+        }
 
         return [
             "schema" => "fnlla.developer_heatmap.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
-            "enabled" => (bool) config("observability.heatmap.enabled", true),
+            "enabled" => $enabled,
             "privacy" => [
-                "mode" => "first-party aggregate heatmap",
+                "mode" => $enabled ? "first-party aggregate heatmap" : ((bool) $telemetryPolicy["regulated"] ? "regulated disabled" : "first-party aggregate heatmap"),
+                "profile" => (string) $telemetryPolicy["profile"],
+                "regulated" => (bool) $telemetryPolicy["regulated"],
                 "raw_session_recording" => false,
                 "raw_cursor_trails" => false,
                 "keystrokes" => false,
+                "form_fields_recorded" => false,
+                "query_strings_tracked" => false,
                 "raw_ip_addresses" => false,
                 "raw_user_agents" => false,
                 "visitor_fingerprinting" => false,
                 "requires_analytics_consent" => true,
+                "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             ],
             "summary" => [
-                "behavior_events" => (int) ($metrics["behavior_events_total"] ?? 0),
-                "click_events" => (int) (((array) ($metrics["behavior_event_counts"] ?? []))["click"] ?? 0),
-                "scroll_events" => (int) (((array) ($metrics["behavior_event_counts"] ?? []))["scroll"] ?? 0),
-                "view_events" => (int) (((array) ($metrics["behavior_event_counts"] ?? []))["view"] ?? 0),
-                "pages_seen" => count((array) ($metrics["heatmap_page_counts"] ?? [])),
+                "behavior_events" => $behaviorEvents,
+                "click_events" => $clickEvents,
+                "scroll_events" => $scrollEvents,
+                "view_events" => $eventCounts["view"],
+                "pages_seen" => count($pageCounts),
+                "public_pages_available" => count($publicPages),
                 "top_page" => $topPage,
             ],
             "charts" => [
-                "pages" => $this->topMap((array) ($metrics["heatmap_page_counts"] ?? []), 10),
+                "pages" => $this->topMap($pageCounts, 10),
                 "devices" => $this->topMap((array) ($metrics["heatmap_device_counts"] ?? []), 6),
-                "events" => $this->topMap((array) ($metrics["behavior_event_counts"] ?? []), 6),
+                "events" => $this->topMap($eventCounts, 6),
                 "click_elements" => $this->topMap((array) ($metrics["heatmap_click_elements"] ?? []), 8),
                 "daily_behavior_events" => $this->series((array) ($metrics["daily_behavior_events"] ?? []), 14),
                 "top_page_click_grid" => $this->clickGrid($topPage, (array) ($clickZones[$topPage] ?? []), (array) ($clickTargets[$topPage] ?? [])),
                 "top_page_scroll_depth" => $this->scrollDepth((array) ($scrollDepth[$topPage] ?? [])),
             ],
-            "last_behavior_event" => (array) ($metrics["last_behavior_event"] ?? []),
+            "last_behavior_event" => $lastBehaviorEvent,
+            "selected_page" => $topPage,
+            "public_pages" => $publicPages,
             "settings" => [
                 "sample_rate" => max(1, min(100, (int) config("observability.heatmap.sample_rate", 100))),
                 "grid_columns" => max(1, min(12, (int) config("observability.heatmap.click_grid_columns", 5))),
                 "grid_rows" => max(1, min(12, (int) config("observability.heatmap.click_grid_rows", 5))),
                 "storage_path" => "storage/" . ltrim((string) config("observability.metrics.path", "framework/metrics.json"), "\\/"),
+                "regulated_policy_allows_heatmap" => (bool) $telemetryPolicy["heatmap_allowed"],
             ],
-            "insights" => $this->insights($metrics, $topPage),
+            "insights" => array_values(array_filter(array_merge(
+                !$enabled && (bool) $telemetryPolicy["regulated"] ? ["Regulated telemetry policy keeps heatmap disabled until explicit project opt-in."] : [],
+                $this->insights($metrics, $topPage)
+            ))),
         ];
     }
 
-    private function topPage(array $pages): string
+    private function topPage(array $pages, array $publicPages): string
     {
         arsort($pages);
 
         $page = (string) array_key_first($pages);
 
-        return $page !== "" ? $page : "/";
+        if ($page !== "") {
+            return $page;
+        }
+
+        return (string) ($publicPages[0]["path"] ?? "/");
+    }
+
+    private function selectPage(string $selectedPage, array $publicPages): string
+    {
+        $selectedPage = $this->safePath($selectedPage);
+
+        foreach ($publicPages as $page) {
+            if ($selectedPage !== "" && $selectedPage === (string) ($page["path"] ?? "")) {
+                return $selectedPage;
+            }
+        }
+
+        return "";
+    }
+
+    private function nestedMapTotal(array $map): int
+    {
+        $total = 0;
+
+        foreach ($map as $items) {
+            $total += array_sum(array_map(static fn (mixed $value): int => max(0, (int) $value), (array) $items));
+        }
+
+        return $total;
+    }
+
+    private function safePath(string $value): string
+    {
+        $path = parse_url($value, PHP_URL_PATH);
+        $path = is_string($path) && $path !== "" ? $path : "/";
+        $path = "/" . ltrim($path, "/");
+        $path = preg_replace('/[^A-Za-z0-9_\\-\\/\\.]/', "", $path) ?? "/";
+
+        return substr($path !== "" ? $path : "/", 0, 180);
     }
 
     private function clickGrid(string $page, array $zones, array $targets): array

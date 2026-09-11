@@ -66,6 +66,11 @@ return [
             ],
         ],
     ],
+    "regulated" => [
+        "max_retention_days" => max(1, (int) env("OBSERVABILITY_REGULATED_MAX_RETENTION_DAYS", 30)),
+        "excluded_paths" => array_values(array_filter(array_map("trim", explode(",", (string) env("OBSERVABILITY_REGULATED_EXCLUDED_PATHS", "/developer,/maintenance,/client,/api"))))),
+        "heatmap_enabled" => (bool) env("OBSERVABILITY_REGULATED_HEATMAP_ENABLED", false),
+    ],
     "heatmap" => [
         /*
         First-party behavior telemetry powers local click and scroll maps. It

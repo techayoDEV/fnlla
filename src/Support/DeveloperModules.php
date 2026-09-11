@@ -33,6 +33,10 @@ final class DeveloperModules
 
     public static function enabled(string $module): bool
     {
+        if ($module === "heatmap" && DeveloperPanelPolicy::regulatedMode() && (bool) config("observability.regulated.heatmap_enabled", false) !== true) {
+            return false;
+        }
+
         return ProjectProfile::hasPanel()
             && array_key_exists($module, self::OPTIONS)
             && (bool) config("modules." . $module, true);

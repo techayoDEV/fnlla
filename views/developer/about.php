@@ -93,7 +93,7 @@ require __DIR__ . "/panel-header.php";
           <article class="developer-dashboard-card developer-dashboard-card-wide">
             <p class="feature-kicker">System information</p>
             <h3>No named leadership record</h3>
-            <p class="content-text mb-0">Add one from Project setup when the project needs a named person responsible for product direction, delivery or technical leadership.</p>
+            <p class="content-text mb-0">Add one from Workspace when the project needs a named person responsible for product direction, delivery or technical leadership.</p>
           </article>
           <?php endif; ?>
         </section>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Access & Security";
+$developerPanelTitle = "Access & security";
 $developerPanelLead = "Named developer accounts, roles, sessions, 2FA and passkey-adapter readiness.";
 $developerAccounts = is_array($developerAccess["accounts"] ?? null) ? (array) $developerAccess["accounts"] : [];
 $currentDeveloper = is_array($developerAccess["current_developer"] ?? null) ? (array) $developerAccess["current_developer"] : [];
@@ -34,10 +34,14 @@ $formatCustomerAccessTime = static function (string $value): string {
         return $value;
     }
 };
+$ownerCount = 0;
 $leadCount = 0;
 $totpCount = 0;
 $passkeyCount = 0;
 foreach ($developerAccounts as $account) {
+    if (($account["role"] ?? "") === "owner_developer") {
+        $ownerCount++;
+    }
     if (($account["role"] ?? "") === "lead_developer") {
         $leadCount++;
     }
@@ -56,10 +60,10 @@ require __DIR__ . "/panel-header.php";
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Access governance</p>
               <h2 class="developer-dashboard-section-title">Named developers, lead ownership and personal security live here.</h2>
-              <p class="content-text mb-0">Project changes remain global, but every session should be attributable to one developer account. Lead developer accounts can add, rotate or deactivate other developers.</p>
+              <p class="content-text mb-0">Project changes remain global, but every session should be attributable to one developer account. Owner and lead roles manage accounts; operational roles keep review, audit and apply work separated.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Project setup</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Project identity</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>">My profile</a>
               <?php if ($canManageDeveloperAccounts): ?>
               <button class="btn btn-outline btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Add customer</button>
@@ -75,9 +79,9 @@ require __DIR__ . "/panel-header.php";
               <p>Unique credentials keep audit events attributable.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Lead ownership</strong><span class="developer-dashboard-ok"><?= h((string) $leadCount) ?></span></div>
-              <h3><?= h((string) max(1, $leadCount)) ?> lead developer</h3>
-              <p>Only the lead manages other developer accounts.</p>
+              <div class="developer-dashboard-card-head"><strong>Ownership</strong><span class="developer-dashboard-ok"><?= h((string) ($ownerCount + $leadCount)) ?></span></div>
+              <h3><?= h((string) max(1, $ownerCount + $leadCount)) ?> owner/lead</h3>
+              <p>Only owner or lead roles manage developer accounts.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>2FA adoption</strong><span class="developer-dashboard-ok"><?= h((string) $totpCount) ?></span></div>
@@ -101,7 +105,7 @@ require __DIR__ . "/panel-header.php";
                 $accountMarkSource = preg_replace('/[^A-Za-z0-9]/', '', $accountName) ?: "D";
                 $accountMark = $accountAvatar !== "" && !$accountAvatarIsUrl ? strtoupper(substr($accountAvatar, 0, 2)) : strtoupper(substr((string) $accountMarkSource, 0, 2));
             ?>
-            <article class="developer-account-row">
+            <<?= $accountEmail === $currentEmail ? "a" : "article" ?> class="developer-account-row<?= $accountEmail === $currentEmail ? " developer-account-row-link" : "" ?>"<?= $accountEmail === $currentEmail ? ' href="' . h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) . '"' : "" ?>>
               <span class="developer-profile-avatar" aria-hidden="true">
                 <?php if ($accountAvatarIsUrl): ?>
                 <img src="<?= h($accountAvatar) ?>" alt="">
@@ -126,14 +130,14 @@ require __DIR__ . "/panel-header.php";
               <?php else: ?>
               <span class="developer-dashboard-status is-neutral"><?= $accountEmail === $currentEmail ? "Current" : "Protected" ?></span>
               <?php endif; ?>
-            </article>
+            </<?= $accountEmail === $currentEmail ? "a" : "article" ?>>
             <?php endforeach; ?>
           </div>
 
           <?php if (!$canManageDeveloperAccounts): ?>
           <div class="developer-panel-status-note">
-            <strong>Account management is lead-only.</strong>
-            <span>Your role can use the workspace and personal security settings, but only a Lead developer can add, rotate or deactivate developer accounts.</span>
+            <strong>Account management is owner/lead-only.</strong>
+            <span>Your role can use its assigned workspace and security settings, but only an Owner or Lead developer can add, rotate or deactivate developer accounts.</span>
           </div>
           <?php endif; ?>
         </section>
@@ -234,7 +238,7 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" id="developer-security" aria-label="Developer security">
-          <div class="developer-panel-form-grid">
+          <div class="developer-panel-form-grid is-stacked">
             <article class="developer-panel-fieldset-card">
               <p class="feature-kicker">Two-factor authentication</p>
               <h2 class="content-title"><?= ($security["totp_enabled"] ?? false) ? "TOTP is active" : "TOTP is not active" ?></h2>
@@ -381,7 +385,7 @@ require __DIR__ . "/panel-header.php";
                   <option value="<?= h((string) $role) ?>" <?= old("developer_account_role", "application_developer") === $role ? "selected" : "" ?>><?= h((string) $label) ?></option>
                   <?php endforeach; ?>
                 </select>
-                <p class="help-text">Choose Lead developer only when transferring account-management ownership.</p>
+                <p class="help-text">Use the narrowest role that fits. Framework apply is separate from check/dry-run and should stay with owner or lead roles.</p>
               </div>
               <div class="form-group">
                 <label class="label" for="developer-account-password">Password</label>

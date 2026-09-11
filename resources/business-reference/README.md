@@ -1,6 +1,6 @@
 # FNLLA Business Reference
 
-Edition **2.2.0**.
+Edition **2.2.1**.
 
 This blueprint is the maintained reference shape for a professional FNLLA
 business application.
@@ -44,7 +44,7 @@ small enough to read in one pass.
 
 ## Release Proof
 
-A business application targeting FNLLA 2.2.0 should pass:
+A business application targeting FNLLA 2.2.1 should pass:
 
 ```bash
 php fnlla project:acceptance --json

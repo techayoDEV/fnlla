@@ -2,11 +2,11 @@
   position: fixed;
   z-index: 10000;
   inset: auto 0 0;
-  border-top: 1px solid rgba(37, 99, 235, 0.45);
+  border-top: 1px solid rgba(37, 99, 235, 0.28);
   background: var(--fnlla-color-surface, #fff);
   background: color-mix(in srgb, var(--fnlla-color-surface, #fff) 96%, #2563eb 4%);
   color: var(--fnlla-color-text, #374151);
-  font: var(--fnlla-font-size-sm, 0.875rem)/1.45 var(--fnlla-font-mono, monospace);
+  font: 0.78rem/1.38 var(--fnlla-font-mono, monospace);
   letter-spacing: 0;
   box-shadow: 0 -0.8rem 2rem rgba(11, 18, 32, 0.14);
 }
@@ -16,8 +16,8 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   align-items: center;
-  min-height: 38px;
-  padding: 7px 16px;
+  min-height: 32px;
+  padding: 5px 14px;
   cursor: pointer;
   list-style: none;
   overflow-wrap: anywhere;
@@ -34,14 +34,14 @@
 
 #fnlla-debug-toolbar summary span {
   display: inline-flex;
-  min-height: 1.45rem;
+  min-height: 1.28rem;
   align-items: center;
-  padding: 0.14rem 0.42rem;
-  border: 1px solid rgba(37, 99, 235, 0.16);
+  padding: 0.1rem 0.36rem;
+  border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 999px;
   background: var(--fnlla-color-surface, #fff);
   color: var(--fnlla-color-secondary, #4b5563);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 #fnlla-debug-toolbar .fnlla-debug-brand {
@@ -57,11 +57,29 @@
   color: var(--fnlla-color-primary, #2563eb);
 }
 
+#fnlla-debug-toolbar .fnlla-debug-pill.is-success {
+  border-color: rgba(22, 163, 74, 0.26);
+  background: rgba(220, 252, 231, 0.62);
+  color: #166534;
+}
+
+#fnlla-debug-toolbar .fnlla-debug-pill.is-warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(254, 243, 199, 0.64);
+  color: #92400e;
+}
+
+#fnlla-debug-toolbar .fnlla-debug-pill.is-danger {
+  border-color: rgba(220, 38, 38, 0.26);
+  background: rgba(254, 226, 226, 0.64);
+  color: #991b1b;
+}
+
 #fnlla-debug-toolbar .fnlla-debug-content {
   display: grid;
   gap: 0.85rem;
   max-height: min(52vh, 32rem);
-  padding: 0 16px 16px;
+  padding: 0 14px 14px;
   overflow: auto;
 }
 
@@ -73,7 +91,7 @@
 
 #fnlla-debug-toolbar section {
   min-width: 0;
-  padding: 0.75rem;
+  padding: 0.65rem;
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 6px;
   background: var(--fnlla-color-surface, #fff);
@@ -82,7 +100,7 @@
 #fnlla-debug-toolbar h2 {
   margin: 0 0 0.5rem;
   color: var(--fnlla-color-primary, #2563eb);
-  font: 700 0.78rem/1.2 var(--fnlla-font-mono, monospace);
+  font: 500 0.72rem/1.2 var(--fnlla-font-mono, monospace);
 }
 
 #fnlla-debug-toolbar dl {
@@ -94,7 +112,7 @@
 
 #fnlla-debug-toolbar dt {
   color: var(--fnlla-color-muted, #6b7280);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 #fnlla-debug-toolbar dd {
@@ -105,7 +123,7 @@
 
 #fnlla-debug-toolbar a {
   color: var(--fnlla-color-primary, #2563eb);
-  font-weight: 700;
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -127,7 +145,7 @@
 
 #fnlla-debug-toolbar td,
 #fnlla-debug-toolbar th {
-  padding: 0.48rem 0.55rem;
+  padding: 0.36rem 0.46rem;
   text-align: left;
   border-bottom: 1px solid var(--fnlla-color-border, #e5e7eb);
   overflow-wrap: anywhere;
@@ -140,7 +158,7 @@
 #fnlla-debug-toolbar th {
   color: var(--fnlla-color-secondary, #4b5563);
   background: var(--fnlla-color-bg-alt, #f8fafc);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 #fnlla-debug-toolbar caption {
@@ -150,7 +168,7 @@
 }
 
 body:has(#fnlla-debug-toolbar) {
-  padding-bottom: 60px;
+  padding-bottom: 52px;
 }
 
 @media (max-width: 760px) {

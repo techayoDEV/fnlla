@@ -24,8 +24,12 @@ use Fnlla\Php\Support\Logger;
 final class DeveloperAccessManager
 {
     private const PUBLIC_ROLE_LABELS = [
+        "owner_developer" => "Owner developer",
         "lead_developer" => "Lead developer",
-        "application_developer" => "Developer",
+        "application_developer" => "Application developer",
+        "operations_engineer" => "Operations engineer",
+        "support_developer" => "Support developer",
+        "security_reviewer" => "Security reviewer",
     ];
 
     private const ROLE_LABELS = [
@@ -55,7 +59,10 @@ final class DeveloperAccessManager
             "workspace.write",
             "operations.view",
             "audit.export",
+            "decision.review",
+            "decision.approve",
             "framework.update",
+            "framework.update.apply",
             "policy.view",
         ],
         "application_developer" => [
@@ -64,6 +71,7 @@ final class DeveloperAccessManager
             "developer.security.manage",
             "workspace.write",
             "operations.view",
+            "decision.review",
             "policy.view",
         ],
         "operations_engineer" => [
@@ -75,6 +83,7 @@ final class DeveloperAccessManager
             "workspace.write",
             "operations.view",
             "audit.export",
+            "decision.review",
             "framework.update",
             "policy.view",
         ],
@@ -84,6 +93,7 @@ final class DeveloperAccessManager
             "developer.security.manage",
             "workspace.write",
             "operations.view",
+            "decision.review",
             "policy.view",
         ],
         "security_reviewer" => [
@@ -92,6 +102,8 @@ final class DeveloperAccessManager
             "developer.security.manage",
             "operations.view",
             "audit.export",
+            "decision.review",
+            "decision.approve",
             "policy.view",
         ],
         "admin" => ["*"],
@@ -101,6 +113,7 @@ final class DeveloperAccessManager
             "developer.security.manage",
             "workspace.write",
             "operations.view",
+            "decision.review",
             "policy.view",
         ],
         "operator" => [
@@ -110,6 +123,7 @@ final class DeveloperAccessManager
             "developer.profile.write",
             "developer.security.manage",
             "operations.view",
+            "decision.review",
             "policy.view",
         ],
         "client" => [
@@ -683,7 +697,10 @@ final class DeveloperAccessManager
             "workspace.write" => "Create, move and remove technical workspace tasks.",
             "operations.view" => "View privacy-light analytics, health, release readiness and integrations.",
             "audit.export" => "Export developer-panel audit events.",
-            "framework.update" => "Run framework update checks and apply audited framework updates.",
+            "decision.review" => "Open Review queue items and mark decisions as being reviewed.",
+            "decision.approve" => "Approve or archive operational decisions after the required evidence is attached.",
+            "framework.update" => "Run framework update checks and dry-run reports.",
+            "framework.update.apply" => "Apply audited framework updates from an approved environment.",
             "policy.view" => "View the framework-managed versus project-owned boundary.",
         ];
     }
@@ -965,11 +982,19 @@ final class DeveloperAccessManager
     {
         $role = $this->normaliseRole($role);
 
-        if (in_array($role, ["owner_developer", "admin"], true)) {
+        if ($role === "owner_developer") {
+            return self::PUBLIC_ROLE_LABELS["owner_developer"];
+        }
+
+        if ($role === "admin") {
             return self::PUBLIC_ROLE_LABELS["lead_developer"];
         }
 
-        if (in_array($role, ["developer", "support_developer", "client"], true)) {
+        if ($role === "operator") {
+            return self::PUBLIC_ROLE_LABELS["operations_engineer"];
+        }
+
+        if (in_array($role, ["developer", "client"], true)) {
             return self::PUBLIC_ROLE_LABELS["application_developer"];
         }
 
@@ -996,7 +1021,7 @@ final class DeveloperAccessManager
         }
 
         foreach ($accounts as $account) {
-            if ($this->normaliseRole((string) ($account["role"] ?? "")) === "lead_developer") {
+            if (in_array($this->normaliseRole((string) ($account["role"] ?? "")), ["owner_developer", "lead_developer"], true)) {
                 return $accounts;
             }
         }

@@ -208,7 +208,14 @@ final class DeveloperWorkspaceBoard
             "estimate" => $this->clean((string) ($payload["estimate"] ?? ""), 24),
             "blocked" => (bool) ($payload["blocked"] ?? false),
             "client_visible" => (bool) ($payload["client_visible"] ?? true),
-            "checklist" => $this->checklist((string) ($payload["checklist"] ?? "")),
+            "checklist" => is_array($payload["subtasks_text"] ?? null)
+                ? $this->checklistFromStructured(
+                    $payload["subtasks_text"],
+                    (array) ($payload["subtasks_done"] ?? []),
+                    (array) ($payload["subtasks_color"] ?? []),
+                    (array) ($payload["subtasks_note"] ?? [])
+                )
+                : $this->checklist((string) ($payload["checklist"] ?? "")),
             "comments" => [],
             "attachments" => $this->attachmentsFromArray([
                 $this->fileAttachmentFromPayload($payload, $developer),
@@ -243,18 +250,21 @@ final class DeveloperWorkspaceBoard
                 ? $this->checklistFromStructured(
                     $payload["subtasks_text"],
                     (array) ($payload["subtasks_done"] ?? []),
-                    (array) ($payload["subtasks_color"] ?? [])
+                    (array) ($payload["subtasks_color"] ?? []),
+                    (array) ($payload["subtasks_note"] ?? [])
                 )
                 : ($incomingChecklistText === $currentChecklistText
                 ? $currentChecklist
                 : $this->checklist($incomingChecklistText));
             $subtask = $this->clean((string) ($payload["subtask"] ?? ""), 120);
+            $subtaskNote = $this->clean((string) ($payload["subtask_note"] ?? ""), 280);
 
             if ($subtask !== "") {
                 $checklist[] = [
                     "text" => $subtask,
                     "done" => false,
                     "color" => $this->color((string) ($payload["subtask_color"] ?? $payload["color"] ?? $task["color"] ?? "blue")),
+                    "note" => $subtaskNote,
                 ];
             }
 
@@ -269,6 +279,7 @@ final class DeveloperWorkspaceBoard
                 if ($editText !== "") {
                     $checklist[$editIndex]["text"] = $editText;
                     $checklist[$editIndex]["color"] = $this->color((string) ($payload["edit_subtask_color"] ?? $checklist[$editIndex]["color"] ?? "blue"));
+                    $checklist[$editIndex]["note"] = $this->clean((string) ($payload["edit_subtask_note"] ?? $checklist[$editIndex]["note"] ?? ""), 280);
                 }
             }
 
@@ -611,6 +622,7 @@ final class DeveloperWorkspaceBoard
                 "text" => $this->clean($line, 120),
                 "done" => $done,
                 "color" => "blue",
+                "note" => "",
             ];
 
             if (count($items) >= 12) {
@@ -640,6 +652,7 @@ final class DeveloperWorkspaceBoard
                 "text" => $text,
                 "done" => (bool) ($item["done"] ?? false),
                 "color" => $this->color((string) ($item["color"] ?? "blue")),
+                "note" => $this->clean((string) ($item["note"] ?? ""), 280),
             ];
 
             if (count($normalised) >= 12) {
@@ -650,7 +663,7 @@ final class DeveloperWorkspaceBoard
         return $normalised;
     }
 
-    private function checklistFromStructured(array $texts, array $done, array $colors): array
+    private function checklistFromStructured(array $texts, array $done, array $colors, array $notes): array
     {
         $items = [];
 
@@ -665,6 +678,7 @@ final class DeveloperWorkspaceBoard
                 "text" => $text,
                 "done" => array_key_exists($index, $done),
                 "color" => $this->color((string) ($colors[$index] ?? "blue")),
+                "note" => $this->clean((string) ($notes[$index] ?? ""), 280),
             ];
 
             if (count($items) >= 12) {

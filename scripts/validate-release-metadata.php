@@ -143,7 +143,7 @@ $requiredContains = [
     ],
     'resources/fnlla-ai-runtime/MANIFEST.json' => [
         '"slug": "fnlla-ai-runtime"',
-        '"version": "2.2.0"',
+        '"version": "' . $version . '"',
         '"external_calls": false',
         '"prompt_registry_path": "prompts/registry.json"',
         '"evals_directory": "evals"',
@@ -151,18 +151,18 @@ $requiredContains = [
     ],
     'resources/fnlla-ai-runtime/README.md' => [
         'resources/fnlla-ai-runtime',
-        '2.2.0',
+        $version,
         'AI_RUNTIME_LOAD_INTEGRATED',
         'prompts/registry.json',
     ],
     'resources/fnlla-ai-runtime/prompts/registry.json' => [
         '"schema": "fnlla.ai_prompt_registry.v1"',
-        '"version": "2.2.0"',
+        '"version": "' . $version . '"',
         '"id": "review.release-risk"',
     ],
     'resources/fnlla-ai-runtime/evals/runtime-commands.json' => [
         '"schema": "fnlla.ai_eval_fixture.v1"',
-        '"version": "2.2.0"',
+        '"version": "' . $version . '"',
         '"id": "ai-ask-release-readiness"',
     ],
 ];

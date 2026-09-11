@@ -47,6 +47,13 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
                     "message" => (string) ($state["message"] ?? "This service is temporarily disabled by the developer team."),
                     "contact" => (string) ($state["contact"] ?? ""),
                     "source" => (string) ($state["source"] ?? "local"),
+                    "local_disabled" => (bool) ($state["local_disabled"] ?? false),
+                    "remote_disabled" => (bool) ($state["remote_disabled"] ?? false),
+                    "status" => (string) ($state["status"] ?? "disabled"),
+                    "reason" => (string) ($state["reason"] ?? ""),
+                    "provider" => (string) ($state["provider"] ?? ""),
+                    "updated_at" => (string) ($state["updated_at"] ?? ""),
+                    "updated_by" => (string) ($state["updated_by"] ?? ""),
                     "request_id" => $request->requestId(),
                 ], 503, [
                     "Retry-After" => "60",
@@ -101,15 +108,11 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
 
     private function isAllowedDuringDeveloperDisable(Request $request): bool
     {
-        if (developer_access()->isUnlocked() || customer_access()->isUnlocked()) {
-            return true;
-        }
-
         if ($request->path() === "/developer-panel-setup") {
             return true;
         }
 
-        return $this->isDeveloperPath($request) || $this->isCustomerPath($request);
+        return $this->isDeveloperPath($request);
     }
 
     private function isDeveloperPath(Request $request): bool

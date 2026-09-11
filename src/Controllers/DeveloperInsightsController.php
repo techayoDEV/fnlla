@@ -15,6 +15,7 @@ use Fnlla\Php\Maintenance\DeveloperControlManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Support\DeveloperAnalyticsReport;
 use Fnlla\Php\Support\DeveloperHeatmapReport;
+use Fnlla\Php\Support\DeveloperPanelPolicy;
 use Fnlla\Php\Support\DeveloperNotificationCenter;
 use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
@@ -57,7 +58,7 @@ final class DeveloperInsightsController extends DeveloperPanelController
             "Heatmap",
             "heatmap",
             [
-                "heatmapReport" => $report->build(),
+                "heatmapReport" => $report->build((string) $request->query("page", "")),
             ]
         );
     }
@@ -90,6 +91,19 @@ final class DeveloperInsightsController extends DeveloperPanelController
                 "variant" => "warning",
                 "title" => "Heatmap settings still need attention",
                 "text" => "Use 1-100 sample rate and 1-12 rows or columns.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.heatmap"));
+        }
+
+        $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
+        if ($payload["enabled"] && ($telemetryPolicy["regulated"] ?? false) === true && ($telemetryPolicy["heatmap_allowed"] ?? false) !== true) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Heatmap requires regulated opt-in",
+                "text" => "Regulated telemetry policy keeps behavior heatmap disabled until OBSERVABILITY_REGULATED_HEATMAP_ENABLED is explicitly enabled.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -179,6 +193,12 @@ final class DeveloperInsightsController extends DeveloperPanelController
             regenerate_csrf_token();
 
             return $this->redirect(route("developer.panel.analytics"));
+        }
+
+        $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
+        if (($telemetryPolicy["regulated"] ?? false) === true) {
+            $payload["track_query_strings"] = false;
+            $payload["retention_days"] = min($payload["retention_days"], (int) ($telemetryPolicy["retention_days"] ?? $payload["retention_days"]));
         }
 
         $environmentValues = [

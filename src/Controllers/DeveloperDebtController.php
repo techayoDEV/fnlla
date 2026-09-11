@@ -37,7 +37,7 @@ final class DeveloperDebtController extends DeveloperPanelController
                 $registry->synchronize((new TechnicalDebtReportBuilder())->markerFiles(), $revision, $actor);
             } else {
                 $input = [];
-                foreach (["id", "title", "status", "priority", "owner", "notes", "due_date"] as $key) {
+                foreach (["id", "title", "status", "priority", "owner", "notes", "due_date", "accepted_until", "issue_ref", "adr_ref", "evidence_ref"] as $key) {
                     $input[$key] = $request->input($key, "");
                 }
                 $registry->save($input, $revision, $actor);

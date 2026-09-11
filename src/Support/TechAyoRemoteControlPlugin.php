@@ -34,7 +34,7 @@ final class TechAyoRemoteControlPlugin
             "status" => $enabled && $endpoint !== "" && $projectId !== "" ? "ready" : "disabled",
             "fnlla_runtime_contract" => [
                 "request_schema" => $schema,
-                "response_schema" => "fnlla.techayo_remote_control_state.v1",
+                "response_schema" => "fnlla.techayo_remote_control_state.v2",
                 "method" => "GET",
                 "endpoint" => $this->redactEndpoint($endpoint),
                 "headers" => [
@@ -50,24 +50,29 @@ final class TechAyoRemoteControlPlugin
             "admin_responsibilities" => [
                 "authenticate each TechAyo operator separately",
                 "authorize which project can be remotely controlled",
-                "return only the public disable state required by FNLLA",
+                "return only the open, disabled or suspended service state required by FNLLA",
                 "store the central audit trail outside the public project",
                 "avoid sending private customer or FIONN AI knowledge to FNLLA",
             ],
             "project_responsibilities" => [
                 "configure endpoint, project id, token and optional signature secret",
                 "keep fail-closed disabled unless an SLA explicitly requires it",
-                "show remote disable state inside the Developer Panel",
+                "show remote disable or suspension state inside the Developer Panel",
                 "keep product business logic outside this plugin",
             ],
             "expected_response" => [
-                "schema" => "fnlla.techayo_remote_control_state.v1",
+                "schema" => "fnlla.techayo_remote_control_state.v2",
+                "status" => "open|disabled|suspended",
                 "disabled" => false,
-                "title" => "Service disabled by TechAyo Limited",
-                "message" => "This service is temporarily disabled by the developer team.",
-                "contact" => "support@example.com",
+                "reason" => "billing",
+                "provider" => "TechAyo Limited",
+                "title" => "Services suspended",
+                "message" => "Your services have been suspended. Please contact your service provider.",
+                "contact" => "support@techayo.co.uk",
                 "updated_at" => gmdate(DATE_ATOM),
                 "updated_by" => "techayo-admin",
+                "command_id" => "optional remote audit id",
+                "expires_at" => "optional ISO-8601 expiry",
             ],
         ];
     }

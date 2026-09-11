@@ -936,7 +936,13 @@
 }
 
 .starter-hero {
-  padding-top: 2.5rem;
+  padding-block: 4rem 2rem;
+  border-bottom: 1px solid var(--fnlla-surface-border);
+  background-image:
+    linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.9)),
+    url("brand/fnlla/binary-field.png");
+  background-position: center;
+  background-size: auto, 640px 360px;
 }
 
 .starter-hero-grid {
@@ -948,6 +954,9 @@
 .starter-hero-copy {
   display: grid;
   gap: 1.1rem;
+  max-width: 58rem;
+  padding-left: 1rem;
+  border-left: 4px solid var(--fnlla-color-primary);
 }
 
 .starter-kicker,
@@ -1015,8 +1024,10 @@
   text-transform: uppercase;
 }
 
-.starter-page-hero {
-  padding-block: 3rem 1rem;
+.starter-page-title {
+  padding-block: 2rem 0.85rem;
+  border-bottom: 1px solid var(--fnlla-surface-border);
+  background: var(--fnlla-color-surface);
 }
 
 .starter-page-heading {
@@ -1025,8 +1036,9 @@
 }
 
 .starter-page-heading h1 {
-  max-width: 18ch;
-  font-size: 3rem;
+  max-width: 28ch;
+  font-size: 2.15rem;
+  line-height: 1.12;
 }
 
 .starter-page-heading-copy {
@@ -1036,13 +1048,13 @@
 
 .starter-page-title-panel {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
   align-content: start;
-  padding: 1rem;
+  padding: 0.78rem;
   border: 1px solid var(--fnlla-surface-border);
   border-radius: var(--fnlla-radius-md);
-  background: var(--fnlla-color-surface);
-  box-shadow: 0 20px 48px rgba(21, 48, 79, 0.08);
+  background: var(--fnlla-color-bg-alt);
+  box-shadow: none;
 }
 
 .starter-page-title-tags,

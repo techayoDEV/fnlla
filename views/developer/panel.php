@@ -52,7 +52,7 @@ $dashboardNotificationSourceFor = static function (array $item): string {
     $key = strtolower((string) ($item["key"] ?? ""));
 
     if (str_contains($key, "framework") || str_contains($key, "update")) {
-        return "Framework updates";
+        return "Release & readiness";
     }
 
     if (str_contains($key, "totp") || str_contains($key, "access") || str_contains($key, "security")) {
@@ -60,19 +60,19 @@ $dashboardNotificationSourceFor = static function (array $item): string {
     }
 
     if (str_contains($key, "readiness") || str_contains($key, "backup") || str_contains($key, "audit")) {
-        return "Readiness & health";
+        return "Release & readiness";
     }
 
     if (str_contains($key, "analytics") || str_contains($key, "heatmap") || str_contains($key, "metric")) {
-        return "Analytics";
+        return "Observability";
     }
 
     if (str_contains($key, "preview") || str_contains($key, "service")) {
-        return "Project setup";
+        return "Operations";
     }
 
     if (str_contains($key, "leadership") || str_contains($key, "identity")) {
-        return "Project setup";
+        return "Workspace";
     }
 
     return "Developer Panel";
@@ -86,13 +86,13 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Project identity</p>
               <h3><?= h((string) ($dashboard["project_name"] ?? "FNLLA Project")) ?></h3>
-              <p class="developer-dashboard-value"><?= h((string) (($dashboard["project_url"] ?? "") !== "" ? $dashboard["project_url"] : "Local project URL not set")) ?></p>
+              <p class="developer-dashboard-status is-neutral is-code"><?= h((string) (($dashboard["project_url"] ?? "") !== "" ? $dashboard["project_url"] : "Local project URL not set")) ?></p>
               <?php if (($dashboard["project_tagline"] ?? "") !== ""): ?>
               <p class="content-text">Slogan: <?= h((string) $dashboard["project_tagline"]) ?></p>
               <?php else: ?>
               <p class="content-text">No public browser-title slogan is configured yet.</p>
               <?php endif; ?>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Open setup</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Open identity</a>
             </article>
 
             <article class="developer-dashboard-card">
@@ -108,6 +108,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Developer access</p>
               <h3><?= h((string) $developerCount) ?> named <?= $developerCount === 1 ? "developer" : "developers" ?></h3>
+              <p class="developer-dashboard-status <?= $developerCount > 0 ? "is-active" : "is-neutral" ?>"><?= $developerCount > 0 ? "Access configured" : "Access not configured" ?></p>
               <p class="content-text">Each developer can use a unique email and password while project settings stay global.</p>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Manage access</a>
             </article>
@@ -126,7 +127,7 @@ require __DIR__ . "/panel-header.php";
           <details class="developer-dashboard-notification-drawer">
             <summary>
               <span>
-                <strong>Notifications</strong>
+                <strong>Notification inbox</strong>
                 <small><?= $dashboardNotificationCount > 0 ? h((string) $dashboardNotificationCount) . " active items need review" : "No open action items" ?></small>
               </span>
               <em><?= h((string) $dashboardNotificationCount) ?></em>
@@ -150,7 +151,7 @@ require __DIR__ . "/panel-header.php";
               <?php if ($dashboardNotificationItems === []): ?>
               <p class="content-text mb-0">The Developer Panel did not detect any action items for this project.</p>
               <?php endif; ?>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open notification center</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open review queue</a>
             </div>
           </details>
         </section>
@@ -233,7 +234,7 @@ require __DIR__ . "/panel-header.php";
                 <strong>Check notifications and analytics</strong>
                 <p>Review actionable panel alerts and privacy-light traffic trends before release work.</p>
               </div>
-              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open alerts</a>
+              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open queue</a>
             </article>
           </div>
         </section>

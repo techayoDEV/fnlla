@@ -3,6 +3,47 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.2.1
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.1 is a Developer Panel and operations polish release on the 2.2
+line. It keeps the 2.2.0 framework scope intact while tightening the private
+workspace, documentation navigation, release-readiness checks and generated
+project export contract.
+
+#### Highlights
+
+- Refine the private Developer Panel visual system: lighter form borders,
+  consistent pill sizing, unified operational typography, adjusted sidebar/header
+  dividers and FNLLA framework wordmark ownership inside the panel.
+- Merge the former developer-tools stylesheet into `developer-panel.css` so the
+  private surface has a single maintained stylesheet.
+- Improve panel documentation navigation with section-aware active states and
+  headings aligned with the manual menu.
+- Improve Kanban/to-do status communication, task metadata labels, priority
+  presentation and private workspace controls.
+- Add local observability, integration, release-readiness and framework-update
+  panel refinements without changing the public starter branding boundary.
+- Keep the Full and Plain starter release checks active, including export size
+  limits, runtime metadata validation and browser-level panel smoke coverage.
+
+#### Upgrade Notes
+
+Use the 2.2.1 source distribution and verify its checksums before updating an
+existing project:
+
+```sh
+php ../fnlla-2.2.1/fnlla framework:update --project=. --release-tag=v2.2.1 --dry-run
+php ../fnlla-2.2.1/fnlla framework:update --project=. --release-tag=v2.2.1 --apply
+```
+
+The 2.2.0 support boundaries still apply: long-lived HTTP worker isolation,
+public Composer registry publication and separately removable Complete modules
+remain outside the supported release scope.
+
 ## 2.2.0
 
 Publication dates and downloadable assets are recorded in GitHub Releases.

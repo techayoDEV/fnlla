@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Logs";
-$developerPanelLead = "Human-readable project activity, developer changes and internal delivery history.";
-$report = is_array($projectLogReport ?? null) ? $projectLogReport : [];
+$developerPanelTitle = "Project Changelog";
+$developerPanelLead = "Project-specific change history made through the Developer Panel and local operations.";
+$report = is_array($projectChangelogReport ?? null) ? $projectChangelogReport : [];
 $items = array_values((array) ($report["items"] ?? []));
 $categories = (array) ($report["categories"] ?? []);
 $latestTime = (string) ($report["latest_time"] ?? "");
@@ -44,35 +44,34 @@ foreach ($items as $item) {
 require __DIR__ . "/panel-header.php";
 ?>
 
-        <section class="developer-dashboard-section" aria-label="Project log overview">
+        <section class="developer-dashboard-section" aria-label="Project changelog overview">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
-              <p class="feature-kicker">Project logs</p>
-              <h2 class="developer-dashboard-section-title">Readable timeline of project changes, developer work and operational actions.</h2>
-              <p class="content-text mb-0">This page uses the same activity source as the audit exports, but groups the record into practical daily change history for handover and release review.</p>
+              <p class="feature-kicker">Project changelog</p>
+              <h2 class="developer-dashboard-section-title">Shared project changes every developer should see before continuing work.</h2>
+              <p class="content-text mb-0">This is the project changelog for the application built on FNLLA. It is generated from Developer Panel activity and local operational changes, not from FNLLA framework release notes.</p>
             </div>
             <div class="developer-panel-intro-actions">
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))) ?>">Project logs</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["operations"] ?? route("developer.panel.operations"))) ?>">Operations</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["audit_export"] ?? route("developer.panel.audit_export"))) ?>">Export JSON</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["audit_export_csv"] ?? route("developer.panel.audit_export_csv"))) ?>">Export CSV</a>
             </div>
           </div>
 
-          <div class="developer-project-log-summary">
+          <div class="developer-project-log-summary developer-project-changelog-summary">
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
-                <strong>Tracked events</strong>
-                <span class="developer-dashboard-ok">LIVE</span>
+                <strong>Changelog entries</strong>
+                <span class="developer-dashboard-ok">PROJECT</span>
               </div>
               <h3><?= h((string) ($report["total"] ?? count($items))) ?></h3>
-              <p>Recent developer-panel events kept for project review.</p>
+              <p>Shared project changes visible to every developer session.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
                 <strong>Today</strong>
               </div>
               <h3><?= h((string) ($report["today"] ?? 0)) ?></h3>
-              <p>Changes recorded since midnight UTC.</p>
+              <p>Project changes recorded since midnight UTC.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
@@ -83,10 +82,10 @@ require __DIR__ . "/panel-header.php";
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
-                <strong>Categories</strong>
+                <strong>Change areas</strong>
               </div>
               <?php if ($categories === []): ?>
-              <p>No categories have been recorded yet.</p>
+              <p>No project change categories have been recorded yet.</p>
               <?php else: ?>
               <div class="developer-project-log-category-list">
                 <?php foreach ($categories as $label => $count): ?>
@@ -98,25 +97,25 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="Project activity timeline">
+        <section class="developer-dashboard-section" aria-label="Project changelog timeline">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Activity timeline</h2>
-            <span class="developer-dashboard-refresh">Latest 120 events</span>
+            <h2 class="developer-dashboard-section-title">Project change timeline</h2>
+            <span class="developer-dashboard-refresh">Latest 120 project events</span>
           </div>
 
           <?php if ($grouped === []): ?>
           <article class="developer-project-log-empty">
-            <p class="feature-kicker">No project logs yet</p>
-            <h3>Activity will appear here after developer-panel changes are made.</h3>
-            <p class="content-text mb-0">Workspace changes, access changes, notifications and framework operations are recorded automatically.</p>
+            <p class="feature-kicker">No project changelog entries yet</p>
+            <h3>Project changes will appear after developers use the panel.</h3>
+            <p class="content-text mb-0">Identity, workspace, access, preview, analytics, heatmap, service-control and integration changes are recorded as shared project history.</p>
           </article>
           <?php else: ?>
-          <div class="developer-project-log-timeline">
+          <div class="developer-project-log-timeline developer-project-changelog-timeline">
             <?php foreach ($grouped as $day => $events): ?>
             <section class="developer-project-log-day" aria-label="<?= h((string) $day) ?>">
               <div class="developer-project-log-day-head">
                 <span><?= h((string) $day) ?></span>
-                <em><?= h((string) count($events)) ?> events</em>
+                <em><?= h((string) count($events)) ?> entries</em>
               </div>
               <?php foreach ($events as $event): ?>
               <?php
@@ -125,27 +124,19 @@ require __DIR__ . "/panel-header.php";
                 $action = (string) ($event["action"] ?? "activity");
                 $eventTime = (string) ($event["time"] ?? "");
                 $actor = (string) (($developer["name"] ?? "") ?: ($developer["email"] ?? "") ?: "Developer");
-                $email = (string) ($developer["email"] ?? "");
                 $hash = (string) ($event["event_hash"] ?? "");
-                $requestId = (string) ($event["request_id"] ?? "");
               ?>
               <article class="developer-project-log-row is-<?= h($categoryKey($category)) ?>">
                 <span class="developer-project-log-marker" aria-hidden="true"><?= h(strtoupper(substr($category, 0, 2))) ?></span>
                 <div class="developer-project-log-main">
                   <div class="developer-project-log-row-head">
-                    <strong><?= h((string) ($event["title"] ?? "Developer change")) ?></strong>
+                    <strong><?= h((string) ($event["title"] ?? "Project change")) ?></strong>
                     <span><?= h($category) ?></span>
                   </div>
                   <p><?= h((string) ($event["text"] ?? "No description was recorded.")) ?></p>
                   <div class="developer-project-log-facts">
                     <span><b>By</b> <?= h($actor) ?></span>
-                    <?php if ($email !== ""): ?>
-                    <span><b>Email</b> <?= h($email) ?></span>
-                    <?php endif; ?>
                     <span><b>Action</b> <?= h($action) ?></span>
-                    <?php if ($requestId !== ""): ?>
-                    <span><b>Request</b> <?= h($requestId) ?></span>
-                    <?php endif; ?>
                     <?php if ($hash !== ""): ?>
                     <span><b>Chain</b> <?= h(substr($hash, 0, 12)) ?></span>
                     <?php endif; ?>

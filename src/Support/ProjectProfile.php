@@ -28,6 +28,6 @@ final class ProjectProfile
             || str_starts_with($path, "views/maintenance/") || str_starts_with($path, "src/Controllers/Developer")
             || in_array($path, ["routes/maintenance.php", "views/partials/framework-wordmark.php", "src/Controllers/CustomerAccessController.php",
                 "src/Controllers/FrameworkUpdateController.php", "public/assets/developer-panel.css",
-                "public/assets/developer-panel.js", "public/assets/developer-tools.css", "public/assets/debug-toolbar.css"], true);
+                "public/assets/developer-panel.js", "public/assets/debug-toolbar.css"], true);
     }
 }

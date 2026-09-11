@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Fnlla\Php\Support\DeveloperPanelLabels;
+
 $developerPanelTitle = "Analytics";
-$developerPanelLead = "First-party traffic, conversion, consent and performance intelligence without third-party analytics scripts.";
+$developerPanelLead = "First-party public-view traffic, conversion, consent and performance intelligence without third-party analytics scripts.";
 $report = is_array($analyticsReport ?? null) ? (array) $analyticsReport : [];
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
@@ -14,18 +16,84 @@ $insights = (array) ($report["insights"] ?? []);
 $dataQuality = (array) ($report["data_quality"] ?? []);
 $lastRequest = (array) ($report["last_request"] ?? []);
 $lastConsent = (array) ($report["last_consent_event"] ?? []);
+$analyticsConsentEvent = (string) ($privacy["analytics_consent_event"] ?? "fnlla:analytics-consent-granted");
 $formatMetric = static fn (mixed $value, string $suffix = ""): string => is_numeric($value) ? rtrim(rtrim((string) round((float) $value, 2), "0"), ".") . $suffix : "0" . $suffix;
-$renderBarList = static function (array $items, string $empty): void { ?>
+$formatAnalyticsLabel = static function (mixed $value): string {
+    $raw = trim((string) $value);
+
+    if ($raw === "") {
+        return "Not recorded";
+    }
+
+    $withoutQuery = preg_replace('/\?.*$/', "", str_replace("\\", "/", $raw)) ?: $raw;
+    $trimmed = trim($withoutQuery, "/");
+    $lower = strtolower($trimmed);
+
+    $known = [
+        "home" => "Home",
+        "direct" => "Direct",
+        "desktop" => "Desktop",
+        "mobile" => "Mobile",
+        "tablet" => "Tablet",
+        "unknown" => "Unknown",
+        "analytics_only" => "Analytics only",
+        "marketing_only" => "Marketing only",
+        "analytics_and_marketing" => "Analytics and marketing",
+        "declined" => "Declined",
+    ];
+
+    if (isset($known[$lower])) {
+        return $known[$lower];
+    }
+
+    if (ctype_digit($trimmed) || preg_match('/^[A-Z]{2,8}$/', $trimmed) === 1) {
+        return $trimmed;
+    }
+
+    $looksLikeHost = preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i', $trimmed) === 1
+        && !str_starts_with($lower, "developer.")
+        && !str_starts_with($lower, "customer.")
+        && !str_starts_with($lower, "maintenance.");
+
+    if ($looksLikeHost) {
+        return strtolower($trimmed);
+    }
+
+    $label = $trimmed;
+    foreach (["developer.panel.", "developer/panel/", "customer.panel.", "customer/panel/", "maintenance.", "maintenance/", "developer.", "developer/", "customer.", "customer/"] as $prefix) {
+        if (str_starts_with(strtolower($label), $prefix)) {
+            $label = substr($label, strlen($prefix));
+            break;
+        }
+    }
+
+    $label = trim(str_replace([":", ".", "_", "-", "/"], " ", $label));
+    $label = preg_replace('/\s+/', " ", $label) ?: $trimmed;
+    $words = array_map(static function (string $word): string {
+        $upper = strtoupper($word);
+
+        return in_array($upper, ["AI", "API", "CSRF", "HTTP", "IP", "TOTP", "URL"], true)
+            ? $upper
+            : ucfirst(strtolower($word));
+    }, explode(" ", $label));
+
+    return implode(" ", $words);
+};
+$renderBarList = static function (array $items, string $empty, ?callable $labelFormatter = null): void { ?>
           <?php if ($items === []): ?>
           <p class="content-text mb-0"><?= h($empty) ?></p>
           <?php else: ?>
           <div class="developer-analytics-bars">
             <?php foreach ($items as $item): ?>
             <?php
-                $label = (string) ($item["label"] ?? "");
+                $rawLabel = (string) ($item["label"] ?? "");
+                $label = $labelFormatter !== null ? (string) $labelFormatter($rawLabel) : $rawLabel;
                 $count = (string) ($item["count"] ?? 0);
                 $percent = max(2, (int) ($item["percent"] ?? 0));
                 $tooltip = trim($label . ": " . $count . " / " . $percent . "% of this chart");
+                if ($rawLabel !== "" && $rawLabel !== $label) {
+                    $tooltip .= " / technical key: " . $rawLabel;
+                }
             ?>
             <div class="developer-analytics-bar-row" data-fnlla-tooltip="<?= h($tooltip) ?>" data-fnlla-tooltip-position="top" aria-label="<?= h($tooltip) ?>" tabindex="0">
               <div>
@@ -97,10 +165,12 @@ $metricCards = [
     ],
 ];
 $qualityRows = [
+    "Policy profile" => (string) ($privacy["mode"] ?? "privacy-light"),
     "Storage" => (string) ($dataQuality["storage_path"] ?? "storage/framework/metrics.json"),
     "Updated" => (string) (($dataQuality["updated_at_utc"] ?? "") ?: "not recorded yet"),
     "Retention" => (string) ($settings["retention_days"] ?? 90) . " days",
     "Sample" => (string) ($settings["sample_rate"] ?? 100) . "%",
+    "Excluded paths" => implode(", ", (array) ($privacy["excluded_paths"] ?? [])),
 ];
 $journeyRows = [
     "Visitor source" => "Host-only referrer buckets, campaign-safe direct/search/social/referral groups.",
@@ -112,19 +182,6 @@ require __DIR__ . "/panel-header.php";
 ?>
 
         <section class="developer-dashboard-section" aria-label="Analytics summary">
-          <div class="developer-analytics-commandbar">
-            <div>
-              <p class="feature-kicker">Analytics command center</p>
-              <h2 class="developer-dashboard-section-title">FNLLA analytics <span class="developer-info-tip" tabindex="0" aria-label="Local analytics stores aggregate counters inside the project.">i<span>This is FNLLA-owned aggregate analytics. No external analytics vendor is required for these charts.</span></span></h2>
-              <p class="content-text mb-0">Aggregate traffic, route performance and conversion signals without raw IP addresses, raw user agents or browser fingerprinting.</p>
-            </div>
-            <div class="developer-analytics-commandbar-panel">
-              <strong>Data contract</strong>
-              <span>First-party aggregate data</span>
-              <span><?= h((string) ($privacy["mode"] ?? "privacy-light")) ?> / <?= ($settings["track_query_strings"] ?? false) ? "query strings tracked" : "query strings off" ?></span>
-            </div>
-          </div>
-
           <section class="developer-analytics-blueprint" aria-label="Analytics blueprint">
             <div class="developer-analytics-blueprint-grid" aria-hidden="true">
               <span></span>
@@ -135,18 +192,25 @@ require __DIR__ . "/panel-header.php";
             <div class="developer-analytics-blueprint-copy">
               <p class="feature-kicker">Blueprint view</p>
               <h3>Traffic, timing and consent signals mapped as an operating plan.</h3>
-              <p class="content-text mb-0">The charts below stay first-party and aggregate, with route movement, source shape and response time shown as readable project signals.</p>
+              <p class="content-text mb-0">Public views only: aggregate traffic, route performance and conversion signals stay first-party without Developer Panel traffic or visitor identity.</p>
             </div>
-            <div class="developer-analytics-blueprint-diagram" aria-hidden="true">
-              <span class="developer-analytics-blueprint-node is-source"></span>
-              <span class="developer-analytics-blueprint-node is-route"></span>
-              <span class="developer-analytics-blueprint-node is-performance"></span>
-              <span class="developer-analytics-blueprint-line is-main"></span>
-              <span class="developer-analytics-blueprint-line is-branch"></span>
+            <div class="developer-analytics-blueprint-diagram developer-analytics-blueprint-flow" aria-hidden="true">
+              <span>
+                <strong>Collect</strong>
+                <small>Requests and page views</small>
+              </span>
+              <span>
+                <strong>Aggregate</strong>
+                <small>Routes, timing and consent</small>
+              </span>
+              <span>
+                <strong>Review</strong>
+                <small>Signals without visitor identity</small>
+              </span>
             </div>
           </section>
 
-          <div class="developer-analytics-metric-grid">
+          <div class="developer-analytics-metric-grid developer-analytics-metric-grid-inline">
             <?php foreach ($metricCards as $card): ?>
             <article class="developer-analytics-metric-card is-<?= h((string) $card["tone"]) ?>">
               <div class="developer-dashboard-card-head">
@@ -165,7 +229,7 @@ require __DIR__ . "/panel-header.php";
             <h2 class="developer-dashboard-section-title">Traffic timeline</h2>
             <span class="developer-dashboard-refresh">First-party aggregate data</span>
           </div>
-          <div class="developer-analytics-chart-grid">
+          <div class="developer-analytics-chart-grid developer-analytics-chart-grid-stacked">
             <article class="developer-dashboard-card developer-analytics-chart-card">
               <p class="feature-kicker">Last 14 days</p>
               <?php $renderTimeline((array) ($charts["daily_page_views"] ?? []), "No daily page-view history has been recorded yet."); ?>
@@ -186,42 +250,42 @@ require __DIR__ . "/panel-header.php";
             <h2 class="developer-dashboard-section-title">Acquisition and performance</h2>
             <span class="developer-dashboard-refresh">No raw IP or fingerprinting</span>
           </div>
-          <div class="developer-analytics-workbench">
+          <div class="developer-analytics-workbench developer-analytics-workbench-stacked">
             <article class="developer-dashboard-card developer-dashboard-card-wide">
               <p class="feature-kicker">Top routes</p>
-              <?php $renderBarList((array) ($charts["top_routes"] ?? []), "No routes have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["top_routes"] ?? []), "No routes have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Traffic source</p>
-              <?php $renderBarList((array) ($charts["source_counts"] ?? []), "No traffic sources have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["source_counts"] ?? []), "No traffic sources have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Response time by route</p>
-              <?php $renderBarList((array) ($charts["route_response_times"] ?? []), "No route timing averages have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["route_response_times"] ?? []), "No route timing averages have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">HTTP status</p>
-              <?php $renderBarList((array) ($charts["status_counts"] ?? []), "No status counts have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["status_counts"] ?? []), "No status counts have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Referrers</p>
-              <?php $renderBarList((array) ($charts["referrers"] ?? []), "No referrers have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["referrers"] ?? []), "No referrers have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Devices</p>
-              <?php $renderBarList((array) ($charts["device_counts"] ?? []), "Device aggregation is empty or disabled."); ?>
+              <?php $renderBarList((array) ($charts["device_counts"] ?? []), "Device aggregation is empty or disabled.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Slow routes</p>
-              <?php $renderBarList((array) ($charts["slow_routes"] ?? []), "No slow routes have crossed the configured threshold."); ?>
+              <?php $renderBarList((array) ($charts["slow_routes"] ?? []), "No slow routes have crossed the configured threshold.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Form routes</p>
-              <?php $renderBarList((array) ($charts["form_routes"] ?? []), "No successful form submissions have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["form_routes"] ?? []), "No successful form submissions have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Methods</p>
-              <?php $renderBarList((array) ($charts["method_counts"] ?? []), "No HTTP method counts have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["method_counts"] ?? []), "No HTTP method counts have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
           </div>
         </section>
@@ -231,8 +295,8 @@ require __DIR__ . "/panel-header.php";
             <h2 class="developer-dashboard-section-title">Replacement signals</h2>
             <span class="developer-dashboard-refresh">Traffic, product and privacy in one local dataset</span>
           </div>
-          <div class="developer-dashboard-overview-grid">
-            <article class="developer-dashboard-card developer-dashboard-card-wide">
+          <div class="developer-dashboard-overview-grid developer-analytics-replacement-grid">
+            <article class="developer-dashboard-card">
               <p class="feature-kicker">Measurement model</p>
               <div class="developer-dashboard-glance-table">
                 <?php foreach ($journeyRows as $label => $value): ?>
@@ -245,7 +309,7 @@ require __DIR__ . "/panel-header.php";
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Consent counts</p>
-              <?php $renderBarList((array) ($charts["consent_counts"] ?? []), "No consent choices have been recorded yet."); ?>
+              <?php $renderBarList((array) ($charts["consent_counts"] ?? []), "No consent choices have been recorded yet.", $formatAnalyticsLabel); ?>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Last consent event</p>
@@ -262,7 +326,7 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Analytics goals and insights">
-          <div class="developer-dashboard-overview-grid">
+          <div class="developer-dashboard-overview-grid developer-analytics-goal-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Goals</p>
               <?php if ($goals === []): ?>
@@ -278,7 +342,7 @@ require __DIR__ . "/panel-header.php";
               </div>
               <?php endif; ?>
             </article>
-            <article class="developer-dashboard-card developer-dashboard-card-wide">
+            <article class="developer-dashboard-card">
               <p class="feature-kicker">Insights</p>
               <ul class="developer-analytics-insights">
                 <?php foreach ($insights as $insight): ?>
@@ -321,24 +385,26 @@ require __DIR__ . "/panel-header.php";
               <input type="checkbox" name="observability_analytics_track_query_strings" value="1" <?= ($settings["track_query_strings"] ?? false) ? "checked" : "" ?>>
               <span><strong>Query strings</strong><small>Keep disabled unless the project explicitly needs route-level query analytics.</small></span>
             </label>
-            <div class="form-group">
+            <div class="form-group developer-analytics-setting-field">
               <label class="label" for="observability-analytics-retention">Retention days</label>
               <input class="input" id="observability-analytics-retention" name="observability_analytics_retention_days" type="number" min="1" max="730" value="<?= h((string) ($settings["retention_days"] ?? 90)) ?>">
             </div>
-            <div class="form-group">
+            <div class="form-group developer-analytics-setting-field">
               <label class="label" for="observability-analytics-sample">Sample rate</label>
               <input class="input" id="observability-analytics-sample" name="observability_analytics_sample_rate" type="number" min="1" max="100" value="<?= h((string) ($settings["sample_rate"] ?? 100)) ?>">
             </div>
-            <div class="form-group">
+            <div class="form-group developer-analytics-setting-field">
               <label class="label" for="observability-slow-threshold">Slow route threshold ms</label>
               <input class="input" id="observability-slow-threshold" name="observability_slow_route_threshold_ms" type="number" min="50" max="30000" value="<?= h((string) ($settings["slow_route_threshold_ms"] ?? 750)) ?>">
             </div>
-            <button class="btn btn-primary" type="submit">Save analytics settings</button>
+            <div class="developer-analytics-setting-action">
+              <button class="btn btn-primary" type="submit">Save analytics settings</button>
+            </div>
           </form>
         </section>
 
         <section class="developer-dashboard-section" aria-label="Analytics details">
-          <div class="developer-analytics-detail-grid">
+          <div class="developer-analytics-detail-grid developer-analytics-detail-grid-stacked">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Last measured request</p>
               <div class="developer-dashboard-glance-table">
@@ -372,9 +438,9 @@ require __DIR__ . "/panel-header.php";
               <p class="developer-dashboard-status is-active">Internal analytics only</p>
             </article>
             <article class="developer-dashboard-card">
-              <p class="feature-kicker">Consent event</p>
-              <p><code><?= h((string) ($privacy["analytics_consent_event"] ?? "fnlla:analytics-consent-granted")) ?></code></p>
-              <p class="content-text mb-0">Projects can listen to this event before enabling first-party client-side measurements.</p>
+              <p class="feature-kicker">Consent signal</p>
+              <h3><?= h(DeveloperPanelLabels::event($analyticsConsentEvent)) ?></h3>
+              <p class="content-text mb-0">Projects can listen for the framework consent signal before enabling first-party client-side measurements.</p>
             </article>
           </div>
         </section>

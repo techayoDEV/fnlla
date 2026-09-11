@@ -15,8 +15,6 @@ Purpose:
 
 namespace Fnlla\Php\Support;
 
-use Fnlla\Php\Ai\FionnRuntimeBridge;
-
 final class DeveloperOperationsReport
 {
     use DeveloperMetricsReportHelpers;
@@ -24,6 +22,7 @@ final class DeveloperOperationsReport
     public function build(): array
     {
         $metrics = $this->readMetrics();
+        $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
         $backupBuilder = new BackupPlanBuilder();
         $backupPlan = $backupBuilder->build();
         $backupVerification = $backupBuilder->verify($backupPlan);
@@ -34,32 +33,41 @@ final class DeveloperOperationsReport
             "schema" => "fnlla.developer_operations.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
             "privacy" => [
-                "mode" => "privacy-light",
+                "mode" => (string) $telemetryPolicy["mode"],
+                "profile" => (string) $telemetryPolicy["profile"],
+                "regulated" => (bool) $telemetryPolicy["regulated"],
                 "raw_ip_addresses" => false,
                 "raw_user_agents" => false,
                 "referrers" => "host-only",
                 "analytics_requires_consent" => true,
+                "form_fields_recorded" => false,
+                "query_strings_tracked" => (bool) $telemetryPolicy["query_strings_tracked"],
+                "retention_days" => (int) $telemetryPolicy["retention_days"],
+                "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             ],
-            "analytics" => $this->analytics($metrics),
+            "analytics" => $this->analytics($metrics, $telemetryPolicy),
             "performance" => $this->performanceProbes(),
             "forms" => $this->formInbox(),
             "audit_log" => [
                 "items" => developer_activity()->recent(12),
             ],
             "release_readiness" => $this->releaseReadiness($securityAudit, $backupVerification, $acceptance),
-            "integrations" => $this->integrations(),
+            "integrations" => (new DeveloperIntegrationRegistry())->all(),
             "heatmaps" => [
-                "status" => (bool) config("observability.heatmap.enabled", true) ? "active" : "disabled",
+                "status" => ((bool) config("observability.heatmap.enabled", true) && (bool) $telemetryPolicy["heatmap_allowed"]) ? "active" : "disabled",
                 "mode" => "first-party aggregate heatmap",
                 "consent_event" => "fnlla:analytics-consent-granted",
                 "core_recorder" => true,
                 "provider" => "fnlla",
-                "notes" => "FNLLA records aggregate click zones and scroll depth locally after analytics consent.",
+                "regulated_allowed" => (bool) $telemetryPolicy["heatmap_allowed"],
+                "notes" => (bool) $telemetryPolicy["heatmap_allowed"]
+                    ? "FNLLA records aggregate click zones and scroll depth locally after analytics consent."
+                    : "Regulated telemetry policy keeps heatmap disabled until the project explicitly opts in.",
             ],
         ];
     }
 
-    private function analytics(array $metrics): array
+    private function analytics(array $metrics, array $telemetryPolicy): array
     {
         $routeCounts = (array) ($metrics["page_route_counts"] ?? $metrics["route_counts"] ?? []);
         $referrerCounts = (array) ($metrics["referrer_counts"] ?? []);
@@ -67,7 +75,12 @@ final class DeveloperOperationsReport
         $analyticsConsentEvents = (int) ($metrics["consent_analytics_allowed"] ?? 0);
 
         return [
-            "enabled" => (bool) config("observability.metrics.enabled", true),
+            "enabled" => (bool) config("observability.metrics.enabled", true) && (bool) config("observability.analytics.enabled", true),
+            "policy_profile" => (string) $telemetryPolicy["profile"],
+            "regulated" => (bool) $telemetryPolicy["regulated"],
+            "query_strings_tracked" => (bool) $telemetryPolicy["query_strings_tracked"],
+            "retention_days" => (int) $telemetryPolicy["retention_days"],
+            "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             "page_views" => (int) ($metrics["page_views"] ?? 0),
             "total_requests" => (int) ($metrics["total_requests"] ?? 0),
             "average_response_ms" => $this->averageDuration($metrics),
@@ -159,65 +172,6 @@ final class DeveloperOperationsReport
                 "warnings" => (int) ($acceptanceSummary["warnings"] ?? 0),
             ],
         ];
-    }
-
-    private function integrations(): array
-    {
-        $fionn = (new FionnRuntimeBridge())->status();
-        $techayoRemoteControl = (new TechAyoRemoteControlPlugin())->manifest();
-
-        return [
-            [
-                "name" => "FIONN AI",
-                "status" => (string) ($fionn["integration_state"] ?? "available_opt_in"),
-                "consent_event" => "server-side policy",
-                "external_calls" => (bool) ($fionn["external_calls"] ?? false),
-            ],
-            [
-                "name" => "Generic API hooks",
-                "status" => $this->integrationStatus((bool) config("integrations.api_hooks.enabled", false), (string) config("integrations.api_hooks.endpoint", "")),
-                "consent_event" => "fnlla:cookies-updated",
-                "external_calls" => (bool) config("integrations.api_hooks.enabled", false),
-                "settings" => [
-                    "endpoint" => $this->redactUrl((string) config("integrations.api_hooks.endpoint", "")),
-                ],
-            ],
-            [
-                "name" => "TechAyo Remote Control",
-                "status" => (string) ($techayoRemoteControl["status"] ?? "disabled"),
-                "consent_event" => "server-side policy",
-                "external_calls" => (bool) ($techayoRemoteControl["enabled"] ?? false),
-                "contract" => $techayoRemoteControl,
-            ],
-        ];
-    }
-
-    private function integrationStatus(bool $enabled, string $requiredValue): string
-    {
-        if (!$enabled) {
-            return "disabled";
-        }
-
-        return trim($requiredValue) !== "" ? "configured" : "needs configuration";
-    }
-
-    private function redactUrl(string $url): string
-    {
-        if (trim($url) === "") {
-            return "";
-        }
-
-        $parts = parse_url($url);
-
-        if (!is_array($parts)) {
-            return "";
-        }
-
-        $scheme = (string) ($parts["scheme"] ?? "");
-        $host = (string) ($parts["host"] ?? "");
-        $path = (string) ($parts["path"] ?? "");
-
-        return $scheme !== "" && $host !== "" ? $scheme . "://" . $host . $path : "";
     }
 
     private function errorSummary(): array

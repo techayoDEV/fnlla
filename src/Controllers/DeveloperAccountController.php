@@ -32,7 +32,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/access-settings",
-            "Access & Security",
+            "Access & security",
             "access"
         );
     }

@@ -15,6 +15,8 @@ Purpose:
 
 namespace Fnlla\Php\Support;
 
+use Fnlla\Php\Routing\RouteDefinition;
+
 trait DeveloperMetricsReportHelpers
 {
     private function readMetrics(): array
@@ -71,6 +73,163 @@ trait DeveloperMetricsReportHelpers
         return $items;
     }
 
+    private function publicMetricMap(array $map): array
+    {
+        return array_filter(
+            $map,
+            fn (mixed $value, mixed $key): bool => !$this->isPrivateMetricKey((string) $key),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    private function publicNestedMetricMap(array $map): array
+    {
+        return array_filter(
+            $map,
+            fn (mixed $value, mixed $key): bool => is_array($value) && !$this->isPrivateMetricKey((string) $key),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    private function publicPageOptions(array $counts = []): array
+    {
+        $routes = $this->publicRouteCatalog();
+        $routeNames = [];
+        $options = [];
+
+        foreach ($routes as $route) {
+            $path = (string) ($route["path"] ?? "");
+            if ($path === "") {
+                continue;
+            }
+
+            $options[$path] = [
+                "path" => $path,
+                "label" => (string) ($route["label"] ?? $this->publicPageLabel($path)),
+                "route" => (string) ($route["route"] ?? ""),
+                "count" => 0,
+            ];
+
+            $name = (string) ($route["route"] ?? "");
+            if ($name !== "") {
+                $routeNames[$name] = $path;
+            }
+        }
+
+        foreach ($counts as $key => $count) {
+            $key = trim((string) $key);
+            if ($key === "" || $this->isPrivateMetricKey($key)) {
+                continue;
+            }
+
+            $path = (string) ($routeNames[$key] ?? $this->publicPagePath($key));
+            if ($path === "" || $this->isPrivateMetricKey($path)) {
+                continue;
+            }
+
+            if (!isset($options[$path])) {
+                $options[$path] = [
+                    "path" => $path,
+                    "label" => $this->publicPageLabel($path, $key),
+                    "route" => $key[0] !== "/" ? $key : "",
+                    "count" => 0,
+                ];
+            }
+
+            $options[$path]["count"] += max(0, (int) $count);
+        }
+
+        uasort($options, static function (array $first, array $second): int {
+            $count = $second["count"] <=> $first["count"];
+            if ($count !== 0) {
+                return $count;
+            }
+
+            $home = ($first["path"] === "/" ? 0 : 1) <=> ($second["path"] === "/" ? 0 : 1);
+            if ($home !== 0) {
+                return $home;
+            }
+
+            return strcmp($first["label"], $second["label"]);
+        });
+
+        return array_values($options);
+    }
+
+    private function publicRouteCatalog(): array
+    {
+        try {
+            $router = app(\Fnlla\Php\Routing\Router::class);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $routes = [];
+        foreach ((array) $router->getRoutes() as $method => $routesByMethod) {
+            if (strtoupper((string) $method) !== "GET") {
+                continue;
+            }
+
+            foreach ((array) $routesByMethod as $route) {
+                $definition = $route["definition"] ?? null;
+                if (!$definition instanceof RouteDefinition) {
+                    continue;
+                }
+
+                $path = $this->publicPagePath($definition->path());
+                $name = (string) ($definition->routeName() ?? "");
+                if ($path === "" || $path === "/health" || str_contains($path, "{") || str_contains($path, "}") || $this->isPrivateMetricKey($name) || $this->isPrivateMetricKey($path)) {
+                    continue;
+                }
+
+                $routes[$path] = [
+                    "path" => $path,
+                    "label" => $this->publicPageLabel($path, $name),
+                    "route" => $name,
+                ];
+            }
+        }
+
+        ksort($routes);
+
+        return array_values($routes);
+    }
+
+    private function publicPagePath(string $value): string
+    {
+        $value = trim(str_replace("\\", "/", $value));
+        if ($value === "" || $value === "home") {
+            return "/";
+        }
+
+        $path = parse_url($value, PHP_URL_PATH);
+        $path = is_string($path) && $path !== "" ? $path : $value;
+        $path = "/" . ltrim($path, "/");
+        $path = preg_replace('/[^A-Za-z0-9_\\-\\/\\.{}]/', "", $path) ?? "/";
+
+        return substr($path !== "" ? $path : "/", 0, 180);
+    }
+
+    private function publicPageLabel(string $path, string $routeName = ""): string
+    {
+        $path = $this->publicPagePath($path);
+        if ($path === "/") {
+            return "Home";
+        }
+
+        $source = trim($routeName) !== "" && $routeName[0] !== "/" ? $routeName : $path;
+        foreach (["home", "about", "contact", "privacy", "terms", "services"] as $known) {
+            if ($source === $known || $path === "/" . $known) {
+                return ucfirst($known);
+            }
+        }
+
+        $label = trim(str_replace([":", ".", "_", "-", "/"], " ", $path));
+        $label = preg_replace('/\s+/', " ", $label) ?: $path;
+
+        return ucwords(strtolower($label));
+    }
+
     private function series(array $map, int $limit, string $kind = "day"): array
     {
         ksort($map);
@@ -96,5 +255,40 @@ trait DeveloperMetricsReportHelpers
         $value = trim((string) preg_replace('/\s+/', ' ', strip_tags($value)));
 
         return substr($value, 0, 180);
+    }
+
+    private function isPrivateMetricKey(string $key): bool
+    {
+        $key = strtolower(trim($key));
+
+        if ($key === "") {
+            return false;
+        }
+
+        foreach (["developer.", "maintenance.", "customer.", "client.", "api.", "fnlla."] as $prefix) {
+            if (str_starts_with($key, $prefix)) {
+                return true;
+            }
+        }
+
+        $path = "/" . trim((string) parse_url($key, PHP_URL_PATH), "/");
+        $reserved = array_merge(
+            ["/developer", "/maintenance", "/client", "/api", "/fnlla"],
+            (array) (DeveloperPanelPolicy::telemetryPolicy()["excluded_paths"] ?? [])
+        );
+
+        foreach ($reserved as $reservedPath) {
+            $reservedPath = "/" . trim((string) $reservedPath, "/");
+
+            if ($reservedPath === "/") {
+                continue;
+            }
+
+            if ($path === $reservedPath || str_starts_with($path, $reservedPath . "/")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

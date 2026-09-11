@@ -60,7 +60,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Role</strong><span class="developer-dashboard-ok">LOCKED</span></div>
               <h3><?= h((string) ($developerRoleOptions[$developerRole] ?? $currentDeveloper["role_label"] ?? "Developer")) ?></h3>
-              <p>Only a Lead developer can change account roles from Access &amp; Security.</p>
+              <p>Only an Owner or Lead developer can change account roles from Access &amp; Security.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>2FA</strong><span class="developer-dashboard-ok"><?= ($security["totp_enabled"] ?? false) ? "ON" : "OFF" ?></span></div>
@@ -83,7 +83,7 @@ require __DIR__ . "/panel-header.php";
                 <div class="form-group">
                   <span class="label">Role</span>
                   <p class="developer-profile-role mb-0"><?= h((string) ($developerRoleOptions[$developerRole] ?? $currentDeveloper["role_label"] ?? "Developer")) ?></p>
-                  <p class="help-text">Only a Lead developer can change account roles from Access &amp; Security.</p>
+                  <p class="help-text">Only an Owner or Lead developer can change account roles from Access &amp; Security.</p>
                 </div>
                 <div class="form-group">
                   <label class="label" for="developer-profile-avatar">Avatar mark or image URL</label>

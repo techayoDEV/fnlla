@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Kanban";
-$developerPanelLead = "Shared Kanban board for project delivery work.";
+$developerPanelTitle = "Project Tasks";
+$developerPanelLead = "Shared delivery tasks with task board, timeline, Gantt, owners, subtasks and attachments.";
 $board = is_array($workspaceBoard ?? null) ? $workspaceBoard : [];
 $columns = (array) ($board["columns"] ?? []);
 $priorities = (array) ($board["priorities"] ?? []);
@@ -12,6 +12,7 @@ $colors = (array) ($board["colors"] ?? []);
 $columnsWithTasks = (array) ($board["columns_with_tasks"] ?? []);
 $allTasks = (array) ($board["tasks"] ?? []);
 $currentDeveloper = is_array($developerAccess["current_developer"] ?? null) ? (array) $developerAccess["current_developer"] : [];
+$currentCapabilities = is_array($developerAccess["current_capabilities"] ?? null) ? (array) $developerAccess["current_capabilities"] : [];
 $currentEmail = strtolower(trim((string) ($currentDeveloper["email"] ?? "")));
 $developerAccounts = array_values(array_filter((array) ($developerAccess["accounts"] ?? []), static fn ($account): bool => is_array($account)));
 $participantsByEmail = [];
@@ -170,6 +171,9 @@ foreach ($allTasks as $task) {
     $created = $created < $timelineStart ? $timelineStart : $created;
     $status = (string) ($task["status"] ?? "backlog");
     $priority = (string) ($task["priority"] ?? "normal");
+    $checklist = array_values((array) ($task["checklist"] ?? []));
+    $checklistTotal = count($checklist);
+    $checklistDone = count(array_filter($checklist, static fn (array $item): bool => (bool) ($item["done"] ?? false)));
     $daysToDue = $daysBetween($timelineStart, $due);
     $startOffsetDays = max(0, min($timelineHorizonDays, $daysBetween($timelineStart, $created)));
     $spanDays = max(1, $daysBetween($created, $due) + 1);
@@ -186,17 +190,20 @@ foreach ($allTasks as $task) {
         "status" => (string) ($columns[$status] ?? ucfirst(str_replace("_", " ", $status))),
         "priority" => (string) ($priorities[$priority] ?? "Normal"),
         "assignee" => (string) (($participantFor(strtolower(trim((string) ($task["assignee"] ?? ""))))["name"] ?? "") ?: ((string) ($task["assignee"] ?? "") ?: "Unassigned")),
+        "type" => (string) ($types[(string) ($task["type"] ?? "task")] ?? "Task"),
         "due" => $dueDate,
         "days_to_due" => $daysToDue,
         "offset" => $offsetPercent,
         "span" => $spanPercent,
+        "progress" => $checklistTotal > 0 ? (int) round(($checklistDone / $checklistTotal) * 100) : ($status === "done" ? 100 : 0),
         "tone" => $status === "done" ? "done" : ($due < $timelineStart ? "overdue" : (in_array($priority, ["high", "urgent"], true) ? "urgent" : "normal")),
     ];
 }
 
 usort($timelineTasks, static fn (array $left, array $right): int => strcmp((string) $left["due"], (string) $right["due"]));
-$timelineTasks = array_slice($timelineTasks, 0, 12);
-
+$timelineTasks = array_slice($timelineTasks, 0, 24);
+$timelineVisibleTasks = array_slice($timelineTasks, 0, 3);
+$timelineMoreTasks = array_slice($timelineTasks, 3);
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -222,7 +229,7 @@ require __DIR__ . "/panel-header.php";
                 <strong>Low priority</strong>
               </div>
               <h3><?= h((string) $lowPriorityTasks) ?></h3>
-              <p>Lower-risk cards that can stay behind release-critical work.</p>
+              <p>Low-risk follow-up work.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
@@ -234,10 +241,10 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="Kanban board">
+        <section class="developer-dashboard-section" id="developer-workspace-task-board" aria-label="Kanban board">
           <div class="developer-dashboard-section-head developer-kanban-board-head">
             <div>
-              <h2 class="developer-dashboard-section-title">Project Kanban</h2>
+              <h2 class="developer-dashboard-section-title">Task board</h2>
               <span class="developer-dashboard-refresh">Shared workspace / <?= h((string) ($board["completion_percent"] ?? 0)) ?>% complete</span>
             </div>
             <div class="developer-kanban-participants" aria-label="Workspace participants">
@@ -280,41 +287,140 @@ require __DIR__ . "/panel-header.php";
             <span><strong><?= h((string) ($board["comments_count"] ?? 0)) ?></strong> comments</span>
           </div>
 
-          <section class="developer-kanban-timeline" aria-label="Delivery timeline">
+          <section class="developer-kanban-timeline" data-developer-kanban-plan aria-label="Delivery plan">
             <div class="developer-kanban-timeline-head">
               <div>
-                <p class="feature-kicker">Timeline / Gantt</p>
+                <p class="feature-kicker">Timeline and Gantt</p>
                 <h3>Due-date plan for the next <?= h((string) $timelineHorizonDays) ?> days</h3>
               </div>
-              <span><?= h($timelineStart->format("d M")) ?> - <?= h($timelineEnd->format("d M")) ?></span>
+              <div class="developer-kanban-plan-actions">
+                <span><?= h($timelineStart->format("d M")) ?> - <?= h($timelineEnd->format("d M")) ?></span>
+                <div class="developer-kanban-plan-tabs" role="tablist" aria-label="Delivery plan views">
+                  <button class="is-active" id="developer-kanban-plan-tab-timeline" type="button" role="tab" aria-controls="developer-kanban-plan-timeline" aria-selected="true" aria-pressed="true" data-developer-kanban-plan-tab="timeline">Timeline</button>
+                  <button id="developer-kanban-plan-tab-gantt" type="button" role="tab" aria-controls="developer-kanban-plan-gantt" aria-selected="false" aria-pressed="false" data-developer-kanban-plan-tab="gantt">Gantt</button>
+                </div>
+              </div>
+            </div>
+            <div class="developer-kanban-plan-summary">
+              <span><strong><?= h((string) count($timelineTasks)) ?></strong> scheduled</span>
+              <span><strong><?= h((string) count(array_filter($timelineTasks, static fn (array $task): bool => ($task["tone"] ?? "") === "urgent"))) ?></strong> urgent</span>
+              <span><strong><?= h((string) count(array_filter($timelineTasks, static fn (array $task): bool => ($task["tone"] ?? "") === "overdue"))) ?></strong> overdue</span>
             </div>
             <?php if ($timelineTasks === []): ?>
-            <p class="content-text mb-0">Add due dates to Kanban cards to build the local delivery timeline.</p>
-            <?php else: ?>
-            <div class="developer-kanban-timeline-scale" aria-hidden="true">
-              <span>Today</span>
-              <span>7d</span>
-              <span>14d</span>
-              <span>21d</span>
-              <span>30d</span>
+            <div class="developer-kanban-plan-panel" id="developer-kanban-plan-timeline" role="tabpanel" aria-labelledby="developer-kanban-plan-tab-timeline" data-developer-kanban-plan-panel="timeline">
+              <p class="content-text mb-0">Add due dates to task cards to build the local delivery timeline.</p>
             </div>
-            <div class="developer-kanban-timeline-list">
-              <?php foreach ($timelineTasks as $timelineTask): ?>
-              <?php
-                  $daysToDue = (int) ($timelineTask["days_to_due"] ?? 0);
-                  $dueLabel = $daysToDue < 0 ? abs($daysToDue) . "d overdue" : ($daysToDue === 0 ? "due today" : "due in " . $daysToDue . "d");
-              ?>
-              <article class="developer-kanban-timeline-row is-<?= h((string) ($timelineTask["tone"] ?? "normal")) ?>">
-                <div>
-                  <strong><?= h((string) ($timelineTask["title"] ?? "Task")) ?></strong>
-                  <small><?= h((string) ($timelineTask["status"] ?? "")) ?> / <?= h((string) ($timelineTask["priority"] ?? "")) ?> / <?= h((string) ($timelineTask["assignee"] ?? "Unassigned")) ?></small>
+            <div class="developer-kanban-plan-panel developer-kanban-gantt-panel" id="developer-kanban-plan-gantt" role="tabpanel" aria-labelledby="developer-kanban-plan-tab-gantt" data-developer-kanban-plan-panel="gantt" hidden>
+              <p class="content-text mb-0">Add due dates to task cards to build the local Gantt view.</p>
+            </div>
+            <?php else: ?>
+            <div class="developer-kanban-plan-panel" id="developer-kanban-plan-timeline" role="tabpanel" aria-labelledby="developer-kanban-plan-tab-timeline" data-developer-kanban-plan-panel="timeline">
+              <div class="developer-kanban-timeline-scale" aria-hidden="true">
+                <span>Today</span>
+                <span>7d</span>
+                <span>14d</span>
+                <span>21d</span>
+                <span>30d</span>
+              </div>
+              <div class="developer-kanban-timeline-list">
+                <?php foreach ($timelineVisibleTasks as $timelineTask): ?>
+                <?php
+                    $daysToDue = (int) ($timelineTask["days_to_due"] ?? 0);
+                    $dueLabel = $daysToDue < 0 ? abs($daysToDue) . "d overdue" : ($daysToDue === 0 ? "due today" : "due in " . $daysToDue . "d");
+                ?>
+                <article class="developer-kanban-timeline-row is-<?= h((string) ($timelineTask["tone"] ?? "normal")) ?>">
+                  <div>
+                    <strong><?= h((string) ($timelineTask["title"] ?? "Task")) ?></strong>
+                    <small><?= h((string) ($timelineTask["type"] ?? "Task")) ?> / <?= h((string) ($timelineTask["status"] ?? "")) ?> / <?= h((string) ($timelineTask["priority"] ?? "")) ?> / <?= h((string) ($timelineTask["assignee"] ?? "Unassigned")) ?></small>
+                  </div>
+                  <div class="developer-kanban-timeline-track" aria-label="<?= h((string) ($timelineTask["title"] ?? "Task")) ?> <?= h($dueLabel) ?>">
+                    <span style="left: <?= h((string) ($timelineTask["offset"] ?? 0)) ?>%; width: <?= h((string) ($timelineTask["span"] ?? 6)) ?>%;"><b style="width: <?= h((string) ($timelineTask["progress"] ?? 0)) ?>%"></b></span>
+                  </div>
+                  <em><?= h($dueLabel) ?></em>
+                </article>
+                <?php endforeach; ?>
+              </div>
+              <?php if ($timelineMoreTasks !== []): ?>
+              <details class="developer-kanban-plan-more" data-developer-kanban-plan-more>
+                <summary>Show <?= h((string) count($timelineMoreTasks)) ?> more scheduled tasks</summary>
+                <div class="developer-kanban-timeline-list">
+                  <?php foreach ($timelineMoreTasks as $timelineTask): ?>
+                  <?php
+                      $daysToDue = (int) ($timelineTask["days_to_due"] ?? 0);
+                      $dueLabel = $daysToDue < 0 ? abs($daysToDue) . "d overdue" : ($daysToDue === 0 ? "due today" : "due in " . $daysToDue . "d");
+                  ?>
+                  <article class="developer-kanban-timeline-row is-<?= h((string) ($timelineTask["tone"] ?? "normal")) ?>">
+                    <div>
+                      <strong><?= h((string) ($timelineTask["title"] ?? "Task")) ?></strong>
+                      <small><?= h((string) ($timelineTask["type"] ?? "Task")) ?> / <?= h((string) ($timelineTask["status"] ?? "")) ?> / <?= h((string) ($timelineTask["priority"] ?? "")) ?> / <?= h((string) ($timelineTask["assignee"] ?? "Unassigned")) ?></small>
+                    </div>
+                    <div class="developer-kanban-timeline-track" aria-label="<?= h((string) ($timelineTask["title"] ?? "Task")) ?> <?= h($dueLabel) ?>">
+                      <span style="left: <?= h((string) ($timelineTask["offset"] ?? 0)) ?>%; width: <?= h((string) ($timelineTask["span"] ?? 6)) ?>%;"><b style="width: <?= h((string) ($timelineTask["progress"] ?? 0)) ?>%"></b></span>
+                    </div>
+                    <em><?= h($dueLabel) ?></em>
+                  </article>
+                  <?php endforeach; ?>
                 </div>
-                <div class="developer-kanban-timeline-track" aria-label="<?= h((string) ($timelineTask["title"] ?? "Task")) ?> <?= h($dueLabel) ?>">
-                  <span style="left: <?= h((string) ($timelineTask["offset"] ?? 0)) ?>%; width: <?= h((string) ($timelineTask["span"] ?? 6)) ?>%;"></span>
+              </details>
+              <?php endif; ?>
+            </div>
+
+            <div class="developer-kanban-plan-panel developer-kanban-gantt-panel" id="developer-kanban-plan-gantt" role="tabpanel" aria-labelledby="developer-kanban-plan-tab-gantt" data-developer-kanban-plan-panel="gantt" hidden>
+              <div class="developer-kanban-gantt-board">
+                <div class="developer-kanban-gantt-band" aria-hidden="true"></div>
+              <div class="developer-kanban-gantt-scale" aria-hidden="true">
+                <span>Task</span>
+                <div class="developer-kanban-gantt-scale-axis">
+                  <span>Today</span>
+                  <span>7d</span>
+                  <span>14d</span>
+                  <span>21d</span>
+                  <span>30d</span>
                 </div>
-                <em><?= h($dueLabel) ?></em>
-              </article>
-              <?php endforeach; ?>
+                <span>Due</span>
+              </div>
+              <div class="developer-kanban-gantt-list">
+                <?php foreach ($timelineVisibleTasks as $timelineTask): ?>
+                <?php
+                    $daysToDue = (int) ($timelineTask["days_to_due"] ?? 0);
+                    $dueLabel = $daysToDue < 0 ? abs($daysToDue) . "d overdue" : ($daysToDue === 0 ? "due today" : "due in " . $daysToDue . "d");
+                ?>
+                <article class="developer-kanban-gantt-row is-<?= h((string) ($timelineTask["tone"] ?? "normal")) ?>">
+                  <div class="developer-kanban-gantt-task">
+                    <strong><?= h((string) ($timelineTask["title"] ?? "Task")) ?></strong>
+                    <small><?= h((string) ($timelineTask["type"] ?? "Task")) ?> / <?= h((string) ($timelineTask["status"] ?? "")) ?> / <?= h((string) ($timelineTask["priority"] ?? "")) ?></small>
+                  </div>
+                  <div class="developer-kanban-gantt-chart" aria-label="<?= h((string) ($timelineTask["title"] ?? "Task")) ?> <?= h($dueLabel) ?>">
+                    <span style="left: <?= h((string) ($timelineTask["offset"] ?? 0)) ?>%; width: <?= h((string) ($timelineTask["span"] ?? 6)) ?>%;"><b style="width: <?= h((string) ($timelineTask["progress"] ?? 0)) ?>%"></b></span>
+                  </div>
+                  <em><?= h($dueLabel) ?></em>
+                </article>
+                <?php endforeach; ?>
+              </div>
+              <?php if ($timelineMoreTasks !== []): ?>
+              <details class="developer-kanban-plan-more developer-kanban-gantt-more" data-developer-kanban-plan-more>
+                <summary>Show <?= h((string) count($timelineMoreTasks)) ?> more Gantt rows</summary>
+                <div class="developer-kanban-gantt-list">
+                  <?php foreach ($timelineMoreTasks as $timelineTask): ?>
+                  <?php
+                      $daysToDue = (int) ($timelineTask["days_to_due"] ?? 0);
+                      $dueLabel = $daysToDue < 0 ? abs($daysToDue) . "d overdue" : ($daysToDue === 0 ? "due today" : "due in " . $daysToDue . "d");
+                  ?>
+                  <article class="developer-kanban-gantt-row is-<?= h((string) ($timelineTask["tone"] ?? "normal")) ?>">
+                    <div class="developer-kanban-gantt-task">
+                      <strong><?= h((string) ($timelineTask["title"] ?? "Task")) ?></strong>
+                      <small><?= h((string) ($timelineTask["type"] ?? "Task")) ?> / <?= h((string) ($timelineTask["status"] ?? "")) ?> / <?= h((string) ($timelineTask["priority"] ?? "")) ?></small>
+                    </div>
+                    <div class="developer-kanban-gantt-chart" aria-label="<?= h((string) ($timelineTask["title"] ?? "Task")) ?> <?= h($dueLabel) ?>">
+                      <span style="left: <?= h((string) ($timelineTask["offset"] ?? 0)) ?>%; width: <?= h((string) ($timelineTask["span"] ?? 6)) ?>%;"><b style="width: <?= h((string) ($timelineTask["progress"] ?? 0)) ?>%"></b></span>
+                    </div>
+                    <em><?= h($dueLabel) ?></em>
+                  </article>
+                  <?php endforeach; ?>
+                </div>
+              </details>
+              <?php endif; ?>
+              </div>
             </div>
             <?php endif; ?>
           </section>
@@ -344,7 +450,7 @@ require __DIR__ . "/panel-header.php";
                     <span>Starts in <?= h((string) $label) ?></span>
                     <small>Details can be edited later from the task modal.</small>
                   </div>
-                  <form class="form developer-kanban-modal-form developer-kanban-create-form" action="<?= h(route("developer.workspace.tasks.create")) ?>" method="post" enctype="multipart/form-data" novalidate>
+                  <form class="form developer-kanban-modal-form developer-kanban-create-form" action="<?= h(route("developer.workspace.tasks.create")) ?>" method="post" enctype="multipart/form-data" novalidate data-developer-ajax>
                     <?= csrf_field() ?>
                     <input type="hidden" name="developer_workspace_status" value="<?= h((string) $status) ?>">
                     <div class="developer-kanban-modal-section-heading developer-kanban-modal-wide">Core task</div>
@@ -415,9 +521,28 @@ require __DIR__ . "/panel-header.php";
                       <label class="label" for="developer-kanban-create-notes-<?= h((string) $status) ?>">Notes</label>
                       <textarea class="textarea" id="developer-kanban-create-notes-<?= h((string) $status) ?>" name="developer_workspace_notes" rows="3" maxlength="280"></textarea>
                     </div>
-                    <div class="form-group developer-kanban-modal-wide">
-                      <label class="label" for="developer-kanban-create-checklist-<?= h((string) $status) ?>">Subtasks</label>
-                      <textarea class="textarea" id="developer-kanban-create-checklist-<?= h((string) $status) ?>" name="developer_workspace_checklist" rows="4" maxlength="640" placeholder="[ ] Confirm copy&#10;[ ] Run release checks"></textarea>
+                    <input type="hidden" name="developer_workspace_checklist" value="">
+                    <div class="developer-kanban-subtask-list developer-kanban-modal-wide developer-kanban-create-subtask-list">
+                      <div class="developer-kanban-subtask-list-head">
+                        <strong>Subtasks</strong>
+                        <small>Optional on create</small>
+                      </div>
+                      <?php $createAccent = (string) ($columnAccents[$status] ?? "blue"); ?>
+                      <?php foreach ([0, 1, 2] as $subtaskIndex): ?>
+                      <?php $createSubtaskId = "developer-kanban-create-subtask-" . (string) $status . "-" . (string) $subtaskIndex; ?>
+                      <div class="developer-kanban-subtask-item developer-kanban-subtask-<?= h($createAccent) ?>">
+                        <label class="developer-kanban-subtask-toggle" for="<?= h($createSubtaskId) ?>-done" data-fnlla-tooltip="Mark completed" data-fnlla-tooltip-position="top">
+                          <input id="<?= h($createSubtaskId) ?>-done" type="checkbox" name="developer_workspace_subtasks_done[<?= h((string) $subtaskIndex) ?>]" value="1">
+                          <span aria-hidden="true"></span>
+                        </label>
+                        <span class="developer-kanban-subtask-copy">
+                          <label class="visually-hidden" for="<?= h($createSubtaskId) ?>">Subtask <?= h((string) ($subtaskIndex + 1)) ?></label>
+                          <input class="input developer-kanban-subtask-input" id="<?= h($createSubtaskId) ?>" name="developer_workspace_subtasks_text[<?= h((string) $subtaskIndex) ?>]" type="text" maxlength="120" placeholder="<?= $subtaskIndex === 0 ? "First optional subtask" : "Optional subtask" ?>">
+                          <textarea class="textarea developer-kanban-subtask-note" name="developer_workspace_subtasks_note[<?= h((string) $subtaskIndex) ?>]" rows="2" maxlength="280" placeholder="Optional subtask note" aria-label="Subtask note"></textarea>
+                        </span>
+                        <input type="hidden" name="developer_workspace_subtasks_color[<?= h((string) $subtaskIndex) ?>]" value="<?= h($createAccent) ?>">
+                      </div>
+                      <?php endforeach; ?>
                     </div>
                     <div class="developer-kanban-modal-section-heading developer-kanban-modal-wide">Reference material</div>
                     <div class="form-group developer-kanban-modal-wide">
@@ -497,29 +622,29 @@ require __DIR__ . "/panel-header.php";
 
                     $checklistText = $checklistToText($checklist);
                     $modalId = "developer-kanban-task-modal-" . preg_replace('/[^A-Za-z0-9_-]/', "-", $taskId);
-                    $taskKey = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $taskId) ?: "TASK", 0, 6));
+                    $taskTypeClass = "is-type-" . preg_replace('/[^a-z0-9_-]+/', "-", strtolower($taskType));
+                    $taskVisibilityClass = $taskClientVisible ? "is-client-visible" : "is-internal";
+                    $taskVisibilityLabel = $taskClientVisible ? "Client" : "Internal";
+                    $taskPriorityClass = "is-priority-" . preg_replace('/[^a-z0-9_-]+/', "-", strtolower($taskPriority));
                     $taskSearch = trim((string) ($task["title"] ?? "") . " " . (string) ($task["notes"] ?? "") . " " . (string) ($types[$taskType] ?? "Task") . " " . (string) ($priorities[$taskPriority] ?? "Normal") . " " . $assigneeName);
                     $taskDueClass = ($task["due_date"] ?? "") !== "" && (string) ($task["due_date"] ?? "") < $today && ($task["status"] ?? "") !== "done" ? " is-overdue" : "";
                 ?>
                 <article class="developer-kanban-task developer-kanban-task-<?= h($taskColor) ?><?= h($taskDueClass) ?> <?= $taskAssignee === $currentEmail && $currentEmail !== "" ? "is-mine" : "" ?>" draggable="true" data-developer-kanban-task="<?= h($taskId) ?>" data-developer-kanban-position="<?= h($taskPosition) ?>" data-developer-kanban-priority="<?= h($taskPriority) ?>" data-developer-kanban-assignee="<?= h($taskAssignee) ?>" data-developer-kanban-blocked="<?= $taskBlocked ? "true" : "false" ?>" data-developer-kanban-search-text="<?= h(strtolower($taskSearch)) ?>">
                   <div class="developer-kanban-task-topline">
                     <div class="developer-kanban-labels">
-                      <span><?= h($taskKey) ?></span>
-                      <span><?= h((string) ($types[$taskType] ?? "Task")) ?></span>
+                      <span class="developer-kanban-label developer-kanban-label-type <?= h($taskTypeClass) ?>"><?= h((string) ($types[$taskType] ?? "Task")) ?></span>
+                      <span class="developer-kanban-label developer-kanban-label-visibility <?= h($taskVisibilityClass) ?>"><?= h($taskVisibilityLabel) ?></span>
                       <?php if ($taskBlocked): ?>
-                      <span>Blocked</span>
-                      <?php endif; ?>
-                      <?php if (!$taskClientVisible): ?>
-                      <span>Internal</span>
+                      <span class="developer-kanban-label developer-kanban-label-blocked">Blocked</span>
                       <?php endif; ?>
                     </div>
                     <div class="developer-kanban-task-top-actions">
-                      <span class="developer-kanban-task-state"><?= h((string) ($priorities[$taskPriority] ?? "Normal")) ?></span>
+                      <span class="developer-kanban-task-state <?= h($taskPriorityClass) ?>"><?= h((string) ($priorities[$taskPriority] ?? "Normal")) ?></span>
                       <details class="developer-kanban-task-menu">
                       <summary aria-label="Task actions" data-fnlla-tooltip="Task actions" data-fnlla-tooltip-position="left"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></summary>
                         <div class="developer-kanban-task-menu-panel">
                           <button class="developer-kanban-task-menu-item" type="button" data-fnlla-modal-open="#<?= h($modalId) ?>">Edit</button>
-                          <form action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post">
+                          <form action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax>
                             <?= csrf_field() ?>
                             <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                             <button class="developer-kanban-task-menu-item developer-kanban-task-menu-danger" type="submit">Remove</button>
@@ -562,7 +687,7 @@ require __DIR__ . "/panel-header.php";
                     </span>
                     <span><?= ($task["due_date"] ?? "") !== "" ? "Due " . h((string) $task["due_date"]) : "No due date" ?></span>
                   </div>
-                  <form class="developer-kanban-task-actions" action="<?= h(route("developer.workspace.tasks.update")) ?>" method="post" data-developer-kanban-move-form>
+                  <form class="developer-kanban-task-actions" action="<?= h(route("developer.workspace.tasks.update")) ?>" method="post" data-developer-kanban-move-form data-developer-ajax>
                     <?= csrf_field() ?>
                     <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                     <input type="hidden" name="developer_workspace_title" value="<?= h((string) ($task["title"] ?? "")) ?>">
@@ -585,7 +710,7 @@ require __DIR__ . "/panel-header.php";
                   <div class="modal-content developer-kanban-modal-content">
                     <div class="developer-kanban-modal-head">
                       <div>
-                        <p class="feature-kicker mb-2"><?= h($taskKey) ?> / <?= h((string) ($columns[$status] ?? $status)) ?></p>
+                        <p class="feature-kicker mb-2">Task details / <?= h((string) ($columns[$status] ?? $status)) ?></p>
                         <h2 class="content-title mb-0" id="<?= h($modalId) ?>-title"><?= h((string) ($task["title"] ?? "Task")) ?></h2>
                       </div>
                       <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close task modal"><span aria-hidden="true">x</span></button>
@@ -637,7 +762,7 @@ require __DIR__ . "/panel-header.php";
                         <?php endforeach; ?>
                       </div>
                     </details>
-                    <form class="form developer-kanban-modal-form" action="<?= h(route("developer.workspace.tasks.update")) ?>" method="post" enctype="multipart/form-data">
+                    <form class="form developer-kanban-modal-form" action="<?= h(route("developer.workspace.tasks.update")) ?>" method="post" enctype="multipart/form-data" data-developer-ajax>
                       <?= csrf_field() ?>
                       <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                       <div class="developer-kanban-triage-strip developer-kanban-modal-wide" aria-label="Task triage summary">
@@ -741,6 +866,7 @@ require __DIR__ . "/panel-header.php";
                             <?php endforeach; ?>
                           </div>
                         </div>
+                        <textarea class="textarea developer-kanban-subtask-note" name="developer_workspace_subtask_note" rows="2" maxlength="280" placeholder="Optional note or comment for this subtask"></textarea>
                       </div>
                       <input type="hidden" name="developer_workspace_checklist" value="<?= h($checklistText) ?>">
                       <div class="developer-kanban-subtask-list developer-kanban-modal-wide">
@@ -756,6 +882,7 @@ require __DIR__ . "/panel-header.php";
                             $itemColor = (string) ($item["color"] ?? "blue");
                             $itemColor = array_key_exists($itemColor, $colors) ? $itemColor : "blue";
                             $subtaskDone = (bool) ($item["done"] ?? false);
+                            $subtaskNote = (string) ($item["note"] ?? "");
                             $subtaskControlId = "developer-kanban-subtask-done-" . $taskId . "-" . (string) $subtaskIndex;
                         ?>
                         <div class="developer-kanban-subtask-item developer-kanban-subtask-<?= h($itemColor) ?><?= $subtaskDone ? " is-complete" : "" ?>">
@@ -763,7 +890,10 @@ require __DIR__ . "/panel-header.php";
                             <input id="<?= h($subtaskControlId) ?>" type="checkbox" name="developer_workspace_subtasks_done[<?= h((string) $subtaskIndex) ?>]" value="1" <?= $subtaskDone ? "checked" : "" ?>>
                             <span aria-hidden="true"></span>
                           </label>
-                          <input class="input developer-kanban-subtask-input" name="developer_workspace_subtasks_text[<?= h((string) $subtaskIndex) ?>]" type="text" maxlength="120" value="<?= h((string) ($item["text"] ?? "")) ?>" aria-label="Subtask text">
+                          <span class="developer-kanban-subtask-copy">
+                            <input class="input developer-kanban-subtask-input" name="developer_workspace_subtasks_text[<?= h((string) $subtaskIndex) ?>]" type="text" maxlength="120" value="<?= h((string) ($item["text"] ?? "")) ?>" aria-label="Subtask text">
+                            <textarea class="textarea developer-kanban-subtask-note" name="developer_workspace_subtasks_note[<?= h((string) $subtaskIndex) ?>]" rows="2" maxlength="280" placeholder="Optional subtask note" aria-label="Subtask note"><?= h($subtaskNote) ?></textarea>
+                          </span>
                           <div class="developer-kanban-subtask-colors" role="radiogroup" aria-label="Subtask color">
                             <?php foreach ($colors as $color => $colorLabel): ?>
                             <label class="developer-kanban-color-option developer-kanban-color-option-<?= h((string) $color) ?>" data-fnlla-tooltip="<?= h((string) $colorLabel) ?>" data-fnlla-tooltip-position="top">
@@ -893,7 +1023,7 @@ require __DIR__ . "/panel-header.php";
                         <button class="btn btn-ghost" type="button" data-fnlla-modal-close>Cancel</button>
                       </div>
                     </form>
-                    <form class="developer-kanban-delete-form" action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post">
+                    <form class="developer-kanban-delete-form" action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax>
                       <?= csrf_field() ?>
                       <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                       <button class="btn btn-ghost btn-sm" type="submit">Remove task</button>

@@ -23,4 +23,46 @@ final class ModernizationLedgerTest extends TestCase
             self::assertSame($strict && $report["unfinished"] !== [] ? 1 : 0, $exit, $errors);
         }
     }
+
+    public function testDocumentationTotalsMatchLedger(): void
+    {
+        $ledger = $this->ledger();
+        $counts = ["done" => 0, "partial" => 0, "open" => 0, "blocked" => 0];
+
+        foreach ($ledger["tasks"] as $task) {
+            $counts[$task["status"]]++;
+        }
+
+        $unfinished = $counts["partial"] + $counts["open"] + $counts["blocked"];
+        $status = (string) file_get_contents(base_path("docs/MODERNIZATION-STATUS.md"));
+        $panel = (string) file_get_contents(base_path("docs/DEVELOPER-PANEL.md"));
+
+        self::assertStringContainsString(
+            sprintf("Current totals: **%d done, %d partial, %d open, %d blocked**", $counts["done"], $counts["partial"], $counts["open"], $counts["blocked"]),
+            $status
+        );
+        self::assertStringContainsString($unfinished . " modernization criteria remain unfinished", $panel);
+    }
+
+    public function testClosedUpgradeAndHttpEdgeCriteriaKeepOperationalEvidence(): void
+    {
+        $tasks = [];
+        foreach ($this->ledger()["tasks"] as $task) {
+            $tasks[$task["id"]] = $task;
+        }
+
+        self::assertSame("done", $tasks["upgrade-matrix"]["status"]);
+        self::assertContains("tests/Integration/ReleasedUpgradeTest.php", $tasks["upgrade-matrix"]["evidence"]);
+        self::assertContains(".github/workflows/quality.yml", $tasks["upgrade-matrix"]["evidence"]);
+
+        self::assertSame("done", $tasks["http-edge-matrix"]["status"]);
+        self::assertContains("scripts/acceptance/fpm.sh", $tasks["http-edge-matrix"]["evidence"]);
+        self::assertContains("scripts/acceptance/http-smoke.php", $tasks["http-edge-matrix"]["evidence"]);
+        self::assertContains("tests/ReleaseWorkflowTest.php", $tasks["http-edge-matrix"]["evidence"]);
+    }
+
+    private function ledger(): array
+    {
+        return json_decode((string) file_get_contents(base_path("resources/modernization-tasks.json")), true, 512, JSON_THROW_ON_ERROR);
+    }
 }

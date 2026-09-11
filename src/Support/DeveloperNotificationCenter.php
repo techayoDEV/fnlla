@@ -21,8 +21,12 @@ final class DeveloperNotificationCenter
     {
         $key = strtolower((string) ($item["key"] ?? ""));
 
+        if (str_starts_with($key, "activity:")) {
+            return "Developer activity";
+        }
+
         if (self::containsAny($key, ["framework", "update"])) {
-            return "Framework updates";
+            return "Release & readiness";
         }
 
         if (self::containsAny($key, ["totp", "access", "security"])) {
@@ -30,15 +34,19 @@ final class DeveloperNotificationCenter
         }
 
         if (self::containsAny($key, ["readiness", "backup", "audit"])) {
-            return "Readiness & health";
+            return "Release & readiness";
         }
 
         if (self::containsAny($key, ["analytics", "heatmap", "metric"])) {
-            return "Analytics";
+            return "Observability";
         }
 
-        if (self::containsAny($key, ["preview", "service", "leadership", "identity"])) {
-            return "Project setup";
+        if (self::containsAny($key, ["preview", "service"])) {
+            return "Operations";
+        }
+
+        if (self::containsAny($key, ["leadership", "identity"])) {
+            return "Workspace";
         }
 
         return "Developer Panel";
@@ -48,6 +56,10 @@ final class DeveloperNotificationCenter
     {
         $key = strtolower((string) ($item["key"] ?? ""));
         $action = strtolower((string) ($item["action"] ?? ""));
+
+        if (str_starts_with($key, "activity:")) {
+            return (string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"));
+        }
 
         if (self::containsAny($key, ["framework", "update"])) {
             return (string) ($developerLinks["framework_updates"] ?? route("developer.panel.framework_updates"));
@@ -124,14 +136,18 @@ final class DeveloperNotificationCenter
         }
 
         if (($developerDashboard["observability_enabled"] ?? false) !== true) {
-            $items[] = $this->item("metrics-disabled", "info", "Metrics disabled", "Privacy-light analytics and request trends need observability metrics enabled.", "Open analytics");
+            $items[] = $this->item("metrics-disabled", "info", "Metrics disabled", "Privacy-light analytics and request trends need observability metrics enabled.", "Open traffic analytics");
+        }
+
+        foreach ($this->activityItems($currentEmail) as $activityItem) {
+            $items[] = $activityItem;
         }
 
         if ($items === []) {
             $items[] = $this->item("all-clear", "success", "Developer workspace clear", "No blocking Developer Panel notifications were detected.", "Dashboard");
         }
 
-        $state = $this->state();
+        $state = $this->state($currentEmail);
         $active = [];
         $archived = [];
 
@@ -152,8 +168,9 @@ final class DeveloperNotificationCenter
         }
 
         return [
-            "schema" => "fnlla.developer_notifications.v1",
+            "schema" => "fnlla.developer_notifications.v2",
             "generated_at_utc" => gmdate(DATE_ATOM),
+            "viewer" => $currentEmail,
             "items" => $active,
             "archived_items" => $archived,
             "unread_count" => count(array_filter($active, static fn (array $item): bool => ($item["severity"] ?? "") !== "success" && $item["acknowledged_at"] === "")),
@@ -169,7 +186,7 @@ final class DeveloperNotificationCenter
             "acknowledged_by" => (string) ($developer["email"] ?? "developer"),
             "archived_at" => "",
             "archived_by" => "",
-        ]);
+        ], (string) ($developer["email"] ?? ""));
     }
 
     public function archive(string $key, array $developer = []): void
@@ -179,7 +196,12 @@ final class DeveloperNotificationCenter
             "acknowledged_by" => (string) ($developer["email"] ?? "developer"),
             "archived_at" => gmdate(DATE_ATOM),
             "archived_by" => (string) ($developer["email"] ?? "developer"),
-        ]);
+        ], (string) ($developer["email"] ?? ""));
+    }
+
+    public function records(array $developer = []): array
+    {
+        return $this->state((string) ($developer["email"] ?? ""));
     }
 
     public function restore(string $key, array $developer = []): void
@@ -189,7 +211,7 @@ final class DeveloperNotificationCenter
             "archived_by" => "",
             "restored_at" => gmdate(DATE_ATOM),
             "restored_by" => (string) ($developer["email"] ?? "developer"),
-        ]);
+        ], (string) ($developer["email"] ?? ""));
     }
 
     private function item(string $key, string $severity, string $title, string $text, string $action): array
@@ -204,6 +226,75 @@ final class DeveloperNotificationCenter
         ];
     }
 
+    private function activityItems(string $currentEmail): array
+    {
+        if ($currentEmail === "") {
+            return [];
+        }
+
+        $items = [];
+        foreach (\developer_activity()->recent(24) as $event) {
+            $developer = (array) ($event["developer"] ?? []);
+            $actorEmail = strtolower(trim((string) ($developer["email"] ?? "")));
+            $action = strtolower(trim((string) ($event["action"] ?? "")));
+            $hash = trim((string) ($event["event_hash"] ?? ""));
+
+            if ($hash === "" || $actorEmail === "" || hash_equals($currentEmail, $actorEmail) || !$this->notifiableActivity($action)) {
+                continue;
+            }
+
+            $actorName = trim((string) ($developer["name"] ?? ""));
+            $actor = $actorName !== "" ? $actorName : $actorEmail;
+            $title = trim((string) ($event["title"] ?? ""));
+            $text = trim((string) ($event["text"] ?? ""));
+            $item = $this->item(
+                "activity:" . $hash,
+                $this->activitySeverity($action),
+                $title !== "" ? $title : "Developer change recorded",
+                "Changed by " . $actor . ($text !== "" ? ". " . $text : "."),
+                "Open activity"
+            );
+            $item["kind"] = "activity";
+            $item["source"] = "Developer activity";
+            $item["source_event_hash"] = $hash;
+            $item["actor_email"] = $actorEmail;
+            $item["actor_name"] = $actor;
+            $item["activity_action"] = $action;
+            $item["time"] = (string) ($event["time"] ?? $item["time"]);
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    private function notifiableActivity(string $action): bool
+    {
+        return self::containsAny($action, [
+            "service_control",
+            "client_preview",
+            "project_identity",
+            "runtime_environment",
+            "project_leadership",
+            "developer_access",
+            "developer_integrations",
+            "developer_workspace",
+            "developer_ai_settings",
+            "analytics_settings",
+            "heatmap_settings",
+            "framework_update",
+            "technical_debt",
+        ]);
+    }
+
+    private function activitySeverity(string $action): string
+    {
+        if (self::containsAny($action, ["service_control", "developer_access", "framework_update"])) {
+            return "warning";
+        }
+
+        return "info";
+    }
+
     private static function containsAny(string $value, array $needles): bool
     {
         foreach ($needles as $needle) {
@@ -215,7 +306,7 @@ final class DeveloperNotificationCenter
         return false;
     }
 
-    private function change(string $key, array $changes): void
+    private function change(string $key, array $changes, string $viewerEmail): void
     {
         $key = $this->cleanKey($key);
 
@@ -223,38 +314,42 @@ final class DeveloperNotificationCenter
             return;
         }
 
+        $storageKey = $this->storageKey($key, $viewerEmail);
         $merge = fn (array $record): array => $this->normaliseRecord(array_merge($record, $changes, [
-            "key" => $key, "updated_at" => gmdate(DATE_ATOM),
+            "key" => $key,
+            "viewer" => $this->viewerKey($viewerEmail),
+            "viewer_email" => $this->clean($viewerEmail, 160),
+            "updated_at" => gmdate(DATE_ATOM),
         ]));
         if ($this->driver() === "database") {
             $this->ensureDatabaseTable();
-            db()->transaction(function () use ($key, $merge): void {
+            db()->transaction(function () use ($key, $storageKey, $merge): void {
                 $table = $this->quoteIdentifier($this->table());
                 db()->statement("INSERT INTO {$table} (notification_key, severity, title, payload) VALUES (:key, 'state', :title, '{}')"
-                    . " ON DUPLICATE KEY UPDATE notification_key = notification_key", ["key" => $key, "title" => $key]);
-                $rows = db()->select("SELECT payload FROM {$table} WHERE notification_key = :key FOR UPDATE", ["key" => $key]);
+                    . " ON DUPLICATE KEY UPDATE notification_key = notification_key", ["key" => $storageKey, "title" => $key]);
+                $rows = db()->select("SELECT payload FROM {$table} WHERE notification_key = :key FOR UPDATE", ["key" => $storageKey]);
                 $record = json_decode((string) $rows[0]["payload"], true, 512, JSON_THROW_ON_ERROR);
                 if (!is_array($record)) {
                     throw new \RuntimeException("Invalid notification state; refusing to overwrite it.");
                 }
-                $this->writeDatabase([$key => $merge($record)]);
+                $this->writeDatabase([$storageKey => $merge($record)]);
             });
             return;
         }
-        (new LockedJsonStore($this->path()))->update(static function (array $document) use ($key, $merge): array {
+        (new LockedJsonStore($this->path()))->update(static function (array $document) use ($storageKey, $merge): array {
             $records = $document["records"] ?? [];
-            if (!is_array($records) || (isset($records[$key]) && !is_array($records[$key]))) {
+            if (!is_array($records) || (isset($records[$storageKey]) && !is_array($records[$storageKey]))) {
                 throw new \RuntimeException("Invalid notification state; refusing to overwrite it.");
             }
-            $records[$key] = $merge($records[$key] ?? []);
+            $records[$storageKey] = $merge($records[$storageKey] ?? []);
             return ["schema" => "fnlla.developer_notification_state.v1", "updated_at_utc" => gmdate(DATE_ATOM), "records" => $records];
         });
     }
 
-    private function state(): array
+    private function state(string $viewerEmail = ""): array
     {
         if ($this->driver() === "database") {
-            return $this->readDatabase();
+            return $this->viewerState($this->readDatabase(), $viewerEmail);
         }
 
         $path = $this->path();
@@ -276,7 +371,7 @@ final class DeveloperNotificationCenter
             }
         }
 
-        return array_filter($state, static fn (array $record, string $key): bool => $key !== "", ARRAY_FILTER_USE_BOTH);
+        return $this->viewerState(array_filter($state, static fn (array $record, string $key): bool => $key !== "", ARRAY_FILTER_USE_BOTH), $viewerEmail);
     }
 
     private function readDatabase(): array
@@ -297,18 +392,57 @@ final class DeveloperNotificationCenter
         return $state;
     }
 
+    private function viewerState(array $records, string $viewerEmail): array
+    {
+        $viewerPrefix = $this->viewerKey($viewerEmail) . ":";
+        $state = [];
+
+        foreach ($records as $storageKey => $record) {
+            if (!is_array($record)) {
+                continue;
+            }
+
+            $storageKey = $this->cleanKey((string) $storageKey);
+            $record = $this->normaliseRecord($record);
+            $notificationKey = $record["key"];
+
+            if ($notificationKey === "" && str_contains($storageKey, ":")) {
+                $notificationKey = $this->cleanKey(substr($storageKey, strpos($storageKey, ":") + 1));
+            } elseif ($notificationKey === "") {
+                $notificationKey = $storageKey;
+            }
+
+            if ($notificationKey === "") {
+                continue;
+            }
+
+            if (str_starts_with($storageKey, $viewerPrefix)) {
+                $record["key"] = $notificationKey;
+                $state[$notificationKey] = $record;
+                continue;
+            }
+
+            if (!str_contains($storageKey, ":") && !isset($state[$notificationKey])) {
+                $record["key"] = $notificationKey;
+                $state[$notificationKey] = $record;
+            }
+        }
+
+        return $state;
+    }
+
     private function writeDatabase(array $state): void
     {
         $this->ensureDatabaseTable();
 
-        foreach ($state as $key => $record) {
+        foreach ($state as $storageKey => $record) {
             $record = $this->normaliseRecord((array) $record);
             db()->statement(
                 "UPDATE " . $this->quoteIdentifier($this->table()) . " SET severity = :severity, title = :title, payload = :payload, acknowledged_at = :acknowledged_at, archived_at = :archived_at, updated_by = :updated_by WHERE notification_key = :notification_key",
                 [
-                    "notification_key" => $key,
+                    "notification_key" => $storageKey,
                     "severity" => "state",
-                    "title" => $key,
+                    "title" => (string) ($record["key"] ?? $storageKey),
                     "payload" => json_encode($record, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
                     "acknowledged_at" => $record["acknowledged_at"] !== "" ? $record["acknowledged_at"] : null,
                     "archived_at" => $record["archived_at"] !== "" ? $record["archived_at"] : null,
@@ -346,6 +480,8 @@ final class DeveloperNotificationCenter
     {
         return [
             "key" => $this->cleanKey((string) ($record["key"] ?? "")),
+            "viewer" => $this->cleanKey((string) ($record["viewer"] ?? "")),
+            "viewer_email" => $this->clean((string) ($record["viewer_email"] ?? ""), 160),
             "acknowledged_at" => $this->clean((string) ($record["acknowledged_at"] ?? ""), 80),
             "acknowledged_by" => $this->clean((string) ($record["acknowledged_by"] ?? ""), 160),
             "archived_at" => $this->clean((string) ($record["archived_at"] ?? ""), 80),
@@ -362,6 +498,18 @@ final class DeveloperNotificationCenter
         $key = (string) preg_replace('/[^a-z0-9_.:-]+/', "-", $key);
 
         return substr(trim($key, "-"), 0, 160);
+    }
+
+    private function storageKey(string $key, string $viewerEmail): string
+    {
+        return $this->viewerKey($viewerEmail) . ":" . $this->cleanKey($key);
+    }
+
+    private function viewerKey(string $viewerEmail): string
+    {
+        $viewerEmail = strtolower(trim($viewerEmail));
+
+        return $viewerEmail !== "" ? "developer-" . substr(hash("sha256", $viewerEmail), 0, 24) : "anonymous";
     }
 
     private function clean(string $value, int $maxLength): string

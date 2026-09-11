@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Fnlla\Php\Support\DeveloperPanelLabels;
+
 $developerPanelTitle = "Operations";
-$developerPanelLead = "Privacy-light analytics, probes, submissions, audit events, integrations and release readiness.";
+$developerPanelLead = "Operational priorities for access, review decisions, release readiness, observability and project-owned adapters.";
 $report = is_array($operationsReport ?? null) ? $operationsReport : [];
 $analytics = (array) ($report["analytics"] ?? []);
 $performance = (array) ($report["performance"] ?? []);
@@ -13,40 +15,113 @@ $release = (array) ($report["release_readiness"] ?? []);
 $integrations = (array) ($report["integrations"] ?? []);
 $heatmaps = (array) ($report["heatmaps"] ?? []);
 $privacy = (array) ($report["privacy"] ?? []);
+$currentCapabilities = is_array($developerAccess["current_capabilities"] ?? null) ? (array) $developerAccess["current_capabilities"] : [];
+$analyticsConsentEvent = (string) ($analytics["consent"]["analytics_event"] ?? "fnlla:analytics-consent-granted");
 $formatBool = static fn (bool $value): string => $value ? "Yes" : "No";
 $formatMetric = static fn (mixed $value, string $suffix = ""): string => is_numeric($value) ? rtrim(rtrim((string) round((float) $value, 2), "0"), ".") . $suffix : "n/a";
 $renderMiniList = static function (array $items, string $empty): void { ?>
               <?php if ($items === []): ?>
               <p class="content-text mb-0"><?= h($empty) ?></p>
               <?php else: ?>
-              <ul class="developer-dashboard-check-list">
+              <ul class="developer-dashboard-check-list is-metric-list">
                 <?php foreach ($items as $item): ?>
-                <li><span><?= h((string) ($item["count"] ?? "0")) ?></span><?= h((string) ($item["label"] ?? "")) ?></li>
+                <li><span class="developer-dashboard-check-count"><?= h((string) ($item["count"] ?? "0")) ?></span><span class="developer-dashboard-check-label"><?= h((string) ($item["label"] ?? "")) ?></span></li>
                 <?php endforeach; ?>
               </ul>
               <?php endif; ?>
 <?php };
+$reviewQueue = is_array($developerReviewQueue ?? null) ? (array) $developerReviewQueue : [];
+$reviewItems = array_values((array) ($reviewQueue["items"] ?? []));
+$reviewTotal = max(0, (int) ($reviewQueue["total_count"] ?? count($reviewItems)));
+$reviewCritical = max(0, (int) ($reviewQueue["critical_count"] ?? 0));
+$reviewWarnings = max(0, (int) ($reviewQueue["warning_count"] ?? 0));
+$releaseStatus = ((bool) ($release["acceptance"]["ok"] ?? true) && (bool) ($release["backup_restore"]["ok"] ?? true)) ? "OK" : "Check";
+$observabilityStatus = ((bool) ($analytics["enabled"] ?? false) || strtolower((string) ($heatmaps["status"] ?? "off")) !== "off") ? "ON" : "Review";
+$operationLanes = [
+    ["priority" => "P0", "title" => "Access & security", "text" => "Developer accounts, roles, TOTP, customer review access.", "href" => (string) ($developerLinks["access"] ?? route("developer.panel.access")), "status" => $reviewCritical > 0 ? "Critical" : "Review"],
+    ["priority" => "P0", "title" => "Review queue", "text" => "Global decisions from setup, security and release checks.", "href" => (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications")), "status" => (string) $reviewTotal],
+    ["priority" => "P1", "title" => "Release & readiness", "text" => "Release gate, runtime health, backup evidence and framework updates.", "href" => (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness")), "status" => $releaseStatus],
+    ["priority" => "P2", "title" => "Observability", "text" => "Project logs, runtime errors, public-only analytics and behavior heatmap.", "href" => (string) ($developerLinks["operations"] ?? route("developer.panel.operations")) . "#developer-operations-observability", "status" => $observabilityStatus],
+    ["priority" => "P3", "title" => "Adapters & AI", "text" => "Consent-aware outbound adapters, generic API hooks and optional AI providers.", "href" => (string) ($developerLinks["integrations"] ?? route("developer.panel.integrations")), "status" => (string) count($integrations)],
+];
+$operationLanes = array_values(array_filter($operationLanes, static function (array $lane) use ($currentCapabilities): bool {
+    $capability = (string) ($lane["capability"] ?? "");
+
+    return $capability === "" || in_array($capability, $currentCapabilities, true);
+}));
 
 require __DIR__ . "/panel-header.php";
 ?>
 
-        <section class="developer-dashboard-section" aria-label="Privacy-light analytics">
+        <section class="developer-dashboard-section" aria-label="Operations overview">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Operations overview</p>
-              <h2 class="developer-dashboard-section-title">Daily operating view for traffic, probes, submissions, audit events and release posture.</h2>
-              <p class="content-text mb-0">Use this as a quick triage summary, then open the specialized analytics, readiness or integrations view when a setting needs changing.</p>
+              <h2 class="developer-dashboard-section-title">Daily operating view for access, decisions, releases and runtime signals.</h2>
+              <p class="content-text mb-0">Use this as the first Operations stop: clear security and review decisions, then inspect release posture, observability and outbound adapters.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Analytics</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_logs"] ?? route("developer.panel.project_logs"))) ?>">Project logs</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Readiness</a>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))) ?>">Integrations</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Access & security</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Review queue</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Release & readiness</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["operations"] ?? route("developer.panel.operations")) . "#developer-operations-observability") ?>">Observability</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))) ?>">Adapters & AI</a>
             </div>
           </div>
+        </section>
+
+        <section class="developer-dashboard-section" aria-label="Operations priority map">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Privacy-light analytics</h2>
-            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Open analytics</a>
+            <h2 class="developer-dashboard-section-title">Operations priority map</h2>
+            <span class="developer-dashboard-refresh">P0 first, telemetry after risk</span>
+          </div>
+          <div class="developer-operations-priority-grid">
+            <?php foreach ($operationLanes as $lane): ?>
+            <a class="developer-operations-lane" href="<?= h((string) $lane["href"]) ?>">
+              <span><?= h((string) $lane["priority"]) ?></span>
+              <strong><?= h((string) $lane["title"]) ?></strong>
+              <p><?= h((string) $lane["text"]) ?></p>
+              <em><?= h((string) $lane["status"]) ?></em>
+            </a>
+            <?php endforeach; ?>
+          </div>
+        </section>
+
+        <section class="developer-dashboard-section" aria-label="Operations review queue">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Review queue</h2>
+            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open full queue</a>
+          </div>
+          <div class="developer-review-queue-list developer-review-queue-list-compact">
+            <?php foreach (array_slice($reviewItems, 0, 4) as $item): ?>
+            <?php $severity = strtolower((string) ($item["severity"] ?? "info")); ?>
+            <article class="developer-review-queue-row is-<?= h($severity) ?>">
+              <span class="developer-review-queue-marker" aria-hidden="true"></span>
+              <div>
+                <small><?= h((string) ($item["source"] ?? "Developer Panel")) ?> / <?= h(strtoupper($severity)) ?> / Owner: <?= h((string) ($item["owner"] ?? "Lead developer")) ?></small>
+                <strong><?= h((string) ($item["title"] ?? "Review item")) ?></strong>
+                <p><?= h((string) ($item["text"] ?? "Review this item before continuing.")) ?></p>
+              </div>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($item["href"] ?? ($developerLinks["notifications"] ?? route("developer.panel.notifications")))) ?>"><?= h((string) (($item["action"] ?? "") !== "" ? $item["action"] : "Review")) ?></a>
+            </article>
+            <?php endforeach; ?>
+            <?php if ($reviewItems === []): ?>
+            <article class="developer-review-queue-row is-success">
+              <span class="developer-review-queue-marker" aria-hidden="true"></span>
+              <div>
+                <small>Developer Panel / CLEAR</small>
+                <strong>No review items</strong>
+                <p>Operations has no unresolved decisions from setup, access or release checks.</p>
+              </div>
+            </article>
+            <?php endif; ?>
+          </div>
+        </section>
+
+        <section class="developer-dashboard-section" id="developer-operations-observability" aria-label="Observability">
+          <div class="developer-dashboard-section-head">
+            <h2 class="developer-dashboard-section-title">Observability</h2>
+            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Open traffic analytics</a>
           </div>
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
@@ -78,15 +153,16 @@ require __DIR__ . "/panel-header.php";
                 <strong>Consent</strong>
                 <span class="developer-dashboard-ok">READY</span>
               </div>
-              <p><?= h((string) (($analytics["consent"]["frontend_storage_key"] ?? "") ?: "fnlla_cookie_consent_v1")) ?></p>
-              <p>Analytics event: <code><?= h((string) ($analytics["consent"]["analytics_event"] ?? "fnlla:analytics-consent-granted")) ?></code></p>
+              <p>Consent storage is configured for first-party measurements.</p>
+              <p>Consent signal: <?= h(DeveloperPanelLabels::event($analyticsConsentEvent)) ?></p>
             </article>
           </div>
           <div class="developer-dashboard-management-list">
             <article class="developer-dashboard-management-row">
               <div>
                 <strong>Privacy posture</strong>
-                <p>Raw IP: <?= h($formatBool((bool) ($privacy["raw_ip_addresses"] ?? false))) ?>. Raw user agents: <?= h($formatBool((bool) ($privacy["raw_user_agents"] ?? false))) ?>. Referrers: <?= h((string) ($privacy["referrers"] ?? "host-only")) ?>.</p>
+                <p>Raw IP: <?= h($formatBool((bool) ($privacy["raw_ip_addresses"] ?? false))) ?>. Raw user agents: <?= h($formatBool((bool) ($privacy["raw_user_agents"] ?? false))) ?>. Referrers: <?= h((string) ($privacy["referrers"] ?? "host-only")) ?>. Queries: <?= ($privacy["query_strings_tracked"] ?? false) ? "tracked" : "excluded" ?>.</p>
+                <p>Retention: <?= h((string) ($privacy["retention_days"] ?? 90)) ?> days. Excluded paths: <?= h(implode(", ", (array) ($privacy["excluded_paths"] ?? []))) ?>.</p>
               </div>
               <span class="developer-dashboard-status is-active"><?= h((string) ($privacy["mode"] ?? "privacy-light")) ?></span>
             </article>
@@ -160,10 +236,10 @@ require __DIR__ . "/panel-header.php";
           <?php endif; ?>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="Release readiness">
+        <section class="developer-dashboard-section" aria-label="Readiness and health">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Release readiness</h2>
-            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Open readiness</a>
+            <h2 class="developer-dashboard-section-title">Readiness & health</h2>
+            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Open readiness & health</a>
           </div>
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
@@ -206,14 +282,14 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Consent-aware integrations">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Consent-aware integrations</h2>
+            <h2 class="developer-dashboard-section-title">Adapter registry</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))) ?>">Open integrations</a>
           </div>
           <div class="developer-dashboard-glance-table">
             <?php foreach ($integrations as $integration): ?>
             <div class="developer-dashboard-glance-row">
               <strong><?= h((string) ($integration["name"] ?? "Integration")) ?></strong>
-              <span><?= h((string) ($integration["status"] ?? "disabled")) ?> · <?= h((string) ($integration["consent_event"] ?? "manual")) ?></span>
+              <span><?= h((string) ($integration["status"] ?? "disabled")) ?> · <?= h((string) ($integration["adapter"] ?? "optional adapter")) ?> · <?= h((string) ($integration["consent_event"] ?? "manual")) ?></span>
             </div>
             <?php endforeach; ?>
           </div>

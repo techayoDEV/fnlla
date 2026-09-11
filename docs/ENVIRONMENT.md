@@ -273,7 +273,7 @@ is separate from the shared Kanban workspace and Customer Portal.
 ## Customer Portal Access
 
 Customer access is intentionally separate from Developer Panel access. A lead
-developer can create a customer account in **Access & Security**, copy the
+developer can create a customer account in **Access & security**, copy the
 first-login link or send it through the configured mail driver. The customer
 sets their own password from that invitation and then signs in through the
 private customer URL.
@@ -315,6 +315,9 @@ OBSERVABILITY_ANALYTICS_SAMPLE_RATE=100
 OBSERVABILITY_ANALYTICS_BOT_FILTERING=true
 OBSERVABILITY_ANALYTICS_DEVICE_DETECTION=true
 OBSERVABILITY_ANALYTICS_TRACK_QUERY_STRINGS=false
+OBSERVABILITY_REGULATED_MAX_RETENTION_DAYS=30
+OBSERVABILITY_REGULATED_EXCLUDED_PATHS=/developer,/maintenance,/client,/api
+OBSERVABILITY_REGULATED_HEATMAP_ENABLED=false
 OBSERVABILITY_SLOW_ROUTE_THRESHOLD_MS=750
 DEBUG_TOOLBAR=false
 DEBUG_REQUEST_HISTORY=false
@@ -326,9 +329,10 @@ The observability analytics values can be changed from
 FNLLA writes only these explicit environment keys and records the change in the
 developer audit log.
 
-Operations / Error Monitor exposes `/developer/panel/debug/live` for the signed-in
-developer panel and public-page debug toolbar. It returns local aggregate
-diagnostics, bounded request-history entries and runtime issue counts. Runtime
+Operations / Observability links to Error Monitor, which exposes
+`/developer/panel/debug/live` for the signed-in developer panel and public-page
+debug toolbar. It returns local aggregate diagnostics, bounded request-history
+entries and runtime issue counts. Runtime
 issue tracking stores deduplicated 500-level issue fingerprints in
 `storage/framework/developer/runtime-issues.json`; it does not store exception
 messages, traces, headers, cookies, bodies, SQL text or bindings. A developer
@@ -346,7 +350,12 @@ trusted-host readiness in the setup checklist.
 Developer service control is a stronger lock than client preview:
 
 ```dotenv
+FNLLA_POLICY_PROFILE=standard
+FNLLA_REGULATED_MODE=false
 DEVELOPER_CONTROL_DISABLED_CONTACT=developer@example.com
+DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
+DEVELOPER_CONTROL_SUSPENDED_TITLE=Services suspended
+DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
 DEVELOPER_CONTROL_REMOTE_ENABLED=false
 DEVELOPER_CONTROL_REMOTE_ENDPOINT=
 DEVELOPER_CONTROL_REMOTE_TOKEN=
@@ -355,17 +364,40 @@ DEVELOPER_CONTROL_REMOTE_TENANT=techayo
 DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=
 ```
 
-When enabled locally, public routes return a service-disabled screen and API
-requests return `503` JSON. Developer routes stay reachable so the team can
-recover the site.
+When enabled locally, public routes and the customer portal return a
+service-disabled screen and API requests return `503` JSON. Developer routes
+stay reachable so the team can recover the site.
+
+`FNLLA_POLICY_PROFILE=regulated` or `FNLLA_REGULATED_MODE=true` switches the
+Developer Panel into a stricter operating profile. It keeps telemetry
+consent-only, caps analytics retention, disables query-string tracking and
+requires extra framework-apply evidence in production-like workflows.
+
+Browser-based framework apply remains disabled in regulated or production mode
+until the project sets all required evidence flags:
+
+```dotenv
+FRAMEWORK_UPDATE_APPLY_BACKUP_CONFIRMED=false
+FRAMEWORK_UPDATE_APPLY_SIGNED_ARTIFACT_CONFIRMED=false
+FRAMEWORK_UPDATE_APPLY_MAINTENANCE_WINDOW_CONFIRMED=false
+FRAMEWORK_UPDATE_APPLY_CI_APPROVAL_CONFIRMED=false
+```
 
 The remote control keys describe an optional external operations contract.
-FNLLA does not include an external operator's business logic or private data. A remote control
-endpoint must be HTTPS, token protected and host-allowlisted before
-`security:audit --strict` accepts it. When enabled, FNLLA sends the project id,
-tenant, schema, timestamp, bearer token and optional HMAC signature headers,
-then consumes only the `fnlla.techayo_remote_control_state.v1` disable/open
-state.
+FNLLA does not include an external operator's business logic or private data. A
+remote control endpoint must be HTTPS, token protected and host-allowlisted
+before `security:audit --strict` accepts it. When enabled, FNLLA sends the
+project id, tenant, schema, timestamp, bearer token and optional HMAC signature
+headers, then consumes only the `fnlla.techayo_remote_control_state.v2`
+`open`, `disabled` or `suspended` state. The `suspended` status is intended for
+external provider or billing decisions, shows the configured service-provider
+message and does not grant server access or application admin privileges to the
+remote operator.
+
+Developer Panel changes are project-global and are written to the shared
+activity log. Review queue read, archive and restore state is keyed per signed-in
+developer, so one developer can clear their own queue without hiding the same
+global change notification from other developers.
 
 ## Runtime AI
 

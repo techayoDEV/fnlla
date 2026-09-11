@@ -28,9 +28,9 @@ $renderMiniList = static function (array $items, string $empty): void { ?>
               <?php if ($items === []): ?>
               <p class="content-text mb-0"><?= h($empty) ?></p>
               <?php else: ?>
-              <ul class="developer-dashboard-check-list">
+              <ul class="developer-dashboard-check-list is-metric-list">
                 <?php foreach ($items as $item): ?>
-                <li><span><?= h((string) ($item["count"] ?? "0")) ?></span><?= h((string) ($item["label"] ?? "")) ?></li>
+                <li><span class="developer-dashboard-check-count"><?= h((string) ($item["count"] ?? "0")) ?></span><span class="developer-dashboard-check-label"><?= h((string) ($item["label"] ?? "")) ?></span></li>
                 <?php endforeach; ?>
               </ul>
               <?php endif; ?>
@@ -41,7 +41,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
 <section class="developer-dashboard-section developer-debug-live" aria-labelledby="debug-title" data-debug-live data-debug-live-url="<?= h(route("developer.panel.debug.live")) ?>">
   <div class="developer-panel-intro">
     <div class="developer-panel-intro-copy">
-      <p class="feature-kicker">Operations / Error monitor</p>
+      <p class="feature-kicker">Operations / Observability / Error monitor</p>
       <h2 id="debug-title" class="developer-dashboard-section-title">FNLLA Error Monitor for local runtime issue triage.</h2>
       <p class="content-text mb-0">Error fingerprints, request timing and recent log entries stay local and bounded. Issue candidates are promoted to technical debt only after developer review.</p>
     </div>
@@ -171,7 +171,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
 </section>
 
 <section class="developer-dashboard-section" aria-label="Debug aggregates">
-  <div class="developer-dashboard-overview-grid">
+  <div class="developer-dashboard-overview-grid developer-debug-aggregate-grid">
     <article class="developer-dashboard-card">
       <p class="feature-kicker">Status counts</p>
       <?php $renderMiniList((array) ($metrics["status_counts"] ?? []), "No status counts have been recorded yet."); ?>

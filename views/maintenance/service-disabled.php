@@ -7,7 +7,15 @@ $developerControl ??= [
     "message" => "This service is temporarily disabled by the developer team. Please contact the project developer for assistance.",
     "contact" => "",
     "source" => "local",
+    "local_disabled" => true,
+    "remote_disabled" => false,
+    "status" => "disabled",
+    "reason" => "",
+    "provider" => "",
 ];
+$serviceStatus = (string) ($developerControl["status"] ?? "disabled");
+$serviceReason = (string) ($developerControl["reason"] ?? "");
+$serviceProvider = (string) ($developerControl["provider"] ?? "");
 ?>
 <section class="section client-preview-stage service-disabled-stage">
   <div class="container client-preview-shell">
@@ -18,8 +26,12 @@ $developerControl ??= [
           <div class="client-preview-header-copy">
             <h1 class="content-title client-preview-title"><?= h((string) ($developerControl["title"] ?? "Service disabled by developer")) ?></h1>
             <p class="client-preview-meta">
-              <span class="client-preview-meta-label">Source:</span>
-              <span class="client-preview-meta-value"><?= h((string) ($developerControl["source"] ?? "local")) ?></span>
+              <span class="client-preview-meta-label">Status:</span>
+              <span class="client-preview-meta-value"><?= h($serviceStatus) ?></span>
+              <?php if ($serviceReason !== ""): ?>
+              <span class="client-preview-meta-label">Reason:</span>
+              <span class="client-preview-meta-value"><?= h($serviceReason) ?></span>
+              <?php endif; ?>
             </p>
           </div>
         </header>
@@ -31,7 +43,7 @@ $developerControl ??= [
         <div class="client-preview-support-row">
           <span class="client-preview-support-icon" aria-hidden="true">@</span>
           <div class="client-preview-support-copy">
-            <strong>Contact the developer team</strong>
+            <strong><?= h($serviceProvider !== "" ? "Contact " . $serviceProvider : "Contact the service provider") ?></strong>
             <p class="client-preview-note-text"><?= h((string) $developerControl["contact"]) ?></p>
           </div>
         </div>

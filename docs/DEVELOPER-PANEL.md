@@ -35,7 +35,8 @@ deletes module code or data.
 
 ### Error Monitor And Debug Tools
 
-Operations / Error Monitor can independently enable the toolbar and request history.
+Operations / Observability links to Error Monitor, where developers can
+independently enable the toolbar and request history.
 Both require `APP_DEBUG=true`, a local/development/testing environment and an
 unlocked developer with `operations.view`. Configuration and clearing also require
 `panel.settings.write`, POST and CSRF. Guests and production requests do not get
@@ -119,8 +120,9 @@ FNLLA_MODULE_CUSTOMER_PORTAL=false
 ```
 
 Disabled endpoints return 404 before their controllers execute, including cached
-routes; corresponding main navigation entries disappear. Analytics and heatmap
-switches stop their collectors without disabling technical request metrics.
+routes; corresponding launcher and command entries disappear where the disabled
+module is the only destination. Analytics and heatmap switches stop their
+collectors without disabling technical request metrics.
 Customer subpages also require the corresponding workspace/analytics/heatmap module.
 Existing full projects default to enabled for compatibility. Rebuild cached
 configuration with `php fnlla config:cache` after editing `.env` if caching is used.
@@ -273,18 +275,21 @@ Do not commit these to the public FNLLA repository:
 Developer roles are technical roles. They are not business roles for the final
 product.
 
-- `owner_developer` and `admin` can perform all Developer Panel actions.
+- `owner_developer` can perform all Developer Panel actions.
 - `lead_developer` can manage identity, preview, service control, accounts,
-  workspace, operations, audit export and framework updates.
+  workspace, operations, audit export, decision approval and framework update
+  apply.
 - `operations_engineer` can manage preview, service control, operations, audit
-  export, workspace and framework updates.
-- `security_reviewer` can inspect operations, policy and export audit logs.
-- `application_developer`, `developer` and `support_developer` can use the
-  workspace and update their own profile.
-- `operator` can manage preview/service-control operations without account
-  ownership.
-- `client` can only open the panel, view the boundary and maintain its own
-  developer profile if granted a developer account.
+  export, workspace and framework update checks/dry-runs, but not apply.
+- `security_reviewer` can inspect operations, policy, review decisions and
+  export audit logs.
+- `application_developer` and `support_developer` can use their assigned
+  workspace/profile capabilities without account ownership or framework apply.
+
+Legacy `admin`, `developer`, `operator` and `client` values remain readable for
+older installations, but new account forms expose only the current technical
+roles. Treat customer reviewers as Customer Portal users, not Developer Panel
+roles.
 
 Projects may replace these roles in their own application layer. FNLLA's roles
 only protect the technical control surface.
@@ -317,21 +322,29 @@ Customer Portal and are not part of the public project contract.
 
 ## Navigation Model
 
-The Developer Panel navigation is grouped by intent:
+The Developer Panel navigation is grouped by intent while keeping detailed
+screens available through cards, direct links and the command launcher:
 
 - `Dashboard` is the first standalone sidebar destination.
-- `Workspace` contains Project Kanban for shared delivery tasks and My to-do
-  for private developer notes.
-- `Project setup` contains the setup checklist, project identity, runtime
-  environment, preview access, service control and leadership visibility.
-- `Operations` contains release readiness, framework updates, project logs,
-  analytics, heatmap and integrations.
-- `Security` contains named developer accounts, roles, TOTP, runtime and
-  storage settings, plus customer portal invitations.
-- `Reference` contains Documentation & policy.
+- `Workspace` contains Project identity and the Project work disclosure group.
+  Project work expands or collapses the shared task board, timeline/Gantt,
+  Technical debt and Project changelog submenu instead of navigating away.
+- `Operations` contains Access & security, Review queue, Release & readiness,
+  Observability and Adapters & AI. Release & readiness and Observability are
+  disclosure groups: they expand or collapse their operational submenus without
+  navigating. Release & readiness contains Readiness & health and Framework
+  updates when the developer can run update checks. Observability contains
+  Project logs, Error Monitor, Traffic analytics and Behavior heatmap when the
+  corresponding modules are enabled.
+- `Reference` contains Documentation & policy when the developer role has the
+  policy view capability.
 
-Operations Hub is intentionally not a primary sidebar destination when the more
-specific tools already expose the actionable information directly.
+The sidebar is intentionally compact. Detailed tools remain routed and
+permission-checked; the command launcher is the full index for jumping directly
+to a specific operational screen.
+The developer dropdown contains Developer profile and Panel settings for
+account-adjacent or configuration-heavy destinations that do not need to
+compete with the main sidebar workflow.
 
 ## Customer Portal
 
@@ -398,6 +411,12 @@ conversion goals, HTTP status counts, slow routes, response-time averages and
 backend consent rate from local aggregate metrics. It does not store raw IP
 addresses, raw user agents or browser fingerprints.
 
+Analytics and heatmap page lists are built from public `GET` routes plus the
+aggregate metrics already recorded for those routes. Developer Panel,
+maintenance, customer/client, API and internal FNLLA paths are excluded from the
+reports. A newly added public route therefore appears in page selectors and
+coverage summaries automatically, even before it has non-zero local metrics.
+
 The public cookie banner posts aggregate consent decisions to
 `POST /fnlla/consent`. The endpoint records only the consent state
 (`accepted_all`, `analytics_only`, `marketing_only`, `rejected_optional`),
@@ -417,20 +436,39 @@ The panel can update the local analytics posture through explicit `.env` keys:
 - `OBSERVABILITY_HEATMAP_SAMPLE_RATE`;
 - `OBSERVABILITY_HEATMAP_GRID_COLUMNS`;
 - `OBSERVABILITY_HEATMAP_GRID_ROWS`;
+- `OBSERVABILITY_REGULATED_MAX_RETENTION_DAYS`;
+- `OBSERVABILITY_REGULATED_EXCLUDED_PATHS`;
+- `OBSERVABILITY_REGULATED_HEATMAP_ENABLED`;
 - `OBSERVABILITY_SLOW_ROUTE_THRESHOLD_MS`.
 
 The default mode is internal-only. FNLLA does not need a third-party analytics
-or session-replay script to provide Developer Panel traffic and behavior
-cockpits.
+or session-replay script to provide public-page traffic and behavior cockpits.
 
-## Notification Workflow
+Set `FNLLA_POLICY_PROFILE=regulated` or `FNLLA_REGULATED_MODE=true` for projects
+that need stricter telemetry defaults. In that mode query strings stay excluded,
+retention is capped by `OBSERVABILITY_REGULATED_MAX_RETENTION_DAYS`, protected
+paths are listed through `OBSERVABILITY_REGULATED_EXCLUDED_PATHS` and heatmap
+views require the explicit `OBSERVABILITY_REGULATED_HEATMAP_ENABLED=true`
+opt-in.
 
-`/developer/panel/notifications` is an actionable release and operations queue,
-not a static message wall. Each item records source, severity, generated time,
-state and the notification key. `Review` marks the item as read before opening
-the relevant source screen, `Mark read` acknowledges it in place, `Archive`
-hides it from active work and `Restore` brings an archived item back into the
-active queue.
+Framework update checks and dry-runs require `framework.update`. Browser apply
+requires `framework.update.apply`, and in production or regulated mode it also
+requires explicit backup, signed/reviewed artifact, maintenance-window and
+CI/CD-approval evidence flags before the apply button can run.
+
+## Review Queue
+
+`/developer/panel/notifications` is the global Review queue, not a static
+message wall. It combines actionable notifications with setup, access and
+release decisions from the current panel state. Queue items use
+`fnlla.developer_review_queue.v2` and record owner, severity, source, due date,
+expiration, reason, evidence link, decision status and audit trail. `Review`
+marks notification-derived items as read before opening the relevant source
+screen, `Mark read` acknowledges them in place, `Archive` hides them from active
+work and `Restore` brings archived notifications back into the active queue.
+Project decisions and activity events are shared by every developer on the
+project, but queue read/archive state is per signed-in developer so one person's
+triage does not hide a global change from the rest of the team.
 
 ## Project Logs
 
@@ -440,6 +478,11 @@ Developer Panel activity log as the JSON and CSV audit exports, but presents
 events as a daily timeline with actor, category, timestamp, request metadata and
 short change descriptions.
 
+`/developer/panel/changelog` is the project-specific changelog view in the
+Workspace section. It uses the same shared activity source, but presents local
+project changes for developer handoff and team awareness. It is not the FNLLA
+framework release changelog.
+
 Use this view when reviewing what changed before a client preview, handover,
 framework update or release. Use the JSON and CSV exports when the same history
 must be archived, attached to a change request or reviewed outside the panel.
@@ -447,12 +490,14 @@ must be archived, attached to a change request or reviewed outside the panel.
 ## Integrations
 
 FNLLA Analytics, FNLLA Heatmap and FNLLA Error Monitor are the first-party
-observability source of truth for the Developer Panel. FNLLA may also expose
-project-owned adapter hooks for FIONN AI, generic API callbacks and TechAyo
-Remote Control. Outbound adapters must stay disabled by default. When enabled,
-generic browser API hooks run from the public layout only after analytics
-consent. Production CSP must explicitly allow the required endpoint hosts before
-browser hooks can send data.
+observability source of truth for the Developer Panel. Optional outbound work is
+described through the adapter registry: AI provider contract, API hook contract
+and remote-control contract. FIONN AI, OpenAI API, Anthropic API and TechAyo
+remote control remain optional adapters, not default FNLLA runtime dependencies.
+Outbound adapters must stay disabled by default. When enabled, generic browser
+API hooks run from the public layout only after analytics consent. Production
+CSP must explicitly allow the required endpoint hosts before browser hooks can
+send data.
 
 Rules:
 
@@ -465,8 +510,10 @@ Rules:
 ### Remote Control Adapter
 
 FNLLA exposes an optional remote-control contract, not an embedded external
-back office. The existing fnlla.techayo_remote_control_state.v1 identifier is
-retained for API compatibility. A project can opt in by setting:
+back office. It lets an external provider such as TechAyo publish a narrow
+runtime state for the project, including a provider suspension when a service is
+not active or paid, without exposing the server or private application admin
+features. A project can opt in by setting:
 
 ```env
 DEVELOPER_CONTROL_REMOTE_ENABLED=true
@@ -475,6 +522,9 @@ DEVELOPER_CONTROL_REMOTE_PROJECT_ID=<project-id>
 DEVELOPER_CONTROL_REMOTE_TENANT=example-tenant
 DEVELOPER_CONTROL_REMOTE_TOKEN=<project-token>
 DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=<optional-hmac-secret>
+DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
+DEVELOPER_CONTROL_SUSPENDED_TITLE=Services suspended
+DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
 ```
 
 When enabled, FNLLA polls the configured HTTPS endpoint and sends only technical
@@ -487,19 +537,30 @@ control headers:
 - `X-FNLLA-Control-Timestamp`;
 - `X-FNLLA-Control-Signature` when a signature secret is configured.
 
-The expected response schema is `fnlla.techayo_remote_control_state.v1`:
+The expected response schema is `fnlla.techayo_remote_control_state.v2`:
 
 ```json
 {
-  "schema": "fnlla.techayo_remote_control_state.v1",
+  "schema": "fnlla.techayo_remote_control_state.v2",
+  "status": "open",
   "disabled": false,
-  "title": "Service temporarily disabled",
-  "message": "This service is temporarily disabled by the developer team.",
+  "reason": "",
+  "provider": "TechAyo Limited",
+  "title": "Services suspended",
+  "message": "Your services have been suspended. Please contact your service provider.",
   "contact": "support@example.com",
   "updated_at": "2026-08-29T12:00:00+00:00",
-  "updated_by": "authorized-operator"
+  "updated_by": "authorized-operator",
+  "command_id": "provider-command-id",
+  "expires_at": ""
 }
 ```
+
+Valid `status` values are `open`, `disabled` and `suspended`. `disabled` is a
+technical project lock, while `suspended` is reserved for service-provider
+decisions such as unpaid or inactive service. FNLLA still accepts the legacy
+`disabled` boolean for compatibility, but new adapters should publish `status`
+and `reason` explicitly.
 
 The external operations service is responsible for operator login, project
 authorization, central audit, billing/account policy and emergency decisions.
@@ -518,16 +579,18 @@ Each card can track:
 - type: Task, Bug, Security, Release, Content or Research;
 - priority, assignee email, due date, estimate and blocked state;
 - a short checklist using `[ ]` and `[x]` lines, plus per-subtask colour,
-  toggle, edit and delete actions;
+  note/comment, toggle, edit and delete actions;
 - comments and linked attachments;
 - drag-and-drop column moves and explicit position values for ordering;
 - creator/updater metadata for the shared developer workspace.
 
 `/developer/panel/notifications` stores read, archive and restore state for
-current operational alerts. The state is global for the project, so one
-developer's acknowledgement is visible to other developer sessions. For
-long-lived accountability, the matching action is also written to the Developer
-Panel activity log.
+current operational alerts. The header bell, dashboard and Operations view
+expose the same global Review queue, while checklist-derived items link
+directly to the relevant source screen. Project events and configuration changes
+are global, so every developer receives the same important activity signals, but
+read/archive state is stored per developer. For long-lived accountability, the
+matching action is also written to the Developer Panel activity log.
 
 `/developer/panel/my-todo` is a separate private developer list for notes and
 personal follow-up. It is keyed to the signed-in developer and intentionally does
@@ -540,9 +603,16 @@ project management should build or connect that as application-layer software.
 ## Technical Debt And Future Proofing
 
 Framework debt is recorded and verified inside the Developer Panel and the
-release tooling. This is not a second architecture backlog or a historical
-implementation report. Use the [architecture guide](ARCHITECTURE-ROADMAP.md) for
-design boundaries, the [changelog](../CHANGELOG.md) for released changes and the
+release tooling. `/developer/panel/technical-debt` is a release triage screen:
+it summarizes active, overdue, critical/high, accepted and resolved items,
+highlights the next decision and keeps source-marker scanning next to the
+register. Accepted debt requires a written reason and an `accepted_until` expiry
+date. Items can also carry issue/PR, ADR and evidence references so release
+decisions link back to a durable source of truth.
+
+This is not a second architecture backlog or a historical implementation
+report. Use the [architecture guide](ARCHITECTURE-ROADMAP.md) for design
+boundaries, the [changelog](../CHANGELOG.md) for released changes and the
 [modernization status](MODERNIZATION-STATUS.md) for outstanding acceptance.
 
 Framework modernization criteria live in
@@ -617,7 +687,7 @@ documentation.
 | `release-documentation` | `pass` | Required release, AI, operations and developer-panel documents are present. |
 | `ai-product-runtime` | `pass` | Local reference lookup and the opt-in FIONN AI gateway contract are present. |
 | `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
-| `modernization-ledger` | `warn` | 7 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
+| `modernization-ledger` | `warn` | 5 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
 
 Generated actions:
 
@@ -657,11 +727,10 @@ codebase instead of scattered across notes and one-off scripts.
 
 The AI claim should stay precise. FNLLA includes a deterministic reference lookup
 (not a local AI model), redacted review packs, triage and provider-status commands.
-The built-in gateway connects to FIONN AI, Persistent Personal Intelligence by
-TechAyo, with an appropriate developer account and API access. Its memory and
-permissions remain separate. OpenAI API and Anthropic API are optional
-integrations. No provider is called by default; the gateway does not automatically
-index code, train models or write FIONN AI memory.
+The built-in gateway exposes a neutral provider contract; FIONN AI, OpenAI API
+and Anthropic API are optional adapters that require explicit configuration,
+credentials and policy approval. No provider is called by default; the gateway
+does not automatically index code, train models or write external AI memory.
 
 ## Functional Closure Criteria
 
@@ -790,16 +859,17 @@ technical workspace needs without becoming a business application:
 - named developer accounts with role capabilities;
 - TOTP for developer sign-in and an explicit passkey adapter contract;
 - global project identity, preview and service-control settings;
-- privacy-light analytics and consent-aware integration posture;
-- notification center for actionable operational warnings;
+- privacy-light or regulated analytics and consent-aware adapter posture;
+- global Review queue for actionable operational warnings, setup decisions,
+  owners, due dates and evidence links;
 - release-readiness gate for security, backup, cache, framework drift and
   acceptance posture;
 - self-checking technical-debt snapshot for release cleanup;
 - immutable audit entries with JSON and CSV export;
 - optional database-backed storage installed by `developer:install-storage`;
 - lightweight Kanban workspace for technical project delivery;
-- optional TechAyo Remote Control plugin contract with signed requests and a
-  documented response schema.
+- optional remote-control adapter contract with signed requests and a documented
+  response schema.
 
 Anything beyond that should be project-owned unless it is a generic framework
 contract. CRM, CMS, billing, bookings, customer support, document processing,

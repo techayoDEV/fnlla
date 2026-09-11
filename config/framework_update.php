@@ -42,6 +42,12 @@ return [
     "allow_local_sources" => false,
     "allow_repository_override" => false,
     "post_install_checks" => (bool) env("FRAMEWORK_UPDATE_POST_INSTALL_CHECKS", true),
+    "apply_policy" => [
+        "backup_confirmed" => (bool) env("FRAMEWORK_UPDATE_APPLY_BACKUP_CONFIRMED", false),
+        "signed_artifact_confirmed" => (bool) env("FRAMEWORK_UPDATE_APPLY_SIGNED_ARTIFACT_CONFIRMED", false),
+        "maintenance_window_confirmed" => (bool) env("FRAMEWORK_UPDATE_APPLY_MAINTENANCE_WINDOW_CONFIRMED", false),
+        "ci_approval_confirmed" => (bool) env("FRAMEWORK_UPDATE_APPLY_CI_APPROVAL_CONFIRMED", false),
+    ],
     "lock_file" => trim((string) env("FNLLA_FRAMEWORK_LOCK_FILE", ".fnlla/framework-lock.json")),
     "migration_lock_file" => trim((string) env("FNLLA_MIGRATION_LOCK_FILE", ".fnlla/legacy-framework-lock.json")),
 ];

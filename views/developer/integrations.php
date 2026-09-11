@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Fnlla\Php\Support\DeveloperPanelLabels;
+
 $developerPanelTitle = "Integrations";
 $developerPanelLead = "Project-owned API, AI and remote-control adapters. Analytics, heatmap and error monitoring stay first-party.";
 $report = is_array($operationsReport ?? null) ? (array) $operationsReport : [];
@@ -9,7 +11,7 @@ $integrations = (array) ($report["integrations"] ?? []);
 $remoteControl = null;
 
 foreach ($integrations as $integration) {
-    if (($integration["name"] ?? "") === "TechAyo Remote Control") {
+    if (($integration["key"] ?? "") === "remote_control_contract") {
         $remoteControl = (array) ($integration["contract"] ?? []);
         break;
     }
@@ -18,18 +20,26 @@ foreach ($integrations as $integration) {
 $remoteRuntimeContract = is_array($remoteControl["fnlla_runtime_contract"] ?? null)
     ? (array) $remoteControl["fnlla_runtime_contract"]
     : [];
+$remoteControlSchema = (string) ($remoteControl["schema"] ?? "fnlla.remote_control_plugin.v1");
+$remoteRuntimeSchema = (string) (($remoteRuntimeContract["response_schema"] ?? "") ?: "fnlla.techayo_remote_control_state.v2");
 $integrationConfig = (array) config("integrations", []);
 $remoteConfig = (array) config("developer_control.remote", []);
 $fionnConfig = (array) config("ai.runtime.fionn", []);
-$integrationDescriptions = [
-    "FIONN AI" => "Persistent Personal Intelligence by TechAyo. Built-in gateway; FIONN developer account and API access required.",
-    "Generic API hooks" => "Project-specific webhook adapter for outbound events such as consent updates or operational hooks.",
-    "TechAyo Remote Control" => "Central TechAyo control-plane contract for project status and operational toggles, not private product logic.",
+$runtimeProviderOptions = [
+    "local" => "Local reference (no AI model)",
+    "fionn" => "FIONN AI adapter / optional API account required",
+    "openai" => "OpenAI API / optional",
+    "anthropic" => "Anthropic API / optional",
 ];
-$integrationBoundaries = [
-    "FIONN AI" => "No remote model call is made unless an approved provider policy enables it.",
-    "Generic API hooks" => "No webhook request is made unless the endpoint is configured and the adapter is enabled.",
-    "TechAyo Remote Control" => "No central-control request is made unless the remote contract is enabled and configured.",
+$runtimeProviderDocs = [
+    "openai" => [
+        "label" => "OpenAI API",
+        "text" => "Optional external model provider for project-owned prompts, enabled only after policy and credential setup.",
+    ],
+    "anthropic" => [
+        "label" => "Anthropic API",
+        "text" => "Optional external model provider for project-owned prompts, enabled only after policy and credential setup.",
+    ],
 ];
 $defaultIntegrationFormValues = [
     "fnlla_integration_api_hooks_enabled" => (bool) ($integrationConfig["api_hooks"]["enabled"] ?? false) ? "1" : "0",
@@ -48,11 +58,6 @@ $renderIntegrationHiddenFields = static function (array $overrides = []) use ($d
               <input type="hidden" name="<?= h((string) $field) ?>" value="<?= h((string) $value) ?>">
 <?php }
 };
-$integrationControls = [
-    "FIONN AI" => ["enabled_field" => "ai_fionn_enabled", "enabled" => (bool) ($fionnConfig["enabled"] ?? false), "modal" => "developer-integration-fionn-settings"],
-    "Generic API hooks" => ["enabled_field" => "fnlla_integration_api_hooks_enabled", "enabled" => (bool) ($integrationConfig["api_hooks"]["enabled"] ?? false), "modal" => "developer-integration-api-hooks-settings"],
-    "TechAyo Remote Control" => ["enabled_field" => "developer_control_remote_enabled", "enabled" => (bool) ($remoteConfig["enabled"] ?? false), "modal" => "developer-integration-remote-control-settings"],
-];
 $firstPartyTools = [
     [
         "name" => "FNLLA Analytics",
@@ -86,7 +91,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
                 <strong><?= h((string) $tool["name"]) ?></strong>
-                <span class="developer-dashboard-ok"><?= h(strtoupper((string) $tool["status"])) ?></span>
+                <span class="developer-dashboard-ok"><?= h(DeveloperPanelLabels::status((string) $tool["status"])) ?></span>
               </div>
               <p><?= h((string) $tool["text"]) ?></p>
               <a class="btn btn-outline btn-sm" href="<?= h((string) $tool["href"]) ?>">Open</a>
@@ -94,8 +99,8 @@ require __DIR__ . "/panel-header.php";
             <?php endforeach; ?>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
-                <strong>Vendor tracking adapters</strong>
-                <span class="developer-dashboard-ok">REMOVED</span>
+                <strong>Third-party tracking scripts</strong>
+                <span class="developer-dashboard-ok">Not included</span>
               </div>
               <p>Analytics, behavior mapping and runtime issue triage now run through FNLLA-owned collectors and local storage.</p>
             </article>
@@ -109,61 +114,88 @@ require __DIR__ . "/panel-header.php";
           </div>
           <div class="developer-integrations-stack">
             <?php foreach ($integrations as $integration): ?>
-            <?php $name = (string) ($integration["name"] ?? "Integration"); ?>
-            <?php $control = (array) ($integrationControls[$name] ?? []); ?>
+            <?php
+                $name = (string) ($integration["name"] ?? "Integration");
+                $adapter = trim((string) ($integration["adapter"] ?? "Optional adapter"));
+                $control = [];
+                if (trim((string) ($integration["enabled_field"] ?? "")) !== "" && trim((string) ($integration["settings_modal"] ?? "")) !== "") {
+                    $control = [
+                        "enabled_field" => (string) $integration["enabled_field"],
+                        "enabled" => (bool) ($integration["enabled"] ?? false),
+                        "modal" => (string) $integration["settings_modal"],
+                    ];
+                }
+            ?>
             <article class="developer-integrations-row">
               <div>
-                <p class="feature-kicker<?= $name === "FIONN AI" ? " fnlla-fionn-name" : "" ?>"><?= h($name) ?></p>
-                <h3><?= h((string) ($integration["status"] ?? "disabled")) ?></h3>
-                <p class="content-text mb-0"><?= h((string) ($integrationDescriptions[$name] ?? "Optional adapter controlled by project configuration and policy.")) ?></p>
+                <p class="feature-kicker<?= ($integration["key"] ?? "") === "ai_provider_contract" ? " fnlla-fionn-name" : "" ?>"><?= h($name) ?></p>
+                <h3><?= h(DeveloperPanelLabels::status((string) ($integration["status"] ?? "disabled"))) ?></h3>
+                <p class="content-text mb-0"><?= h((string) ($integration["description"] ?? "Optional adapter controlled by project configuration and policy.")) ?></p>
               </div>
               <div class="developer-integrations-policy">
-                <span>Gate: <code><?= h((string) ($integration["consent_event"] ?? "manual")) ?></code></span>
-                <span><?= h((string) ($integrationBoundaries[$name] ?? "No external request is made until enabled and configured.")) ?></span>
+                <span>Gate: <?= h(DeveloperPanelLabels::gate((string) ($integration["consent_event"] ?? "manual"))) ?></span>
+                <span>Adapter: <?= h($adapter) ?></span>
+                <span><?= h((string) ($integration["boundary"] ?? "No external request is made until enabled and configured.")) ?></span>
               </div>
-              <p class="developer-dashboard-status <?= ($integration["external_calls"] ?? false) ? "is-neutral" : "is-active" ?>"><?= ($integration["external_calls"] ?? false) ? "External calls possible" : "No external calls by default" ?></p>
-              <?php if ($control !== []): ?>
-              <div class="developer-integrations-actions">
-                <form action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post">
-                  <?= csrf_field() ?>
-                  <?php $renderIntegrationHiddenFields([(string) $control["enabled_field"] => ($control["enabled"] ?? false) ? "0" : "1"]); ?>
-                  <button class="btn btn-outline btn-sm" type="submit"><?= ($control["enabled"] ?? false) ? "Disable" : "Enable" ?></button>
-                </form>
-                <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#<?= h((string) $control["modal"]) ?>">Settings</button>
+              <div class="developer-integrations-control">
+                <?php if ($control !== []): ?>
+                <div class="developer-integrations-actions">
+                  <form action="<?= h(route("developer.panel.integrations.settings")) ?>" method="post">
+                    <?= csrf_field() ?>
+                    <?php $renderIntegrationHiddenFields([(string) $control["enabled_field"] => ($control["enabled"] ?? false) ? "0" : "1"]); ?>
+                    <button class="btn btn-outline btn-sm" type="submit"><?= ($control["enabled"] ?? false) ? "Disable" : "Enable" ?></button>
+                  </form>
+                  <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#<?= h((string) $control["modal"]) ?>">Settings</button>
+                </div>
+                <?php endif; ?>
               </div>
-              <?php endif; ?>
             </article>
             <?php endforeach; ?>
           </div>
           <div class="developer-integrations-explainer">
-            <strong>Why "No external calls by default"?</strong>
-            <p>It means the adapter contract exists in FNLLA, but the application does not send network requests until the project explicitly enables an endpoint and passes the consent or server-policy gate.</p>
+            <strong>Why are adapters gated?</strong>
+            <p>The adapter contract can exist in FNLLA while network requests stay disabled until the project explicitly enables an endpoint and passes the consent or server-policy gate.</p>
           </div>
         </section>
 
-        <section class="developer-ai-settings" aria-labelledby="ai-providers-title">
-          <h2 id="ai-providers-title" class="content-title">AI providers</h2>
-          <form class="form" action="<?= h(route("developer.panel.integrations.ai")) ?>" method="post" autocomplete="off">
+        <section class="developer-dashboard-section developer-ai-settings" aria-labelledby="ai-providers-title">
+          <div class="developer-dashboard-section-head">
+            <div>
+              <h2 id="ai-providers-title" class="developer-dashboard-section-title">AI providers</h2>
+              <p class="content-text mb-0">Choose the runtime contract first, then configure only the external provider credentials the project is allowed to use.</p>
+            </div>
+            <span class="developer-dashboard-refresh">Server policy gated</span>
+          </div>
+          <form class="form developer-ai-provider-form" action="<?= h(route("developer.panel.integrations.ai")) ?>" method="post" autocomplete="off">
             <?= csrf_field() ?>
-            <div class="developer-ai-settings-grid">
+            <div class="developer-ai-runtime-card">
+              <div>
+                <p class="feature-kicker">Runtime selector</p>
+                <h3>Set the active AI contract</h3>
+                <p class="content-text mb-0">Local reference keeps FNLLA offline. External providers require an enabled adapter and configured credentials.</p>
+              </div>
               <label>Active provider
                 <select class="select" name="ai_runtime_driver">
-                  <?php foreach (["local" => "Local reference (no AI model)", "fionn" => "FIONN AI by TechAyo / API account required", "openai" => "OpenAI API / optional", "anthropic" => "Anthropic API / optional"] as $driver => $label): ?>
+                  <?php foreach ($runtimeProviderOptions as $driver => $label): ?>
                   <option value="<?= h($driver) ?>" <?= config("ai.runtime.driver", "local") === $driver ? "selected" : "" ?>><?= h($label) ?></option>
                   <?php endforeach; ?>
                 </select>
               </label>
-              <label class="developer-workspace-check"><input type="checkbox" name="ai_runtime_enabled" value="1" <?= config("ai.runtime.enabled", true) ? "checked" : "" ?>>Runtime AI enabled</label>
+              <label class="developer-workspace-check developer-ai-runtime-toggle"><input type="checkbox" name="ai_runtime_enabled" value="1" <?= config("ai.runtime.enabled", true) ? "checked" : "" ?>><span>Runtime AI enabled</span></label>
             </div>
-            <?php foreach (["openai" => "OpenAI API", "anthropic" => "Anthropic API"] as $driver => $label):
+            <div class="developer-ai-provider-stack">
+            <?php foreach ($runtimeProviderDocs as $driver => $providerDoc):
                 $provider = (array) config("ai.runtime." . $driver, []);
                 $providerStatus = (new \Fnlla\Php\Ai\RuntimeAiProviderRegistry())->status($driver);
                 $field = "ai_" . $driver . "_";
             ?>
             <fieldset class="developer-ai-provider">
-              <legend><?= h($label) ?></legend>
-              <p class="developer-dashboard-status is-neutral"><?= ($providerStatus["provider_ready"] ?? false) ? "Configured / not live-tested" : (($providerStatus["enabled"] ?? false) ? "Configuration required" : "Disabled") ?></p>
-              <div class="developer-ai-settings-grid">
+              <legend><?= h((string) $providerDoc["label"]) ?></legend>
+              <div class="developer-ai-provider-head">
+                <p class="content-text mb-0"><?= h((string) $providerDoc["text"]) ?></p>
+                <p class="developer-dashboard-status is-neutral"><?= ($providerStatus["provider_ready"] ?? false) ? "Configured / not live-tested" : (($providerStatus["enabled"] ?? false) ? "Configuration required" : "Disabled") ?></p>
+              </div>
+              <div class="developer-ai-provider-grid">
                 <label class="developer-workspace-check"><input type="checkbox" name="<?= h($field) ?>enabled" value="1" <?= ($provider["enabled"] ?? false) ? "checked" : "" ?>>External requests enabled</label>
                 <label>Model ID<input class="input" name="<?= h($field) ?>model" maxlength="160" value="<?= h((string) ($provider["model"] ?? "")) ?>" spellcheck="false" autocomplete="off"></label>
                 <label>API key<input class="input" type="password" name="<?= h($field) ?>api_key" maxlength="512" value="" autocomplete="new-password" placeholder="<?= ($providerStatus["token_configured"] ?? false) ? "Configured; leave blank to keep" : "Not configured" ?>"></label>
@@ -173,7 +205,10 @@ require __DIR__ . "/panel-header.php";
               </div>
             </fieldset>
             <?php endforeach; ?>
-            <button class="btn btn-primary" type="submit">Save AI settings</button>
+            </div>
+            <div class="developer-ai-save-row">
+              <button class="btn btn-primary" type="submit">Save AI settings</button>
+            </div>
           </form>
         </section>
 
@@ -256,7 +291,7 @@ require __DIR__ . "/panel-header.php";
           <div class="modal-content developer-kanban-modal-content">
             <div class="developer-kanban-modal-head">
               <div>
-                <p class="feature-kicker mb-2">TechAyo central control</p>
+                <p class="feature-kicker mb-2">Remote control contract</p>
                 <h2 class="content-title mb-0" id="developer-integration-remote-control-settings-title">Adapter settings</h2>
               </div>
               <button class="developer-kanban-modal-close" type="button" data-fnlla-modal-close aria-label="Close remote control settings"><span aria-hidden="true">x</span></button>
@@ -286,25 +321,26 @@ require __DIR__ . "/panel-header.php";
         </div>
 
         <?php if (is_array($remoteControl)): ?>
-        <section class="developer-dashboard-section" aria-label="TechAyo remote control plugin contract">
+        <section class="developer-dashboard-section" aria-label="Remote control adapter contract">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">TechAyo Remote Control plugin</h2>
-            <span class="developer-dashboard-refresh"><?= h((string) ($remoteControl["schema"] ?? "fnlla.remote_control_plugin.v1")) ?></span>
+            <h2 class="developer-dashboard-section-title">Remote control adapter contract</h2>
+            <span class="developer-dashboard-refresh"><?= h(DeveloperPanelLabels::contract($remoteControlSchema, "Adapter manifest")) ?></span>
           </div>
-          <div class="developer-dashboard-overview-grid">
+          <div class="developer-dashboard-overview-grid developer-remote-control-contract-stack">
             <article class="developer-dashboard-card">
-              <p class="feature-kicker">Admin surface</p>
+              <p class="feature-kicker">Optional adapter provider</p>
               <h3><?= h((string) ($remoteControl["provider"] ?? "TechAyo Limited")) ?></h3>
               <p class="content-text">The central control plane is expected at <code><?= h((string) ($remoteControl["admin_surface"] ?? "https://techayo.co.uk/admin")) ?></code>.</p>
-              <p class="developer-dashboard-status <?= (($remoteControl["status"] ?? "") === "ready") ? "is-active" : "is-neutral" ?>"><?= h((string) ($remoteControl["status"] ?? "disabled")) ?></p>
+              <p class="developer-dashboard-status <?= (($remoteControl["status"] ?? "") === "ready") ? "is-active" : "is-neutral" ?>"><?= h(DeveloperPanelLabels::status((string) ($remoteControl["status"] ?? "disabled"))) ?></p>
             </article>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Runtime contract</p>
-              <h3><?= h((string) (($remoteRuntimeContract["response_schema"] ?? "") ?: "fnlla.techayo_remote_control_state.v1")) ?></h3>
+              <h3><?= h(DeveloperPanelLabels::contract($remoteRuntimeSchema, "Runtime state response")) ?></h3>
+              <p class="content-text">The response can keep the app open, disable public access or suspend it with a service-provider message.</p>
               <div class="developer-dashboard-glance-table">
                 <div class="developer-dashboard-glance-row"><strong>Method</strong><span><?= h((string) ($remoteRuntimeContract["method"] ?? "GET")) ?></span></div>
                 <div class="developer-dashboard-glance-row"><strong>Endpoint</strong><span><?= h((string) (($remoteRuntimeContract["endpoint"] ?? "") ?: "Not configured")) ?></span></div>
-                <div class="developer-dashboard-glance-row"><strong>Project</strong><span><?= h((string) (($remoteControl["project_id"] ?? "") ?: "Configured by env")) ?></span></div>
+                <div class="developer-dashboard-glance-row"><strong>Project</strong><span><?= trim((string) ($remoteControl["project_id"] ?? "")) !== "" ? "Configured" : "Configured in environment" ?></span></div>
               </div>
             </article>
             <article class="developer-dashboard-card">

@@ -34,8 +34,10 @@ final class FrameworkReleaseChannelTest extends TestCase
 
     public function testCachedSourceMustMatchThePublishedTag(): void
     {
+        $versionLines = file(base_path("VERSION"), FILE_IGNORE_NEW_LINES);
+        $currentVersion = trim((string) ($versionLines[0] ?? ""));
         $validate = new ReflectionMethod(FrameworkReleaseChannel::class, "assertReleaseSourceIntegrity");
-        $validate->invoke(null, base_path(), FrameworkReleaseChannel::OFFICIAL_REPOSITORY, "v2.2.0");
+        $validate->invoke(null, base_path(), FrameworkReleaseChannel::OFFICIAL_REPOSITORY, "v" . $currentVersion);
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage("published tag do not match");
         $validate->invoke(null, base_path(), FrameworkReleaseChannel::OFFICIAL_REPOSITORY, "v2.1.3");

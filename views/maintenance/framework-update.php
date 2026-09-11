@@ -60,16 +60,24 @@ $reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report
 $reportDryRunPath = trim((string) ($report["dry_run_report_path"] ?? ""));
 $frameworkUpdateRunRoute = (string) ($frameworkUpdateRunRoute ?? route("maintenance.framework_update.run"));
 $frameworkUpdateRefreshRoute = (string) ($frameworkUpdateRefreshRoute ?? route("maintenance.framework_update"));
+$applyPolicy = is_array($pageState["apply_policy"] ?? null) ? (array) $pageState["apply_policy"] : [];
+$applyPolicyRequirements = array_values((array) ($applyPolicy["requirements"] ?? []));
+$developerCurrentCapabilities = is_array($developerAccess["current_capabilities"] ?? null) ? (array) $developerAccess["current_capabilities"] : [];
+$frameworkApplyCapabilityAllowed = !isset($developerAccess) || in_array("framework.update.apply", $developerCurrentCapabilities, true);
+$frameworkApplyAllowed = (($pageState["can_apply"] ?? false) === true) && $frameworkApplyCapabilityAllowed;
+$reportCanApplyFromUi = $reportCanApplyFromUi && $frameworkApplyCapabilityAllowed;
 
 /*
 The update posture summary is deliberately data-driven. Adding a new row should
-only require another tuple here, which keeps the public copy, machine-like code
-label and rendered status in one auditable place.
+only require another tuple here, keeping the human label, audit key and rendered
+status in one place.
 */
 $frameworkUpdatePostureRows = [
     ["code" => "ui.browser", "label" => "Browser UI", "value" => ($pageState["enabled"] ?? false) ? "Yes" : "No"],
     ["code" => "policy.local_only", "label" => "Local-only mode", "value" => ($pageState["local_only"] ?? false) ? "Yes" : "No"],
-    ["code" => "apply.permission", "label" => "Apply from UI", "value" => ($pageState["can_apply"] ?? false) ? "Yes" : "No"],
+    ["code" => "policy.profile", "label" => "Policy profile", "value" => strtoupper((string) ($applyPolicy["profile"] ?? "standard"))],
+    ["code" => "apply.permission", "label" => "Apply from UI", "value" => $frameworkApplyAllowed ? "Yes" : "No"],
+    ["code" => "apply.policy", "label" => "Apply policy", "value" => (($applyPolicy["allows_browser_apply"] ?? true) === true && $frameworkApplyCapabilityAllowed) ? "Satisfied" : "Evidence required"],
     ["code" => "source.github", "label" => "GitHub release channel", "value" => ($pageState["github_enabled"] ?? false) ? "Enabled" : "Disabled"],
     ["code" => "request.origin", "label" => "Current request is local", "value" => ($pageState["is_local_request"] ?? false) ? "Yes" : "No"],
     ["code" => "source.path", "label" => "Detected source path", "value" => $detectedSourcePath !== "" ? "Yes" : "No"],
@@ -125,6 +133,29 @@ $updateActionLabel = static function (array $update): string {
   </div>
 </section>
 
+<?php if (($applyPolicy["strict"] ?? false) === true): ?>
+<section class="section">
+  <div class="container">
+    <section class="feature-section" aria-label="Framework apply governance">
+      <div class="section-header mb-0">
+        <p class="feature-kicker">Apply governance</p>
+        <h2 class="section-title">Production and regulated apply require evidence before browser execution.</h2>
+        <p class="section-text"><?= h((string) ($applyPolicy["message"] ?? "Browser apply policy is being evaluated.")) ?></p>
+      </div>
+      <div class="grid grid-2 gap-md">
+        <?php foreach ($applyPolicyRequirements as $requirement): ?>
+        <article class="feature-card">
+          <p class="feature-kicker"><?= (($requirement["met"] ?? false) === true) ? "Ready" : "Required" ?></p>
+          <h3 class="content-title"><?= h((string) ($requirement["label"] ?? "Apply requirement")) ?></h3>
+          <p class="content-text mb-0"><code><?= h((string) ($requirement["evidence"] ?? "")) ?></code></p>
+        </article>
+        <?php endforeach; ?>
+      </div>
+    </section>
+  </div>
+</section>
+<?php endif; ?>
+
 <section class="section">
   <div class="container">
     <section class="feature-section" aria-label="Major upgrade readiness workflow">
@@ -134,7 +165,7 @@ $updateActionLabel = static function (array $update): string {
         <p class="section-text">The GUI uses the same upgrade analyser as the CLI. It can write the upgrade plan and clear generated runtime residue automatically, while manual-review items remain explicit and blocked from automatic apply.</p>
       </div>
 
-      <div class="grid grid-2 gap-md">
+      <div class="grid gap-md framework-update-major-readiness-grid">
         <article class="feature-card">
           <h3 class="content-title">Run major readiness</h3>
           <p class="content-text">Use this before touching a production update. The check covers required files, runtime residue, bootstrap caches, major-release docs, cache serialisation and assistant-vendor marker hygiene.</p>
@@ -146,7 +177,7 @@ $updateActionLabel = static function (array $update): string {
             </div>
             <div class="grid grid-2 gap-md framework-update-actions-grid">
               <button class="btn btn-outline" type="submit" name="mode" value="upgrade-check" <?= ($pageState["can_run"] ?? false) ? "" : "disabled" ?>>Check major readiness</button>
-              <button class="btn btn-primary" type="submit" name="mode" value="upgrade-apply" <?= ($pageState["can_apply"] ?? false) ? "" : "disabled" ?>>Apply safe actions</button>
+              <button class="btn btn-primary" type="submit" name="mode" value="upgrade-apply" <?= $frameworkApplyAllowed ? "" : "disabled" ?>>Apply safe actions</button>
             </div>
             <p class="help-text mb-0">Safe apply never performs a manual migration review for you. It only executes actions marked safe by the upgrade plan.</p>
           </form>
@@ -225,7 +256,7 @@ $updateActionLabel = static function (array $update): string {
         <p class="contact-text"><?= h((string) ($pageState["message"] ?? "")) ?></p>
         <ul class="contact-list project-blueprint-list framework-update-summary-list">
           <?php foreach ($frameworkUpdatePostureRows as $postureRow): ?>
-          <li><code><?= h($postureRow["code"]) ?></code><span><?= h($postureRow["label"]) ?> <strong><?= h($postureRow["value"]) ?></strong></span></li>
+          <li data-framework-update-posture-key="<?= h($postureRow["code"]) ?>"><span class="framework-update-summary-label"><?= h($postureRow["label"]) ?></span><strong class="framework-update-summary-value"><?= h($postureRow["value"]) ?></strong></li>
           <?php endforeach; ?>
         </ul>
         <div class="form-message framework-update-surface-note" role="status">
@@ -269,7 +300,7 @@ $updateActionLabel = static function (array $update): string {
               <div class="grid grid-3 gap-md framework-update-actions-grid">
                 <button class="btn btn-outline" type="submit" name="mode" value="github-check" data-framework-update-progress-mode="github-check" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 1: Check</button>
                 <button class="btn btn-outline" type="submit" name="mode" value="github-dry-run" data-framework-update-progress-mode="github-dry-run" <?= (($pageState["can_run"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 2: Dry-run</button>
-                <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= (($pageState["can_apply"] ?? false) && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 3: Apply</button>
+                <button class="btn btn-primary" type="submit" name="mode" value="github-apply" data-framework-update-progress-mode="github-apply" <?= ($frameworkApplyAllowed && ($pageState["github_enabled"] ?? false)) ? "" : "disabled" ?>>Step 3: Apply</button>
               </div>
             </section>
           </div>

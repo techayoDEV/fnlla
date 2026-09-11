@@ -2,7 +2,7 @@
 
 [![FNLLA web framework: PHP foundations, Project Setup, a private Developer Panel, diagnostics and controlled updates. Created and maintained by TechAyo.](./docs/assets/brand/fnlla-cover.jpg)](./docs/STARTING-A-NEW-PROJECT.md)
 
-[![Source edition](https://img.shields.io/badge/source-2.2.0-2563eb?style=flat-square)](./VERSION)
+[![Source edition](https://img.shields.io/badge/source-2.2.1-2563eb?style=flat-square)](./VERSION)
 [![License](https://img.shields.io/badge/license-MIT-111827?style=flat-square)](./LICENSE.md)
 [![Runtime](https://img.shields.io/badge/runtime-PHP%208.3%2B-2f65eb?style=flat-square)](./docs/RELEASE-AND-OPERATIONS.md#performance-baselines-and-budgets)
 [![Database](https://img.shields.io/badge/database-MySQL-2563eb?style=flat-square)](./docs/BUILDING-WITH-FNLLA.md)
@@ -101,7 +101,7 @@ php fnlla app:map --json
 php fnlla tech-debt:update --check
 php fnlla perf:profile --iterations=5
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
-php fnlla release:prepare --major --target=2.2.0
+php fnlla release:prepare --target=2.2.1
 ```
 
 Command responsibilities, downstream script boundaries and recovery operations
@@ -158,14 +158,14 @@ php scripts/check-docs.php
 
 ## Release State
 
-Source edition: **2.2.0**. Use the published, versioned downloads from
+Source edition: **2.2.1**. Use the published, versioned downloads from
 [GitHub Releases](https://github.com/techayoDEV/fnlla/releases), not a moving `main`
 checkout, for reproducible installations. An unpublished tag or draft is not a release.
 
 The default Full starter includes Project Setup, the private Developer Panel,
 diagnostics and controlled file updates. Plain is an explicit core-only preset.
 Both use the normal isolated PHP request lifecycle. Public Composer registry
-packages and long-lived HTTP workers are not part of the supported 2.2.0 scope.
+packages and long-lived HTTP workers are not part of the supported 2.2.x scope.
 
 Matching source/runtime version markers do not establish completed publication
 acceptance. Historical CI results do not validate a later commit. See

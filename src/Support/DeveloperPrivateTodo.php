@@ -17,6 +17,8 @@ namespace Fnlla\Php\Support;
 
 final class DeveloperPrivateTodo
 {
+    private const COLORS = ["blue", "slate", "sky", "indigo", "green", "red", "yellow", "orange"];
+
     public function state(array $developer = []): array
     {
         $owner = $this->ownerKey($developer);
@@ -31,9 +33,15 @@ final class DeveloperPrivateTodo
             "due_soon_count" => 0,
             "overdue_count" => 0,
             "notes_count" => 0,
+            "subtasks_count" => 0,
+            "completed_subtasks_count" => 0,
+            "attachments_count" => 0,
         ];
 
         foreach ($items as $item) {
+            $subtasks = array_values((array) ($item["subtasks"] ?? []));
+            $attachments = array_values((array) ($item["attachments"] ?? []));
+
             if ((bool) ($item["done"] ?? false)) {
                 $summary["done_count"]++;
             } else {
@@ -52,6 +60,10 @@ final class DeveloperPrivateTodo
             if (trim((string) ($item["notes"] ?? "")) !== "") {
                 $summary["notes_count"]++;
             }
+
+            $summary["subtasks_count"] += count($subtasks);
+            $summary["completed_subtasks_count"] += count(array_filter($subtasks, static fn (array $subtask): bool => (bool) ($subtask["done"] ?? false)));
+            $summary["attachments_count"] += count($attachments);
         }
 
         return [
@@ -64,6 +76,9 @@ final class DeveloperPrivateTodo
             "due_soon_count" => $summary["due_soon_count"],
             "overdue_count" => $summary["overdue_count"],
             "notes_count" => $summary["notes_count"],
+            "subtasks_count" => $summary["subtasks_count"],
+            "completed_subtasks_count" => $summary["completed_subtasks_count"],
+            "attachments_count" => $summary["attachments_count"],
         ];
     }
 
@@ -83,10 +98,65 @@ final class DeveloperPrivateTodo
                 "notes" => $this->clean((string) ($payload["notes"] ?? ""), 700),
                 "priority" => $this->priority((string) ($payload["priority"] ?? "normal")),
                 "due_date" => $this->date((string) ($payload["due_date"] ?? "")),
+                "color" => $this->color((string) ($payload["color"] ?? "blue")),
+                "subtasks" => $this->subtasksFromPayload($payload["subtasks"] ?? "", (array) ($payload["subtasks_done"] ?? [])),
+                "attachments" => $this->attachmentsFromArray([
+                    $this->urlAttachmentFromPayload($payload),
+                    $this->fileAttachmentFromPayload($payload),
+                ]),
                 "done" => false,
                 "created_at_utc" => $now,
                 "updated_at_utc" => $now,
             ];
+
+            return $items;
+        });
+    }
+
+    public function update(string $id, array $payload, array $developer = []): array
+    {
+        $id = $this->clean($id, 32);
+
+        return $this->mutate($developer, function (array $items) use ($id, $payload): array {
+            $found = false;
+            foreach ($items as $index => $item) {
+                if (($item["id"] ?? "") !== $id) {
+                    continue;
+                }
+
+                $found = true;
+                $title = $this->clean((string) ($payload["title"] ?? $item["title"] ?? ""), 160);
+                if ($title === "") {
+                    throw new \InvalidArgumentException("Private to-do item needs a title.");
+                }
+
+                $attachments = $this->attachmentsFromArray((array) ($item["attachments"] ?? []));
+                $newAttachments = $this->attachmentsFromArray([
+                    $this->urlAttachmentFromPayload($payload),
+                    $this->fileAttachmentFromPayload($payload),
+                ]);
+
+                $items[$index] = [
+                    "id" => $id,
+                    "title" => $title,
+                    "notes" => $this->clean((string) ($payload["notes"] ?? ""), 700),
+                    "priority" => $this->priority((string) ($payload["priority"] ?? $item["priority"] ?? "normal")),
+                    "due_date" => $this->date((string) ($payload["due_date"] ?? "")),
+                    "color" => $this->color((string) ($payload["color"] ?? $item["color"] ?? "blue")),
+                    "subtasks" => array_key_exists("subtasks", $payload)
+                        ? $this->subtasksFromPayload($payload["subtasks"], (array) ($payload["subtasks_done"] ?? []))
+                        : $this->subtasksFromArray((array) ($item["subtasks"] ?? [])),
+                    "attachments" => array_slice(array_merge($attachments, $newAttachments), -10),
+                    "done" => (bool) ($item["done"] ?? false),
+                    "created_at_utc" => $this->clean((string) ($item["created_at_utc"] ?? ""), 80),
+                    "updated_at_utc" => gmdate(DATE_ATOM),
+                ];
+                break;
+            }
+
+            if (!$found) {
+                throw new \InvalidArgumentException("Private to-do item was not found.");
+            }
 
             return $items;
         });
@@ -161,6 +231,9 @@ final class DeveloperPrivateTodo
                 "notes" => $this->clean((string) ($item["notes"] ?? ""), 700),
                 "priority" => $this->priority((string) ($item["priority"] ?? "normal")),
                 "due_date" => $this->date((string) ($item["due_date"] ?? "")),
+                "color" => $this->color((string) ($item["color"] ?? "blue")),
+                "subtasks" => $this->subtasksFromArray((array) ($item["subtasks"] ?? [])),
+                "attachments" => $this->attachmentsFromArray((array) ($item["attachments"] ?? [])),
                 "done" => (bool) ($item["done"] ?? false),
                 "created_at_utc" => $this->clean((string) ($item["created_at_utc"] ?? ""), 80),
                 "updated_at_utc" => $this->clean((string) ($item["updated_at_utc"] ?? ""), 80),
@@ -213,11 +286,199 @@ final class DeveloperPrivateTodo
         return in_array($value, ["low", "normal", "high"], true) ? $value : "normal";
     }
 
+    private function color(string $value): string
+    {
+        $value = strtolower(trim($value));
+
+        return in_array($value, self::COLORS, true) ? $value : "blue";
+    }
+
     private function date(string $value): string
     {
         $value = trim($value);
 
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1 ? $value : "";
+    }
+
+    private function subtasks(string $value): array
+    {
+        $items = [];
+
+        foreach (preg_split('/\R+/', $value) ?: [] as $line) {
+            $line = trim((string) $line);
+
+            if ($line === "") {
+                continue;
+            }
+
+            $done = false;
+            if (preg_match('/^\[(x|X|\s)\]\s*(.+)$/', $line, $matches) === 1) {
+                $done = strtolower((string) $matches[1]) === "x";
+                $line = (string) $matches[2];
+            }
+
+            $text = $this->clean($line, 140);
+            if ($text === "") {
+                continue;
+            }
+
+            $items[] = [
+                "text" => $text,
+                "done" => $done,
+            ];
+
+            if (count($items) >= 20) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    private function subtasksFromPayload(mixed $value, array $doneIndexes = []): array
+    {
+        if (!is_array($value)) {
+            return $this->subtasks((string) $value);
+        }
+
+        $items = [];
+        $doneLookup = [];
+        foreach ($doneIndexes as $doneIndex) {
+            if (is_scalar($doneIndex)) {
+                $doneLookup[(string) $doneIndex] = true;
+            }
+        }
+
+        foreach ($value as $index => $line) {
+            if (is_array($line)) {
+                $text = $this->clean((string) ($line["text"] ?? ""), 140);
+                $done = (bool) ($line["done"] ?? false);
+            } else {
+                $text = $this->clean((string) $line, 140);
+                $done = isset($doneLookup[(string) $index]);
+            }
+
+            if ($text === "") {
+                continue;
+            }
+
+            $items[] = [
+                "text" => $text,
+                "done" => $done,
+            ];
+
+            if (count($items) >= 20) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    private function subtasksFromArray(array $subtasks): array
+    {
+        $items = [];
+
+        foreach ($subtasks as $subtask) {
+            if (is_string($subtask)) {
+                $subtask = ["text" => $subtask, "done" => false];
+            }
+
+            if (!is_array($subtask)) {
+                continue;
+            }
+
+            $text = $this->clean((string) ($subtask["text"] ?? ""), 140);
+            if ($text === "") {
+                continue;
+            }
+
+            $items[] = [
+                "text" => $text,
+                "done" => (bool) ($subtask["done"] ?? false),
+            ];
+
+            if (count($items) >= 20) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    private function urlAttachmentFromPayload(array $payload): ?array
+    {
+        $url = trim((string) ($payload["attachment_url"] ?? ""));
+
+        if ($url === "" || !$this->validAttachmentUrl($url)) {
+            return null;
+        }
+
+        $label = $this->clean((string) ($payload["attachment_label"] ?? ""), 100);
+        if ($label === "") {
+            $label = (string) (parse_url($url, PHP_URL_HOST) ?: "Attachment link");
+        }
+
+        return [
+            "type" => "url",
+            "label" => $label,
+            "url" => $url,
+            "added_by" => $this->clean((string) ($payload["attachment_added_by"] ?? "developer"), 160),
+            "created_at_utc" => gmdate(DATE_ATOM),
+        ];
+    }
+
+    private function fileAttachmentFromPayload(array $payload): ?array
+    {
+        $attachment = $payload["attachment_file"] ?? null;
+
+        return is_array($attachment) ? $attachment : null;
+    }
+
+    private function attachmentsFromArray(array $attachments): array
+    {
+        $items = [];
+
+        foreach ($attachments as $attachment) {
+            if (!is_array($attachment)) {
+                continue;
+            }
+
+            $url = trim((string) ($attachment["url"] ?? ""));
+            if ($url === "" || !$this->validAttachmentUrl($url)) {
+                continue;
+            }
+
+            $type = strtolower(trim((string) ($attachment["type"] ?? "url")));
+            $type = $type === "file" ? "file" : "url";
+            $label = $this->clean((string) ($attachment["label"] ?? ""), 100);
+            if ($label === "") {
+                $label = $type === "file" ? "Uploaded attachment" : "Attachment link";
+            }
+
+            $items[] = [
+                "type" => $type,
+                "label" => $label,
+                "url" => $url,
+                "added_by" => $this->clean((string) ($attachment["added_by"] ?? "developer"), 160),
+                "created_at_utc" => $this->clean((string) ($attachment["created_at_utc"] ?? gmdate(DATE_ATOM)), 80),
+                "original_name" => $this->clean((string) ($attachment["original_name"] ?? ""), 140),
+                "mime_type" => $this->clean((string) ($attachment["mime_type"] ?? ""), 120),
+                "size_bytes" => max(0, (int) ($attachment["size_bytes"] ?? 0)),
+            ];
+
+            if (count($items) >= 10) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    private function validAttachmentUrl(string $url): bool
+    {
+        return str_starts_with($url, "/uploads/developer-private-todo-attachments/")
+            || filter_var($url, FILTER_VALIDATE_URL) !== false;
     }
 
     private function clean(string $value, int $maxLength): string

@@ -33,7 +33,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/workspace",
-            "Project Kanban",
+            "Project Tasks",
             "workspace",
             [
                 "workspaceBoard" => $workspace->state($developerAccess->currentDeveloper()),
@@ -62,16 +62,22 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         }
 
         try {
-            $todo->create([
-                "title" => trim((string) $request->input("developer_private_todo_title", "")),
-                "notes" => trim((string) $request->input("developer_private_todo_notes", "")),
-                "priority" => trim((string) $request->input("developer_private_todo_priority", "normal")),
-                "due_date" => trim((string) $request->input("developer_private_todo_due_date", "")),
-            ], $developerAccess->currentDeveloper());
+            $payload = $this->privateTodoPayload($request, $developerAccess->currentDeveloper());
+            $todo->create($this->withPrivateTodoAttachmentFile($request, $payload, $developerAccess->currentDeveloper()), $developerAccess->currentDeveloper());
         } catch (\InvalidArgumentException $exception) {
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Private to-do needs a title",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.private_todo"));
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Private attachment upload failed",
                 "text" => $exception->getMessage(),
                 "toast" => true,
             ]);
@@ -84,6 +90,52 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
             "variant" => "success",
             "title" => "Private to-do saved",
             "text" => "This item is visible only in your developer session.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.private_todo"));
+    }
+
+    public function updatePrivateTodo(Request $request, DeveloperAccessManager $developerAccess, DeveloperPrivateTodo $todo): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "workspace.write")) {
+            return $this->redirect(route("developer.panel.private_todo"));
+        }
+
+        try {
+            $payload = $this->privateTodoPayload($request, $developerAccess->currentDeveloper());
+            $todo->update(
+                trim((string) $request->input("developer_private_todo_id", "")),
+                $this->withPrivateTodoAttachmentFile($request, $payload, $developerAccess->currentDeveloper()),
+                $developerAccess->currentDeveloper()
+            );
+        } catch (\InvalidArgumentException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Private to-do needs a title",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.private_todo"));
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Private attachment upload failed",
+                "text" => $exception->getMessage(),
+                "toast" => true,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.private_todo"));
+        }
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Private to-do updated",
+            "text" => "The item details were saved in your private list.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
@@ -244,6 +296,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         $subtasksText = $request->input("developer_workspace_subtasks_text", null);
         $subtasksDone = $request->input("developer_workspace_subtasks_done", []);
         $subtasksColor = $request->input("developer_workspace_subtasks_color", []);
+        $subtasksNote = $request->input("developer_workspace_subtasks_note", []);
 
         return [
             "title" => trim((string) $request->input("developer_workspace_title", "")),
@@ -262,13 +315,16 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
             "subtasks_text" => is_array($subtasksText) ? $subtasksText : null,
             "subtasks_done" => is_array($subtasksDone) ? $subtasksDone : [],
             "subtasks_color" => is_array($subtasksColor) ? $subtasksColor : [],
+            "subtasks_note" => is_array($subtasksNote) ? $subtasksNote : [],
             "subtask" => trim((string) $request->input("developer_workspace_subtask", "")),
             "subtask_color" => trim((string) $request->input("developer_workspace_subtask_color", "blue")),
+            "subtask_note" => trim((string) $request->input("developer_workspace_subtask_note", "")),
             "toggle_subtask_index" => $request->input("developer_workspace_toggle_subtask_index", null),
             "delete_subtask_index" => $request->input("developer_workspace_delete_subtask_index", null),
             "edit_subtask_index" => $request->input("developer_workspace_edit_subtask_index", null),
             "edit_subtask_text" => trim((string) $request->input("developer_workspace_edit_subtask_text", "")),
             "edit_subtask_color" => trim((string) $request->input("developer_workspace_edit_subtask_color", "blue")),
+            "edit_subtask_note" => trim((string) $request->input("developer_workspace_edit_subtask_note", "")),
             "comment" => trim((string) $request->input("developer_workspace_comment", "")),
             "attachment_label" => trim((string) $request->input("developer_workspace_attachment_label", "")),
             "attachment_url" => trim((string) $request->input("developer_workspace_attachment_url", "")),
@@ -301,6 +357,62 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         $payload["attachment_file"] = [
             "type" => "file",
             "label" => $originalName !== "" ? $originalName : "Uploaded attachment",
+            "url" => "/uploads/" . trim($storedPath, "/"),
+            "added_by" => strtolower(trim((string) ($payload["attachment_added_by"] ?? $developer["email"] ?? "developer"))),
+            "created_at_utc" => gmdate(DATE_ATOM),
+            "original_name" => $originalName,
+            "mime_type" => $mimeType,
+            "size_bytes" => $sizeBytes,
+        ];
+
+        return $payload;
+    }
+
+    private function privateTodoPayload(Request $request, array $developer = []): array
+    {
+        $subtasks = $request->input("developer_private_todo_subtasks", "");
+        $completedSubtasks = $request->input("developer_private_todo_subtasks_done", []);
+
+        return [
+            "title" => trim((string) $request->input("developer_private_todo_title", "")),
+            "notes" => trim((string) $request->input("developer_private_todo_notes", "")),
+            "priority" => trim((string) $request->input("developer_private_todo_priority", "normal")),
+            "due_date" => trim((string) $request->input("developer_private_todo_due_date", "")),
+            "color" => trim((string) $request->input("developer_private_todo_color", "blue")),
+            "subtasks" => is_array($subtasks) ? $subtasks : trim((string) $subtasks),
+            "subtasks_done" => is_array($completedSubtasks) ? $completedSubtasks : [],
+            "attachment_label" => trim((string) $request->input("developer_private_todo_attachment_label", "")),
+            "attachment_url" => trim((string) $request->input("developer_private_todo_attachment_url", "")),
+            "attachment_added_by" => strtolower(trim((string) ($developer["email"] ?? "developer"))),
+        ];
+    }
+
+    private function withPrivateTodoAttachmentFile(Request $request, array $payload, array $developer = []): array
+    {
+        $uploaded = $request->file("developer_private_todo_attachment_file");
+
+        if (!$uploaded instanceof UploadedFile || $uploaded->error() === UPLOAD_ERR_NO_FILE) {
+            return $payload;
+        }
+
+        if (!$uploaded->isValid()) {
+            throw new \RuntimeException($this->uploadErrorMessage("Uploaded private to-do attachment", $uploaded->error()));
+        }
+
+        $uploaded->validate(
+            max(1, (int) config("security.uploads.max_file_bytes", 5242880)),
+            (array) config("security.uploads.allowed_mime_types", [])
+        );
+
+        $mimeType = $uploaded->detectedMimeType();
+        $sizeBytes = $uploaded->size();
+        $storedPath = $uploaded->store("developer-private-todo-attachments", "public");
+        $originalName = trim($uploaded->originalName());
+        $label = trim((string) ($payload["attachment_label"] ?? ""));
+
+        $payload["attachment_file"] = [
+            "type" => "file",
+            "label" => $label !== "" ? $label : ($originalName !== "" ? $originalName : "Uploaded attachment"),
             "url" => "/uploads/" . trim($storedPath, "/"),
             "added_by" => strtolower(trim((string) ($payload["attachment_added_by"] ?? $developer["email"] ?? "developer"))),
             "created_at_utc" => gmdate(DATE_ATOM),

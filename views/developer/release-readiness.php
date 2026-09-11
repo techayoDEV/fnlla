@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Release Readiness";
+$developerPanelTitle = "Readiness & Health";
 $developerPanelLead = "Production gate for security, backup, framework drift, cache, acceptance and runtime health.";
 $report = is_array($operationsReport ?? null) ? (array) $operationsReport : [];
 $release = (array) ($report["release_readiness"] ?? []);
@@ -27,7 +27,7 @@ $gateCommands = [
 require __DIR__ . "/panel-header.php";
 ?>
 
-        <section class="developer-dashboard-section" aria-label="Release readiness">
+        <section class="developer-dashboard-section" aria-label="Readiness and health">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Release command center</p>

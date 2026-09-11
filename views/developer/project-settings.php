@@ -6,6 +6,8 @@ $developerPanelTitle = "Project Settings";
 $developerPanelLead = "Client preview and maintenance controls for this environment.";
 $developerControl ??= [
     "disabled" => false,
+    "local_disabled" => false,
+    "remote_disabled" => false,
     "message" => (string) config("developer_control.disabled_message", ""),
     "contact" => (string) config("developer_control.disabled_contact", ""),
     "source" => "none",
@@ -14,7 +16,12 @@ $developerControl ??= [
 $maintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
 $maintenanceConfigured = (bool) ($maintenanceAccess["configured"] ?? false);
 $serviceDisabled = (bool) ($developerControl["disabled"] ?? false);
+$serviceLocalDisabled = (bool) ($developerControl["local_disabled"] ?? (($developerControl["source"] ?? "") === "local" && $serviceDisabled));
 $remoteEnabled = (bool) ($developerControl["remote_enabled"] ?? false);
+$serviceStatus = (string) ($developerControl["status"] ?? ($serviceDisabled ? "disabled" : "open"));
+$serviceReason = (string) ($developerControl["reason"] ?? "");
+$serviceProvider = (string) ($developerControl["provider"] ?? "");
+$serviceRemoteSuspended = $serviceDisabled && ($developerControl["source"] ?? "") === "remote" && $serviceStatus === "suspended";
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -46,8 +53,8 @@ require __DIR__ . "/panel-header.php";
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok"><?= $serviceDisabled ? "STOPPED" : "OPEN" ?></span></div>
-              <h3><?= $serviceDisabled ? "Public service disabled" : "Public service available" ?></h3>
-              <p>Source: <?= h((string) ($developerControl["source"] ?? "none")) ?>.</p>
+              <h3><?= $serviceRemoteSuspended ? "Suspended by service provider" : ($serviceDisabled ? "Public service disabled" : "Public service available") ?></h3>
+              <p>Source: <?= h((string) ($developerControl["source"] ?? "none")) ?><?= $serviceReason !== "" ? ". Reason: " . h($serviceReason) : "" ?><?= $serviceProvider !== "" ? ". Provider: " . h($serviceProvider) : "" ?>.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
@@ -91,16 +98,18 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-panel-fieldset-card">
               <p class="feature-kicker">Service control</p>
               <h2 class="content-title">Save service control</h2>
-              <p class="content-text">Use this when the website should be stopped immediately with a developer-owned message while the private developer panel remains available.</p>
+              <p class="content-text"><?= $serviceRemoteSuspended
+                  ? "A remote provider suspension is active. Local controls can clear only the project-owned lock; the provider state must be changed in the external control plane."
+                  : "Use this when the website should be stopped immediately with a developer-owned message while the private developer panel remains available." ?></p>
               <form class="form stack gap-md" action="<?= h(route("developer.settings.service_control")) ?>" method="post" novalidate>
                 <?= csrf_field() ?>
                 <input type="hidden" name="developer_control_disabled" value="0">
                 <div class="form-group">
                   <label class="label" for="developer-control-disabled">
-                    <input id="developer-control-disabled" name="developer_control_disabled" type="checkbox" value="1" <?= $serviceDisabled ? "checked" : "" ?>>
-                    <?= $serviceDisabled ? "Keep public service disabled" : "Disable public service after saving" ?>
+                    <input id="developer-control-disabled" name="developer_control_disabled" type="checkbox" value="1" <?= $serviceLocalDisabled ? "checked" : "" ?>>
+                    <?= $serviceLocalDisabled ? "Keep local public-service lock enabled" : "Enable local public-service lock after saving" ?>
                   </label>
-                  <p class="help-text">Current source: <?= h((string) ($developerControl["source"] ?? "none")) ?>. Remote control is <?= $remoteEnabled ? "enabled" : "disabled" ?>.</p>
+                  <p class="help-text">Current source: <?= h((string) ($developerControl["source"] ?? "none")) ?>. Status: <?= h($serviceStatus) ?><?= $serviceReason !== "" ? ", reason: " . h($serviceReason) : "" ?>. Remote control is <?= $remoteEnabled ? "enabled" : "disabled" ?>.</p>
                 </div>
                 <div class="form-group">
                   <label class="label" for="developer-control-message">Public message</label>

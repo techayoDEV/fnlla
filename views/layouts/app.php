@@ -79,7 +79,7 @@ $internalHeatmapConfig = [
     "endpoint" => route("fnlla.analytics.event"),
     "sampleRate" => max(1, min(100, (int) config("observability.heatmap.sample_rate", 100))),
 ];
-$publicIntegrationRuntimeEnabled = !$isClientPreviewChrome && !$isDeveloperPanelChrome && (
+$publicIntegrationRuntimeEnabled = $showCookieConsent && !$isClientPreviewChrome && !$isDeveloperPanelChrome && (
     $internalHeatmapConfig["enabled"]
     ||
     ($publicIntegrationConfig["apiHooks"]["enabled"] && $publicIntegrationConfig["apiHooks"]["endpoint"] !== "")

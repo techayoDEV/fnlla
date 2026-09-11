@@ -71,6 +71,10 @@ final class DeveloperToolsTest extends TestCase
         $item["status"] = "accepted";
         $item["owner"] = "Platform team";
         $item["notes"] = "Replace after the next migration.";
+        $item["accepted_until"] = "2026-12-31";
+        $item["issue_ref"] = "https://github.com/techayoDEV/fnlla/issues/123";
+        $item["adr_ref"] = "docs/adr/0001-example.md";
+        $item["evidence_ref"] = "/developer/panel/project-logs";
         $registry->save($item, 1, "admin");
         $state = $registry->synchronize([], 2, "admin");
         self::assertSame("accepted", $state["items"][$item["id"]]["status"]);
@@ -78,6 +82,10 @@ final class DeveloperToolsTest extends TestCase
         $state = $registry->synchronize(["src/Example.php"], 3, "admin");
         self::assertSame(1, count($state["items"]));
         self::assertSame("Platform team", $state["items"][$item["id"]]["owner"]);
+        self::assertSame("2026-12-31", $state["items"][$item["id"]]["accepted_until"]);
+        self::assertSame("https://github.com/techayoDEV/fnlla/issues/123", $state["items"][$item["id"]]["issue_ref"]);
+        self::assertSame("docs/adr/0001-example.md", $state["items"][$item["id"]]["adr_ref"]);
+        self::assertSame("/developer/panel/project-logs", $state["items"][$item["id"]]["evidence_ref"]);
         self::assertSame(4, count($state["history"]));
     }
 
@@ -97,7 +105,7 @@ final class DeveloperToolsTest extends TestCase
     public function testAcceptedDebtRequiresReasonAndDatesAreValidated(): void
     {
         $registry = new TechnicalDebtRegistry();
-        foreach ([["status" => "accepted"], ["due_date" => "2026-02-31"], ["priority" => "arbitrary"], ["notes" => ["invalid"]]] as $input) {
+        foreach ([["status" => "accepted"], ["status" => "accepted", "notes" => "Temporary risk"], ["due_date" => "2026-02-31"], ["accepted_until" => "2026-02-31"], ["issue_ref" => "javascript:alert(1)"], ["priority" => "arbitrary"], ["notes" => ["invalid"]]] as $input) {
             try {
                 $registry->save(["title" => "Example"] + $input, 0, "admin");
                 self::fail("Invalid input was accepted.");
@@ -177,6 +185,12 @@ final class DeveloperToolsTest extends TestCase
             self::assertSame($internalHtml->body(), $response->body());
             self::assertStringNotContainsString('id="fnlla-debug-toolbar"', $response->body());
         }
+
+        $fallbackInternalHtml = Response::html("<html><body>Internal surface</body></html>");
+        $_SERVER["FNLLA_ROUTE_NAME"] = "";
+        $fallbackResponse = $toolbar->decorate(new Request("GET", "/developer/panel"), $fallbackInternalHtml, 10);
+        self::assertSame($fallbackInternalHtml->body(), $fallbackResponse->body());
+        self::assertStringNotContainsString('id="fnlla-debug-toolbar"', $fallbackResponse->body());
     }
 
     public function testDeveloperToolsRoutesEnforcePermissionsAndCsrf(): void
@@ -187,12 +201,18 @@ final class DeveloperToolsTest extends TestCase
         $application = $this->application("admin");
         $technicalDebt = $application->handle(new Request("GET", "/developer/panel/technical-debt"));
         self::assertSame(200, $technicalDebt->status());
-        self::assertStringContainsString('<select class="select" name="status">', $technicalDebt->body());
-        self::assertStringContainsString('<details class="debt-row debt-add-row"><summary class="debt-add-summary">Add debt item</summary>', $technicalDebt->body());
+        self::assertStringContainsString("Release triage", $technicalDebt->body());
+        self::assertStringContainsString("debt-snapshot-grid", $technicalDebt->body());
+        self::assertStringContainsString("debt-status-tabs", $technicalDebt->body());
+        self::assertStringContainsString("Evidence links", $technicalDebt->body());
+        self::assertStringContainsString("Issue / PR ref", $technicalDebt->body());
+        self::assertStringContainsString("Accepted until", $technicalDebt->body());
+        self::assertStringContainsString('<select class="select" id="debt-status-filter" name="status">', $technicalDebt->body());
+        self::assertStringContainsString('<summary class="debt-add-summary">Add debt item</summary>', $technicalDebt->body());
         self::assertSame(200, $application->handle(new Request("GET", "/developer/panel/debug"))->status());
         $privateTodo = $application->handle(new Request("GET", "/developer/panel/my-todo"));
         self::assertSame(200, $privateTodo->status());
-        self::assertStringContainsString("Private developer notes and personal tasks", $privateTodo->body());
+        self::assertStringContainsString("Private developer tasks, notes, subtasks and attachments", $privateTodo->body());
         self::assertStringContainsString("action=\"/developer/panel/my-todo/items\"", $privateTodo->body());
         self::assertSame(419, $application->handle(new Request("POST", "/developer/panel/debug", [], ["enabled" => "1"], [], ["accept" => "application/json"]))->status());
         $todoResponse = $application->handle(new Request("POST", "/developer/panel/my-todo/items", [], [
@@ -200,10 +220,59 @@ final class DeveloperToolsTest extends TestCase
             "developer_private_todo_title" => "Review local debug workflow",
             "developer_private_todo_notes" => "Do not expose this as shared Kanban work.",
             "developer_private_todo_priority" => "high",
+            "developer_private_todo_color" => "green",
+            "developer_private_todo_subtasks" => [
+                "0" => "Check route",
+                "1" => "Confirm local panel",
+            ],
+            "developer_private_todo_subtasks_done" => ["1"],
+            "developer_private_todo_attachment_label" => "Debug reference",
+            "developer_private_todo_attachment_url" => "https://example.test/debug",
         ]));
         self::assertSame(302, $todoResponse->status());
         self::assertSame(route("developer.panel.private_todo"), $todoResponse->headers()["Location"]);
-        self::assertSame(1, (new DeveloperPrivateTodo())->state(["email" => "tools@example.test"])["open_count"] ?? null);
+        $createdPrivateTodo = (new DeveloperPrivateTodo())->state(["email" => "tools@example.test"]);
+        self::assertSame(1, $createdPrivateTodo["open_count"] ?? null);
+        self::assertSame("green", $createdPrivateTodo["items"][0]["color"] ?? null);
+        self::assertSame(2, count((array) ($createdPrivateTodo["items"][0]["subtasks"] ?? [])));
+        self::assertTrue((bool) ($createdPrivateTodo["items"][0]["subtasks"][1]["done"] ?? false));
+        self::assertSame(1, count((array) ($createdPrivateTodo["items"][0]["attachments"] ?? [])));
+        $createdPrivateTodoItemId = (string) ($createdPrivateTodo["items"][0]["id"] ?? "");
+        $privateTodoWithItem = $application->handle(new Request("GET", "/developer/panel/my-todo"));
+        self::assertStringContainsString("Quick add a private task", $privateTodoWithItem->body());
+        self::assertStringContainsString("Next action", $privateTodoWithItem->body());
+        self::assertStringContainsString("Edit details", $privateTodoWithItem->body());
+        self::assertStringContainsString("action=\"/developer/panel/my-todo/items/update\"", $privateTodoWithItem->body());
+        self::assertStringContainsString("data-private-todo-subtask-add", $privateTodoWithItem->body());
+        self::assertStringContainsString("name=\"developer_private_todo_subtasks[0]\"", $privateTodoWithItem->body());
+        self::assertStringContainsString("name=\"developer_private_todo_attachment_file\"", $privateTodoWithItem->body());
+        $updatedTodoResponse = $application->handle(new Request("POST", "/developer/panel/my-todo/items/update", [], [
+            "_token" => csrf_token(),
+            "developer_private_todo_id" => $createdPrivateTodoItemId,
+            "developer_private_todo_title" => "Update private workflow note",
+            "developer_private_todo_notes" => "Keep this private until the handover is ready.",
+            "developer_private_todo_priority" => "low",
+            "developer_private_todo_due_date" => "2026-09-18",
+            "developer_private_todo_color" => "orange",
+            "developer_private_todo_subtasks" => [
+                "0" => "Write private note",
+                "1" => "Attach supporting reference",
+            ],
+            "developer_private_todo_subtasks_done" => ["0"],
+            "developer_private_todo_attachment_label" => "Updated reference",
+            "developer_private_todo_attachment_url" => "https://example.test/updated-private-note",
+        ]));
+        self::assertSame(302, $updatedTodoResponse->status());
+        self::assertSame(route("developer.panel.private_todo"), $updatedTodoResponse->headers()["Location"]);
+        $updatedPrivateTodo = (new DeveloperPrivateTodo())->state(["email" => "tools@example.test"]);
+        self::assertSame("Update private workflow note", $updatedPrivateTodo["items"][0]["title"] ?? null);
+        self::assertSame("Keep this private until the handover is ready.", $updatedPrivateTodo["items"][0]["notes"] ?? null);
+        self::assertSame("low", $updatedPrivateTodo["items"][0]["priority"] ?? null);
+        self::assertSame("2026-09-18", $updatedPrivateTodo["items"][0]["due_date"] ?? null);
+        self::assertSame("orange", $updatedPrivateTodo["items"][0]["color"] ?? null);
+        self::assertSame(2, count((array) ($updatedPrivateTodo["items"][0]["subtasks"] ?? [])));
+        self::assertTrue((bool) ($updatedPrivateTodo["items"][0]["subtasks"][0]["done"] ?? false));
+        self::assertSame(2, count((array) ($updatedPrivateTodo["items"][0]["attachments"] ?? [])));
         $response = $application->handle(new Request("POST", "/developer/panel/technical-debt", [], [
             "_token" => csrf_token(), "revision" => "0", "title" => "Track release debt", "status" => "open", "priority" => "high",
         ]));
@@ -291,7 +360,14 @@ final class DeveloperToolsTest extends TestCase
         $firstDeveloper = ["email" => "first@example.test", "name" => "First"];
         $secondDeveloper = ["email" => "second@example.test", "name" => "Second"];
 
-        $todo->create(["title" => "Private release note", "priority" => "high"], $firstDeveloper);
+        $todo->create([
+            "title" => "Private release note",
+            "priority" => "high",
+            "color" => "orange",
+            "subtasks" => "[ ] Draft\n[x] Review",
+            "attachment_label" => "Decision note",
+            "attachment_url" => "https://example.test/private-note",
+        ], $firstDeveloper);
         $todo->create(["title" => "Second developer note", "priority" => "normal"], $secondDeveloper);
         $firstState = $todo->state($firstDeveloper);
         $secondState = $todo->state($secondDeveloper);
@@ -304,6 +380,10 @@ final class DeveloperToolsTest extends TestCase
         self::assertSame(1, $firstState["open_count"] ?? null);
         self::assertSame(1, $secondState["open_count"] ?? null);
         self::assertSame("Private release note", $firstState["items"][0]["title"] ?? null);
+        self::assertSame("orange", $firstState["items"][0]["color"] ?? null);
+        self::assertSame(2, $firstState["subtasks_count"] ?? null);
+        self::assertSame(1, $firstState["completed_subtasks_count"] ?? null);
+        self::assertSame(1, $firstState["attachments_count"] ?? null);
         self::assertSame("Second developer note", $secondState["items"][0]["title"] ?? null);
         self::assertSame(0, $firstDoneState["open_count"] ?? null);
         self::assertSame(1, $firstDoneState["done_count"] ?? null);
@@ -401,6 +481,18 @@ final class DeveloperToolsTest extends TestCase
         self::assertFileDoesNotExist($path);
     }
 
+    public function testFrameworkApplyRequiresApplyCapability(): void
+    {
+        $application = $this->application("operations_engineer");
+        $response = $application->handle(new Request("POST", "/developer/panel/framework-updates/run", [], [
+            "_token" => csrf_token(),
+            "mode" => "github-apply",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame(route("developer.panel.framework_updates"), $response->headers()["Location"] ?? null);
+    }
+
     public function testIntegrationViewNeverPrefillsCloudApiKeys(): void
     {
         $application = $this->application("admin");
@@ -419,8 +511,8 @@ final class DeveloperToolsTest extends TestCase
         $response = $application->handle(new Request("GET", "/developer/panel/integrations"));
         self::assertSame(200, $response->status());
         self::assertStringContainsString('>Local reference (no AI model)</option>', $response->body());
-        self::assertStringContainsString("Persistent Personal Intelligence by TechAyo", $response->body());
-        self::assertStringContainsString("FIONN developer account and API access required", $response->body());
+        self::assertStringContainsString("Neutral server-side AI provider slot", $response->body());
+        self::assertStringContainsString("FIONN AI adapter / optional API account required", $response->body());
         self::assertStringContainsString("Anthropic API", $response->body());
         self::assertStringNotContainsString("Claude Platform API", $response->body());
     }

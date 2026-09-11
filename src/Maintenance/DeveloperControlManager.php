@@ -22,17 +22,29 @@ final class DeveloperControlManager
     {
         $local = $this->readJson($this->localPath());
         $remote = $this->remoteState();
-        $disabled = (bool) ($remote["disabled"] ?? false) || (bool) ($local["disabled"] ?? false);
-        $source = (bool) ($remote["disabled"] ?? false) ? "remote" : ((bool) ($local["disabled"] ?? false) ? "local" : "none");
+        $remoteDisabled = (bool) ($remote["disabled"] ?? false);
+        $localDisabled = (bool) ($local["disabled"] ?? false);
+        $disabled = $remoteDisabled || $localDisabled;
+        $source = $remoteDisabled ? "remote" : ($localDisabled ? "local" : "none");
+        $status = $disabled ? (string) (($remote["status"] ?? "") ?: ($local["status"] ?? "disabled")) : "open";
+        $reason = (string) (($remote["reason"] ?? "") ?: ($local["reason"] ?? ""));
 
         return [
+            "schema" => "fnlla.developer_control_state.v2",
             "disabled" => $disabled,
+            "local_disabled" => $localDisabled,
+            "remote_disabled" => $remoteDisabled,
+            "status" => $status,
+            "reason" => $reason,
             "source" => $source,
-            "title" => (string) (($remote["title"] ?? "") ?: ($local["title"] ?? config("developer_control.disabled_title", "Service disabled by developer"))),
-            "message" => (string) (($remote["message"] ?? "") ?: ($local["message"] ?? config("developer_control.disabled_message", ""))),
+            "provider" => (string) (($remote["provider"] ?? "") ?: ($local["provider"] ?? config("developer_control.service_provider", "TechAyo Limited"))),
+            "title" => (string) (($remote["title"] ?? "") ?: ($local["title"] ?? $this->defaultTitle($status))),
+            "message" => (string) (($remote["message"] ?? "") ?: ($local["message"] ?? $this->defaultMessage($status))),
             "contact" => (string) (($remote["contact"] ?? "") ?: ($local["contact"] ?? config("developer_control.disabled_contact", ""))),
             "updated_at" => (string) (($remote["updated_at"] ?? "") ?: ($local["updated_at"] ?? "")),
             "updated_by" => (string) (($remote["updated_by"] ?? "") ?: ($local["updated_by"] ?? "")),
+            "command_id" => (string) ($remote["command_id"] ?? ""),
+            "expires_at" => (string) ($remote["expires_at"] ?? ""),
             "remote_enabled" => (bool) config("developer_control.remote.enabled", false),
             "remote_contract" => $this->remoteContract(),
         ];
@@ -48,9 +60,12 @@ final class DeveloperControlManager
         $this->writeLocal([
             "schema" => "fnlla.developer_control.v1",
             "disabled" => true,
+            "status" => "disabled",
+            "reason" => "developer",
             "title" => (string) config("developer_control.disabled_title", "Service disabled by developer"),
             "message" => trim($message) !== "" ? trim($message) : (string) config("developer_control.disabled_message", ""),
             "contact" => trim($contact) !== "" ? trim($contact) : (string) config("developer_control.disabled_contact", ""),
+            "provider" => (string) config("developer_control.service_provider", "TechAyo Limited"),
             "updated_at" => gmdate("c"),
             "updated_by" => (string) ($developer["email"] ?? "developer"),
         ]);
@@ -61,9 +76,12 @@ final class DeveloperControlManager
         $this->writeLocal([
             "schema" => "fnlla.developer_control.v1",
             "disabled" => false,
+            "status" => "open",
+            "reason" => "",
             "title" => (string) config("developer_control.disabled_title", "Service disabled by developer"),
             "message" => "",
             "contact" => "",
+            "provider" => (string) config("developer_control.service_provider", "TechAyo Limited"),
             "updated_at" => gmdate("c"),
             "updated_by" => (string) ($developer["email"] ?? "developer"),
         ]);
@@ -79,14 +97,14 @@ final class DeveloperControlManager
         $cacheTtl = max(5, (int) config("developer_control.remote.cache_ttl_seconds", 60));
 
         if (is_file($cachePath) && filemtime($cachePath) !== false && filemtime($cachePath) + $cacheTtl > time()) {
-            return $this->readJson($cachePath);
+            return $this->normaliseRemoteState($this->readJson($cachePath));
         }
 
         $endpoint = trim((string) config("developer_control.remote.endpoint", ""));
 
         if (!$this->remoteEndpointAllowed($endpoint)) {
             return (bool) config("developer_control.remote.fail_closed", false)
-                ? ["disabled" => true, "source" => "remote", "message" => "Remote developer control endpoint is not allowed."]
+                ? ["disabled" => true, "status" => "disabled", "source" => "remote", "reason" => "remote_endpoint_not_allowed", "message" => "Remote developer control endpoint is not allowed."]
                 : [];
         }
 
@@ -101,7 +119,7 @@ final class DeveloperControlManager
 
         if (!is_string($contents) || $contents === "") {
             return (bool) config("developer_control.remote.fail_closed", false)
-                ? ["disabled" => true, "source" => "remote", "message" => "Remote developer control is unavailable."]
+                ? ["disabled" => true, "status" => "disabled", "source" => "remote", "reason" => "remote_unavailable", "message" => "Remote developer control is unavailable."]
                 : [];
         }
 
@@ -121,14 +139,46 @@ final class DeveloperControlManager
 
     private function normaliseRemoteState(array $state): array
     {
+        $status = $this->normaliseStatus((string) ($state["status"] ?? $state["mode"] ?? ""));
+        if ((bool) ($state["suspended"] ?? false) === true) {
+            $status = "suspended";
+        }
+        $disabled = (bool) ($state["disabled"] ?? false) || in_array($status, ["disabled", "suspended"], true);
+        if (!$disabled) {
+            $status = "open";
+        } elseif ($status === "open") {
+            $status = "disabled";
+        }
+        $reason = $this->clean((string) ($state["reason"] ?? ""), 80);
+        if ($reason === "" && $status === "suspended") {
+            $reason = "billing";
+        }
+
         return [
-            "disabled" => (bool) ($state["disabled"] ?? false),
-            "title" => $this->clean((string) ($state["title"] ?? ""), 120),
-            "message" => $this->clean((string) ($state["message"] ?? ""), 240),
+            "schema" => $this->clean((string) ($state["schema"] ?? "fnlla.techayo_remote_control_state.v2"), 80),
+            "disabled" => $disabled,
+            "status" => $status,
+            "reason" => $reason,
+            "provider" => $this->clean((string) ($state["provider"] ?? config("developer_control.service_provider", "TechAyo Limited")), 120),
+            "title" => $this->clean((string) ($state["title"] ?? $this->defaultTitle($status)), 120),
+            "message" => $this->clean((string) ($state["message"] ?? $this->defaultMessage($status)), 240),
             "contact" => $this->clean((string) ($state["contact"] ?? ""), 160),
             "updated_at" => $this->clean((string) ($state["updated_at"] ?? ""), 80),
             "updated_by" => $this->clean((string) ($state["updated_by"] ?? "techayo-control"), 120),
+            "command_id" => $this->clean((string) ($state["command_id"] ?? ""), 120),
+            "expires_at" => $this->clean((string) ($state["expires_at"] ?? ""), 80),
         ];
+    }
+
+    private function normaliseStatus(string $status): string
+    {
+        $status = strtolower(trim(str_replace("-", "_", $status)));
+
+        return match ($status) {
+            "suspend", "suspended", "billing", "billing_suspended", "payment_required" => "suspended",
+            "disable", "disabled", "locked", "closed" => "disabled",
+            default => "open",
+        };
     }
 
     private function remoteEndpointAllowed(string $endpoint): bool
@@ -189,15 +239,34 @@ final class DeveloperControlManager
             "signed" => trim((string) config("developer_control.remote.signature_secret", "")) !== "",
             "allowed_hosts" => array_values((array) config("developer_control.remote.allowed_hosts", [])),
             "expected_response" => [
-                "schema" => "fnlla.techayo_remote_control_state.v1",
-                "disabled" => "bool",
+                "schema" => "fnlla.techayo_remote_control_state.v2",
+                "status" => "open|disabled|suspended",
+                "disabled" => "bool, accepted for v1 compatibility",
+                "reason" => "string, for example billing",
+                "provider" => "service provider label",
                 "title" => "string",
                 "message" => "string",
                 "contact" => "string",
                 "updated_at" => "ISO-8601 string",
                 "updated_by" => "operator label",
+                "command_id" => "optional idempotency/audit identifier",
+                "expires_at" => "optional ISO-8601 string",
             ],
         ];
+    }
+
+    private function defaultTitle(string $status): string
+    {
+        return $status === "suspended"
+            ? (string) config("developer_control.suspended_title", "Services suspended")
+            : (string) config("developer_control.disabled_title", "Service disabled by developer");
+    }
+
+    private function defaultMessage(string $status): string
+    {
+        return $status === "suspended"
+            ? (string) config("developer_control.suspended_message", "Your services have been suspended. Please contact your service provider.")
+            : (string) config("developer_control.disabled_message", "");
     }
 
     private function headerValue(string $value): string

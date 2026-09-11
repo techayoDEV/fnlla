@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Fnlla\Php\Support\DeveloperPanelLabels;
+
 $developerPanelTitle = "Policy Boundary";
 $developerPanelLead = "The line between FNLLA's framework-managed operations layer and the product application built above it.";
 $policy = is_array($developerPolicy ?? null) ? $developerPolicy : [];
@@ -90,11 +92,11 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-policy-role-grid">
             <?php foreach ($roles as $role): ?>
             <article class="developer-dashboard-card">
-              <p class="feature-kicker"><?= h((string) ($role["role"] ?? "developer")) ?></p>
+              <p class="feature-kicker">Developer role</p>
               <h3><?= h((string) ($role["label"] ?? $role["role"] ?? "Developer")) ?></h3>
               <div class="developer-policy-capability-chips">
                 <?php foreach ((array) ($role["capabilities"] ?? []) as $capability): ?>
-                <span><?= h((string) $capability) ?></span>
+                <span><?= h(DeveloperPanelLabels::capability((string) $capability)) ?></span>
                 <?php endforeach; ?>
               </div>
             </article>
@@ -110,8 +112,11 @@ require __DIR__ . "/panel-header.php";
               <div class="developer-dashboard-glance-table">
                 <?php foreach ($capabilities as $capability => $description): ?>
                 <div class="developer-dashboard-glance-row">
-                  <strong><?= h((string) $capability) ?></strong>
-                  <span><?= h((string) $description) ?></span>
+                  <strong><?= h(DeveloperPanelLabels::capability((string) $capability)) ?></strong>
+                  <span>
+                    <?= h((string) $description) ?>
+                    <code class="developer-technical-id"><?= h((string) $capability) ?></code>
+                  </span>
                 </div>
                 <?php endforeach; ?>
               </div>
@@ -128,8 +133,11 @@ require __DIR__ . "/panel-header.php";
                   <span>Policy contract active</span>
                 </div>
                 <div class="developer-dashboard-glance-row">
-                  <strong>Technical schema</strong>
-                  <span><code><?= h((string) ($policy["schema"] ?? "fnlla.developer_policy_boundary.v1")) ?></code></span>
+                  <strong>Schema</strong>
+                  <span>
+                    <?= h(DeveloperPanelLabels::contract((string) ($policy["schema"] ?? "fnlla.developer_policy_boundary.v1"), "Policy boundary")) ?>
+                    <code class="developer-technical-id"><?= h((string) ($policy["schema"] ?? "fnlla.developer_policy_boundary.v1")) ?></code>
+                  </span>
                 </div>
               </div>
             </article>

@@ -52,7 +52,7 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `/developer/panel/framework-updates`.
   `/developer/panel/setup-checklist`, `/developer/panel/project-settings`,
   `/developer/panel/security` and `/developer/panel/health` remain compatibility
-  routes that lead to the integrated Project Setup, Access & Security and
+  routes that lead to the integrated Project Setup, Access & security and
   Readiness & Health surfaces.
 - Customer portal routes: `/client`, `/client/invite`, `/client/panel`,
   `/client/panel/kanban`, `/client/panel/analytics` and
@@ -192,8 +192,12 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.cookie_consent_event.v1`
 - `fnlla.form_inbox_summary.v1`
 - `fnlla.developer_integrations_settings.v1`
-- `fnlla.developer_notifications.v1`
+- `fnlla.developer_notifications.v2`
+- `fnlla.developer_review_queue.v2`
+- `fnlla.developer_control_state.v2`
 - `fnlla.developer_policy_boundary.v1`
+- `fnlla.developer_telemetry_policy.v1`
+- `fnlla.framework_apply_policy.v1`
 - `fnlla.project_leadership.v1`
 - `fnlla.developer_security.v1`
 - `fnlla.developer_storage_install.v1`
@@ -203,7 +207,7 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.customer_workspace.v1`
 - `fnlla.remote_control_plugin.v1`
 - `fnlla.techayo_remote_control.v1`
-- `fnlla.techayo_remote_control_state.v1`
+- `fnlla.techayo_remote_control_state.v2`
 - `fnlla.public_api_lock.v1`
 
 Automation should tolerate additional keys and should key decisions off
@@ -214,8 +218,8 @@ documented status fields such as `ok`, `status`, `failures` and `warnings`.
 The Developer Panel is a stable technical control surface, not a product admin
 panel. It may manage framework-owned operations such as developer access,
 customer portal invitations, client preview, service control, framework
-updates, privacy-light operations summaries, audit export and the technical
-Kanban workspace.
+updates, privacy-light or regulated operations summaries, audit export and the
+technical Kanban workspace.
 
 The Customer Portal is a separate read-only review surface. It can show
 customer-visible Kanban cards, aggregate analytics, aggregate heatmap summaries
@@ -240,9 +244,10 @@ with `PROJECT_LEADERSHIP_VISIBILITY=admin` or disable it entirely.
 
 Optional integrations are public configuration contracts only when explicitly
 enabled by project developers. FNLLA Analytics, FNLLA Heatmap and FNLLA Error
-Monitor remain the first-party observability source of truth; API hooks, FIONN
-AI and the TechAyo remote-control bridge are opt-in adapters. Private provider
-logic and secrets stay outside the framework repository.
+Monitor remain the first-party observability source of truth; API hooks, AI
+providers and remote control are neutral contracts with optional adapters.
+Private provider logic, vendor SDKs and secrets stay outside the framework
+repository.
 
 It must not contain customer data, product CRM/CMS logic, billing, bookings,
 private client workflows or the private FIONN AI brain. Those belong to the

@@ -237,6 +237,10 @@ final class DeveloperPasswordRecoveryTest extends TestCase
         $login = $application->handle(new Request("GET", "/private-tools"));
         self::assertSame(200, $login->status());
         self::assertStringContainsString("developer-sign-in-hero", $login->body());
+        self::assertStringContainsString('aria-label="FNLLA is pronounced fin EL uh, like Finella."', $login->body());
+        self::assertStringContainsString('<span class="developer-sign-in-pronunciation-label">Say it</span>', $login->body());
+        self::assertStringContainsString("<strong>fin-EL-uh</strong>", $login->body());
+        self::assertStringContainsString("<small>sounds like Finella</small>", $login->body());
         self::assertStringContainsString("Forgot password?", $login->body());
         foreach (["forgot-password", "reset-password"] as $path) {
             $response = $application->handle(new Request("POST", "/private-tools/" . $path, [], [], [], ["accept" => "application/json"]));

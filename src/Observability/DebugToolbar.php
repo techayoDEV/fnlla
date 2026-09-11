@@ -82,13 +82,13 @@ final class DebugToolbar
         $html = '<link rel="stylesheet" href="' . h(asset("assets/debug-toolbar.css")) . '">'
             . '<details id="fnlla-debug-toolbar"><summary aria-label="' . h($summary) . '">'
             . '<span class="fnlla-debug-brand">FNLLA Debug</span>'
-            . '<span class="fnlla-debug-pill">' . h($request->method()) . ' ' . h((string) $response->status()) . '</span>'
+            . '<span class="fnlla-debug-pill ' . ($response->status() >= 500 ? "is-danger" : ($response->status() >= 400 ? "is-warning" : "is-success")) . '">' . h($request->method()) . ' ' . h((string) $response->status()) . '</span>'
             . '<span>' . h(number_format($durationMs, 1)) . ' ms</span>'
             . '<span>' . h((string) $queryCount) . ' queries</span>'
             . '<span>' . h(number_format($memoryMiB, 1)) . ' MiB</span>'
-            . '<span data-fnlla-debug-live-status>Live ready</span>'
-            . '<span data-fnlla-debug-live-errors>0% errors</span>'
-            . '<span data-fnlla-debug-live-issues>0 issues</span>'
+            . '<span class="fnlla-debug-pill is-success" data-fnlla-debug-live-status>Live ready</span>'
+            . '<span class="fnlla-debug-pill is-success" data-fnlla-debug-live-errors>0% errors</span>'
+            . '<span class="fnlla-debug-pill is-success" data-fnlla-debug-live-issues>0 issues</span>'
             . '</summary><div class="fnlla-debug-content">'
             . '<div class="fnlla-debug-grid">'
             . '<section><h2>Request</h2><dl><dt>Route</dt><dd>' . h($route) . '</dd><dt>Path</dt><dd>' . h($path) . '</dd><dt>Request ID</dt><dd>' . h($request->requestId()) . '</dd></dl></section>'
@@ -107,11 +107,12 @@ final class DebugToolbar
             . '<script nonce="' . h(csp_nonce()) . '">'
             . '(function(){var endpoint=' . json_encode($liveUrl, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . ';'
             . 'var text=function(s,v){var el=document.querySelector(s);if(el)el.textContent=String(v);};'
+            . 'var tone=function(s,c){var el=document.querySelector(s);if(el){el.classList.remove("is-success","is-warning","is-danger");el.classList.add(c);}};'
             . 'var fmt=function(v){var n=Number(v);return Number.isFinite(n)?String(Math.round(n*100)/100):"0";};'
             . 'var refresh=function(){var status=document.querySelector("[data-fnlla-debug-live-status]");if(status)status.textContent="Refreshing";'
             . 'fetch(endpoint,{credentials:"same-origin",headers:{"Accept":"application/json","X-Requested-With":"XMLHttpRequest"}}).then(function(r){if(!r.ok)throw new Error("debug live failed");return r.json();}).then(function(p){var report=p.report||{};var metrics=report.metrics||{};var issues=report.runtime_issues||{};'
-            . 'text("[data-fnlla-debug-live-status]","Live");text("[data-fnlla-debug-live-errors]",fmt(metrics.error_rate)+"% errors");text("[data-fnlla-debug-live-issues]",(issues.open||0)+" issues");text("[data-fnlla-debug-live-total]",(metrics.total_requests||0)+" requests");text("[data-fnlla-debug-live-open]",(issues.open||0)+" open");'
-            . '}).catch(function(){text("[data-fnlla-debug-live-status]","Live paused");});};'
+            . 'var errorRate=Number(metrics.error_rate||0);var openIssues=Number(issues.open||0);text("[data-fnlla-debug-live-status]","Live");tone("[data-fnlla-debug-live-status]","is-success");text("[data-fnlla-debug-live-errors]",fmt(errorRate)+"% errors");tone("[data-fnlla-debug-live-errors]",errorRate>0?"is-danger":"is-success");text("[data-fnlla-debug-live-issues]",openIssues+" issues");tone("[data-fnlla-debug-live-issues]",openIssues>0?"is-warning":"is-success");text("[data-fnlla-debug-live-total]",(metrics.total_requests||0)+" requests");text("[data-fnlla-debug-live-open]",openIssues+" open");'
+            . '}).catch(function(){text("[data-fnlla-debug-live-status]","Live paused");tone("[data-fnlla-debug-live-status]","is-warning");});};'
             . 'window.setInterval(function(){if(!document.hidden)refresh();},5000);refresh();})();'
             . '</script>';
         $body = substr_replace($response->body(), $html, $position, 0);
@@ -139,7 +140,13 @@ final class DebugToolbar
         }
 
         $path = "/" . trim($request->path(), "/");
+        $path = $path === "/" ? "/" : $path;
+        foreach (["/developer", "/developer-panel-setup", "/customer", "/maintenance", "/api", "/health", "/fnlla/consent"] as $privatePrefix) {
+            if ($path === $privatePrefix || str_starts_with($path, rtrim($privatePrefix, "/") . "/")) {
+                return false;
+            }
+        }
 
-        return !in_array($path, ["/developer-panel-setup", "/health"], true);
+        return true;
     }
 }

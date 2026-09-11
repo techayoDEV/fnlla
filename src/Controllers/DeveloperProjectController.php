@@ -85,20 +85,26 @@ final class DeveloperProjectController extends DeveloperPanelController
         } else {
             $developerControl->enable($developer);
         }
+        $currentControlState = $developerControl->state();
+        $remoteStillDisabled = !$disabled
+            && ($currentControlState["disabled"] ?? false) === true
+            && ($currentControlState["source"] ?? "") === "remote";
 
         $activityLog->record(
             "service_control",
             $disabled ? "Public service disabled" : "Public service re-enabled",
-            $disabled ? "Public routes now show the developer-disabled service notice." : "Public routes were reopened by the developer team.",
+            $disabled
+                ? "Public routes now show the developer-disabled service notice."
+                : ($remoteStillDisabled ? "The local service lock was cleared, but a remote provider suspension is still active." : "Public routes were reopened by the developer team."),
             $developer
         );
 
         flash_set("status", [
             "variant" => "success",
-            "title" => $disabled ? "Service disabled" : "Service enabled",
+            "title" => $disabled ? "Service disabled" : ($remoteStillDisabled ? "Local lock cleared" : "Service enabled"),
             "text" => $disabled
                 ? "Public routes now show the developer service-disabled message while developer access remains available."
-                : "The local developer service lock was cleared.",
+                : ($remoteStillDisabled ? "Remote service suspension is still active and must be changed from the configured provider control plane." : "The local developer service lock was cleared."),
             "toast" => true,
         ]);
         regenerate_csrf_token();

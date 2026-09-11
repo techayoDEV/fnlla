@@ -47,7 +47,7 @@ final class DeveloperProfileController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/access-settings",
-            "Access & Security",
+            "Access & security",
             "access"
         );
     }
@@ -168,16 +168,19 @@ final class DeveloperProfileController extends DeveloperPanelController
         $currentDeveloper = $developerAccess->currentDeveloper();
         $currentEmail = strtolower(trim((string) ($currentDeveloper["email"] ?? "")));
         $roleOptions = $developerAccess->roleOptions();
+        $submittedRole = trim((string) $request->input("developer_profile_role", ""));
         $payload = [
             "developer_profile_name" => trim((string) $request->input("developer_profile_name", "")),
-            "developer_profile_role" => strtolower(str_replace([" ", "-"], "_", trim((string) $request->input("developer_profile_role", "")))),
+            "developer_profile_role" => $submittedRole !== ""
+                ? strtolower(str_replace([" ", "-"], "_", $submittedRole))
+                : (string) ($currentDeveloper["role"] ?? "application_developer"),
             "developer_profile_avatar" => trim((string) $request->input("developer_profile_avatar", "")),
             "developer_profile_generate_avatar" => (string) $request->input("developer_profile_generate_avatar", "") === "1",
             "developer_profile_remove_avatar" => (string) $request->input("developer_profile_remove_avatar", "") === "1",
         ];
 
         if (!array_key_exists($payload["developer_profile_role"], $roleOptions)) {
-            $payload["developer_profile_role"] = "application_developer";
+            $payload["developer_profile_role"] = (string) ($currentDeveloper["role"] ?? "application_developer");
         }
 
         try {

@@ -271,7 +271,7 @@ final class FrameworkLock
             return false;
         }
 
-        if (in_array($relativePath, ["views/layouts/developer.php", "views/partials/framework-wordmark.php", "public/assets/app-base.css", "public/assets/developer-panel.css", "public/assets/developer-panel.js", "public/assets/developer-tools.css", "public/assets/debug-toolbar.css"], true)) {
+        if (in_array($relativePath, ["views/layouts/developer.php", "views/partials/framework-wordmark.php", "public/assets/app-base.css", "public/assets/developer-panel.css", "public/assets/developer-panel.js", "public/assets/debug-toolbar.css"], true)) {
             return true;
         }
 

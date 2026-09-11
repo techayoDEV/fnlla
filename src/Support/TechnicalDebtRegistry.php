@@ -30,7 +30,7 @@ final class TechnicalDebtRegistry
 
     public function save(array $input, int $revision, string $actor): array
     {
-        foreach (["id", "title", "status", "priority", "owner", "notes", "due_date"] as $field) {
+        foreach (["id", "title", "status", "priority", "owner", "notes", "due_date", "accepted_until", "issue_ref", "adr_ref", "evidence_ref"] as $field) {
             if (isset($input[$field]) && !is_string($input[$field])) {
                 throw new InvalidArgumentException("Debt fields must contain text values.");
             }
@@ -41,16 +41,22 @@ final class TechnicalDebtRegistry
         $owner = trim((string) ($input["owner"] ?? ""));
         $notes = trim((string) ($input["notes"] ?? ""));
         $due = trim((string) ($input["due_date"] ?? ""));
+        $acceptedUntil = trim((string) ($input["accepted_until"] ?? ""));
+        $issueRef = $this->cleanReference((string) ($input["issue_ref"] ?? ""));
+        $adrRef = $this->cleanReference((string) ($input["adr_ref"] ?? ""));
+        $evidenceRef = $this->cleanReference((string) ($input["evidence_ref"] ?? ""));
         $date = $due === "" ? false : \DateTimeImmutable::createFromFormat("!Y-m-d", $due);
+        $acceptedUntilDate = $acceptedUntil === "" ? false : \DateTimeImmutable::createFromFormat("!Y-m-d", $acceptedUntil);
         if ($title === "" || strlen($title) > 160 || strlen($owner) > 160 || strlen($notes) > 2000
             || !in_array($status, self::STATUSES, true) || !in_array($priority, self::PRIORITIES, true)
-            || ($due !== "" && ($date === false || $date->format("Y-m-d") !== $due))) {
-            throw new InvalidArgumentException("Check the title, status, priority, owner, notes and due date.");
+            || ($due !== "" && ($date === false || $date->format("Y-m-d") !== $due))
+            || ($acceptedUntil !== "" && ($acceptedUntilDate === false || $acceptedUntilDate->format("Y-m-d") !== $acceptedUntil))) {
+            throw new InvalidArgumentException("Check the title, status, priority, owner, notes, links and dates.");
         }
-        if ($status === "accepted" && $notes === "") {
-            throw new InvalidArgumentException("Accepted debt requires a reason in the notes.");
+        if ($status === "accepted" && ($notes === "" || $acceptedUntil === "")) {
+            throw new InvalidArgumentException("Accepted debt requires a reason in the notes and an expiry date.");
         }
-        return $this->mutate($revision, $actor, "save", function (array $state) use ($input, $title, $status, $priority, $owner, $notes, $due): array {
+        return $this->mutate($revision, $actor, "save", function (array $state) use ($input, $title, $status, $priority, $owner, $notes, $due, $acceptedUntil, $issueRef, $adrRef, $evidenceRef): array {
             $id = (string) ($input["id"] ?? "");
             if ($id !== "" && !isset($state["items"][$id])) {
                 throw new InvalidArgumentException("Debt item no longer exists.");
@@ -59,7 +65,9 @@ final class TechnicalDebtRegistry
             $previous = $state["items"][$id] ?? ["id" => $id, "source" => "manual", "created_at" => gmdate(DATE_ATOM)];
             $state["items"][$id] = array_merge($previous, [
                 "title" => $title, "status" => $status, "priority" => $priority, "owner" => $owner,
-                "notes" => $notes, "due_date" => $due, "updated_at" => gmdate(DATE_ATOM),
+                "notes" => $notes, "due_date" => $due, "accepted_until" => $acceptedUntil,
+                "issue_ref" => $issueRef, "adr_ref" => $adrRef, "evidence_ref" => $evidenceRef,
+                "updated_at" => gmdate(DATE_ATOM),
             ]);
             return $state;
         });
@@ -79,6 +87,7 @@ final class TechnicalDebtRegistry
                 $state["items"][$id] ??= [
                     "id" => $id, "title" => "Review debt markers: " . $path, "source" => "marker",
                     "status" => "open", "priority" => "normal", "owner" => "", "notes" => "", "due_date" => "",
+                    "accepted_until" => "", "issue_ref" => "", "adr_ref" => "", "evidence_ref" => "",
                     "created_at" => gmdate(DATE_ATOM),
                 ];
                 $state["items"][$id]["observed"] = true;
@@ -121,6 +130,10 @@ final class TechnicalDebtRegistry
                 "owner" => "",
                 "notes" => $notes,
                 "due_date" => "",
+                "accepted_until" => "",
+                "issue_ref" => "",
+                "adr_ref" => "",
+                "evidence_ref" => "",
             ];
 
             $state["items"][$id] = array_merge($previous, [
@@ -154,5 +167,23 @@ final class TechnicalDebtRegistry
             $state["history"] = array_slice($state["history"], -100);
             return $state;
         });
+    }
+
+    private function cleanReference(string $value): string
+    {
+        $value = trim((string) preg_replace('/\s+/', ' ', strip_tags($value)));
+        if (strlen($value) > 240) {
+            $value = substr($value, 0, 240);
+        }
+
+        if ($value === "") {
+            return "";
+        }
+
+        if (preg_match('/^(https?:\/\/|\/|#|docs\/|\.github\/)[^\s<>"]+$/i', $value) !== 1) {
+            throw new InvalidArgumentException("Debt references must be HTTPS/HTTP URLs, internal paths, anchors or docs/.github references.");
+        }
+
+        return $value;
     }
 }

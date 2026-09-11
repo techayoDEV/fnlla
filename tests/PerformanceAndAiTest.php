@@ -241,6 +241,14 @@ final class PerformanceAndAiTest extends TestCase
             "HTTP_ACCEPT" => "text/html",
             "HTTP_USER_AGENT" => "Mozilla/5.0",
         ]), Response::html("Saved"), 60.0);
+        $_SERVER["FNLLA_ROUTE_NAME"] = "developer.panel.analytics";
+        $recorder->record(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/analytics",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "203.0.113.55",
+            "HTTP_ACCEPT" => "text/html",
+            "HTTP_USER_AGENT" => "Mozilla/5.0",
+        ]), Response::html("Private"), 999.0);
         $recorder->recordConsent([
             "analytics" => true,
             "marketing" => false,
@@ -254,6 +262,7 @@ final class PerformanceAndAiTest extends TestCase
 
         self::assertSame("fnlla.developer_analytics.v1", $report["schema"] ?? null);
         self::assertSame(1, (int) ($report["summary"]["page_views"] ?? 0));
+        self::assertSame(2, (int) ($report["summary"]["total_requests"] ?? 0));
         self::assertSame(1, (int) ($report["summary"]["conversion_events"] ?? 0));
         self::assertSame(1, (int) ($report["summary"]["consent_events"] ?? 0));
         self::assertSame(100.0, (float) ($report["summary"]["analytics_consent_rate"] ?? 0.0));
@@ -270,6 +279,7 @@ final class PerformanceAndAiTest extends TestCase
         self::assertStringNotContainsString("203.0.113.55", $encoded);
         self::assertStringNotContainsString("q=private", $encoded);
         self::assertStringNotContainsString("iPhone OS", $encoded);
+        self::assertStringNotContainsString("developer.panel.analytics", $encoded);
     }
 
     public function testDeveloperHeatmapReportBuildsAggregateBehaviorCockpitWithoutRawVisitorData(): void
@@ -306,6 +316,24 @@ final class PerformanceAndAiTest extends TestCase
             "device" => "desktop",
             "depth" => 75,
         ]);
+        $recorder->recordBehaviorEvent([
+            "type" => "click",
+            "path" => "/about",
+            "device" => "mobile",
+            "element" => "a",
+            "element_label" => "Read about us",
+            "element_context" => "footer",
+            "position" => ["x_percent" => 20, "y_percent" => 20],
+        ]);
+        $recorder->recordBehaviorEvent([
+            "type" => "click",
+            "path" => "/developer/panel/heatmap",
+            "device" => "desktop",
+            "element" => "button",
+            "element_label" => "Private control",
+            "element_context" => "developer panel",
+            "position" => ["x_percent" => 66, "y_percent" => 42],
+        ]);
 
         $report = (new DeveloperHeatmapReport())->build();
         $encoded = json_encode($report, JSON_THROW_ON_ERROR);
@@ -314,20 +342,29 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame("first-party aggregate heatmap", $report["privacy"]["mode"] ?? null);
         self::assertFalse((bool) ($report["privacy"]["raw_session_recording"] ?? true));
         self::assertFalse((bool) ($report["privacy"]["raw_cursor_trails"] ?? true));
-        self::assertSame(3, (int) ($report["summary"]["behavior_events"] ?? 0));
-        self::assertSame(1, (int) ($report["summary"]["click_events"] ?? 0));
+        self::assertSame(4, (int) ($report["summary"]["behavior_events"] ?? 0));
+        self::assertSame(2, (int) ($report["summary"]["click_events"] ?? 0));
         self::assertSame(1, (int) ($report["summary"]["scroll_events"] ?? 0));
         self::assertSame("/services", $report["summary"]["top_page"] ?? null);
+        self::assertSame("/services", $report["selected_page"] ?? null);
+        self::assertSame("/services", $report["public_pages"][0]["path"] ?? null);
+        self::assertSame("/about", $report["public_pages"][1]["path"] ?? null);
         self::assertSame(5, (int) ($report["charts"]["top_page_click_grid"]["columns"] ?? 0));
         self::assertSame(5, count((array) ($report["charts"]["top_page_click_grid"]["rows"] ?? [])));
-        self::assertSame("button", $report["charts"]["click_elements"][0]["label"] ?? null);
+        self::assertContains("button", array_column((array) ($report["charts"]["click_elements"] ?? []), "label"));
+        self::assertContains("a", array_column((array) ($report["charts"]["click_elements"] ?? []), "label"));
         self::assertSame("Center-right public page area", $report["charts"]["top_page_click_grid"]["rows"][2][3]["zone"] ?? null);
         self::assertSame("button: Request quote in main", $report["charts"]["top_page_click_grid"]["rows"][2][3]["targets"][0]["label"] ?? null);
         self::assertStringContainsString("Public page /services.", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
         self::assertStringContainsString("Most clicked: button: Request quote in main (1).", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
+        $selectedReport = (new DeveloperHeatmapReport())->build("/about");
+        self::assertSame("/about", $selectedReport["selected_page"] ?? null);
+        self::assertSame("/about", $selectedReport["charts"]["top_page_click_grid"]["page"] ?? null);
         self::assertStringNotContainsString("token=hidden", $encoded);
         self::assertStringNotContainsString("Mozilla", $encoded);
         self::assertStringNotContainsString("203.0.113", $encoded);
+        self::assertStringNotContainsString("/developer/panel/heatmap", $encoded);
+        self::assertStringNotContainsString("Private control", $encoded);
     }
 
     public function testPerformanceCommandsAreNamedForCli(): void

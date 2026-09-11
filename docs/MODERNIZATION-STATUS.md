@@ -7,18 +7,20 @@ This ledger describes the architecture acceptance for edition **2.2.0**.
 versions; the ledger is not an availability announcement. Do not retag or reuse a published version.
 
 The [JSON ledger](../resources/modernization-tasks.json) is the sole live register.
-Current totals: **19 done, 4 partial, 2 open, 1 blocked**. Document consolidation
+Current totals: **21 done, 2 partial, 2 open, 1 blocked**. Document consolidation
 does not change acceptance or erase unfinished work. In particular, the 2.2.0
 database defaults, updated security policy, tooling fixes and unified brand kit
-are implemented improvements, not evidence that the seven remaining architecture
+are implemented improvements, not evidence that the five remaining architecture
 criteria have passed.
 
-Pre-publication work adds a manual draft-only release workflow and a disposable
-Nginx/TLS/PHP-FPM acceptance runner consuming the CI source archive. Their presence
-does not establish a successful remote run. Keep the HTTP and publication criteria
-open until exact-commit evidence, draft/download checks and the required external
-acceptance have actually been recorded. Notification delivery and website hosting
-are separate operational checks, not inferred from repository configuration.
+The v2.2.0 GitHub release and CI evidence close the previous upgrade and HTTP
+edge criteria: the maintained workflow consumes the accepted source archive,
+exercises the Full, Plain and package previews through Nginx TLS ingress, an
+origin proxy, PHP-FPM 8.3 and OPcache, and the release assets are public. This
+does not close public Composer registry installation, application-owned recovery,
+long-lived worker isolation, package uninstallability or comparative framework
+benchmarking. Notification delivery and website hosting are separate operational
+checks, not inferred from repository configuration.
 
 ## Remaining Acceptance
 
@@ -26,11 +28,9 @@ are separate operational checks, not inferred from repository configuration.
 | --- | --- | --- |
 | Partial | Complete packages | Independent modules and versioned assets/config/routes publication and removal; package mode remains opt-in. |
 | Partial | Business recovery | Application-specific offsite schedule, secrets, consistent restore and external-effect reconciliation. |
-| Partial | HTTP edge matrix | Supported proxy/SAPI topologies and serving OPcache invalidation beyond local transport/cache tests. |
-| Partial | Published upgrades | Official 2.1.3-to-candidate merge, rollback boundary, post-install checks and application preservation pass locally and in Linux integration CI. Published 2.2.0 consumer installation remains required. |
 | Open | HTTP workers | Sequential/concurrent globals, statics and session isolation; normal PHP requests remain supported. |
 | Open | Comparative benchmarks | Pinned equivalent applications, cold/warm latency percentiles and memory. |
-| Blocked | Public packages | Immutable artifacts, registry metadata and verified consumer installation. |
+| Blocked | Public packages | Composer registry metadata, registry installation and verified consumer installation. |
 
 Implemented criteria and source/test evidence remain in the ledger. See
 [Architecture](ARCHITECTURE-ROADMAP.md), [Runtime contracts](framework/RUNTIME-CONTRACTS.md)
@@ -51,6 +51,9 @@ Windows private-state rename fix passed all workflows for commit `b101a42`:
 [Core Quality](https://github.com/techayoDEV/fnlla/actions/runs/34041649549),
 [Hardening](https://github.com/techayoDEV/fnlla/actions/runs/34041649518),
 [Release Gate](https://github.com/techayoDEV/fnlla/actions/runs/34041649523).
+The later `5c1edb2` Core Quality run passed the source archive, production HTTP,
+brand UI, PHP matrix and services jobs:
+[Core Quality](https://github.com/techayoDEV/fnlla/actions/runs/34153884273).
 Every later candidate must pass all workflows before release approval.
 
 ## Evidence Policy

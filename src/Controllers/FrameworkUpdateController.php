@@ -27,6 +27,7 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Support\FrameworkLock;
 use Fnlla\Php\Support\FrameworkReleaseChannel;
 use Fnlla\Php\Support\FrameworkUpdater;
+use Fnlla\Php\Support\DeveloperPanelPolicy;
 use Fnlla\Php\Support\UpgradeAnalyzer;
 use RuntimeException;
 
@@ -111,7 +112,7 @@ final class FrameworkUpdateController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Safe apply is disabled here",
-                "text" => "This application currently allows browser-based checks only. Enable apply explicitly in the local environment when you are ready.",
+                "text" => (string) ($pageState["apply_policy"]["message"] ?? "This application currently allows browser-based checks only. Enable apply explicitly in the local environment when you are ready."),
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -194,7 +195,7 @@ final class FrameworkUpdateController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Safe upgrade apply is disabled here",
-                "text" => "Enable FRAMEWORK_UPDATE_UI_APPLY_ENABLED when this browser maintenance page should execute safe major-upgrade actions.",
+                "text" => (string) ($pageState["apply_policy"]["message"] ?? "Enable FRAMEWORK_UPDATE_UI_APPLY_ENABLED when this browser maintenance page should execute safe major-upgrade actions."),
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -247,13 +248,16 @@ final class FrameworkUpdateController extends Controller
         $enabled = (bool) config("framework_update.ui_enabled", false);
         $localOnly = (bool) config("framework_update.ui_local_only", true);
         $applyEnabled = (bool) config("framework_update.ui_apply_enabled", false);
+        $applyPolicy = DeveloperPanelPolicy::frameworkApplyPolicy();
         $isLocalRequest = in_array($request->ip(), ["127.0.0.1", "::1"], true);
         $isLocalContext = !$localOnly || $isLocalRequest;
         $canRun = $enabled && $isLocalContext;
+        $canApply = $canRun && $applyEnabled && (($applyPolicy["allows_browser_apply"] ?? false) === true);
 
         $message = match (true) {
             $enabled !== true => "Enable FRAMEWORK_UPDATE_UI_ENABLED in the local environment to run browser-based framework checks.",
             $isLocalContext !== true => "This page is configured for local-only usage. Open it from the same machine as the project runtime.",
+            $applyEnabled && (($applyPolicy["allows_browser_apply"] ?? false) !== true) => (string) ($applyPolicy["message"] ?? "Browser apply is blocked by environment policy."),
             default => "Framework update checks are available from this page.",
         };
 
@@ -264,7 +268,8 @@ final class FrameworkUpdateController extends Controller
             "github_enabled" => (bool) config("framework_update.github_enabled", true),
             "is_local_request" => $isLocalRequest,
             "can_run" => $canRun,
-            "can_apply" => $canRun && $applyEnabled,
+            "can_apply" => $canApply,
+            "apply_policy" => $applyPolicy,
             "message" => $message,
         ];
     }

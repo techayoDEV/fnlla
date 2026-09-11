@@ -30,6 +30,7 @@ use Fnlla\Php\Routing\Router;
 use Fnlla\Php\Support\DoctorReport;
 use Fnlla\Php\Support\BackupPlanBuilder;
 use Fnlla\Php\Support\DeveloperPanelStorageInstaller;
+use Fnlla\Php\Support\DeveloperNotificationCenter;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\ProjectAcceptanceReportBuilder;
 use Fnlla\Php\Support\RecentFileLines;
@@ -220,6 +221,65 @@ final class OperationsTest extends TestCase
         self::assertStringNotContainsString("do-not-leak", $encoded);
     }
 
+    public function testReviewQueueUsesPerDeveloperStateForGlobalActivity(): void
+    {
+        $activityPath = "framework/operations-activity-" . bin2hex(random_bytes(4)) . ".jsonl";
+        $notificationsPath = "framework/operations-notifications-" . bin2hex(random_bytes(4)) . ".json";
+        config_set("developer_control.activity_log_driver", "file");
+        config_set("developer_control.activity_log_path", $activityPath);
+        config_set("developer_workspace.driver", "file");
+        config_set("developer_workspace.notifications_state_path", $notificationsPath);
+
+        try {
+            \developer_activity()->record(
+                "service_control",
+                "Public service disabled",
+                "Public routes now show the developer-disabled service notice.",
+                ["email" => "alpha@example.test", "name" => "Alpha Developer", "role" => "lead_developer"]
+            );
+
+            $notifications = new DeveloperNotificationCenter();
+            $dashboard = [
+                "framework_lock" => true,
+                "observability_enabled" => true,
+                "project_leadership" => ["configured" => false],
+            ];
+            $operations = [
+                "release_readiness" => [
+                    "security_audit" => ["failures" => 0],
+                    "backup_restore" => ["ok" => true],
+                ],
+            ];
+            $control = ["disabled" => false];
+
+            $beta = $notifications->build($this->developerAccessState("beta@example.test"), $dashboard, $operations, $control);
+            $betaItems = array_values(array_filter((array) ($beta["items"] ?? []), static fn (array $item): bool => str_starts_with((string) ($item["key"] ?? ""), "activity:")));
+
+            self::assertSame("fnlla.developer_notifications.v2", $beta["schema"] ?? null);
+            self::assertSame(1, count($betaItems));
+            self::assertSame(1, (int) ($beta["unread_count"] ?? 0));
+            self::assertSame("Public service disabled", $betaItems[0]["title"] ?? null);
+            self::assertStringContainsString("Alpha Developer", (string) ($betaItems[0]["text"] ?? ""));
+
+            $alpha = $notifications->build($this->developerAccessState("alpha@example.test"), $dashboard, $operations, $control);
+            self::assertSame([], array_values(array_filter((array) ($alpha["items"] ?? []), static fn (array $item): bool => str_starts_with((string) ($item["key"] ?? ""), "activity:"))));
+
+            $notifications->acknowledge((string) ($betaItems[0]["key"] ?? ""), ["email" => "beta@example.test"]);
+
+            $betaRead = $notifications->build($this->developerAccessState("beta@example.test"), $dashboard, $operations, $control);
+            self::assertSame(0, (int) ($betaRead["unread_count"] ?? 0));
+
+            $gamma = $notifications->build($this->developerAccessState("gamma@example.test"), $dashboard, $operations, $control);
+            self::assertSame(1, (int) ($gamma["unread_count"] ?? 0));
+        } finally {
+            foreach ([storage_path($activityPath), storage_path($notificationsPath), storage_path($notificationsPath . ".lock")] as $path) {
+                if (is_file($path)) {
+                    unlink($path);
+                }
+            }
+        }
+    }
+
     public function testDeveloperWorkspaceBoardTracksKanbanDeliveryMetadata(): void
     {
         $path = "framework/developer/workspace-test-" . bin2hex(random_bytes(4)) . ".json";
@@ -257,6 +317,7 @@ final class OperationsTest extends TestCase
             "checklist" => "[x] Confirm routes\n[ ] Run release checks",
             "subtask" => "Capture QA screenshot",
             "subtask_color" => "sky",
+            "subtask_note" => "Attach screenshot to the handover issue.",
             "comment" => "Client handover needs a final browser pass.",
             "attachment_label" => "Release checklist",
             "attachment_url" => "https://example.test/release-checklist",
@@ -291,6 +352,7 @@ final class OperationsTest extends TestCase
         self::assertSame("urgent", $updatedTask["priority"] ?? null);
         self::assertSame("lead@example.com", $updatedTask["updated_by"] ?? null);
         self::assertSame(3, count((array) ($updatedTask["checklist"] ?? [])));
+        self::assertSame("Attach screenshot to the handover issue.", $updatedTask["checklist"][2]["note"] ?? null);
         self::assertSame(1, $updatedState["comments_count"] ?? null);
         self::assertSame(2, $updatedState["attachments_count"] ?? null);
         self::assertSame("file", $updatedTask["attachments"][1]["type"] ?? null);
@@ -467,5 +529,18 @@ final class OperationsTest extends TestCase
             @unlink($manifestPath);
             @rmdir($directory);
         }
+    }
+
+    private function developerAccessState(string $email): array
+    {
+        return [
+            "current_developer" => [
+                "email" => $email,
+                "name" => ucfirst(strtok($email, "@") ?: "Developer"),
+                "role" => "lead_developer",
+            ],
+            "current_capabilities" => ["operations.view", "decision.review"],
+            "security" => ["totp_enabled" => true],
+        ];
     }
 }

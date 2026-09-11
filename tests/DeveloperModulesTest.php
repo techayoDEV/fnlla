@@ -33,6 +33,26 @@ final class DeveloperModulesTest extends TestCase
         } finally { config_set("modules", $saved); }
     }
 
+    public function testRegulatedProfileRequiresExplicitHeatmapPolicyOptIn(): void
+    {
+        $savedModules = config("modules");
+        $savedDeveloperControl = config("developer_control");
+        $savedObservability = config("observability");
+
+        try {
+            config_set("modules.heatmap", true);
+            config_set("developer_control.regulated_mode", true);
+            config_set("observability.regulated.heatmap_enabled", false);
+            self::assertFalse(DeveloperModules::enabled("heatmap"));
+            config_set("observability.regulated.heatmap_enabled", true);
+            self::assertTrue(DeveloperModules::enabled("heatmap"));
+        } finally {
+            config_set("modules", $savedModules);
+            config_set("developer_control", $savedDeveloperControl);
+            config_set("observability", $savedObservability);
+        }
+    }
+
     public function testModuleDecisionsRemainLiveAfterRouteCaching(): void
     {
         $saved = config("modules");

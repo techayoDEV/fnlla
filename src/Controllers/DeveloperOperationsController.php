@@ -28,6 +28,10 @@ final class DeveloperOperationsController extends DeveloperPanelController
 {
     public function frameworkUpdates(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
+        if (!$this->ensureDeveloperCapability($developerAccess, "framework.update")) {
+            return $this->redirect(route("developer.panel.operations"));
+        }
+
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
@@ -47,6 +51,19 @@ final class DeveloperOperationsController extends DeveloperPanelController
     public function runFrameworkUpdate(Request $request, DeveloperAccessManager $developerAccess): Response
     {
         if (!$this->ensureDeveloperCapability($developerAccess, "framework.update")) {
+            return $this->redirect(route("developer.panel.framework_updates"));
+        }
+
+        $mode = strtolower(trim((string) $request->input("mode", "check")));
+        if (in_array($mode, ["apply", "github-apply", "upgrade-apply"], true) && !$developerAccess->can("framework.update.apply")) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Framework apply requires approval",
+                "text" => "Your role can check and dry-run framework updates, but applying changes requires the framework.update.apply capability.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
             return $this->redirect(route("developer.panel.framework_updates"));
         }
 
@@ -90,6 +107,24 @@ final class DeveloperOperationsController extends DeveloperPanelController
         );
     }
 
+    public function changelog(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess, DeveloperActivityLog $activityLog): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "operations.view")) {
+            return $this->redirect(route("developer.panel"));
+        }
+
+        return $this->renderDeveloperPanel(
+            $developerAccess,
+            $maintenanceAccess,
+            "developer/changelog",
+            "Project Changelog",
+            "project-changelog",
+            [
+                "projectChangelogReport" => $this->projectLogReport($activityLog->recent(120)),
+            ]
+        );
+    }
+
     public function notifications(
         Request $request,
         DeveloperAccessManager $developerAccess,
@@ -110,7 +145,7 @@ final class DeveloperOperationsController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/notifications",
-            "Notifications",
+            "Review Queue",
             "notifications",
             [
                 "notificationsReport" => $notifications->build($developerAccessState, $dashboard, $operations, developer_control()->state()),
@@ -128,7 +163,7 @@ final class DeveloperOperationsController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/release-readiness",
-            "Release Readiness",
+            "Readiness & Health",
             "release-readiness",
             [
                 "operationsReport" => $report->build(),
@@ -168,12 +203,15 @@ final class DeveloperOperationsController extends DeveloperPanelController
         } elseif ($action === "acknowledge") {
             $notifications->acknowledge($key, $developer);
             $message = "Notification marked as read";
+            $redirectTo = $this->developerNotificationActionRedirect($request);
         } elseif ($action === "archive") {
             $notifications->archive($key, $developer);
             $message = "Notification archived";
+            $redirectTo = $this->developerNotificationActionRedirect($request);
         } else {
             $notifications->restore($key, $developer);
             $message = "Notification restored";
+            $redirectTo = $this->developerNotificationActionRedirect($request);
         }
 
         developer_activity()->record(
@@ -186,7 +224,7 @@ final class DeveloperOperationsController extends DeveloperPanelController
         flash_set("status", [
             "variant" => "success",
             "title" => $message,
-            "text" => "The notification center state was saved for every developer session.",
+            "text" => "Your review queue state was saved without hiding the item for other developers.",
             "toast" => true,
         ]);
         regenerate_csrf_token();
@@ -290,19 +328,15 @@ final class DeveloperOperationsController extends DeveloperPanelController
     {
         $action = strtolower($action);
 
-        if (str_contains($action, "workspace") || str_contains($action, "task") || str_contains($action, "kanban") || str_contains($action, "attachment") || str_contains($action, "subtask")) {
+        if (str_contains($action, "workspace") || str_contains($action, "identity") || str_contains($action, "leadership") || str_contains($action, "task") || str_contains($action, "kanban") || str_contains($action, "attachment") || str_contains($action, "subtask")) {
             return "Workspace";
-        }
-
-        if (str_contains($action, "project") || str_contains($action, "identity") || str_contains($action, "preview") || str_contains($action, "maintenance") || str_contains($action, "leadership")) {
-            return "Project setup";
         }
 
         if (str_contains($action, "developer") || str_contains($action, "security") || str_contains($action, "profile") || str_contains($action, "password") || str_contains($action, "totp")) {
             return "Access";
         }
 
-        if (str_contains($action, "framework") || str_contains($action, "release") || str_contains($action, "analytics") || str_contains($action, "heatmap") || str_contains($action, "integration") || str_contains($action, "notification")) {
+        if (str_contains($action, "project") || str_contains($action, "preview") || str_contains($action, "maintenance") || str_contains($action, "framework") || str_contains($action, "release") || str_contains($action, "analytics") || str_contains($action, "heatmap") || str_contains($action, "integration") || str_contains($action, "notification")) {
             return "Operations";
         }
 

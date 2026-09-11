@@ -54,12 +54,27 @@ final class MetricsRecorder
 
             $analyticsEnabled = \Fnlla\Php\Support\DeveloperModules::enabled("analytics")
                 && (bool) config("observability.analytics.enabled", true);
-            $analyticsSampled = $analyticsEnabled && $this->withinSampleRate();
+            $publicAnalyticsRequest = $this->isPublicAnalyticsRequest($request, $response, $routeName);
+            $analyticsSampled = $analyticsEnabled && $publicAnalyticsRequest && $this->withinSampleRate();
             $routeKey = $this->routeKey($request, $routeName);
 
             if ($analyticsSampled) {
+                $metrics["analytics_total_requests"] = (int) ($metrics["analytics_total_requests"] ?? 0) + 1;
+                $metrics["analytics_total_duration_ms"] = round((float) ($metrics["analytics_total_duration_ms"] ?? 0.0) + $durationMs, 3);
+                $metrics["analytics_max_duration_ms"] = round(max((float) ($metrics["analytics_max_duration_ms"] ?? 0.0), $durationMs), 3);
+                $metrics["analytics_status_counts"] = $this->incrementMap((array) ($metrics["analytics_status_counts"] ?? []), $status);
+                $metrics["analytics_method_counts"] = $this->incrementMap((array) ($metrics["analytics_method_counts"] ?? []), $method);
                 $metrics["route_duration_totals"] = $this->addToMap((array) ($metrics["route_duration_totals"] ?? []), $routeKey, $durationMs);
                 $metrics["route_duration_counts"] = $this->incrementMap((array) ($metrics["route_duration_counts"] ?? []), $routeKey);
+                $metrics["analytics_last_request"] = [
+                    "request_id" => $request->requestId(),
+                    "method" => $method,
+                    "path" => $request->path(),
+                    "route" => $routeName,
+                    "status" => $response->status(),
+                    "duration_ms" => round($durationMs, 3),
+                    "recorded_at_utc" => $recordedAt,
+                ];
 
                 if ($durationMs > (float) config("observability.slow_route_threshold_ms", 750)) {
                     $metrics["slow_route_counts"] = $this->incrementMap((array) ($metrics["slow_route_counts"] ?? []), $routeKey);
@@ -68,6 +83,7 @@ final class MetricsRecorder
 
             if ($analyticsSampled && $this->isFormSubmission($request, $response)) {
                 $metrics["form_submissions"] = (int) ($metrics["form_submissions"] ?? 0) + 1;
+                $metrics["analytics_form_submissions"] = (int) ($metrics["analytics_form_submissions"] ?? 0) + 1;
                 $metrics["form_route_counts"] = $this->incrementMap((array) ($metrics["form_route_counts"] ?? []), $routeKey);
             }
 
@@ -290,6 +306,25 @@ final class MetricsRecorder
         return in_array($request->method(), ["POST", "PUT", "PATCH"], true) && $response->status() < 400;
     }
 
+    private function isPublicAnalyticsRequest(Request $request, Response $response, string $routeName): bool
+    {
+        if ($this->isReservedRoute($routeName) || !$this->isPublicBehaviorPath($request->path())) {
+            return false;
+        }
+
+        if ($this->isFormSubmission($request, $response)) {
+            return true;
+        }
+
+        if (!in_array($request->method(), ["GET", "HEAD"], true)) {
+            return false;
+        }
+
+        $accept = strtolower((string) $request->header("Accept", ""));
+
+        return $accept === "" || str_contains($accept, "text/html") || str_contains($accept, "*/*");
+    }
+
     private function withinSampleRate(): bool
     {
         $rate = max(1, min(100, (int) config("observability.analytics.sample_rate", 100)));
@@ -330,6 +365,23 @@ final class MetricsRecorder
         $path = $request->path();
 
         return $path !== "" ? $path : "/";
+    }
+
+    private function isReservedRoute(string $routeName): bool
+    {
+        $routeName = strtolower(trim($routeName));
+
+        if ($routeName === "") {
+            return false;
+        }
+
+        foreach (["developer.", "maintenance.", "customer.", "client.", "api.", "fnlla."] as $prefix) {
+            if (str_starts_with($routeName, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isLikelyBot(string $userAgent): bool
@@ -423,6 +475,8 @@ final class MetricsRecorder
         $reserved = [
             "/developer",
             "/maintenance",
+            "/client",
+            "/api",
             "/fnlla",
             (string) config("developer_access.path", ""),
             (string) config("customer_access.path", ""),

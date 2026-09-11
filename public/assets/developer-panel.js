@@ -41,6 +41,197 @@
 
 (() => {
   const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer sidebar disclosure failed.', error);
+  };
+
+  const init = () => {
+    try {
+      const toggles = Array.from(document.querySelectorAll('[data-developer-sidebar-toggle]'));
+      if (toggles.length === 0) return;
+
+      const storageKey = 'fnlla.developer.sidebar.expanded';
+      const readState = () => {
+        try {
+          const stored = window.localStorage?.getItem(storageKey);
+          return stored ? JSON.parse(stored) : {};
+        } catch (_error) {
+          return {};
+        }
+      };
+      const writeState = state => {
+        try {
+          window.localStorage?.setItem(storageKey, JSON.stringify(state));
+        } catch (_error) {
+          // Some privacy modes block localStorage; disclosure still works for the current page.
+        }
+      };
+      const state = readState();
+
+      toggles.forEach(toggle => {
+        const key = toggle.getAttribute('data-developer-sidebar-key') || '';
+        const targetId = toggle.getAttribute('aria-controls') || '';
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (!target) return;
+
+        const branch = toggle.closest('.developer-panel-sidebar-branch');
+        const isActiveBranch = branch?.classList.contains('is-active') === true;
+        const hasStoredValue = key !== '' && Object.prototype.hasOwnProperty.call(state, key);
+        const expanded = isActiveBranch || (hasStoredValue ? state[key] === true : toggle.getAttribute('aria-expanded') === 'true');
+
+        toggle.setAttribute('aria-expanded', String(expanded));
+        target.hidden = !expanded;
+
+        toggle.addEventListener('click', () => {
+          const next = toggle.getAttribute('aria-expanded') !== 'true';
+          toggle.setAttribute('aria-expanded', String(next));
+          target.hidden = !next;
+          if (key !== '') {
+            state[key] = next;
+            writeState(state);
+          }
+        });
+      });
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer workspace plan failed.', error);
+  };
+
+  const init = () => {
+    try {
+      document.querySelectorAll('[data-developer-kanban-plan]').forEach(plan => {
+        if (plan.hasAttribute('data-developer-kanban-plan-ready')) return;
+        plan.setAttribute('data-developer-kanban-plan-ready', 'true');
+        const buttons = Array.from(plan.querySelectorAll('[data-developer-kanban-plan-tab]'));
+        const panels = Array.from(plan.querySelectorAll('[data-developer-kanban-plan-panel]'));
+        if (buttons.length === 0 || panels.length === 0) return;
+
+        const activate = name => {
+          buttons.forEach(button => {
+            const active = button.getAttribute('data-developer-kanban-plan-tab') === name;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-selected', String(active));
+            button.setAttribute('aria-pressed', String(active));
+          });
+          panels.forEach(panel => {
+            panel.hidden = panel.getAttribute('data-developer-kanban-plan-panel') !== name;
+          });
+        };
+
+        buttons.forEach(button => {
+          button.addEventListener('click', () => activate(button.getAttribute('data-developer-kanban-plan-tab') || 'timeline'));
+        });
+
+        const active = buttons.find(button => button.classList.contains('is-active')) || buttons[0];
+        activate(active.getAttribute('data-developer-kanban-plan-tab') || 'timeline');
+      });
+
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  document.addEventListener('fnlla:developer-panel-refresh', init);
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA private to-do composer failed.', error);
+  };
+
+  const init = () => {
+    try {
+      let builderCount = 0;
+      document.querySelectorAll('[data-private-todo-subtasks]').forEach(builder => {
+        if (builder.hasAttribute('data-private-todo-subtasks-ready')) return;
+        builder.setAttribute('data-private-todo-subtasks-ready', 'true');
+        const list = builder.querySelector('[data-private-todo-subtask-list]');
+        const addButton = builder.querySelector('[data-private-todo-subtask-add]');
+        if (!list || !addButton) return;
+        const rawId = builder.getAttribute('data-private-todo-subtasks-id') || `developer-private-todo-subtasks-${builderCount++}`;
+        const idPrefix = rawId.replace(/[^A-Za-z0-9_-]/g, '-');
+
+        const nextIndex = () => {
+          let highest = -1;
+          list.querySelectorAll('input[name^="developer_private_todo_subtasks["]').forEach(input => {
+            const match = input.name.match(/\[(\d+)\]/);
+            if (match) highest = Math.max(highest, Number(match[1]));
+          });
+          return highest + 1;
+        };
+
+        const createRow = index => {
+          const row = document.createElement('div');
+          row.className = 'developer-private-todo-subtask-row';
+
+          const toggle = document.createElement('label');
+          toggle.className = 'developer-private-todo-subtask-toggle';
+          toggle.setAttribute('for', `${idPrefix}-done-${index}`);
+
+          const checkbox = document.createElement('input');
+          checkbox.id = `${idPrefix}-done-${index}`;
+          checkbox.type = 'checkbox';
+          checkbox.name = 'developer_private_todo_subtasks_done[]';
+          checkbox.value = String(index);
+
+          const mark = document.createElement('span');
+          mark.setAttribute('aria-hidden', 'true');
+          toggle.append(checkbox, mark);
+
+          const label = document.createElement('label');
+          label.className = 'visually-hidden';
+          label.setAttribute('for', `${idPrefix}-${index}`);
+          label.textContent = `Subtask ${index + 1}`;
+
+          const input = document.createElement('input');
+          input.className = 'input';
+          input.id = `${idPrefix}-${index}`;
+          input.name = `developer_private_todo_subtasks[${index}]`;
+          input.type = 'text';
+          input.maxLength = 140;
+          input.placeholder = 'Optional step';
+
+          row.append(toggle, label, input);
+          return row;
+        };
+
+        addButton.addEventListener('click', () => {
+          const row = createRow(nextIndex());
+          list.append(row);
+          row.querySelector('input[type="text"]')?.focus();
+        });
+      });
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  document.addEventListener('fnlla:developer-panel-refresh', init);
+})();
+
+(() => {
+  const warn = error => {
     if (window.console?.warn) console.warn('FNLLA developer command palette failed.', error);
   };
 
@@ -129,6 +320,10 @@
           const target = visibleItems()[activeIndex] || visibleItems()[0];
           if (!target) return;
           event.preventDefault();
+          if (target.getAttribute('data-developer-command-target') === '_blank') {
+            window.open(target.href, '_blank', 'noopener');
+            return;
+          }
           window.location.assign(target.href);
         }
       });
@@ -161,6 +356,253 @@
   } else {
     init();
   }
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer documentation search failed.', error);
+  };
+
+  const init = () => {
+    try {
+      const input = document.querySelector('[data-developer-docs-search]');
+      const cards = Array.from(document.querySelectorAll('[data-developer-docs-card]'));
+      const empty = document.querySelector('[data-developer-docs-empty]');
+      const count = document.querySelector('[data-developer-docs-count]');
+      if (!input || cards.length === 0) return;
+      if (input.hasAttribute('data-developer-docs-ready')) return;
+      input.setAttribute('data-developer-docs-ready', 'true');
+
+      const filter = () => {
+        const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        let visible = 0;
+        cards.forEach(card => {
+          const haystack = `${card.getAttribute('data-developer-docs-search-text') || ''} ${card.textContent || ''}`.toLowerCase();
+          const match = terms.length === 0 || terms.every(term => haystack.includes(term));
+          card.hidden = !match;
+          if (match) {
+            visible++;
+            if (terms.length > 0) card.open = true;
+          }
+        });
+        if (empty) empty.hidden = visible > 0;
+        if (count) count.textContent = `${visible} ${visible === 1 ? 'document' : 'documents'}`;
+      };
+
+      input.addEventListener('input', filter);
+      filter();
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  document.addEventListener('fnlla:developer-panel-refresh', init);
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer documentation navigation failed.', error);
+  };
+
+  const init = () => {
+    try {
+      const nav = document.querySelector('[data-developer-docs-nav]');
+      if (!nav || nav.hasAttribute('data-developer-docs-nav-ready')) return;
+      const links = Array.from(nav.querySelectorAll('a[href^="#"]'));
+      const sections = links.map(link => {
+        const id = (link.getAttribute('href') || '').slice(1);
+        return { id, link, section: id !== '' ? document.getElementById(id) : null };
+      }).filter(item => item.section);
+      if (sections.length === 0) return;
+
+      nav.setAttribute('data-developer-docs-nav-ready', 'true');
+      let lockedUntil = 0;
+
+      const setActive = id => {
+        let active = sections.find(item => item.id === id) || sections[0];
+        sections.forEach(item => {
+          const current = item === active;
+          if (current) {
+            item.link.setAttribute('aria-current', 'location');
+          } else {
+            item.link.removeAttribute('aria-current');
+          }
+        });
+      };
+
+      const activeFromScroll = () => {
+        if (Date.now() < lockedUntil) return;
+        const offset = Math.max(96, Math.round(window.innerHeight * 0.18));
+        let active = sections[0];
+        for (const item of sections) {
+          const rect = item.section.getBoundingClientRect();
+          if (rect.top <= offset) active = item;
+          if (rect.top <= offset && rect.bottom > offset) {
+            active = item;
+            break;
+          }
+        }
+        setActive(active.id);
+      };
+
+      let frame = null;
+      const schedule = () => {
+        if (frame !== null) return;
+        frame = window.requestAnimationFrame(() => {
+          frame = null;
+          activeFromScroll();
+        });
+      };
+
+      links.forEach(link => {
+        link.addEventListener('click', () => {
+          const id = (link.getAttribute('href') || '').slice(1);
+          if (id !== '') {
+            lockedUntil = Date.now() + 700;
+            setActive(id);
+          }
+        });
+      });
+
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule);
+      window.addEventListener('hashchange', () => {
+        const id = window.location.hash.slice(1);
+        if (id !== '') {
+          lockedUntil = Date.now() + 700;
+          setActive(id);
+        }
+      });
+
+      const initial = window.location.hash.slice(1);
+      if (initial !== '' && sections.some(item => item.id === initial)) {
+        lockedUntil = Date.now() + 700;
+        setActive(initial);
+      } else {
+        activeFromScroll();
+      }
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  document.addEventListener('fnlla:developer-panel-refresh', init);
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer AJAX action failed.', error);
+  };
+
+  const frameSelector = '[data-developer-panel-frame]';
+
+  const runInlineScripts = root => {
+    root.querySelectorAll('script:not([src])').forEach(script => {
+      const replacement = document.createElement('script');
+      Array.from(script.attributes).forEach(attribute => {
+        replacement.setAttribute(attribute.name, attribute.value);
+      });
+      replacement.textContent = script.textContent;
+      script.replaceWith(replacement);
+    });
+  };
+
+  const sameOriginPath = url => {
+    try {
+      const parsed = new URL(url, window.location.href);
+      if (parsed.origin !== window.location.origin) return '';
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch (_error) {
+      return '';
+    }
+  };
+
+  const formDataFrom = (form, submitter) => {
+    try {
+      return submitter ? new FormData(form, submitter) : new FormData(form);
+    } catch (_error) {
+      const data = new FormData(form);
+      if (submitter?.name) data.append(submitter.name, submitter.value || '');
+      return data;
+    }
+  };
+
+  const replaceFrame = (html, responseUrl) => {
+    const parser = new DOMParser();
+    const nextDocument = parser.parseFromString(html, 'text/html');
+    const currentFrame = document.querySelector(frameSelector);
+    const nextFrame = nextDocument.querySelector(frameSelector);
+    if (!currentFrame || !nextFrame) return false;
+
+    currentFrame.innerHTML = nextFrame.innerHTML;
+    if (nextDocument.title) document.title = nextDocument.title;
+    runInlineScripts(currentFrame);
+    document.dispatchEvent(new CustomEvent('fnlla:developer-panel-refresh', { detail: { frame: currentFrame } }));
+
+    const nextPath = sameOriginPath(responseUrl);
+    if (nextPath && nextPath !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.pushState({}, '', nextPath);
+    }
+
+    return true;
+  };
+
+  document.addEventListener('submit', async event => {
+    const form = event.target instanceof HTMLFormElement ? event.target : event.target?.closest?.('form');
+    if (!form || !form.matches('[data-developer-ajax]')) return;
+    if (!window.fetch || !window.FormData || !window.DOMParser) return;
+    if ((form.method || 'get').toLowerCase() !== 'post') return;
+
+    event.preventDefault();
+    const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+    const frame = document.querySelector(frameSelector);
+    const data = formDataFrom(form, submitter);
+    const action = submitter?.getAttribute('formaction') || form.action || window.location.href;
+    const method = submitter?.getAttribute('formmethod') || form.method || 'post';
+
+    form.classList.add('is-ajax-pending');
+    form.setAttribute('aria-busy', 'true');
+    frame?.setAttribute('aria-busy', 'true');
+    if (submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement) {
+      submitter.disabled = true;
+    }
+
+    try {
+      const response = await window.fetch(action, {
+        method: method.toUpperCase(),
+        body: data,
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'text/html,application/xhtml+xml',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      const html = await response.text();
+      if (!response.ok || !replaceFrame(html, response.url || action)) {
+        form.submit();
+      }
+    } catch (error) {
+      warn(error);
+      form.submit();
+    } finally {
+      form.classList.remove('is-ajax-pending');
+      form.removeAttribute('aria-busy');
+      frame?.removeAttribute('aria-busy');
+      if (submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement) {
+        submitter.disabled = false;
+      }
+    }
+  }, true);
 })();
 
 (() => {

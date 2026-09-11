@@ -1,6 +1,6 @@
 {
     "schema": "fnlla.business_app_blueprint.v1",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "routes": [
         {"method": "GET", "path": "/dashboard", "middleware": ["auth", "authorize:operations.access"], "role": "operator"},
         {"method": "GET", "path": "/clients", "middleware": ["auth", "authorize:operations.access"], "role": "operator"},

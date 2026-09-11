@@ -132,14 +132,17 @@ opts into the maintainer markup checks. Network sync is explicit by default:
 
 ### Developer tools and ownership
 
-Workspace / Technical debt provides source-marker scans and manual entries,
-owner, priority, due date, notes and open/in-progress/accepted/resolved states.
-Acceptance requires a reason. Scans preserve triage; stale edits are rejected.
+Workspace / Project work links to Technical debt, which provides source-marker
+scans and manual entries, owner, priority, due date, notes and
+open/in-progress/accepted/resolved states.
+Acceptance requires a reason and an `accepted_until` expiry. Items can carry
+issue/PR, ADR and evidence references for release review. Scans preserve triage;
+stale edits are rejected.
 The existing `tech-debt:update` report and the triage register are separate:
 accepting an item never suppresses a release check.
 
-Operations / Error Monitor controls an opt-in toolbar. It requires `APP_DEBUG`, a
-local/development/testing environment and a developer session with
+Operations / Observability links to Error Monitor, which controls an opt-in
+toolbar. It requires `APP_DEBUG`, a local/development/testing environment and a developer session with
 `operations.view`. Changing the switch additionally requires
 `panel.settings.write`. Production, staging, guests, JSON, HEAD and downloads
 do not receive a toolbar. `DEBUG_TOOLBAR=false` is the starter default.

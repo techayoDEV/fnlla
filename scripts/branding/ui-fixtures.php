@@ -68,6 +68,7 @@ foreach (['blue', 'slate', 'sky', 'indigo', 'green', 'red', 'yellow', 'orange'] 
         'due_date' => $index === 0 ? '2000-01-01' : '', 'client_visible' => true], $account);
 }
 foreach (['', 'project-identity', 'access', 'profile', 'settings', 'framework-updates', 'operations', 'project-logs',
+    'my-todo',
     'analytics', 'heatmap', 'notifications', 'release-readiness', 'integrations', 'workspace', 'documentation', 'about', 'technical-debt', 'debug'] as $section) {
     $capture('/developer/panel' . ($section ? '/' . $section : ''), 'panel-' . ($section ?: 'dashboard'));
 }

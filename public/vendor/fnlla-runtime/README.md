@@ -56,7 +56,7 @@ php scripts/lint.php
 
 ## Version
 
-2.2.0
+2.2.1
 
 ## Maintainer notes
 

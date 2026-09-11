@@ -108,7 +108,7 @@ final class MakeProjectCommandTest extends TestCase
         $command = new MakeProjectCommand($container);
 
         self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
-        $this->assertExportBudget(4000000, 430);
+        $this->assertExportBudget(4100000, 430);
         $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayNotHasKey("require-dev", $composer);
         self::assertArrayNotHasKey("test:unit", $composer["scripts"]);
@@ -388,6 +388,17 @@ final class MakeProjectCommandTest extends TestCase
             "src/Support/DeveloperPrivateTodo.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
         );
+        foreach ([
+            "src/Support/DeveloperCommandRegistry.php",
+            "src/Support/DeveloperIntegrationRegistry.php",
+            "src/Support/DeveloperPanelLabels.php",
+            "src/Support/DeveloperPanelPolicy.php",
+        ] as $managedSupportFile) {
+            self::assertArrayHasKey(
+                $managedSupportFile,
+                (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
+            );
+        }
         self::assertArrayHasKey(
             "src/Observability/RuntimeIssueTracker.php",
             (array) ($frameworkLock["framework_base"]["managed_files"] ?? [])
@@ -761,6 +772,12 @@ final class MakeProjectCommandTest extends TestCase
 
     private function runPhpScript(string $scriptPath, array $arguments = []): array
     {
+        $inheritedEnvironment = [];
+        foreach (["APP_ENV", "APP_DEBUG", "APP_URL"] as $key) {
+            $inheritedEnvironment[$key] = getenv($key);
+            putenv($key);
+        }
+
         $escapedArguments = array_map(
             static fn (string $argument): string => '"' . str_replace('"', '\"', $argument) . '"',
             $arguments
@@ -771,7 +788,13 @@ final class MakeProjectCommandTest extends TestCase
         $lines = [];
         $exitCode = 1;
 
-        exec($command, $lines, $exitCode);
+        try {
+            exec($command, $lines, $exitCode);
+        } finally {
+            foreach ($inheritedEnvironment as $key => $value) {
+                putenv($value === false ? $key : $key . "=" . $value);
+            }
+        }
 
         return [$exitCode, implode(PHP_EOL, $lines)];
     }
