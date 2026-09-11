@@ -365,7 +365,8 @@ final class ApplicationSurfaceTest extends TestCase
         }
 
         self::assertSame("#2563EB", framework_brand_color("blue", ""));
-        self::assertSame("2.2.1", config("framework.brand.version"));
+        $currentVersion = trim((string) (file(base_path("VERSION"), FILE_IGNORE_NEW_LINES)[0] ?? ""));
+        self::assertSame($currentVersion, config("framework.brand.version"));
         self::assertSame("#15803D", framework_brand_color("success", ""));
         self::assertSame("#D12D2D", framework_brand_color("danger", ""));
         foreach (["SpaceGrotesk-Regular", "SpaceGrotesk-SemiBold", "JetBrainsMono-Regular", "JetBrainsMono-SemiBold"] as $font) {

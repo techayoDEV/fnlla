@@ -48,7 +48,7 @@ return [
     */
     "brand" => [
         // BEGIN GENERATED BRAND
-        "version" => '2.2.1',
+        "version" => '2.2.2',
         "message" => 'Build from blueprint.',
         "colors" => [
             'blue' => '#2563EB',

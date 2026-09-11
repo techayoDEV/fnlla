@@ -3,6 +3,39 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.2.2
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.2 supersedes 2.2.1 with a Developer Panel brand-ui gate fix. It keeps
+the 2.2.1 functional scope and corrects the release candidate after GitHub
+Actions caught dark-theme contrast and technical-debt overflow regressions.
+
+#### Highlights
+
+- Fix the Developer Panel analytics and heatmap blueprint copy contrast under
+  the runtime dark-theme toggle.
+- Fix the technical-debt filter width that caused desktop horizontal page
+  overflow in the isolated brand-ui fixture.
+- Keep the final mobile panel layout bounded at 390px and 320px across all
+  panel fixtures.
+
+#### Upgrade Notes
+
+Use the 2.2.2 source distribution and verify its checksums before updating an
+existing project:
+
+```sh
+php ../fnlla-2.2.2/fnlla framework:update --project=. --release-tag=v2.2.2 --dry-run
+php ../fnlla-2.2.2/fnlla framework:update --project=. --release-tag=v2.2.2 --apply
+```
+
+The 2.2.0 support boundaries still apply: long-lived HTTP worker isolation,
+public Composer registry publication and separately removable Complete modules
+remain outside the supported release scope.
+
 ## 2.2.1
 
 Publication dates and downloadable assets are recorded in GitHub Releases.
