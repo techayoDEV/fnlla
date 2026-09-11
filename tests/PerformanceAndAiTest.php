@@ -297,13 +297,13 @@ final class PerformanceAndAiTest extends TestCase
         $recorder = new MetricsRecorder();
         $recorder->recordBehaviorEvent([
             "type" => "view",
-            "path" => "/services?token=hidden",
+            "path" => "/contact?token=hidden",
             "device" => "desktop",
             "viewport" => ["width" => 1440, "height" => 900],
         ]);
         $recorder->recordBehaviorEvent([
             "type" => "click",
-            "path" => "/services",
+            "path" => "/contact",
             "device" => "desktop",
             "element" => "button",
             "element_label" => "Request quote",
@@ -312,7 +312,7 @@ final class PerformanceAndAiTest extends TestCase
         ]);
         $recorder->recordBehaviorEvent([
             "type" => "scroll",
-            "path" => "/services",
+            "path" => "/contact",
             "device" => "desktop",
             "depth" => 75,
         ]);
@@ -345,9 +345,9 @@ final class PerformanceAndAiTest extends TestCase
         self::assertSame(4, (int) ($report["summary"]["behavior_events"] ?? 0));
         self::assertSame(2, (int) ($report["summary"]["click_events"] ?? 0));
         self::assertSame(1, (int) ($report["summary"]["scroll_events"] ?? 0));
-        self::assertSame("/services", $report["summary"]["top_page"] ?? null);
-        self::assertSame("/services", $report["selected_page"] ?? null);
-        self::assertSame("/services", $report["public_pages"][0]["path"] ?? null);
+        self::assertSame("/contact", $report["summary"]["top_page"] ?? null);
+        self::assertSame("/contact", $report["selected_page"] ?? null);
+        self::assertSame("/contact", $report["public_pages"][0]["path"] ?? null);
         self::assertSame("/about", $report["public_pages"][1]["path"] ?? null);
         self::assertSame(5, (int) ($report["charts"]["top_page_click_grid"]["columns"] ?? 0));
         self::assertSame(5, count((array) ($report["charts"]["top_page_click_grid"]["rows"] ?? [])));
@@ -355,7 +355,7 @@ final class PerformanceAndAiTest extends TestCase
         self::assertContains("a", array_column((array) ($report["charts"]["click_elements"] ?? []), "label"));
         self::assertSame("Center-right public page area", $report["charts"]["top_page_click_grid"]["rows"][2][3]["zone"] ?? null);
         self::assertSame("button: Request quote in main", $report["charts"]["top_page_click_grid"]["rows"][2][3]["targets"][0]["label"] ?? null);
-        self::assertStringContainsString("Public page /services.", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
+        self::assertStringContainsString("Public page /contact.", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
         self::assertStringContainsString("Most clicked: button: Request quote in main (1).", (string) ($report["charts"]["top_page_click_grid"]["rows"][2][3]["tooltip"] ?? ""));
         $selectedReport = (new DeveloperHeatmapReport())->build("/about");
         self::assertSame("/about", $selectedReport["selected_page"] ?? null);

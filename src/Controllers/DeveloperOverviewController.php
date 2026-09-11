@@ -39,7 +39,7 @@ final class DeveloperOverviewController extends DeveloperPanelController
 
     public function setupChecklist(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        return $this->redirect(route("developer.panel.project_identity") . "#developer-setup-checklist");
+        return $this->redirect(route("developer.panel.project_identity"));
     }
 
     public function health(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response

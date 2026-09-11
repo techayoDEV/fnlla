@@ -105,6 +105,253 @@
 
 (() => {
   const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA developer confirmation failed.', error);
+  };
+
+  const destructiveWord = /\b(delete|remove|deactivate|discard|clear)\b/i;
+  let dialog = null;
+  let activeResolve = null;
+
+  const textFrom = element => [
+    element?.getAttribute?.('data-developer-confirm'),
+    element?.getAttribute?.('data-developer-confirm-title'),
+    element?.getAttribute?.('data-developer-confirm-action'),
+    element?.getAttribute?.('aria-label'),
+    element?.getAttribute?.('name'),
+    element?.getAttribute?.('value'),
+    element?.textContent,
+  ].filter(Boolean).join(' ');
+
+  const needsConfirm = (form, submitter) => {
+    if (!form) return false;
+    if (form.hasAttribute('data-developer-confirm') || submitter?.hasAttribute?.('data-developer-confirm')) return true;
+    const action = form.getAttribute('action') || '';
+    if (destructiveWord.test(action)) return true;
+    if (submitter && destructiveWord.test(textFrom(submitter))) return true;
+    return false;
+  };
+
+  const optionFrom = (form, submitter, name, fallback) => (
+    submitter?.getAttribute?.(`data-developer-confirm-${name}`)
+    || form?.getAttribute?.(`data-developer-confirm-${name}`)
+    || fallback
+  );
+
+  const formForSubmitter = submitter => {
+    if (!(submitter instanceof HTMLElement)) return null;
+    const explicitFormId = submitter.getAttribute('form');
+    if (explicitFormId) {
+      const explicitForm = document.getElementById(explicitFormId);
+      if (explicitForm instanceof HTMLFormElement) return explicitForm;
+    }
+    return submitter.form instanceof HTMLFormElement ? submitter.form : submitter.closest('form');
+  };
+
+  const isSubmitter = element => {
+    if (!(element instanceof HTMLElement)) return false;
+    const tagName = element.tagName.toLowerCase();
+    if (tagName !== 'button' && tagName !== 'input') return false;
+    const type = (element.getAttribute('type') || (tagName === 'button' ? 'submit' : '')).toLowerCase();
+    return type === 'submit' || type === 'image';
+  };
+
+  const ensureDialog = () => {
+    if (dialog || !document.body) return dialog;
+    dialog = document.createElement('div');
+    dialog.className = 'developer-confirm-dialog';
+    dialog.hidden = true;
+    dialog.style.position = 'fixed';
+    dialog.style.inset = '0';
+    dialog.style.zIndex = '2400';
+    dialog.style.alignItems = 'center';
+    dialog.style.justifyContent = 'center';
+    dialog.style.boxSizing = 'border-box';
+    dialog.style.width = '100vw';
+    dialog.style.height = '100vh';
+    dialog.style.minHeight = '100dvh';
+    dialog.style.margin = '0';
+    dialog.style.display = 'none';
+    dialog.innerHTML = `
+      <div class="developer-confirm-backdrop" data-developer-confirm-cancel></div>
+      <section class="developer-confirm-panel" role="dialog" aria-modal="true" aria-labelledby="developer-confirm-title" aria-describedby="developer-confirm-message">
+        <div class="developer-confirm-icon" aria-hidden="true">!</div>
+        <div class="developer-confirm-copy">
+          <p class="feature-kicker">Confirm destructive action</p>
+          <h2 class="developer-dashboard-section-title" id="developer-confirm-title">Delete item?</h2>
+          <p class="content-text mb-0" id="developer-confirm-message">This action cannot be undone.</p>
+        </div>
+        <div class="developer-confirm-actions">
+          <button class="btn btn-ghost btn-sm" type="button" data-developer-confirm-cancel>Cancel</button>
+          <button class="btn btn-primary btn-sm developer-confirm-danger" type="button" data-developer-confirm-accept>Delete</button>
+        </div>
+      </section>
+    `;
+    document.body.insertBefore(dialog, document.body.firstChild);
+    dialog.addEventListener('click', event => {
+      if (event.target?.matches?.('[data-developer-confirm-cancel]')) {
+        event.preventDefault();
+        close(false);
+      }
+      if (event.target?.matches?.('[data-developer-confirm-accept]')) {
+        event.preventDefault();
+        close(true);
+      }
+    });
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close(false);
+      }
+    });
+    return dialog;
+  };
+
+  const close = confirmed => {
+    if (!dialog) return;
+    dialog.style.display = 'none';
+    dialog.hidden = true;
+    document.documentElement.classList.remove('is-developer-confirm-open');
+    const resolve = activeResolve;
+    activeResolve = null;
+    resolve?.(confirmed);
+  };
+
+  const ask = ({ title, message, action }) => new Promise(resolve => {
+    const element = ensureDialog();
+    if (!element) {
+      resolve(false);
+      return;
+    }
+    activeResolve?.(false);
+    activeResolve = resolve;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    element.querySelector('#developer-confirm-title').textContent = title;
+    element.querySelector('#developer-confirm-message').textContent = message;
+    element.querySelector('[data-developer-confirm-accept]').textContent = action;
+    document.documentElement.classList.add('is-developer-confirm-open');
+    element.hidden = false;
+    element.style.display = 'flex';
+    window.scrollTo(scrollX, scrollY);
+    window.requestAnimationFrame(() => {
+      const cancelButton = element.querySelector('[data-developer-confirm-cancel]');
+      try {
+        cancelButton?.focus({ preventScroll: true });
+      } catch {
+        cancelButton?.focus();
+        window.scrollTo(scrollX, scrollY);
+      }
+    });
+  });
+
+  const confirmAndSubmit = (form, submitter, event) => {
+    if (!form || !needsConfirm(form, submitter)) return false;
+    if (form.getAttribute('data-developer-confirm-accepted') === 'true') {
+      form.removeAttribute('data-developer-confirm-accepted');
+      return false;
+    }
+
+    event?.preventDefault?.();
+    event?.stopImmediatePropagation?.();
+    ask({
+      title: optionFrom(form, submitter, 'title', 'Delete this item?'),
+      message: optionFrom(form, submitter, 'message', 'This destructive action cannot be undone. Confirm before FNLLA continues.'),
+      action: optionFrom(form, submitter, 'action', destructiveWord.test(textFrom(submitter)) ? (submitter?.textContent || 'Delete').trim() : 'Confirm'),
+    }).then(confirmed => {
+      if (!confirmed) return;
+      form.setAttribute('data-developer-confirm-accepted', 'true');
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit(submitter instanceof HTMLElement ? submitter : undefined);
+      } else {
+        form.submit();
+      }
+    });
+    return true;
+  };
+
+  document.addEventListener('click', event => {
+    try {
+      const submitter = event.target?.closest?.('button, input');
+      if (!isSubmitter(submitter)) return;
+      confirmAndSubmit(formForSubmitter(submitter), submitter, event);
+    } catch (error) {
+      warn(error);
+    }
+  }, true);
+
+  document.addEventListener('submit', event => {
+    try {
+      const form = event.target instanceof HTMLFormElement ? event.target : event.target?.closest?.('form');
+      if (!form) return;
+      const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+      confirmAndSubmit(form, submitter, event);
+    } catch (error) {
+      warn(error);
+    }
+  }, true);
+})();
+
+(() => {
+  const warn = error => {
+    if (window.console?.warn) console.warn('FNLLA runtime/service controls failed.', error);
+  };
+
+  const init = () => {
+    try {
+      document.querySelectorAll('[data-developer-runtime-form]').forEach(form => {
+        if (form.hasAttribute('data-developer-runtime-form-ready')) return;
+        form.setAttribute('data-developer-runtime-form-ready', 'true');
+        const radios = Array.from(form.querySelectorAll('input[name="runtime_environment"]'));
+        const diagnostics = Array.from(form.querySelectorAll('[data-developer-runtime-diagnostic]'));
+        const sync = () => {
+          const selected = radios.find(radio => radio.checked)?.value || 'development';
+          const production = selected === 'production';
+          diagnostics.forEach(label => {
+            const input = label.querySelector('input[type="checkbox"]');
+            const note = label.querySelector('small');
+            if (note && !note.dataset.developerOriginalText) {
+              note.dataset.developerOriginalText = note.textContent || '';
+            }
+            label.classList.toggle('is-forced-off', production);
+            if (input) {
+              input.disabled = production;
+              if (production) input.checked = false;
+            }
+            if (note) {
+              note.textContent = production ? 'Forced off while Production is selected.' : note.dataset.developerOriginalText;
+            }
+          });
+        };
+        radios.forEach(radio => radio.addEventListener('change', sync));
+        sync();
+      });
+
+      document.querySelectorAll('select[name="developer_control_status"]').forEach(select => {
+        if (select.hasAttribute('data-developer-service-control-ready')) return;
+        select.setAttribute('data-developer-service-control-ready', 'true');
+        const form = select.closest('form');
+        const cards = Array.from(form?.querySelectorAll('[data-developer-service-scenario]') || []);
+        const sync = () => {
+          cards.forEach(card => card.classList.toggle('is-active', card.getAttribute('data-developer-service-scenario') === select.value));
+        };
+        select.addEventListener('change', sync);
+        sync();
+      });
+    } catch (error) {
+      warn(error);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  document.addEventListener('fnlla:developer-panel-refresh', init);
+})();
+
+(() => {
+  const warn = error => {
     if (window.console?.warn) console.warn('FNLLA developer workspace plan failed.', error);
   };
 
@@ -152,7 +399,7 @@
 
 (() => {
   const warn = error => {
-    if (window.console?.warn) console.warn('FNLLA private to-do composer failed.', error);
+    if (window.console?.warn) console.warn('FNLLA private task composer failed.', error);
   };
 
   const init = () => {
@@ -228,134 +475,6 @@
     init();
   }
   document.addEventListener('fnlla:developer-panel-refresh', init);
-})();
-
-(() => {
-  const warn = error => {
-    if (window.console?.warn) console.warn('FNLLA developer command palette failed.', error);
-  };
-
-  const init = () => {
-    try {
-      const palette = document.querySelector('[data-developer-command-palette]');
-      const openButtons = document.querySelectorAll('[data-developer-command-open]');
-      const closeButtons = palette?.querySelectorAll('[data-developer-command-close]') || [];
-      const input = palette?.querySelector('[data-developer-command-input]');
-      const items = Array.from(palette?.querySelectorAll('[data-developer-command-item]') || []);
-      const empty = palette?.querySelector('[data-developer-command-empty]');
-      let activeIndex = -1;
-      if (!palette || !input || items.length === 0) return;
-
-      const setExpanded = value => {
-        openButtons.forEach(button => button.setAttribute('aria-expanded', String(value)));
-      };
-
-      const visibleItems = () => items.filter(item => !item.hidden);
-
-      const setActive = index => {
-        const visible = visibleItems();
-        items.forEach(item => {
-          item.classList.remove('is-active');
-          item.setAttribute('aria-selected', 'false');
-        });
-        if (visible.length === 0) {
-          activeIndex = -1;
-          input.removeAttribute('aria-activedescendant');
-          return;
-        }
-        activeIndex = ((index % visible.length) + visible.length) % visible.length;
-        const active = visible[activeIndex];
-        active.classList.add('is-active');
-        active.setAttribute('aria-selected', 'true');
-        if (!active.id) {
-          active.id = `developer-command-option-${items.indexOf(active)}`;
-        }
-        input.setAttribute('aria-activedescendant', active.id);
-        active.scrollIntoView({ block: 'nearest' });
-      };
-
-      const filter = () => {
-        const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-        let visible = 0;
-        items.forEach(item => {
-          const haystack = item.getAttribute('data-developer-command-search') || item.textContent.toLowerCase();
-          const match = terms.length === 0 || terms.every(term => haystack.indexOf(term) !== -1);
-          item.hidden = !match;
-          if (match) visible++;
-        });
-        if (empty) empty.hidden = visible > 0;
-        setActive(0);
-      };
-
-      const open = () => {
-        palette.hidden = false;
-        document.documentElement.classList.add('has-developer-command-palette');
-        setExpanded(true);
-        input.value = '';
-        filter();
-        window.setTimeout(() => input.focus(), 0);
-      };
-
-      const close = () => {
-        palette.hidden = true;
-        document.documentElement.classList.remove('has-developer-command-palette');
-        setExpanded(false);
-      };
-
-      openButtons.forEach(button => button.addEventListener('click', open));
-      closeButtons.forEach(button => button.addEventListener('click', close));
-      input.addEventListener('input', filter);
-      input.addEventListener('keydown', event => {
-        if (event.key === 'ArrowDown') {
-          event.preventDefault();
-          setActive(activeIndex + 1);
-          return;
-        }
-        if (event.key === 'ArrowUp') {
-          event.preventDefault();
-          setActive(activeIndex - 1);
-          return;
-        }
-        if (event.key === 'Enter') {
-          const target = visibleItems()[activeIndex] || visibleItems()[0];
-          if (!target) return;
-          event.preventDefault();
-          if (target.getAttribute('data-developer-command-target') === '_blank') {
-            window.open(target.href, '_blank', 'noopener');
-            return;
-          }
-          window.location.assign(target.href);
-        }
-      });
-      document.addEventListener('keydown', event => {
-        const target = event.target;
-        const typing = target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-          event.preventDefault();
-          palette.hidden ? open() : close();
-          return;
-        }
-        if (event.key === 'Escape' && !palette.hidden) {
-          event.preventDefault();
-          close();
-          openButtons[0]?.focus();
-          return;
-        }
-        if (!typing && event.key === '/' && palette.hidden) {
-          event.preventDefault();
-          open();
-        }
-      });
-    } catch (error) {
-      warn(error);
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
 })();
 
 (() => {

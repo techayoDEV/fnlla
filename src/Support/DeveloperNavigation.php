@@ -13,6 +13,14 @@ final class DeveloperNavigation
             "key" => "identity",
             "label" => "Project identity",
             "route" => "project_identity",
+            "active_aliases" => ["identity", "project-identity-details", "project-identity-runtime", "project-identity-leadership", "project-identity-access"],
+            "children" => [
+                ["key" => "identity-overview", "label" => "Overview", "route" => "project_identity"],
+                ["key" => "project-identity-details", "label" => "Identity", "route" => "project_identity.identity"],
+                ["key" => "project-identity-runtime", "label" => "Runtime", "route" => "project_identity.runtime"],
+                ["key" => "project-identity-leadership", "label" => "Leadership", "route" => "project_identity.leadership"],
+                ["key" => "project-identity-access", "label" => "Access & preview", "route" => "project_identity.access"],
+            ],
         ],
         [
             "group" => "Workspace",
@@ -22,7 +30,7 @@ final class DeveloperNavigation
             "module" => "workspace",
             "active_aliases" => ["workspace", "technical-debt", "project-changelog"],
             "children" => [
-                ["key" => "workspace", "label" => "Tasks", "route" => "workspace", "fragment" => "developer-workspace-task-board"],
+                ["key" => "workspace", "label" => "Tasks", "route" => "workspace"],
                 ["key" => "technical-debt", "label" => "Technical debt", "route" => "technical_debt", "capability" => "operations.view"],
                 ["key" => "project-changelog", "label" => "Project changelog", "route" => "changelog", "capability" => "operations.view"],
             ],

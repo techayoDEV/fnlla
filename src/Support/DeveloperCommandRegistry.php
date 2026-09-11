@@ -91,8 +91,7 @@ final class DeveloperCommandRegistry
         [
             "id" => "runtime_environment",
             "label" => "Runtime environment",
-            "link" => "identity",
-            "fragment" => "runtime-environment",
+            "link" => "runtime_environment",
             "group" => "Workspace",
             "description" => "Switch development or production runtime posture.",
             "aliases" => ["app_env", "app_debug", "trusted hosts"],
@@ -214,7 +213,7 @@ final class DeveloperCommandRegistry
         ],
         [
             "id" => "my_todo",
-            "label" => "My to-do",
+            "label" => "My Tasks",
             "link" => "private_todo",
             "group" => "Workspace",
             "description" => "Personal developer checklist outside shared project work.",

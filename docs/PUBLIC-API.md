@@ -36,10 +36,14 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   and `ai:providers`.
 - Developer operations routes: `/developer`, `/developer/panel`,
   `/developer/panel/project-identity`, `/developer/panel/setup-checklist`,
+  `/developer/panel/project-identity/identity`,
+  `/developer/panel/project-identity/runtime`,
+  `/developer/panel/project-identity/leadership`,
+  `/developer/panel/project-identity/access-preview`,
   `/developer/panel/project-settings`,
   `/developer/panel/access`, `/developer/panel/profile`,
-  `/developer/panel/settings`, `/developer/panel/workspace`,
-  `/developer/panel/my-todo`, `/developer/panel/operations`,
+  `/developer/panel/settings`, `/developer/panel/tasks`,
+  `/developer/panel/my-tasks`, `/developer/panel/operations`,
   `/developer/panel/analytics`, `/developer/panel/notifications`,
   `/developer/panel/release-readiness`, `/developer/panel/integrations`,
   `/developer/panel/policy`,
@@ -52,8 +56,8 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `/developer/panel/framework-updates`.
   `/developer/panel/setup-checklist`, `/developer/panel/project-settings`,
   `/developer/panel/security` and `/developer/panel/health` remain compatibility
-  routes that lead to the integrated Project Setup, Access & security and
-  Readiness & Health surfaces.
+  routes that lead to the integrated Project Setup, Access & security,
+  Readiness & Health, Tasks and My Tasks surfaces.
 - Customer portal routes: `/client`, `/client/invite`, `/client/panel`,
   `/client/panel/kanban`, `/client/panel/analytics` and
   `/client/panel/heatmap`, with the entry path configurable through

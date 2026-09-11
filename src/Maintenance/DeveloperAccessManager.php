@@ -185,7 +185,6 @@ final class DeveloperAccessManager
             "health",
             "maintenance",
             "privacy",
-            "services",
             "terms",
             "vendor",
         ], true);

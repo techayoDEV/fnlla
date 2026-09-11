@@ -290,7 +290,7 @@ $policySections = [
     ],
 ];
 $publicDocs = [
-    ["title" => "Application shell", "text" => "FNLLA ships a public website shell with home, about, services, contact, legal pages, cookie consent and project branding. Downstream projects replace the starter content while keeping the framework-managed runtime layer."],
+    ["title" => "Application shell", "text" => "FNLLA ships a public website shell with home, about, contact, legal pages, cookie consent and project branding. Downstream projects replace the starter content while keeping the framework-managed runtime layer."],
     ["title" => "Consent and privacy", "text" => "Essential cookies are always on. Analytics and marketing tools are consent-gated. Local analytics and heatmap events are first-party aggregate measurements."],
     ["title" => "Routing and assets", "text" => "Public routes live in the project route files and use framework helpers for URLs, assets, CSRF, CSP nonces and title metadata. Project assets remain under public assets while runtime assets stay framework-managed."],
     ["title" => "Analytics data", "text" => "The internal recorder aggregates requests, routes, status codes, referrer hosts, devices, form conversions, click zones and scroll-depth buckets into local framework storage."],

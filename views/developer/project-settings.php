@@ -10,6 +10,7 @@ $developerControl ??= [
     "remote_disabled" => false,
     "message" => (string) config("developer_control.disabled_message", ""),
     "contact" => (string) config("developer_control.disabled_contact", ""),
+    "contact_phone" => (string) config("developer_control.disabled_contact_phone", ""),
     "source" => "none",
     "remote_enabled" => false,
 ];
@@ -21,7 +22,29 @@ $remoteEnabled = (bool) ($developerControl["remote_enabled"] ?? false);
 $serviceStatus = (string) ($developerControl["status"] ?? ($serviceDisabled ? "disabled" : "open"));
 $serviceReason = (string) ($developerControl["reason"] ?? "");
 $serviceProvider = (string) ($developerControl["provider"] ?? "");
+$serviceContactPhone = (string) ($developerControl["contact_phone"] ?? config("developer_control.disabled_contact_phone", ""));
 $serviceRemoteSuspended = $serviceDisabled && ($developerControl["source"] ?? "") === "remote" && $serviceStatus === "suspended";
+$serviceLocalScenario = "open";
+if ($serviceLocalDisabled) {
+    $serviceLocalScenario = match ($serviceReason) {
+        "maintenance" => "maintenance",
+        "payment_overdue", "billing" => "suspended_billing",
+        "contract_review" => "suspended_contract",
+        "security_review" => "security_review",
+        default => $serviceStatus === "suspended" ? "suspended_billing" : "disabled",
+    };
+}
+$serviceControlScenario = (string) old("developer_control_status", $serviceLocalScenario);
+$serviceControlScenarios = [
+    "open" => ["label" => "Open public service", "text" => "Public routes are available."],
+    "disabled" => ["label" => "Paused by developer", "text" => "Developer-owned pause with a public support message."],
+    "maintenance" => ["label" => "Maintenance window", "text" => "Planned service pause for maintenance work."],
+    "suspended_billing" => ["label" => "Suspended - payment overdue", "text" => "Payment or billing suspension notice."],
+    "suspended_contract" => ["label" => "Suspended - contract issue", "text" => "Contract or service agreement suspension notice."],
+    "security_review" => ["label" => "Paused - security review", "text" => "Security-review pause while access is checked."],
+];
+$serviceStatusTone = $serviceStatus === "suspended" ? "suspended" : ($serviceDisabled ? "stopped" : "open");
+$previewStatusTone = $maintenanceEnabled ? "locked" : "open";
 require __DIR__ . "/panel-header.php";
 ?>
 
@@ -42,22 +65,22 @@ require __DIR__ . "/panel-header.php";
 
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Preview mode</strong><span class="developer-dashboard-ok"><?= $maintenanceEnabled ? "LOCKED" : "OPEN" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Preview mode</strong><span class="developer-dashboard-ok is-<?= h($previewStatusTone) ?>"><?= $maintenanceEnabled ? "LOCKED" : "OPEN" ?></span></div>
               <h3><?= $maintenanceEnabled ? "Password required" : "Public routes open" ?></h3>
               <p><?= $maintenanceConfigured ? "A preview password is configured." : "No preview password is configured yet." ?></p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Password state</strong><span class="developer-dashboard-ok"><?= $maintenanceConfigured ? "READY" : "MISSING" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Password state</strong><span class="developer-dashboard-ok <?= $maintenanceConfigured ? "is-ready" : "is-review" ?>"><?= $maintenanceConfigured ? "READY" : "MISSING" ?></span></div>
               <h3><?= $maintenanceConfigured ? "Prepared" : "Not prepared" ?></h3>
               <p>Rotate it here before sharing a private build.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok"><?= $serviceDisabled ? "STOPPED" : "OPEN" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok is-<?= h($serviceStatusTone) ?>"><?= $serviceStatus === "suspended" ? "SUSPENDED" : ($serviceDisabled ? "STOPPED" : "OPEN") ?></span></div>
               <h3><?= $serviceRemoteSuspended ? "Suspended by service provider" : ($serviceDisabled ? "Public service disabled" : "Public service available") ?></h3>
               <p>Source: <?= h((string) ($developerControl["source"] ?? "none")) ?><?= $serviceReason !== "" ? ". Reason: " . h($serviceReason) : "" ?><?= $serviceProvider !== "" ? ". Provider: " . h($serviceProvider) : "" ?>.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok <?= $remoteEnabled ? "is-ready" : "is-neutral" ?>"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
               <h3><?= $remoteEnabled ? "Remote control enabled" : "Local control only" ?></h3>
               <p>Configure the adapter from Integrations.</p>
             </article>
@@ -103,21 +126,34 @@ require __DIR__ . "/panel-header.php";
                   : "Use this when the website should be stopped immediately with a developer-owned message while the private developer panel remains available." ?></p>
               <form class="form stack gap-md" action="<?= h(route("developer.settings.service_control")) ?>" method="post" novalidate>
                 <?= csrf_field() ?>
-                <input type="hidden" name="developer_control_disabled" value="0">
                 <div class="form-group">
-                  <label class="label" for="developer-control-disabled">
-                    <input id="developer-control-disabled" name="developer_control_disabled" type="checkbox" value="1" <?= $serviceLocalDisabled ? "checked" : "" ?>>
-                    <?= $serviceLocalDisabled ? "Keep local public-service lock enabled" : "Enable local public-service lock after saving" ?>
-                  </label>
+                  <label class="label" for="developer-control-status">Public-service scenario</label>
+                  <select class="select" id="developer-control-status" name="developer_control_status">
+                    <?php foreach ($serviceControlScenarios as $scenarioValue => $scenario): ?>
+                    <option value="<?= h((string) $scenarioValue) ?>" <?= $serviceControlScenario === $scenarioValue ? "selected" : "" ?>><?= h((string) $scenario["label"]) ?></option>
+                    <?php endforeach; ?>
+                  </select>
                   <p class="help-text">Current source: <?= h((string) ($developerControl["source"] ?? "none")) ?>. Status: <?= h($serviceStatus) ?><?= $serviceReason !== "" ? ", reason: " . h($serviceReason) : "" ?>. Remote control is <?= $remoteEnabled ? "enabled" : "disabled" ?>.</p>
                 </div>
-                <div class="form-group">
-                  <label class="label" for="developer-control-message">Public message</label>
-                  <textarea class="textarea" id="developer-control-message" name="developer_control_message" rows="3"><?= h((string) ($developerControl["message"] ?? config("developer_control.disabled_message", ""))) ?></textarea>
+                <div class="developer-service-scenario-grid">
+                  <?php foreach ($serviceControlScenarios as $scenarioValue => $scenario): ?>
+                  <span class="<?= $serviceControlScenario === $scenarioValue ? "is-active" : "" ?>" data-developer-service-scenario="<?= h((string) $scenarioValue) ?>">
+                    <strong><?= h((string) $scenario["label"]) ?></strong>
+                    <small><?= h((string) $scenario["text"]) ?></small>
+                  </span>
+                  <?php endforeach; ?>
                 </div>
                 <div class="form-group">
-                  <label class="label" for="developer-control-contact">Developer contact</label>
-                  <input class="input" id="developer-control-contact" name="developer_control_contact" type="text" value="<?= h((string) ($developerControl["contact"] ?? config("developer_control.disabled_contact", ""))) ?>">
+                  <label class="label" for="developer-control-message">Public message override <span class="content-text">(optional)</span></label>
+                  <textarea class="textarea" id="developer-control-message" name="developer_control_message" rows="3" placeholder="Leave blank to use the selected scenario message."><?= h((string) old("developer_control_message", (string) ($developerControl["message"] ?? ""))) ?></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-contact">Developer contact email</label>
+                  <input class="input" id="developer-control-contact" name="developer_control_contact" type="email" value="<?= h((string) old("developer_control_contact", (string) ($developerControl["contact"] ?? config("developer_control.disabled_contact", "")))) ?>" placeholder="developer@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-contact-phone">Developer contact phone <span class="content-text">(optional)</span></label>
+                  <input class="input" id="developer-control-contact-phone" name="developer_control_contact_phone" type="tel" value="<?= h((string) old("developer_control_contact_phone", $serviceContactPhone)) ?>" placeholder="+44 20 0000 0000">
                 </div>
                 <button class="btn btn-primary" type="submit">Save service control</button>
               </form>

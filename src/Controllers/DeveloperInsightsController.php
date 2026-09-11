@@ -51,6 +51,18 @@ final class DeveloperInsightsController extends DeveloperPanelController
             return $this->redirect(route("developer.panel"));
         }
 
+        $queryPage = trim((string) $request->query("page", ""));
+        $routePage = trim((string) $request->routeParam("page", ""));
+        $selectedPage = $routePage !== "" ? $this->heatmapPathFromSlug($routePage) : $queryPage;
+
+        if ($routePage === "" && $queryPage !== "") {
+            $canonicalSlug = $this->heatmapSlugForPath($queryPage);
+
+            if ($canonicalSlug !== null) {
+                return $this->redirect(route("developer.panel.heatmap.page", ["page" => $canonicalSlug]), 301);
+            }
+        }
+
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
@@ -58,9 +70,37 @@ final class DeveloperInsightsController extends DeveloperPanelController
             "Heatmap",
             "heatmap",
             [
-                "heatmapReport" => $report->build((string) $request->query("page", "")),
+                "heatmapReport" => $report->build($selectedPage),
             ]
         );
+    }
+
+    private function heatmapSlugForPath(string $path): ?string
+    {
+        $normalized = "/" . trim($path, "/");
+
+        if ($normalized === "/") {
+            return null;
+        }
+
+        $slug = ltrim($normalized, "/");
+
+        if (preg_match('/^[a-z0-9][a-z0-9._-]*$/i', $slug) !== 1) {
+            return null;
+        }
+
+        return $slug;
+    }
+
+    private function heatmapPathFromSlug(string $slug): string
+    {
+        $slug = trim($slug);
+
+        if (preg_match('/^[a-z0-9][a-z0-9._-]*$/i', $slug) !== 1) {
+            return "";
+        }
+
+        return "/" . $slug;
     }
 
     public function updateHeatmapSettings(

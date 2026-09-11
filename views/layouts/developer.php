@@ -42,7 +42,17 @@ $faviconType = str_ends_with(strtolower((string) parse_url((string) $favicon, PH
   <section class="section pt-1 pb-0 developer-workspace-alert-section" id="page-status"<?= $pageStatusAutohide ? ' data-fnlla-alert-autohide="true"' : "" ?>>
     <div class="developer-workspace-alert-container">
       <div class="alert alert-dismissible alert-<?= h((string) ($pageStatus["variant"] ?? "info")) ?>" role="<?= in_array($pageStatus["variant"] ?? "", ["danger", "warning"], true) ? "alert" : "status" ?>" data-fnlla-alert>
-        <div><h2 class="alert-title"><?= h((string) $pageStatus["title"]) ?></h2><p class="alert-text"><?= h((string) $pageStatus["text"]) ?></p></div>
+        <div>
+          <h2 class="alert-title"><?= h((string) $pageStatus["title"]) ?></h2>
+          <p class="alert-text"><?= h((string) $pageStatus["text"]) ?></p>
+          <?php if (!empty($pageStatus["items"]) && is_array($pageStatus["items"])): ?>
+          <ul class="alert-list">
+            <?php foreach ($pageStatus["items"] as $statusItem): ?>
+            <li><?= h((string) $statusItem) ?></li>
+            <?php endforeach; ?>
+          </ul>
+          <?php endif; ?>
+        </div>
         <button class="alert-close" type="button" aria-label="Close alert" data-fnlla-alert-close>&times;</button>
       </div>
     </div>

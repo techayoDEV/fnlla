@@ -36,6 +36,21 @@ $gridMax = max(1, (int) ($grid["max"] ?? 1));
 $topPageClickMapTooltip = $gridRows === []
     ? "No click zones are available yet. FNLLA will show the selected public page click map after consented public-site clicks are recorded."
     : "Each cell shows aggregate click volume for the selected public page. Hover or focus a cell to inspect its zone count.";
+$heatmapPageHref = static function (string $path): string {
+    $normalized = "/" . trim($path, "/");
+
+    if ($normalized === "/") {
+        return route("developer.panel.heatmap");
+    }
+
+    $slug = ltrim($normalized, "/");
+
+    if (preg_match('/^[a-z0-9][a-z0-9._-]*$/i', $slug) === 1) {
+        return route("developer.panel.heatmap.page", ["page" => $slug]);
+    }
+
+    return route("developer.panel.heatmap") . "?page=" . rawurlencode($path);
+};
 $renderBarList = static function (array $items, string $empty): void { ?>
           <?php if ($items === []): ?>
           <p class="content-text mb-0"><?= h($empty) ?></p>
@@ -194,7 +209,7 @@ require __DIR__ . "/panel-header.php";
                     $count = max(0, (int) ($pageOption["count"] ?? 0));
                     $routeName = trim((string) ($pageOption["route"] ?? ""));
                     $optionLabel = $label . " - " . $count . ($count === 1 ? " event" : " events") . ($routeName !== "" ? " (" . $routeName . ")" : "");
-                    $optionHref = route("developer.panel.heatmap") . "?page=" . rawurlencode($path);
+                    $optionHref = $heatmapPageHref($path);
                     $optionMeta = $routeName !== "" ? $routeName : ($path === "/" ? "Public home" : $path);
                 ?>
                   <a class="developer-heatmap-page-menu-item<?= $path === $selectedPage ? " is-active" : "" ?>" href="<?= h($optionHref) ?>" role="menuitem"<?= $path === $selectedPage ? ' aria-current="page"' : "" ?>>

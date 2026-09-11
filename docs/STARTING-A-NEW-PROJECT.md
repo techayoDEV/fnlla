@@ -185,7 +185,7 @@ The exported project already includes:
 - auth, sessions, cookies and CSRF foundations
 - lint, test and runtime validation scripts
 - a project-base acceptance command for runtime, storage and HTTP smoke checks
-- an application base with public pages for `/`, `/about` and `/services`
+- an application base with public pages for `/`, `/about`, `/contact`, `/terms` and `/privacy`
 - a working starter contact form at `/contact` with CSRF, validation, old
   input, flash feedback, honeypot spam friction and log-mail delivery
 - reusable public page-title hero markup under `views/partials/page-hero.php`
@@ -326,7 +326,7 @@ Inside the new project directory:
 5. Set MySQL credentials.
 6. Review `config/app.php`.
 7. Run `php fnlla project:acceptance --json` before adding product-specific code.
-8. Open `/`, `/about` and `/services` and treat them as the real project-base pages you will reshape.
+8. Open `/`, `/about`, `/contact`, `/terms` and `/privacy` and treat them as the real project-base pages you will reshape.
 9. Open `/contact`, submit a test enquiry with `MAIL_MAILER=log`, then decide
    whether the project needs persistence, queue delivery or a CRM/webhook
    adapter.
@@ -427,7 +427,7 @@ For a new project, the first files are usually:
 
 A practical simple starter should normally include:
 
-- public pages: home, about, services, contact, terms and privacy;
+- public pages: home, about, contact, terms and privacy;
 - reusable page-title hero component for non-home pages;
 - working contact form with validation, CSRF, old input and log mailer;
 - cookie consent and editable privacy/terms snippets;

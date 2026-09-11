@@ -82,11 +82,11 @@ final class DeveloperNotificationCenter
         }
 
         if (self::containsAny($key, ["preview", "service"])) {
-            return (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_identity") . "#developer-access-preview");
+            return (string) ($developerLinks["project_settings"] ?? route("developer.panel.project_identity.access"));
         }
 
         if (self::containsAny($key, ["leadership", "identity"])) {
-            return (string) ($developerLinks["identity"] ?? route("developer.panel.project_identity")) . "#project-leadership";
+            return (string) ($developerLinks["project_leadership_screen"] ?? route("developer.panel.project_identity.leadership"));
         }
 
         return (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"));

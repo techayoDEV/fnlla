@@ -41,18 +41,28 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         );
     }
 
+    public function redirectWorkspace(Request $request): Response
+    {
+        return $this->redirect(route("developer.panel.workspace"), 301);
+    }
+
     public function privateTodo(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess, DeveloperPrivateTodo $todo): Response
     {
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
             "developer/private-todo",
-            "My To-do",
+            "My Tasks",
             "private-todo",
             [
                 "privateTodo" => $todo->state($developerAccess->currentDeveloper()),
             ]
         );
+    }
+
+    public function redirectPrivateTodo(Request $request): Response
+    {
+        return $this->redirect(route("developer.panel.private_todo"), 301);
     }
 
     public function createPrivateTodo(Request $request, DeveloperAccessManager $developerAccess, DeveloperPrivateTodo $todo): Response
@@ -67,7 +77,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         } catch (\InvalidArgumentException $exception) {
             flash_set("status", [
                 "variant" => "warning",
-                "title" => "Private to-do needs a title",
+                "title" => "Private task needs a title",
                 "text" => $exception->getMessage(),
                 "toast" => true,
             ]);
@@ -88,7 +98,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
 
         flash_set("status", [
             "variant" => "success",
-            "title" => "Private to-do saved",
+            "title" => "Private task saved",
             "text" => "This item is visible only in your developer session.",
             "toast" => true,
         ]);
@@ -113,7 +123,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         } catch (\InvalidArgumentException $exception) {
             flash_set("status", [
                 "variant" => "warning",
-                "title" => "Private to-do needs a title",
+                "title" => "Private task needs a title",
                 "text" => $exception->getMessage(),
                 "toast" => true,
             ]);
@@ -134,7 +144,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
 
         flash_set("status", [
             "variant" => "success",
-            "title" => "Private to-do updated",
+            "title" => "Private task updated",
             "text" => "The item details were saved in your private list.",
             "toast" => true,
         ]);
@@ -396,7 +406,7 @@ final class DeveloperWorkspaceController extends DeveloperPanelController
         }
 
         if (!$uploaded->isValid()) {
-            throw new \RuntimeException($this->uploadErrorMessage("Uploaded private to-do attachment", $uploaded->error()));
+            throw new \RuntimeException($this->uploadErrorMessage("Uploaded private task attachment", $uploaded->error()));
         }
 
         $uploaded->validate(

@@ -375,7 +375,6 @@ final class MakeProjectCommand extends Command
             "views/layouts/app.php",
             "views/pages/home.php",
             "views/pages/about.php",
-            "views/pages/services.php",
             "views/pages/contact.php",
             "views/pages/legal.php",
             "views/partials/page-hero.php",

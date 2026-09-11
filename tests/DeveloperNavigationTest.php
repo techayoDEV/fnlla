@@ -17,11 +17,17 @@ final class DeveloperNavigationTest extends TestCase
             config_set("modules.workspace", false);
             $restricted = DeveloperNavigation::groups([], static fn (string $route): string => $route);
             self::assertSame("developer.panel.project_identity", $restricted["Workspace"]["identity"]["href"]);
+            self::assertSame(
+                ["identity-overview", "project-identity-details", "project-identity-runtime", "project-identity-leadership", "project-identity-access"],
+                array_keys($restricted["Workspace"]["identity"]["children"])
+            );
             self::assertFalse(isset($restricted["Workspace"]["workspace"]));
             self::assertFalse(isset($restricted["Operations"]["debug"]));
             self::assertFalse(isset($restricted["Reference"]));
             $operator = DeveloperNavigation::groups(["operations.view", "policy.view"], static fn (string $route): string => "/" . $route);
             self::assertSame("/developer.panel.project_identity", $operator["Workspace"]["identity"]["href"]);
+            self::assertSame("/developer.panel.project_identity.runtime", $operator["Workspace"]["identity"]["children"]["project-identity-runtime"]["href"]);
+            self::assertSame("Access & preview", $operator["Workspace"]["identity"]["children"]["project-identity-access"]["label"]);
             self::assertFalse(isset($operator["Workspace"]["technical-debt"]));
             self::assertFalse(isset($operator["Workspace"]["project-changelog"]));
             self::assertSame("Access & security", $operator["Operations"]["access"]["label"]);
@@ -61,7 +67,7 @@ final class DeveloperNavigationTest extends TestCase
             self::assertSame(["workspace", "technical-debt", "project-changelog"], $workspace["Workspace"]["project-work"]["active_aliases"]);
             self::assertSame(["workspace", "technical-debt", "project-changelog"], array_keys($workspace["Workspace"]["project-work"]["children"]));
             self::assertSame("Tasks", $workspace["Workspace"]["project-work"]["children"]["workspace"]["label"]);
-            self::assertSame("/developer.panel.workspace#developer-workspace-task-board", $workspace["Workspace"]["project-work"]["children"]["workspace"]["href"]);
+            self::assertSame("/developer.panel.workspace", $workspace["Workspace"]["project-work"]["children"]["workspace"]["href"]);
             self::assertSame("/developer.panel.technical_debt", $workspace["Workspace"]["project-work"]["children"]["technical-debt"]["href"]);
             self::assertSame("/developer.panel.changelog", $workspace["Workspace"]["project-work"]["children"]["project-changelog"]["href"]);
             self::assertFalse(isset($workspace["Project setup"]));
@@ -94,7 +100,7 @@ final class DeveloperNavigationTest extends TestCase
                 "framework_updates" => "/developer/panel/framework-updates",
                 "integrations" => "/developer/panel/integrations",
                 "operations" => "/developer/panel/operations",
-                "workspace" => "/developer/panel/workspace",
+                "workspace" => "/developer/panel/tasks",
                 "project_logs" => "/developer/panel/project-logs",
                 "analytics" => "/developer/panel/analytics",
                 "heatmap" => "/developer/panel/heatmap",
@@ -104,8 +110,9 @@ final class DeveloperNavigationTest extends TestCase
                 "profile" => "/developer/panel/profile",
                 "settings" => "/developer/panel/settings",
                 "home" => "/",
-                "private_todo" => "/developer/panel/my-todo",
-                "project_settings" => "/developer/panel/project-identity#developer-access-preview",
+                "private_todo" => "/developer/panel/my-tasks",
+                "runtime_environment" => "/developer/panel/project-identity/runtime",
+                "project_settings" => "/developer/panel/project-identity/access-preview",
             ];
             $registry = new DeveloperCommandRegistry();
             $items = $registry->items($links, ["operations.view", "workspace.write", "framework.update"], []);
@@ -120,7 +127,7 @@ final class DeveloperNavigationTest extends TestCase
             self::assertContains("Behavior heatmap", $labels);
             self::assertContains("Adapters & AI", $labels);
             self::assertContains("Project work", $labels);
-            self::assertContains("My to-do", $labels);
+            self::assertContains("My Tasks", $labels);
             self::assertNotContains("Export audit log", $labels);
 
             $changelog = array_values(array_filter($items, static fn (array $item): bool => ($item["id"] ?? "") === "project_changelog"))[0] ?? [];

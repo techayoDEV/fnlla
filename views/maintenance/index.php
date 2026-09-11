@@ -435,27 +435,27 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-organization">Delivery organisation <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="TechAyo Limited">
+                  <input class="input" id="project-setup-leadership-organization" name="project_leadership_organization" type="text" maxlength="120" placeholder="e.g. FNLLA Company">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-person">Responsible person <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-person" name="project_leadership_person_name" type="text" maxlength="120" autocomplete="name" placeholder="Name Surname">
+                  <input class="input" id="project-setup-leadership-person" name="project_leadership_person_name" type="text" maxlength="120" autocomplete="name" placeholder="e.g. Lead Developer Name">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-email">Confirmation email <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-email" name="project_leadership_person_email" type="email" maxlength="160" autocomplete="email" placeholder="lead@example.com">
+                  <input class="input" id="project-setup-leadership-email" name="project_leadership_person_email" type="email" maxlength="160" autocomplete="email" placeholder="e.g. leader@example.com">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-role">Role or position <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-role" name="project_leadership_person_role" type="text" maxlength="120" placeholder="Director of TechAyo">
+                  <input class="input" id="project-setup-leadership-role" name="project_leadership_person_role" type="text" maxlength="120" placeholder="e.g. Project Manager">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-responsibility">Responsibility scope <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-responsibility" name="project_leadership_responsibility" type="text" maxlength="240" placeholder="product direction, roadmap and technical delivery">
+                  <input class="input" id="project-setup-leadership-responsibility" name="project_leadership_responsibility" type="text" maxlength="240" placeholder="e.g. product direction, roadmap and technical delivery">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-profile">Profile or contact URL <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-setup-leadership-profile" name="project_leadership_profile_url" type="url" maxlength="2048" inputmode="url" placeholder="https://example.com/contact">
+                  <input class="input" id="project-setup-leadership-profile" name="project_leadership_profile_url" type="url" maxlength="2048" inputmode="url" placeholder="e.g. https://example.com/contact">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-setup-leadership-visibility">Leadership visibility <span class="content-text">(optional)</span></label>

@@ -163,7 +163,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "tests" . DIRECTORY_SEPARATOR . "ValidationTest.php"));
         self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "platform.php"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "about.php");
-        self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php");
+        self::assertFalse(is_file($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "services.php"));
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "contact.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "pages" . DIRECTORY_SEPARATOR . "legal.php");
         self::assertFileExists($this->targetPath . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "partials" . DIRECTORY_SEPARATOR . "page-hero.php");
@@ -564,7 +564,7 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame(0, $routeListExitCode, $routeListOutput);
         self::assertStringContainsString("GET     /", $routeListOutput);
         self::assertStringContainsString("GET     /about", $routeListOutput);
-        self::assertStringContainsString("GET     /services", $routeListOutput);
+        self::assertStringNotContainsString("GET     /services", $routeListOutput);
         self::assertStringContainsString("GET     /contact", $routeListOutput);
         self::assertStringContainsString("POST    /contact", $routeListOutput);
         self::assertStringContainsString("GET     /maintenance", $routeListOutput);

@@ -21,7 +21,7 @@ require __DIR__ . "/panel-header.php";
               <p class="content-text mb-0">This checklist reads current environment and developer-panel state. It does not save anything by itself.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Identity</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_identity_details"] ?? route("developer.panel.project_identity.identity"))) ?>">Identity</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_settings"))) ?>">Preview</a>
             </div>
           </div>

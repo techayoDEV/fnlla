@@ -28,18 +28,54 @@ final class DeveloperProjectController extends DeveloperPanelController
 {
     public function projectIdentity(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
+        return $this->projectIdentitySection($developerAccess, $maintenanceAccess, "overview", "Project Identity");
+    }
+
+    public function projectIdentityDetails(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->projectIdentitySection($developerAccess, $maintenanceAccess, "identity", "Project Identity");
+    }
+
+    public function projectIdentityRuntime(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->projectIdentitySection($developerAccess, $maintenanceAccess, "runtime", "Runtime Environment");
+    }
+
+    public function projectIdentityLeadership(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->projectIdentitySection($developerAccess, $maintenanceAccess, "leadership", "Project Leadership");
+    }
+
+    public function projectIdentityAccessPreview(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->projectIdentitySection($developerAccess, $maintenanceAccess, "access", "Access & Preview");
+    }
+
+    private function projectIdentitySection(
+        DeveloperAccessManager $developerAccess,
+        MaintenanceAccessManager $maintenanceAccess,
+        string $section,
+        string $pageTitle
+    ): Response {
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
             "developer/project-identity",
-            "Project Identity",
-            "identity"
+            $pageTitle,
+            match ($section) {
+                "identity" => "project-identity-details",
+                "runtime" => "project-identity-runtime",
+                "leadership" => "project-identity-leadership",
+                "access" => "project-identity-access",
+                default => "identity-overview",
+            },
+            ["projectIdentitySection" => $section]
         );
     }
 
     public function projectSettingsPage(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
-        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+        return $this->redirect(route("developer.panel.project_identity.access"));
     }
 
     public function updateServiceControl(
@@ -49,21 +85,33 @@ final class DeveloperProjectController extends DeveloperPanelController
         DeveloperActivityLog $activityLog
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "service_control.write")) {
-            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
         $payload = [
-            "developer_control_disabled" => (string) $request->input("developer_control_disabled", "0"),
+            "developer_control_status" => (string) $request->input(
+                "developer_control_status",
+                (string) $request->input("developer_control_disabled", "0") === "1" ? "disabled" : "open"
+            ),
             "developer_control_message" => trim((string) $request->input("developer_control_message", "")),
             "developer_control_contact" => trim((string) $request->input("developer_control_contact", "")),
+            "developer_control_contact_phone" => trim((string) $request->input("developer_control_contact_phone", "")),
         ];
+        $scenario = $this->developerControlScenario($payload["developer_control_status"]);
 
         try {
             $this->validate($payload, [
-                "developer_control_disabled" => ["required", "string"],
+                "developer_control_status" => ["required", "string"],
                 "developer_control_message" => ["nullable", "string", "max:240"],
                 "developer_control_contact" => ["nullable", "string", "max:160"],
+                "developer_control_contact_phone" => ["nullable", "string", "max:60"],
             ]);
+
+            if ($scenario === null) {
+                throw new ValidationException([
+                    "developer_control_status" => ["Choose a supported public-service scenario."],
+                ]);
+            }
         } catch (ValidationException $exception) {
             flash_set("errors", $exception->errors());
             flash_set("status", [
@@ -74,14 +122,22 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
         $developer = $developerAccess->currentDeveloper();
-        $disabled = $payload["developer_control_disabled"] === "1";
+        $disabled = (bool) ($scenario["disabled"] ?? false);
 
         if ($disabled) {
-            $developerControl->disable($payload["developer_control_message"], $payload["developer_control_contact"], $developer);
+            $developerControl->disable(
+                $payload["developer_control_message"] !== "" ? $payload["developer_control_message"] : (string) $scenario["message"],
+                $payload["developer_control_contact"],
+                $developer,
+                (string) $scenario["status"],
+                (string) $scenario["reason"],
+                (string) $scenario["title"],
+                $payload["developer_control_contact_phone"]
+            );
         } else {
             $developerControl->enable($developer);
         }
@@ -92,24 +148,24 @@ final class DeveloperProjectController extends DeveloperPanelController
 
         $activityLog->record(
             "service_control",
-            $disabled ? "Public service disabled" : "Public service re-enabled",
+            $disabled ? (string) $scenario["activity_title"] : "Public service re-enabled",
             $disabled
-                ? "Public routes now show the developer-disabled service notice."
+                ? (string) $scenario["activity_text"]
                 : ($remoteStillDisabled ? "The local service lock was cleared, but a remote provider suspension is still active." : "Public routes were reopened by the developer team."),
             $developer
         );
 
         flash_set("status", [
             "variant" => "success",
-            "title" => $disabled ? "Service disabled" : ($remoteStillDisabled ? "Local lock cleared" : "Service enabled"),
+            "title" => $disabled ? (string) $scenario["flash_title"] : ($remoteStillDisabled ? "Local lock cleared" : "Service enabled"),
             "text" => $disabled
-                ? "Public routes now show the developer service-disabled message while developer access remains available."
+                ? (string) $scenario["flash_text"]
                 : ($remoteStillDisabled ? "Remote service suspension is still active and must be changed from the configured provider control plane." : "The local developer service lock was cleared."),
             "toast" => true,
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+        return $this->redirect(route("developer.panel.project_identity.access"));
     }
 
     public function updateProjectSettings(
@@ -118,7 +174,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "project.identity.write")) {
-            return $this->redirect(route("developer.panel.project_identity"));
+            return $this->redirect(route("developer.panel.project_identity.identity"));
         }
 
         $payload = [
@@ -143,7 +199,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity"));
+            return $this->redirect(route("developer.panel.project_identity.identity"));
         }
 
         $environmentValues = [
@@ -164,7 +220,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity"));
+            return $this->redirect(route("developer.panel.project_identity.identity"));
         }
 
         config_set("app", array_merge((array) config("app", []), [
@@ -188,7 +244,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity"));
+        return $this->redirect(route("developer.panel.project_identity.identity"));
     }
 
     public function updateRuntimeEnvironment(
@@ -197,7 +253,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "project.identity.write")) {
-            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+            return $this->redirect(route("developer.panel.project_identity.runtime"));
         }
 
         $environment = strtolower(trim((string) $request->input("runtime_environment", "development")));
@@ -220,7 +276,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+            return $this->redirect(route("developer.panel.project_identity.runtime"));
         }
 
         $production = $environment === "production";
@@ -247,7 +303,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+            return $this->redirect(route("developer.panel.project_identity.runtime"));
         }
 
         config_set("app.environment", $environment);
@@ -275,7 +331,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity") . "#runtime-environment");
+        return $this->redirect(route("developer.panel.project_identity.runtime"));
     }
 
     public function updateProjectLeadership(
@@ -284,7 +340,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "project.identity.write")) {
-            return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+            return $this->redirect(route("developer.panel.project_identity.leadership"));
         }
 
         $leadership = new ProjectLeadership();
@@ -304,8 +360,8 @@ final class DeveloperProjectController extends DeveloperPanelController
                 "organization" => [$enabled ? "required" : "nullable", "string", "max:120"],
                 "person_name" => [$enabled ? "required" : "nullable", "string", "max:120"],
                 "person_email" => [$enabled ? "required" : "nullable", "email", "max:160"],
-                "person_role" => [$enabled ? "required" : "nullable", "string", "max:120"],
-                "responsibility" => [$enabled ? "required" : "nullable", "string", "max:240"],
+                "person_role" => ["nullable", "string", "max:120"],
+                "responsibility" => ["nullable", "string", "max:240"],
                 "profile_url" => ["nullable", "string", "url", "max:2048"],
                 "visibility" => ["required", "string"],
             ];
@@ -323,13 +379,18 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             flash_set("status", [
                 "variant" => "warning",
-                "title" => "Leadership information still needs attention",
-                "text" => "Use a real person, their confirmation email, role, responsibility scope and a supported visibility option.",
+                "title" => "Leadership details need required fields",
+                "text" => "Add the required leadership identity fields before enabling visibility.",
+                "items" => [
+                    "Required: delivery organisation, responsible person, confirmation email and visibility.",
+                    "Optional: role or position, responsibility scope and profile/contact URL.",
+                    "Choose Disabled when leadership should stay hidden from public and panel summaries.",
+                ],
                 "toast" => false,
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+            return $this->redirect(route("developer.panel.project_identity.leadership"));
         }
 
         $current = $leadership->state("admin");
@@ -370,7 +431,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+            return $this->redirect(route("developer.panel.project_identity.leadership"));
         }
 
         $this->applyProjectLeadershipConfig($environmentValues);
@@ -393,7 +454,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+        return $this->redirect(route("developer.panel.project_identity.leadership"));
     }
 
     public function confirmProjectLeadership(
@@ -415,7 +476,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+            return $this->redirect(route("developer.panel.project_identity.leadership"));
         }
 
         $status = $action === "confirm" ? ProjectLeadership::STATUS_CONFIRMED : ProjectLeadership::STATUS_REJECTED;
@@ -437,7 +498,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+            return $this->redirect(route("developer.panel.project_identity.leadership"));
         }
 
         $this->applyProjectLeadershipConfig($environmentValues);
@@ -460,7 +521,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity") . "#project-leadership");
+        return $this->redirect(route("developer.panel.project_identity.leadership"));
     }
 
     public function updateMaintenanceCredentials(
@@ -470,7 +531,7 @@ final class DeveloperProjectController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "preview.manage")) {
-            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
         $payload = [
@@ -493,7 +554,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
         $environmentValues = [
@@ -514,7 +575,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
         config_set("maintenance", array_merge((array) config("maintenance", []), [
@@ -541,12 +602,87 @@ final class DeveloperProjectController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.project_identity") . "#developer-access-preview");
+        return $this->redirect(route("developer.panel.project_identity.access"));
     }
 
     private function normalizeProjectName(string $value): string
     {
         return trim((string) preg_replace('/\s+/', ' ', $value));
+    }
+
+    private function developerControlScenario(string $value): ?array
+    {
+        $key = strtolower(trim(str_replace("-", "_", $value)));
+        $scenarios = [
+            "open" => [
+                "disabled" => false,
+                "status" => "open",
+                "reason" => "",
+                "title" => "",
+                "message" => "",
+                "activity_title" => "Public service re-enabled",
+                "activity_text" => "Public routes were reopened by the developer team.",
+                "flash_title" => "Service enabled",
+                "flash_text" => "The local developer service lock was cleared.",
+            ],
+            "disabled" => [
+                "disabled" => true,
+                "status" => "disabled",
+                "reason" => "developer",
+                "title" => "Service paused by developer",
+                "message" => "This service is temporarily paused by the developer team. Please contact the project developer for assistance.",
+                "activity_title" => "Public service paused",
+                "activity_text" => "Public routes now show the developer-owned pause notice.",
+                "flash_title" => "Service paused",
+                "flash_text" => "Public routes now show the developer-owned pause notice while developer access remains available.",
+            ],
+            "maintenance" => [
+                "disabled" => true,
+                "status" => "disabled",
+                "reason" => "maintenance",
+                "title" => "Service paused for maintenance",
+                "message" => "This service is temporarily paused for planned maintenance. Please contact the project developer if access is urgent.",
+                "activity_title" => "Public service paused for maintenance",
+                "activity_text" => "Public routes now show the planned maintenance service notice.",
+                "flash_title" => "Maintenance notice enabled",
+                "flash_text" => "Public routes now show the planned maintenance service notice.",
+            ],
+            "suspended_billing" => [
+                "disabled" => true,
+                "status" => "suspended",
+                "reason" => "payment_overdue",
+                "title" => "Service has been suspended",
+                "message" => "This service has been suspended because payment is overdue. Please contact the service provider to restore access.",
+                "activity_title" => "Public service suspended for payment",
+                "activity_text" => "Public routes now show the payment-overdue suspension notice.",
+                "flash_title" => "Payment suspension enabled",
+                "flash_text" => "Public routes now show the payment-overdue suspension notice.",
+            ],
+            "suspended_contract" => [
+                "disabled" => true,
+                "status" => "suspended",
+                "reason" => "contract_review",
+                "title" => "Service has been suspended",
+                "message" => "This service has been suspended while the service contract is reviewed. Please contact the service provider.",
+                "activity_title" => "Public service suspended for contract review",
+                "activity_text" => "Public routes now show the contract-review suspension notice.",
+                "flash_title" => "Contract suspension enabled",
+                "flash_text" => "Public routes now show the contract-review suspension notice.",
+            ],
+            "security_review" => [
+                "disabled" => true,
+                "status" => "disabled",
+                "reason" => "security_review",
+                "title" => "Service paused for security review",
+                "message" => "This service is temporarily paused while a security review is completed. Please contact the project developer for assistance.",
+                "activity_title" => "Public service paused for security review",
+                "activity_text" => "Public routes now show the security-review pause notice.",
+                "flash_title" => "Security review notice enabled",
+                "flash_text" => "Public routes now show the security-review pause notice.",
+            ],
+        ];
+
+        return $scenarios[$key] ?? null;
     }
 
     private function applyProjectLeadershipConfig(array $values): void

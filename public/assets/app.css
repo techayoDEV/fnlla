@@ -936,10 +936,10 @@
 }
 
 .starter-hero {
-  padding-block: 4rem 2rem;
+  padding-block: 4.8rem 2.4rem;
   border-bottom: 1px solid var(--fnlla-surface-border);
   background-image:
-    linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.9)),
+    linear-gradient(90deg, rgba(248, 250, 252, 0.98), rgba(248, 250, 252, 0.92)),
     url("brand/fnlla/binary-field.png");
   background-position: center;
   background-size: auto, 640px 360px;
@@ -954,9 +954,7 @@
 .starter-hero-copy {
   display: grid;
   gap: 1.1rem;
-  max-width: 58rem;
-  padding-left: 1rem;
-  border-left: 4px solid var(--fnlla-color-primary);
+  max-width: 62rem;
 }
 
 .starter-kicker,
@@ -971,7 +969,7 @@
 
 .starter-hero-title,
 .starter-page-heading h1 {
-  max-width: 14ch;
+  max-width: 16ch;
   margin: 0;
   color: var(--fnlla-color-text);
   font-size: 3.4rem;
@@ -979,7 +977,7 @@
 }
 
 .starter-hero-text,
-.starter-page-heading p {
+.starter-page-heading-copy > p:not(.starter-kicker) {
   max-width: 42rem;
   margin: 0;
   color: var(--fnlla-color-muted);
@@ -1025,36 +1023,27 @@
 }
 
 .starter-page-title {
-  padding-block: 2rem 0.85rem;
+  padding-block: 3.2rem 1.8rem;
   border-bottom: 1px solid var(--fnlla-surface-border);
-  background: var(--fnlla-color-surface);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 1));
 }
 
 .starter-page-heading {
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .starter-page-heading h1 {
-  max-width: 28ch;
-  font-size: 2.15rem;
-  line-height: 1.12;
+  max-width: 24ch;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  line-height: 1.04;
 }
 
 .starter-page-heading-copy {
   display: grid;
-  gap: 0.85rem;
-}
-
-.starter-page-title-panel {
-  display: grid;
-  gap: 0.75rem;
-  align-content: start;
-  padding: 0.78rem;
-  border: 1px solid var(--fnlla-surface-border);
-  border-radius: var(--fnlla-radius-md);
-  background: var(--fnlla-color-bg-alt);
-  box-shadow: none;
+  gap: 1rem;
+  max-width: 64rem;
 }
 
 .starter-page-title-tags,
@@ -1067,17 +1056,72 @@
 
 .starter-page-title-tags span {
   display: inline-flex;
-  min-height: 2rem;
+  min-height: 1.75rem;
   align-items: center;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid rgba(37, 99, 235, 0.18);
-  border-radius: var(--fnlla-radius-sm);
-  background: var(--fnlla-color-primary-soft);
+  padding: 0.22rem 0.58rem;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: var(--fnlla-radius-md);
+  background: rgba(239, 246, 255, 0.72);
+  color: var(--fnlla-color-primary);
+  font-size: calc(var(--fnlla-font-size-sm) * 0.86);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.feature-card,
+.process-section,
+.process-step,
+.legal-snippet-note {
+  border-color: rgba(37, 99, 235, 0.11);
+  border-radius: var(--fnlla-radius-md);
+  background: var(--fnlla-color-surface);
+  box-shadow: 0 1rem 2.8rem rgba(21, 48, 79, 0.06);
+}
+
+.feature-card,
+.process-step {
+  display: grid;
+  align-content: start;
+  gap: 0.72rem;
+}
+
+.feature-card .content-title,
+.process-step-title {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--fnlla-color-text);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.22;
+}
+
+.feature-card .content-text,
+.process-step-text,
+.legal-snippet-list {
+  color: var(--fnlla-color-muted);
+  font-size: 0.96rem;
+  line-height: 1.62;
+}
+
+.process-section {
+  padding: clamp(1.1rem, 2.5vw, 1.45rem);
+}
+
+.process-grid {
+  gap: 1rem;
+}
+
+.process-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--fnlla-radius-md);
+  background: rgba(239, 246, 255, 0.9);
   color: var(--fnlla-color-primary);
   font-size: var(--fnlla-font-size-sm);
   font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 .starter-contact-layout {
@@ -1173,11 +1217,6 @@
 }
 
 @media (min-width: 960px) {
-  .starter-page-heading {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.42fr);
-    align-items: end;
-  }
-
   .starter-contact-layout {
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.42fr);
   }

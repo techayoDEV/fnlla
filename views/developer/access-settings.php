@@ -122,7 +122,7 @@ require __DIR__ . "/panel-header.php";
                 <?= (($account["security"]["totp_enabled"] ?? false) ? "2FA on" : "2FA off") ?> · <?= (($account["security"]["passkey_ready"] ?? false) ? "passkey ready" : "no passkey") ?>
               </div>
               <?php if ($canManageDeveloperAccounts && $accountEmail !== "" && $accountEmail !== $currentEmail && count($developerAccounts) > 1): ?>
-              <form action="<?= h(route("developer.settings.developer_account.delete")) ?>" method="post">
+              <form action="<?= h(route("developer.settings.developer_account.delete")) ?>" method="post" data-developer-confirm="delete" data-developer-confirm-title="Deactivate developer account?" data-developer-confirm-message="This removes this developer account from future Developer Panel access. Existing project history remains attributed." data-developer-confirm-action="Deactivate account">
                 <?= csrf_field() ?>
                 <input type="hidden" name="developer_account_email" value="<?= h($accountEmail) ?>">
                 <button class="btn btn-ghost btn-sm" type="submit">Deactivate</button>
@@ -225,7 +225,7 @@ require __DIR__ . "/panel-header.php";
                 <?= ($account["invite_pending"] ?? false) ? "Invite pending" : "Active" ?>
               </span>
               <?php if ($canManageDeveloperAccounts && $customerEmail !== ""): ?>
-              <form action="<?= h($customerAccountDeleteRoute) ?>" method="post">
+              <form action="<?= h($customerAccountDeleteRoute) ?>" method="post" data-developer-confirm="delete" data-developer-confirm-title="Deactivate customer access?" data-developer-confirm-message="This removes this customer account from the read-only customer portal." data-developer-confirm-action="Deactivate access">
                 <?= csrf_field() ?>
                 <input type="hidden" name="customer_account_email" value="<?= h($customerEmail) ?>">
                 <button class="btn btn-ghost btn-sm" type="submit">Deactivate</button>

@@ -218,7 +218,7 @@ trait DeveloperMetricsReportHelpers
         }
 
         $source = trim($routeName) !== "" && $routeName[0] !== "/" ? $routeName : $path;
-        foreach (["home", "about", "contact", "privacy", "terms", "services"] as $known) {
+        foreach (["home", "about", "contact", "privacy", "terms"] as $known) {
             if ($source === $known || $path === "/" . $known) {
                 return ucfirst($known);
             }

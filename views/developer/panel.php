@@ -92,7 +92,7 @@ require __DIR__ . "/panel-header.php";
               <?php else: ?>
               <p class="content-text">No public browser-title slogan is configured yet.</p>
               <?php endif; ?>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Open identity</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_identity_details"] ?? route("developer.panel.project_identity.identity"))) ?>">Open identity</a>
             </article>
 
             <article class="developer-dashboard-card">
@@ -118,7 +118,7 @@ require __DIR__ . "/panel-header.php";
               <h3><?= h($projectLeadershipLabel) ?></h3>
               <p class="developer-dashboard-status <?= $projectLeadershipState === "confirmed" ? "is-active" : "is-neutral" ?>"><?= h(ucfirst($projectLeadershipState)) ?></p>
               <p class="content-text"><?= ($projectLeadership["visibility"] ?? "disabled") === "public" ? "Can appear publicly after the named person confirms it." : "Kept private for the Developer Panel and documentation." ?></p>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#project-leadership">Open leadership</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_leadership_screen"] ?? route("developer.panel.project_identity.leadership"))) ?>">Open leadership</a>
             </article>
           </div>
         </section>
@@ -187,7 +187,7 @@ require __DIR__ . "/panel-header.php";
               <strong><?= ($developerControl["disabled"] ?? false) ? "Stopped" : "Open" ?></strong>
               <small><?= ($developerControl["remote_enabled"] ?? false) ? "remote contract on" : "local control only" ?></small>
             </article>
-            <a class="btn btn-outline btn-sm developer-environment-strip-action" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment">Change runtime</a>
+            <a class="btn btn-outline btn-sm developer-environment-strip-action" href="<?= h((string) ($developerLinks["runtime_environment"] ?? route("developer.panel.project_identity.runtime"))) ?>">Change runtime</a>
           </div>
         </section>
 
@@ -199,7 +199,7 @@ require __DIR__ . "/panel-header.php";
                 <strong>Switch runtime environment</strong>
                 <p>Move between development and production while saving debug switches and trusted hosts.</p>
               </div>
-              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment">Open runtime</a>
+              <a class="btn btn-ghost btn-sm" href="<?= h((string) ($developerLinks["runtime_environment"] ?? route("developer.panel.project_identity.runtime"))) ?>">Open runtime</a>
             </article>
             <article class="developer-dashboard-management-row">
               <div>

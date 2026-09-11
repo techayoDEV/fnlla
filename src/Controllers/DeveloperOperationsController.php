@@ -125,6 +125,58 @@ final class DeveloperOperationsController extends DeveloperPanelController
         );
     }
 
+    public function storeChangelogEntry(Request $request, DeveloperAccessManager $developerAccess, DeveloperActivityLog $activityLog): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "operations.view")) {
+            return $this->redirect(route("developer.panel"));
+        }
+
+        $payload = [
+            "title" => $this->normaliseChangelogField((string) $request->input("developer_changelog_title", ""), 120),
+            "text" => $this->normaliseChangelogField((string) $request->input("developer_changelog_text", ""), 240),
+            "seen_hash" => $this->normaliseChangelogField((string) $request->input("developer_changelog_seen_hash", ""), 128),
+        ];
+
+        try {
+            $this->validate($payload, [
+                "title" => ["required", "string", "min:4", "max:120"],
+                "text" => ["required", "string", "min:8", "max:240"],
+                "seen_hash" => ["nullable", "string", "max:128"],
+            ]);
+        } catch (ValidationException $exception) {
+            flash_set("errors", $exception->errors());
+            flash_set("old", [
+                "developer_changelog_title" => $payload["title"],
+                "developer_changelog_text" => $payload["text"],
+            ]);
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Changelog entry needs a little more detail",
+                "text" => "Add a clear title and short project-facing summary before saving the manual entry.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.changelog") . "#manual-changelog-entry");
+        }
+
+        $latestHash = (string) (($activityLog->recent(1)[0] ?? [])["event_hash"] ?? "");
+        $changedWhileOpen = $payload["seen_hash"] !== "" && $latestHash !== "" && $payload["seen_hash"] !== $latestHash;
+        $activityLog->record("project_changelog.manual", $payload["title"], $payload["text"], $developerAccess->currentDeveloper());
+
+        flash_set("status", [
+            "variant" => "success",
+            "title" => "Project changelog entry saved",
+            "text" => $changedWhileOpen
+                ? "The timeline changed while this form was open, so your entry was appended to the latest project history."
+                : "The manual project change was appended to the shared timeline.",
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.changelog") . "#project-changelog-timeline");
+    }
+
     public function notifications(
         Request $request,
         DeveloperAccessManager $developerAccess,
@@ -321,7 +373,15 @@ final class DeveloperOperationsController extends DeveloperPanelController
             "categories" => $categoryCounts,
             "last_actor" => $lastActor,
             "latest_time" => (string) ($items[0]["time"] ?? ""),
+            "latest_hash" => (string) ($items[0]["event_hash"] ?? ""),
         ];
+    }
+
+    private function normaliseChangelogField(string $value, int $maxLength): string
+    {
+        $value = trim((string) preg_replace('/\s+/', " ", $value));
+
+        return strlen($value) > $maxLength ? substr($value, 0, $maxLength) : $value;
     }
 
     private function projectLogCategory(string $action): string

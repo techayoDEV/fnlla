@@ -296,7 +296,7 @@ only protect the technical control surface.
 
 ## Storage Policy
 
-The default Developer Panel workspace, private developer to-do and activity log
+The default Developer Panel workspace, private developer tasks and activity log
 are file-backed JSON under `storage/framework/developer`. That keeps
 `make:project` portable and works before an application database exists.
 
@@ -316,14 +316,14 @@ The installer creates tables for developer activity, workspace state,
 notifications and analytics events. The default remains file-backed storage so
 fresh `make:project` exports work before a database exists.
 
-Private developer to-do items remain file-backed per signed-in developer email
+Private developer task items remain file-backed per signed-in developer email
 by default. They are not shared with other developers, are not exposed to the
 Customer Portal and are not part of the public project contract.
 
 ## Navigation Model
 
 The Developer Panel navigation is grouped by intent while keeping detailed
-screens available through cards, direct links and the command launcher:
+screens available through cards, direct links and sidebar disclosure groups:
 
 - `Dashboard` is the first standalone sidebar destination.
 - `Workspace` contains Project identity and the Project work disclosure group.
@@ -339,12 +339,13 @@ screens available through cards, direct links and the command launcher:
 - `Reference` contains Documentation & policy when the developer role has the
   policy view capability.
 
-The sidebar is intentionally compact. Detailed tools remain routed and
-permission-checked; the command launcher is the full index for jumping directly
-to a specific operational screen.
+The sidebar is intentionally compact. Header actions are limited to private
+developer tasks, the shared review queue and the developer account menu. Detailed
+tools remain routed and permission-checked, but global header search is not part
+of the panel chrome.
 The developer dropdown contains Developer profile and Panel settings for
-account-adjacent or configuration-heavy destinations that do not need to
-compete with the main sidebar workflow.
+account-adjacent or configuration-heavy destinations that do not need to compete
+with the main sidebar workflow.
 
 ## Customer Portal
 
@@ -373,7 +374,7 @@ developer-only navigation.
 
 ## Project Leadership
 
-`/developer/panel/project-identity` includes an optional responsibility record
+`/developer/panel/project-identity/leadership` includes an optional responsibility record
 for the real person leading product direction, delivery or technical leadership.
 It is not a promotional author card. It stores the delivery organisation, person
 name, confirmation email, role or position, responsibility scope, optional
@@ -481,7 +482,10 @@ short change descriptions.
 `/developer/panel/changelog` is the project-specific changelog view in the
 Workspace section. It uses the same shared activity source, but presents local
 project changes for developer handoff and team awareness. It is not the FNLLA
-framework release changelog.
+framework release changelog. Developers may also append manual project-facing
+entries from this screen; manual entries are written to the same shared
+append-only activity log, so concurrent sessions add events instead of editing
+or replacing another developer's work.
 
 Use this view when reviewing what changed before a client preview, handover,
 framework update or release. Use the JSON and CSV exports when the same history
@@ -523,8 +527,10 @@ DEVELOPER_CONTROL_REMOTE_TENANT=example-tenant
 DEVELOPER_CONTROL_REMOTE_TOKEN=<project-token>
 DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=<optional-hmac-secret>
 DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
-DEVELOPER_CONTROL_SUSPENDED_TITLE=Services suspended
+DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=
+DEVELOPER_CONTROL_SUSPENDED_TITLE=Service has been suspended
 DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=
 ```
 
 When enabled, FNLLA polls the configured HTTPS endpoint and sends only technical
@@ -546,9 +552,10 @@ The expected response schema is `fnlla.techayo_remote_control_state.v2`:
   "disabled": false,
   "reason": "",
   "provider": "TechAyo Limited",
-  "title": "Services suspended",
+  "title": "Service has been suspended",
   "message": "Your services have been suspended. Please contact your service provider.",
   "contact": "support@example.com",
+  "contact_phone": "+44 20 0000 0000",
   "updated_at": "2026-08-29T12:00:00+00:00",
   "updated_by": "authorized-operator",
   "command_id": "provider-command-id",
@@ -562,6 +569,12 @@ decisions such as unpaid or inactive service. FNLLA still accepts the legacy
 `disabled` boolean for compatibility, but new adapters should publish `status`
 and `reason` explicitly.
 
+The local Developer Panel service-control form exposes common public-service
+scenarios: open, paused by developer, maintenance window, payment overdue
+suspension, contract suspension and security review. These local scenarios write
+the same `status`, `reason`, title, message, email contact and optional phone
+contact shape that the remote adapter consumes.
+
 The external operations service is responsible for operator login, project
 authorization, central audit, billing/account policy and emergency decisions.
 FNLLA only consumes the resulting technical state. Customer data, private
@@ -570,7 +583,7 @@ remain outside public FNLLA.
 
 ## Workspace Kanban
 
-`/developer/panel/workspace` is a shared technical Kanban board. It is meant for
+`/developer/panel/tasks` is a shared technical Kanban board. It is meant for
 framework setup and project delivery tasks, not customer work management.
 
 Each card can track:
@@ -592,7 +605,7 @@ are global, so every developer receives the same important activity signals, but
 read/archive state is stored per developer. For long-lived accountability, the
 matching action is also written to the Developer Panel activity log.
 
-`/developer/panel/my-todo` is a separate private developer list for notes and
+`/developer/panel/my-tasks` is a separate private developer list for notes and
 personal follow-up. It is keyed to the signed-in developer and intentionally does
 not create customer-visible cards or shared project tasks.
 

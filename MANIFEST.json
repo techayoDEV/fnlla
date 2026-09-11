@@ -3,7 +3,7 @@
     "product": {
         "name": "FNLLA",
         "slug": "fnlla",
-        "version": "2.2.2",
+        "version": "2.2.3",
         "owner": "TechAyo LTD (techayo.co.uk)",
         "origin": "Finella Gardens in Dundee, UK",
         "website": "https://fnlla.com",
@@ -29,7 +29,7 @@
         "source_of_truth": "github",
         "version_path": "public/vendor/fnlla-runtime/VERSION",
         "distribution_path": "public/vendor/fnlla-runtime",
-        "version": "2.2.2",
+        "version": "2.2.3",
         "version_model": "shared_with_product"
     },
     "release": {

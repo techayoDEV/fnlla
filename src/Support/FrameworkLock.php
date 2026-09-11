@@ -46,7 +46,6 @@ final class FrameworkLock
         "views/pages/health.php",
         "views/pages/home.php",
         "views/pages/not-found.php",
-        "views/pages/services.php",
     ];
     private const LEGACY_UNTRACKED_MANAGED_HASHES = [
         "1.0.18" => [

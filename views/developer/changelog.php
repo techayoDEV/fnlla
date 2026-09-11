@@ -8,6 +8,7 @@ $report = is_array($projectChangelogReport ?? null) ? $projectChangelogReport : 
 $items = array_values((array) ($report["items"] ?? []));
 $categories = (array) ($report["categories"] ?? []);
 $latestTime = (string) ($report["latest_time"] ?? "");
+$latestHash = (string) ($report["latest_hash"] ?? "");
 $formatDate = static function (string $time): string {
     if ($time === "") {
         return "No timestamp";
@@ -97,7 +98,37 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="Project changelog timeline">
+        <section class="developer-dashboard-section" id="manual-changelog-entry" aria-label="Add manual project changelog entry">
+          <div class="developer-dashboard-section-head">
+            <div>
+              <p class="feature-kicker">Manual changelog entry</p>
+              <h2 class="developer-dashboard-section-title">Add a project-facing change that did not come from an automated panel action.</h2>
+            </div>
+            <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_changelog"] ?? route("developer.panel.changelog"))) ?>#project-changelog-timeline">Refresh timeline</a>
+          </div>
+          <form class="developer-changelog-manual-form developer-panel-fieldset-card" action="<?= h(route("developer.panel.changelog.store")) ?>" method="post">
+            <?= csrf_field() ?>
+            <input type="hidden" name="developer_changelog_seen_hash" value="<?= h($latestHash) ?>">
+            <div class="developer-panel-form-grid is-stacked">
+              <div class="form-group">
+                <label for="developer-changelog-title">Title</label>
+                <input class="input" id="developer-changelog-title" name="developer_changelog_title" type="text" maxlength="120" value="<?= h((string) old("developer_changelog_title")) ?>" placeholder="Public copy updated after client review" required>
+                <?php if (error_for("title") !== null): ?><p class="help-text form-error"><?= h((string) error_for("title")) ?></p><?php endif; ?>
+              </div>
+              <div class="form-group">
+                <label for="developer-changelog-text">Summary</label>
+                <textarea class="textarea" id="developer-changelog-text" name="developer_changelog_text" rows="3" maxlength="240" placeholder="Shortly explain what changed and why every developer should see it." required><?= h((string) old("developer_changelog_text")) ?></textarea>
+                <?php if (error_for("text") !== null): ?><p class="help-text form-error"><?= h((string) error_for("text")) ?></p><?php endif; ?>
+              </div>
+            </div>
+            <div class="developer-changelog-manual-actions">
+              <p class="content-text mb-0">Manual entries are appended to the shared activity log. They do not edit or replace entries created by another developer session.</p>
+              <button class="btn btn-primary btn-sm" type="submit">Add changelog entry</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="developer-dashboard-section" id="project-changelog-timeline" aria-label="Project changelog timeline">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Project change timeline</h2>
             <span class="developer-dashboard-refresh">Latest 120 project events</span>

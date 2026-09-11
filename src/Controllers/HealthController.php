@@ -293,7 +293,6 @@ final class HealthController extends Controller
             "links" => [
                 "home" => route("home"),
                 "about" => route("about"),
-                "services" => route("services"),
                 "contact" => route("contact"),
                 "maintenance" => route("maintenance.home"),
                 "health" => route("health"),

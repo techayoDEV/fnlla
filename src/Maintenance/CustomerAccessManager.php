@@ -83,7 +83,6 @@ final class CustomerAccessManager
             "health",
             "maintenance",
             "privacy",
-            "services",
             "terms",
             "vendor",
         ], true);

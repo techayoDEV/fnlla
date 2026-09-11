@@ -161,7 +161,6 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
               <?php if ($publicNavigationAvailable): ?>
               <li><a class="project-nav-link" href="<?= h(route("home")) ?>" <?= $currentPath === "/" ? 'aria-current="page"' : "" ?>>Home</a></li>
               <li><a class="project-nav-link" href="<?= h(route("about")) ?>" <?= $currentPath === "/about" ? 'aria-current="page"' : "" ?>>About</a></li>
-              <li><a class="project-nav-link" href="<?= h(route("services")) ?>" <?= $currentPath === "/services" ? 'aria-current="page"' : "" ?>>Services</a></li>
               <li><a class="project-nav-link" href="<?= h(route("contact")) ?>" <?= $currentPath === "/contact" ? 'aria-current="page"' : "" ?>>Contact</a></li>
               <?php else: ?>
               <li><span class="project-nav-link" aria-current="page">Maintenance access required</span></li>
@@ -181,6 +180,13 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
         <div>
           <h2 class="alert-title"><?= h((string) $pageStatus["title"]) ?></h2>
           <p class="alert-text"><?= h((string) $pageStatus["text"]) ?></p>
+          <?php if (!empty($pageStatus["items"]) && is_array($pageStatus["items"])): ?>
+          <ul class="alert-list">
+            <?php foreach ($pageStatus["items"] as $statusItem): ?>
+            <li><?= h((string) $statusItem) ?></li>
+            <?php endforeach; ?>
+          </ul>
+          <?php endif; ?>
         </div>
         <button class="alert-close" type="button" aria-label="Close alert" data-fnlla-alert-close>&times;</button>
       </div>
@@ -203,7 +209,6 @@ $documentFaviconType = str_ends_with(strtolower($documentFaviconPath), ".svg") ?
           <p class="project-footer-links">
             <a href="<?= h(route("home")) ?>">Home</a>
             <a href="<?= h(route("about")) ?>">About</a>
-            <a href="<?= h(route("services")) ?>">Services</a>
             <a href="<?= h(route("contact")) ?>">Contact</a>
             <a href="<?= h(route("terms")) ?>">Terms</a>
             <a href="<?= h(route("privacy")) ?>">Privacy</a>

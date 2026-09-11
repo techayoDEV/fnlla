@@ -19,7 +19,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 - framework update baseline metadata in `.fnlla/framework-lock.json`
 - root license: `LICENSE.md`; framework references:
   `docs/framework/SUPPORT.md`, `docs/framework/TRADEMARKS.md`
-- an application base with public pages for home, about and services
+- an application base with public pages for home, about, contact, terms and privacy
 - an optional password-protected maintenance access screen for client preview or staged review sessions
 - sessions, cookies, CSRF, auth foundations and the rest of the core runtime under `src/`
 - database directories ready for project-specific migrations and seeders
@@ -55,7 +55,7 @@ php scripts/validate-version-manifest.php
 php -S 127.0.0.1:8080 -t public public/router.php
 ```
 
-6. Open `http://127.0.0.1:8080` in your browser and review the exported pages at `/`, `/about` and `/services`.
+6. Open `http://127.0.0.1:8080` in your browser and review the exported pages at `/`, `/about`, `/contact`, `/terms` and `/privacy`.
 7. Use `http://127.0.0.1:8080/maintenance/framework-update` when you want a browser-based framework update check or safe apply flow.
 8. When client preview should stay private, either:
 

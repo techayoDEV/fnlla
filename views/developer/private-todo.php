@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "My To-do";
+$developerPanelTitle = "My Tasks";
 $developerPanelLead = "Private developer tasks, notes, subtasks and attachments that stay outside shared project work.";
 $todo = is_array($privateTodo ?? null) ? (array) $privateTodo : [];
 $items = array_values((array) ($todo["items"] ?? []));
@@ -34,6 +34,28 @@ $formatAttachmentSize = static function (int $bytes): string {
     }
 
     return max(1, (int) ceil($bytes / 1024)) . " KB";
+};
+$formatDate = static function (string $date): string {
+    if ($date === "") {
+        return "Not set";
+    }
+
+    $parsed = DateTimeImmutable::createFromFormat("!Y-m-d", $date);
+
+    return $parsed instanceof DateTimeImmutable ? $parsed->format("d M Y") : $date;
+};
+$formatDateTime = static function (string $time): string {
+    if ($time === "") {
+        return "Not recorded";
+    }
+
+    try {
+        return (new DateTimeImmutable($time))
+            ->setTimezone(new DateTimeZone(date_default_timezone_get()))
+            ->format("d M Y, H:i");
+    } catch (Throwable) {
+        return $time;
+    }
 };
 $subtaskSummary = static function (array $subtasks): array {
     $total = count($subtasks);
@@ -77,7 +99,7 @@ $owner = (string) ($todo["owner"] ?? "developer");
 require __DIR__ . "/panel-header.php";
 ?>
 
-        <section class="developer-dashboard-section" aria-label="Private to-do summary">
+        <section class="developer-dashboard-section" aria-label="Private tasks summary">
           <div class="developer-panel-intro developer-private-todo-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Private work queue</p>
@@ -110,7 +132,7 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
-        <section class="developer-dashboard-section" id="developer-private-todo-capture" aria-label="Private to-do workbench">
+        <section class="developer-dashboard-section" id="developer-private-todo-capture" aria-label="Private tasks workbench">
           <div class="developer-private-todo-shell">
             <div class="developer-private-todo-workbench">
               <div class="developer-private-todo-composer developer-private-todo-composer-minimal">
@@ -133,7 +155,7 @@ require __DIR__ . "/panel-header.php";
               </div>
             </div>
 
-            <div class="developer-private-todo-list" aria-label="Private to-do items">
+            <div class="developer-private-todo-list" aria-label="Private task items">
               <div class="developer-dashboard-section-head">
                 <h2 class="developer-dashboard-section-title">Execution queue</h2>
                 <span class="developer-dashboard-refresh"><?= h((string) count($openItems)) ?> open / <?= h((string) count($doneItems)) ?> done</span>
@@ -153,13 +175,20 @@ require __DIR__ . "/panel-header.php";
                   $color = $colorClass((string) ($item["color"] ?? "blue"));
                   $dueDate = (string) ($item["due_date"] ?? "");
                   $dueClass = !$done && $dueDate !== "" && $dueDate < $today ? " is-overdue" : "";
-                  $dueLabel = $dueDate === "" ? "Not set" : ($dueDate < $today && !$done ? "Overdue " . $dueDate : $dueDate);
+                  $dueReadable = $formatDate($dueDate);
+                  $dueLabel = $dueDate === "" ? "Not set" : ($dueDate < $today && !$done ? "Overdue " . $dueReadable : $dueReadable);
+                  $updatedAt = (string) ($item["updated_at_utc"] ?? "");
+                  $updatedLabel = $formatDateTime($updatedAt);
                   $subtasks = array_values((array) ($item["subtasks"] ?? []));
                   $attachments = array_values((array) ($item["attachments"] ?? []));
                   $progress = $subtaskSummary($subtasks);
                   $isNextAction = is_array($focusItem) && !$done && (string) ($focusItem["id"] ?? "") === $itemId;
                   $safeItemId = preg_replace('/[^A-Za-z0-9_-]/', "-", $itemId) ?: ("item-" . substr(hash("sha256", $itemId), 0, 8));
                   $editableSubtasks = $subtasks === [] ? [["text" => "", "done" => false]] : $subtasks;
+                  $privateTaskConfirmName = trim((string) ($item["title"] ?? ""));
+                  $privateTaskConfirmName = $privateTaskConfirmName !== "" ? $privateTaskConfirmName : "Untitled private task";
+                  $privateTaskDeleteConfirmTitle = "Delete private task: " . $privateTaskConfirmName;
+                  $privateTaskDeleteConfirmMessage = 'Delete "' . $privateTaskConfirmName . '" from your private My Tasks list? This removes its subtasks and attachments from your developer account.';
               ?>
               <article class="developer-private-todo-item is-color-<?= h($color) ?><?= $done ? " is-done" : "" ?><?= h($dueClass) ?><?= $isNextAction ? " is-next-action" : "" ?>">
                 <form action="<?= h(route("developer.private_todo.items.toggle")) ?>" method="post" data-developer-ajax>
@@ -210,109 +239,111 @@ require __DIR__ . "/panel-header.php";
                     <?php endforeach; ?>
                   </div>
                   <?php endif; ?>
-                  <details class="developer-private-todo-editor">
-                    <summary>Edit details</summary>
-                    <form class="developer-private-todo-editor-form" action="<?= h(route("developer.private_todo.items.update")) ?>" method="post" enctype="multipart/form-data" novalidate data-developer-ajax>
+                  <div class="developer-private-todo-detail-row">
+                    <details class="developer-private-todo-editor">
+                      <summary>Edit details</summary>
+                      <form class="developer-private-todo-editor-form" action="<?= h(route("developer.private_todo.items.update")) ?>" method="post" enctype="multipart/form-data" novalidate data-developer-ajax>
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="developer_private_todo_id" value="<?= h($itemId) ?>">
+                        <div class="developer-private-todo-editor-grid">
+                          <div class="form-group developer-private-todo-editor-title">
+                            <label class="label" for="developer-private-todo-title-<?= h($safeItemId) ?>">Task title</label>
+                            <input class="input" id="developer-private-todo-title-<?= h($safeItemId) ?>" name="developer_private_todo_title" type="text" maxlength="160" value="<?= h((string) ($item["title"] ?? "")) ?>" required>
+                          </div>
+                          <fieldset class="developer-private-todo-priority-field">
+                            <legend>Priority</legend>
+                            <div class="developer-private-todo-priority-picker" role="radiogroup" aria-label="Private task priority">
+                              <?php foreach ($priorityLabels as $priorityValue => $label): ?>
+                              <label>
+                                <input type="radio" name="developer_private_todo_priority" value="<?= h($priorityValue) ?>" <?= $priorityValue === $priority ? "checked" : "" ?>>
+                                <span><?= h($label) ?></span>
+                              </label>
+                              <?php endforeach; ?>
+                            </div>
+                          </fieldset>
+                          <div class="form-group developer-private-todo-due-field">
+                            <label class="label" for="developer-private-todo-due-<?= h($safeItemId) ?>">Due date</label>
+                            <input class="input" id="developer-private-todo-due-<?= h($safeItemId) ?>" name="developer_private_todo_due_date" type="date" value="<?= h($dueDate) ?>">
+                          </div>
+                          <fieldset class="developer-private-todo-color-field">
+                            <legend>Color</legend>
+                            <div class="developer-private-todo-color-picker developer-kanban-color-picker" role="radiogroup" aria-label="Private task color">
+                              <?php foreach ($colorLabels as $colorValue => $label): ?>
+                              <label class="developer-kanban-color-option developer-kanban-color-option-<?= h($colorValue) ?>" data-fnlla-tooltip="<?= h($label) ?>" data-fnlla-tooltip-position="top">
+                                <input type="radio" name="developer_private_todo_color" value="<?= h($colorValue) ?>" <?= $colorValue === $color ? "checked" : "" ?>>
+                                <span aria-hidden="true"></span>
+                                <em><?= h($label) ?></em>
+                              </label>
+                              <?php endforeach; ?>
+                            </div>
+                          </fieldset>
+                          <div class="form-group developer-private-todo-notes developer-private-todo-form-wide">
+                            <label class="label" for="developer-private-todo-notes-<?= h($safeItemId) ?>">Private note</label>
+                            <textarea class="textarea" id="developer-private-todo-notes-<?= h($safeItemId) ?>" name="developer_private_todo_notes" rows="3" maxlength="700" placeholder="Context, decisions, links to check or a short next-action note."><?= h((string) ($item["notes"] ?? "")) ?></textarea>
+                          </div>
+                          <div class="developer-private-todo-subtasks-field developer-private-todo-form-wide" data-private-todo-subtasks data-private-todo-subtasks-id="developer-private-todo-edit-<?= h($safeItemId) ?>">
+                            <div class="developer-private-todo-field-head">
+                              <div>
+                                <p class="feature-kicker">Subtasks</p>
+                                <h3>Task steps</h3>
+                              </div>
+                              <button class="btn btn-ghost btn-sm" type="button" data-private-todo-subtask-add>Add subtask</button>
+                            </div>
+                            <div class="developer-private-todo-subtask-builder" data-private-todo-subtask-list>
+                              <?php foreach ($editableSubtasks as $subtaskIndex => $subtask): ?>
+                              <?php $subtaskId = "developer-private-todo-subtask-" . $safeItemId . "-" . (string) $subtaskIndex; ?>
+                              <div class="developer-private-todo-subtask-row">
+                                <label class="developer-private-todo-subtask-toggle" for="<?= h($subtaskId) ?>-done">
+                                  <input id="<?= h($subtaskId) ?>-done" type="checkbox" name="developer_private_todo_subtasks_done[]" value="<?= h((string) $subtaskIndex) ?>" <?= ((bool) ($subtask["done"] ?? false)) ? "checked" : "" ?>>
+                                  <span aria-hidden="true"></span>
+                                </label>
+                                <label class="visually-hidden" for="<?= h($subtaskId) ?>">Subtask <?= h((string) ($subtaskIndex + 1)) ?></label>
+                                <input class="input" id="<?= h($subtaskId) ?>" name="developer_private_todo_subtasks[<?= h((string) $subtaskIndex) ?>]" type="text" maxlength="140" value="<?= h((string) ($subtask["text"] ?? "")) ?>" placeholder="Optional step">
+                              </div>
+                              <?php endforeach; ?>
+                            </div>
+                            <small class="form-hint">Delete text to remove a subtask. Checked rows stay completed.</small>
+                          </div>
+                          <div class="developer-private-todo-attachment-fields developer-private-todo-form-wide">
+                            <div class="developer-private-todo-field-head developer-private-todo-attachment-head">
+                              <div>
+                                <p class="feature-kicker">Reference</p>
+                                <h3>Add another attachment</h3>
+                              </div>
+                              <span class="developer-dashboard-refresh"><?= h((string) count($attachments)) ?> saved</span>
+                            </div>
+                            <div class="form-group">
+                              <label class="label" for="developer-private-todo-attachment-label-<?= h($safeItemId) ?>">Attachment label</label>
+                              <input class="input" id="developer-private-todo-attachment-label-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_label" type="text" maxlength="100" placeholder="Screenshot, vendor email, checklist">
+                            </div>
+                            <div class="form-group">
+                              <label class="label" for="developer-private-todo-attachment-url-<?= h($safeItemId) ?>">Attachment URL</label>
+                              <input class="input" id="developer-private-todo-attachment-url-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_url" type="url" maxlength="240" placeholder="https://example.test/reference">
+                            </div>
+                            <div class="form-group">
+                              <label class="label" for="developer-private-todo-attachment-file-<?= h($safeItemId) ?>">Attachment file</label>
+                              <input class="input developer-kanban-file-input" id="developer-private-todo-attachment-file-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/csv,application/zip,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.jpg,.jpeg,.png,.webp,.pdf,.txt,.csv,.zip,.doc,.docx,.xls,.xlsx">
+                            </div>
+                          </div>
+                          <div class="developer-private-todo-actions developer-private-todo-form-wide">
+                            <span class="developer-dashboard-refresh">Saved only in your private developer list</span>
+                            <button class="btn btn-primary" type="submit">Save details</button>
+                          </div>
+                        </div>
+                      </form>
+                    </details>
+                    <form class="developer-private-todo-delete-form" action="<?= h(route("developer.private_todo.items.delete")) ?>" method="post" data-developer-ajax data-developer-confirm="delete" data-developer-confirm-title="<?= h($privateTaskDeleteConfirmTitle) ?>" data-developer-confirm-message="<?= h($privateTaskDeleteConfirmMessage) ?>" data-developer-confirm-action="Delete task">
                       <?= csrf_field() ?>
                       <input type="hidden" name="developer_private_todo_id" value="<?= h($itemId) ?>">
-                      <div class="developer-private-todo-editor-grid">
-                        <div class="form-group developer-private-todo-editor-title">
-                          <label class="label" for="developer-private-todo-title-<?= h($safeItemId) ?>">Task title</label>
-                          <input class="input" id="developer-private-todo-title-<?= h($safeItemId) ?>" name="developer_private_todo_title" type="text" maxlength="160" value="<?= h((string) ($item["title"] ?? "")) ?>" required>
-                        </div>
-                        <fieldset class="developer-private-todo-priority-field">
-                          <legend>Priority</legend>
-                          <div class="developer-private-todo-priority-picker" role="radiogroup" aria-label="Private task priority">
-                            <?php foreach ($priorityLabels as $priorityValue => $label): ?>
-                            <label>
-                              <input type="radio" name="developer_private_todo_priority" value="<?= h($priorityValue) ?>" <?= $priorityValue === $priority ? "checked" : "" ?>>
-                              <span><?= h($label) ?></span>
-                            </label>
-                            <?php endforeach; ?>
-                          </div>
-                        </fieldset>
-                        <div class="form-group developer-private-todo-due-field">
-                          <label class="label" for="developer-private-todo-due-<?= h($safeItemId) ?>">Due date</label>
-                          <input class="input" id="developer-private-todo-due-<?= h($safeItemId) ?>" name="developer_private_todo_due_date" type="date" value="<?= h($dueDate) ?>">
-                        </div>
-                        <fieldset class="developer-private-todo-color-field">
-                          <legend>Color</legend>
-                          <div class="developer-private-todo-color-picker developer-kanban-color-picker" role="radiogroup" aria-label="Private task color">
-                            <?php foreach ($colorLabels as $colorValue => $label): ?>
-                            <label class="developer-kanban-color-option developer-kanban-color-option-<?= h($colorValue) ?>" data-fnlla-tooltip="<?= h($label) ?>" data-fnlla-tooltip-position="top">
-                              <input type="radio" name="developer_private_todo_color" value="<?= h($colorValue) ?>" <?= $colorValue === $color ? "checked" : "" ?>>
-                              <span aria-hidden="true"></span>
-                              <em><?= h($label) ?></em>
-                            </label>
-                            <?php endforeach; ?>
-                          </div>
-                        </fieldset>
-                        <div class="form-group developer-private-todo-notes developer-private-todo-form-wide">
-                          <label class="label" for="developer-private-todo-notes-<?= h($safeItemId) ?>">Private note</label>
-                          <textarea class="textarea" id="developer-private-todo-notes-<?= h($safeItemId) ?>" name="developer_private_todo_notes" rows="3" maxlength="700" placeholder="Context, decisions, links to check or a short next-action note."><?= h((string) ($item["notes"] ?? "")) ?></textarea>
-                        </div>
-                        <div class="developer-private-todo-subtasks-field developer-private-todo-form-wide" data-private-todo-subtasks data-private-todo-subtasks-id="developer-private-todo-edit-<?= h($safeItemId) ?>">
-                          <div class="developer-private-todo-field-head">
-                            <div>
-                              <p class="feature-kicker">Subtasks</p>
-                              <h3>Task steps</h3>
-                            </div>
-                            <button class="btn btn-ghost btn-sm" type="button" data-private-todo-subtask-add>Add subtask</button>
-                          </div>
-                          <div class="developer-private-todo-subtask-builder" data-private-todo-subtask-list>
-                            <?php foreach ($editableSubtasks as $subtaskIndex => $subtask): ?>
-                            <?php $subtaskId = "developer-private-todo-subtask-" . $safeItemId . "-" . (string) $subtaskIndex; ?>
-                            <div class="developer-private-todo-subtask-row">
-                              <label class="developer-private-todo-subtask-toggle" for="<?= h($subtaskId) ?>-done">
-                                <input id="<?= h($subtaskId) ?>-done" type="checkbox" name="developer_private_todo_subtasks_done[]" value="<?= h((string) $subtaskIndex) ?>" <?= ((bool) ($subtask["done"] ?? false)) ? "checked" : "" ?>>
-                                <span aria-hidden="true"></span>
-                              </label>
-                              <label class="visually-hidden" for="<?= h($subtaskId) ?>">Subtask <?= h((string) ($subtaskIndex + 1)) ?></label>
-                              <input class="input" id="<?= h($subtaskId) ?>" name="developer_private_todo_subtasks[<?= h((string) $subtaskIndex) ?>]" type="text" maxlength="140" value="<?= h((string) ($subtask["text"] ?? "")) ?>" placeholder="Optional step">
-                            </div>
-                            <?php endforeach; ?>
-                          </div>
-                          <small class="form-hint">Delete text to remove a subtask. Checked rows stay completed.</small>
-                        </div>
-                        <div class="developer-private-todo-attachment-fields developer-private-todo-form-wide">
-                          <div class="developer-private-todo-field-head developer-private-todo-attachment-head">
-                            <div>
-                              <p class="feature-kicker">Reference</p>
-                              <h3>Add another attachment</h3>
-                            </div>
-                            <span class="developer-dashboard-refresh"><?= h((string) count($attachments)) ?> saved</span>
-                          </div>
-                          <div class="form-group">
-                            <label class="label" for="developer-private-todo-attachment-label-<?= h($safeItemId) ?>">Attachment label</label>
-                            <input class="input" id="developer-private-todo-attachment-label-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_label" type="text" maxlength="100" placeholder="Screenshot, vendor email, checklist">
-                          </div>
-                          <div class="form-group">
-                            <label class="label" for="developer-private-todo-attachment-url-<?= h($safeItemId) ?>">Attachment URL</label>
-                            <input class="input" id="developer-private-todo-attachment-url-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_url" type="url" maxlength="240" placeholder="https://example.test/reference">
-                          </div>
-                          <div class="form-group">
-                            <label class="label" for="developer-private-todo-attachment-file-<?= h($safeItemId) ?>">Attachment file</label>
-                            <input class="input developer-kanban-file-input" id="developer-private-todo-attachment-file-<?= h($safeItemId) ?>" name="developer_private_todo_attachment_file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/csv,application/zip,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.jpg,.jpeg,.png,.webp,.pdf,.txt,.csv,.zip,.doc,.docx,.xls,.xlsx">
-                          </div>
-                        </div>
-                        <div class="developer-private-todo-actions developer-private-todo-form-wide">
-                          <span class="developer-dashboard-refresh">Saved only in your private developer list</span>
-                          <button class="btn btn-primary" type="submit">Save details</button>
-                        </div>
-                      </div>
+                      <button class="btn btn-ghost btn-sm developer-private-todo-delete" type="submit">Delete</button>
                     </form>
-                  </details>
+                  </div>
                   <div class="developer-project-log-facts">
                     <span><b>Status</b> <?= $done ? "Done" : "Open" ?></span>
                     <span><b>Due</b> <?= h($dueLabel) ?></span>
-                    <span><b>Updated</b> <?= h((string) ($item["updated_at_utc"] ?? "")) ?></span>
+                    <span><b>Updated</b> <time datetime="<?= h($updatedAt) ?>"><?= h($updatedLabel) ?></time></span>
                   </div>
                 </div>
-                <form action="<?= h(route("developer.private_todo.items.delete")) ?>" method="post" data-developer-ajax>
-                  <?= csrf_field() ?>
-                  <input type="hidden" name="developer_private_todo_id" value="<?= h($itemId) ?>">
-                  <button class="btn btn-ghost btn-sm developer-private-todo-delete" type="submit">Delete</button>
-                </form>
               </article>
               <?php endforeach; ?>
             </div>

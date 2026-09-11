@@ -52,7 +52,7 @@ config_set('developer_access.path', '/developer');
 config_set('developer_access.users', developer_access()->serializeAccounts([$account]));
 $capture('/developer', 'login');
 $capture('/developer/forgot-password', 'recovery');
-foreach (['/' => 'home', '/about' => 'public-about', '/services' => 'services', '/contact' => 'contact', '/terms' => 'terms', '/privacy' => 'privacy'] as $path => $name) {
+foreach (['/' => 'home', '/about' => 'public-about', '/contact' => 'contact', '/terms' => 'terms', '/privacy' => 'privacy'] as $path => $name) {
     $capture($path, $name);
 }
 $capture('/brand-fixture-missing', '404', 404);
@@ -67,10 +67,10 @@ foreach (['blue', 'slate', 'sky', 'indigo', 'green', 'red', 'yellow', 'orange'] 
         'priority' => 'high', 'blocked' => $index === 1,
         'due_date' => $index === 0 ? '2000-01-01' : '', 'client_visible' => true], $account);
 }
-foreach (['', 'project-identity', 'access', 'profile', 'settings', 'framework-updates', 'operations', 'project-logs',
-    'my-todo',
-    'analytics', 'heatmap', 'notifications', 'release-readiness', 'integrations', 'workspace', 'documentation', 'about', 'technical-debt', 'debug'] as $section) {
-    $capture('/developer/panel' . ($section ? '/' . $section : ''), 'panel-' . ($section ?: 'dashboard'));
+foreach (['', 'project-identity', 'project-identity/identity', 'project-identity/runtime', 'project-identity/leadership', 'project-identity/access-preview', 'access', 'profile', 'settings', 'framework-updates', 'operations', 'project-logs',
+    'my-tasks',
+    'analytics', 'heatmap', 'notifications', 'release-readiness', 'integrations', 'tasks', 'changelog', 'documentation', 'about', 'technical-debt', 'debug'] as $section) {
+    $capture('/developer/panel' . ($section ? '/' . $section : ''), 'panel-' . ($section !== '' ? str_replace('/', '-', $section) : 'dashboard'));
 }
 $capture('/maintenance/framework-update', 'maintenance-update');
 config_set('app.debug', true);

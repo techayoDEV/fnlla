@@ -628,6 +628,10 @@ require __DIR__ . "/panel-header.php";
                     $taskPriorityClass = "is-priority-" . preg_replace('/[^a-z0-9_-]+/', "-", strtolower($taskPriority));
                     $taskSearch = trim((string) ($task["title"] ?? "") . " " . (string) ($task["notes"] ?? "") . " " . (string) ($types[$taskType] ?? "Task") . " " . (string) ($priorities[$taskPriority] ?? "Normal") . " " . $assigneeName);
                     $taskDueClass = ($task["due_date"] ?? "") !== "" && (string) ($task["due_date"] ?? "") < $today && ($task["status"] ?? "") !== "done" ? " is-overdue" : "";
+                    $taskConfirmName = trim((string) ($task["title"] ?? ""));
+                    $taskConfirmName = $taskConfirmName !== "" ? $taskConfirmName : "Untitled Kanban task";
+                    $taskDeleteConfirmTitle = "Remove task: " . $taskConfirmName;
+                    $taskDeleteConfirmMessage = 'Remove "' . $taskConfirmName . '" from the shared Kanban board? This removes its comments, checklist and attachments for every developer session.';
                 ?>
                 <article class="developer-kanban-task developer-kanban-task-<?= h($taskColor) ?><?= h($taskDueClass) ?> <?= $taskAssignee === $currentEmail && $currentEmail !== "" ? "is-mine" : "" ?>" draggable="true" data-developer-kanban-task="<?= h($taskId) ?>" data-developer-kanban-position="<?= h($taskPosition) ?>" data-developer-kanban-priority="<?= h($taskPriority) ?>" data-developer-kanban-assignee="<?= h($taskAssignee) ?>" data-developer-kanban-blocked="<?= $taskBlocked ? "true" : "false" ?>" data-developer-kanban-search-text="<?= h(strtolower($taskSearch)) ?>">
                   <div class="developer-kanban-task-topline">
@@ -644,7 +648,7 @@ require __DIR__ . "/panel-header.php";
                       <summary aria-label="Task actions" data-fnlla-tooltip="Task actions" data-fnlla-tooltip-position="left"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></summary>
                         <div class="developer-kanban-task-menu-panel">
                           <button class="developer-kanban-task-menu-item" type="button" data-fnlla-modal-open="#<?= h($modalId) ?>">Edit</button>
-                          <form action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax>
+                          <form action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax data-developer-confirm="delete" data-developer-confirm-title="<?= h($taskDeleteConfirmTitle) ?>" data-developer-confirm-message="<?= h($taskDeleteConfirmMessage) ?>" data-developer-confirm-action="Remove task">
                             <?= csrf_field() ?>
                             <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                             <button class="developer-kanban-task-menu-item developer-kanban-task-menu-danger" type="submit">Remove</button>
@@ -903,7 +907,7 @@ require __DIR__ . "/panel-header.php";
                             </label>
                             <?php endforeach; ?>
                           </div>
-                          <button class="developer-kanban-subtask-remove" type="submit" name="developer_workspace_delete_subtask_index" value="<?= h((string) $subtaskIndex) ?>" formnovalidate aria-label="Remove subtask">
+                          <button class="developer-kanban-subtask-remove" type="submit" name="developer_workspace_delete_subtask_index" value="<?= h((string) $subtaskIndex) ?>" formnovalidate aria-label="Remove subtask" data-developer-confirm="delete" data-developer-confirm-title="Remove subtask?" data-developer-confirm-message="This removes the selected subtask from this Kanban task." data-developer-confirm-action="Remove subtask">
                             <span aria-hidden="true"></span>
                           </button>
                         </div>
@@ -1023,7 +1027,7 @@ require __DIR__ . "/panel-header.php";
                         <button class="btn btn-ghost" type="button" data-fnlla-modal-close>Cancel</button>
                       </div>
                     </form>
-                    <form class="developer-kanban-delete-form" action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax>
+                    <form class="developer-kanban-delete-form" action="<?= h(route("developer.workspace.tasks.delete")) ?>" method="post" data-developer-ajax data-developer-confirm="delete" data-developer-confirm-title="<?= h($taskDeleteConfirmTitle) ?>" data-developer-confirm-message="<?= h($taskDeleteConfirmMessage) ?>" data-developer-confirm-action="Remove task">
                       <?= csrf_field() ?>
                       <input type="hidden" name="developer_workspace_task_id" value="<?= h($taskId) ?>">
                       <button class="btn btn-ghost btn-sm" type="submit">Remove task</button>

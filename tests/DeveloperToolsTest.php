@@ -210,12 +210,15 @@ final class DeveloperToolsTest extends TestCase
         self::assertStringContainsString('<select class="select" id="debt-status-filter" name="status">', $technicalDebt->body());
         self::assertStringContainsString('<summary class="debt-add-summary">Add debt item</summary>', $technicalDebt->body());
         self::assertSame(200, $application->handle(new Request("GET", "/developer/panel/debug"))->status());
-        $privateTodo = $application->handle(new Request("GET", "/developer/panel/my-todo"));
+        $privateTodo = $application->handle(new Request("GET", "/developer/panel/my-tasks"));
         self::assertSame(200, $privateTodo->status());
         self::assertStringContainsString("Private developer tasks, notes, subtasks and attachments", $privateTodo->body());
-        self::assertStringContainsString("action=\"/developer/panel/my-todo/items\"", $privateTodo->body());
+        self::assertStringContainsString("action=\"/developer/panel/my-tasks/items\"", $privateTodo->body());
+        $legacyPrivateTodo = $application->handle(new Request("GET", "/developer/panel/my-todo"));
+        self::assertSame(301, $legacyPrivateTodo->status());
+        self::assertSame("/developer/panel/my-tasks", $legacyPrivateTodo->headers()["Location"] ?? null);
         self::assertSame(419, $application->handle(new Request("POST", "/developer/panel/debug", [], ["enabled" => "1"], [], ["accept" => "application/json"]))->status());
-        $todoResponse = $application->handle(new Request("POST", "/developer/panel/my-todo/items", [], [
+        $todoResponse = $application->handle(new Request("POST", "/developer/panel/my-tasks/items", [], [
             "_token" => csrf_token(),
             "developer_private_todo_title" => "Review local debug workflow",
             "developer_private_todo_notes" => "Do not expose this as shared Kanban work.",
@@ -238,15 +241,17 @@ final class DeveloperToolsTest extends TestCase
         self::assertTrue((bool) ($createdPrivateTodo["items"][0]["subtasks"][1]["done"] ?? false));
         self::assertSame(1, count((array) ($createdPrivateTodo["items"][0]["attachments"] ?? [])));
         $createdPrivateTodoItemId = (string) ($createdPrivateTodo["items"][0]["id"] ?? "");
-        $privateTodoWithItem = $application->handle(new Request("GET", "/developer/panel/my-todo"));
+        $privateTodoWithItem = $application->handle(new Request("GET", "/developer/panel/my-tasks"));
         self::assertStringContainsString("Quick add a private task", $privateTodoWithItem->body());
         self::assertStringContainsString("Next action", $privateTodoWithItem->body());
         self::assertStringContainsString("Edit details", $privateTodoWithItem->body());
-        self::assertStringContainsString("action=\"/developer/panel/my-todo/items/update\"", $privateTodoWithItem->body());
+        self::assertStringContainsString("data-developer-confirm-title=\"Delete private task: Review local debug workflow\"", $privateTodoWithItem->body());
+        self::assertStringContainsString("Delete &quot;Review local debug workflow&quot; from your private My Tasks list?", $privateTodoWithItem->body());
+        self::assertStringContainsString("action=\"/developer/panel/my-tasks/items/update\"", $privateTodoWithItem->body());
         self::assertStringContainsString("data-private-todo-subtask-add", $privateTodoWithItem->body());
         self::assertStringContainsString("name=\"developer_private_todo_subtasks[0]\"", $privateTodoWithItem->body());
         self::assertStringContainsString("name=\"developer_private_todo_attachment_file\"", $privateTodoWithItem->body());
-        $updatedTodoResponse = $application->handle(new Request("POST", "/developer/panel/my-todo/items/update", [], [
+        $updatedTodoResponse = $application->handle(new Request("POST", "/developer/panel/my-tasks/items/update", [], [
             "_token" => csrf_token(),
             "developer_private_todo_id" => $createdPrivateTodoItemId,
             "developer_private_todo_title" => "Update private workflow note",

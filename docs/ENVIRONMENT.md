@@ -340,7 +340,7 @@ with workspace permission can promote a runtime issue candidate into the
 Technical debt register when it represents actual debt and can choose whether a
 linked shared Kanban card should be created.
 
-`/developer/panel/project-identity#runtime-environment` can switch the runtime
+`/developer/panel/project-identity/runtime` can switch the runtime
 between `development` and `production` for a configured project. The panel writes
 only the controlled runtime keys `APP_ENV`, `APP_DEBUG`, `DEBUG_TOOLBAR`,
 `DEBUG_REQUEST_HISTORY` and `TRUSTED_HOSTS`. Selecting `production` forces debug
@@ -353,9 +353,11 @@ Developer service control is a stronger lock than client preview:
 FNLLA_POLICY_PROFILE=standard
 FNLLA_REGULATED_MODE=false
 DEVELOPER_CONTROL_DISABLED_CONTACT=developer@example.com
+DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=
 DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
-DEVELOPER_CONTROL_SUSPENDED_TITLE=Services suspended
+DEVELOPER_CONTROL_SUSPENDED_TITLE=Service has been suspended
 DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=
 DEVELOPER_CONTROL_REMOTE_ENABLED=false
 DEVELOPER_CONTROL_REMOTE_ENDPOINT=
 DEVELOPER_CONTROL_REMOTE_TOKEN=
@@ -367,6 +369,11 @@ DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=
 When enabled locally, public routes and the customer portal return a
 service-disabled screen and API requests return `503` JSON. Developer routes
 stay reachable so the team can recover the site.
+
+The local service-control form can publish open, developer pause, maintenance,
+payment-overdue suspension, contract suspension or security-review states. Email
+and phone contact fields are displayed on the public service-control screen when
+provided.
 
 `FNLLA_POLICY_PROFILE=regulated` or `FNLLA_REGULATED_MODE=true` switches the
 Developer Panel into a stricter operating profile. It keeps telemetry

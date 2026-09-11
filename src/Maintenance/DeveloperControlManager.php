@@ -41,6 +41,7 @@ final class DeveloperControlManager
             "title" => (string) (($remote["title"] ?? "") ?: ($local["title"] ?? $this->defaultTitle($status))),
             "message" => (string) (($remote["message"] ?? "") ?: ($local["message"] ?? $this->defaultMessage($status))),
             "contact" => (string) (($remote["contact"] ?? "") ?: ($local["contact"] ?? config("developer_control.disabled_contact", ""))),
+            "contact_phone" => (string) (($remote["contact_phone"] ?? "") ?: ($local["contact_phone"] ?? $this->defaultContactPhone($status))),
             "updated_at" => (string) (($remote["updated_at"] ?? "") ?: ($local["updated_at"] ?? "")),
             "updated_by" => (string) (($remote["updated_by"] ?? "") ?: ($local["updated_by"] ?? "")),
             "command_id" => (string) ($remote["command_id"] ?? ""),
@@ -55,16 +56,29 @@ final class DeveloperControlManager
         return (bool) $this->state()["disabled"];
     }
 
-    public function disable(string $message = "", string $contact = "", array $developer = []): void
+    public function disable(
+        string $message = "",
+        string $contact = "",
+        array $developer = [],
+        string $status = "disabled",
+        string $reason = "developer",
+        string $title = "",
+        string $contactPhone = ""
+    ): void
     {
+        $status = $this->normaliseStatus($status);
+        $status = $status === "open" ? "disabled" : $status;
+        $reason = $this->clean($reason !== "" ? $reason : ($status === "suspended" ? "billing" : "developer"), 80);
+
         $this->writeLocal([
             "schema" => "fnlla.developer_control.v1",
             "disabled" => true,
-            "status" => "disabled",
-            "reason" => "developer",
-            "title" => (string) config("developer_control.disabled_title", "Service disabled by developer"),
-            "message" => trim($message) !== "" ? trim($message) : (string) config("developer_control.disabled_message", ""),
+            "status" => $status,
+            "reason" => $reason,
+            "title" => trim($title) !== "" ? $this->clean($title, 120) : $this->defaultTitle($status),
+            "message" => trim($message) !== "" ? trim($message) : $this->defaultMessage($status),
             "contact" => trim($contact) !== "" ? trim($contact) : (string) config("developer_control.disabled_contact", ""),
+            "contact_phone" => trim($contactPhone) !== "" ? trim($contactPhone) : $this->defaultContactPhone($status),
             "provider" => (string) config("developer_control.service_provider", "TechAyo Limited"),
             "updated_at" => gmdate("c"),
             "updated_by" => (string) ($developer["email"] ?? "developer"),
@@ -78,9 +92,10 @@ final class DeveloperControlManager
             "disabled" => false,
             "status" => "open",
             "reason" => "",
-            "title" => (string) config("developer_control.disabled_title", "Service disabled by developer"),
+            "title" => (string) config("developer_control.disabled_title", "Service paused by developer"),
             "message" => "",
             "contact" => "",
+            "contact_phone" => "",
             "provider" => (string) config("developer_control.service_provider", "TechAyo Limited"),
             "updated_at" => gmdate("c"),
             "updated_by" => (string) ($developer["email"] ?? "developer"),
@@ -163,6 +178,7 @@ final class DeveloperControlManager
             "title" => $this->clean((string) ($state["title"] ?? $this->defaultTitle($status)), 120),
             "message" => $this->clean((string) ($state["message"] ?? $this->defaultMessage($status)), 240),
             "contact" => $this->clean((string) ($state["contact"] ?? ""), 160),
+            "contact_phone" => $this->clean((string) ($state["contact_phone"] ?? $state["phone"] ?? ""), 60),
             "updated_at" => $this->clean((string) ($state["updated_at"] ?? ""), 80),
             "updated_by" => $this->clean((string) ($state["updated_by"] ?? "techayo-control"), 120),
             "command_id" => $this->clean((string) ($state["command_id"] ?? ""), 120),
@@ -247,6 +263,7 @@ final class DeveloperControlManager
                 "title" => "string",
                 "message" => "string",
                 "contact" => "string",
+                "contact_phone" => "optional phone string",
                 "updated_at" => "ISO-8601 string",
                 "updated_by" => "operator label",
                 "command_id" => "optional idempotency/audit identifier",
@@ -258,8 +275,8 @@ final class DeveloperControlManager
     private function defaultTitle(string $status): string
     {
         return $status === "suspended"
-            ? (string) config("developer_control.suspended_title", "Services suspended")
-            : (string) config("developer_control.disabled_title", "Service disabled by developer");
+            ? (string) config("developer_control.suspended_title", "Service has been suspended")
+            : (string) config("developer_control.disabled_title", "Service paused by developer");
     }
 
     private function defaultMessage(string $status): string
@@ -267,6 +284,13 @@ final class DeveloperControlManager
         return $status === "suspended"
             ? (string) config("developer_control.suspended_message", "Your services have been suspended. Please contact your service provider.")
             : (string) config("developer_control.disabled_message", "");
+    }
+
+    private function defaultContactPhone(string $status): string
+    {
+        return $status === "suspended"
+            ? (string) config("developer_control.suspended_contact_phone", "")
+            : (string) config("developer_control.disabled_contact_phone", "");
     }
 
     private function headerValue(string $value): string

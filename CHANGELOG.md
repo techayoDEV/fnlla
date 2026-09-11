@@ -3,6 +3,49 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.2.3
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.3 is a Developer Panel and starter-surface polish release on the 2.2
+line. It keeps the 2.2.0 framework scope intact while tightening private task
+workflows, project identity navigation, public starter pages and destructive
+action confirmations.
+
+#### Highlights
+
+- Replace generic Kanban and My Tasks delete confirmations with centered FNLLA
+  confirmation modals that name the task before removal.
+- Refine Developer Panel typography, pills, status badges, header controls,
+  documentation navigation and project identity subsections for a more
+  consistent private workspace.
+- Improve Project work, private My Tasks and project changelog routing so panel
+  URLs are easier to read and share during development.
+- Add manual project changelog entry support alongside automated Developer Panel
+  activity without overwriting concurrent developer-session history.
+- Remove the starter Services public page and old starter title-panel treatment,
+  then align the remaining public starter pages with the maintained project
+  header and page structure.
+- Extend runtime, service-control, maintenance-access and leadership settings
+  copy so generated projects describe production, suspension and preview states
+  more clearly.
+
+#### Upgrade Notes
+
+Use the 2.2.3 source distribution and verify its checksums before updating an
+existing project:
+
+```sh
+php ../fnlla-2.2.3/fnlla framework:update --project=. --release-tag=v2.2.3 --dry-run
+php ../fnlla-2.2.3/fnlla framework:update --project=. --release-tag=v2.2.3 --apply
+```
+
+The 2.2.0 support boundaries still apply: long-lived HTTP worker isolation,
+public Composer registry publication and separately removable Complete modules
+remain outside the supported release scope.
+
 ## 2.2.2
 
 Publication dates and downloadable assets are recorded in GitHub Releases.

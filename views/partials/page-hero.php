@@ -15,12 +15,9 @@ $pageHeroMeta = is_array($pageHero["meta"] ?? null) ? (array) $pageHero["meta"] 
         <?php if ((string) ($pageHero["text"] ?? "") !== ""): ?>
         <p><?= h((string) $pageHero["text"]) ?></p>
         <?php endif; ?>
-      </div>
 
-      <?php if ($pageHeroActions !== [] || $pageHeroMeta !== []): ?>
-      <aside class="starter-page-title-panel" aria-label="Page quick actions">
         <?php if ($pageHeroMeta !== []): ?>
-        <div class="starter-page-title-tags">
+        <div class="starter-page-title-tags" aria-label="Page signals">
           <?php foreach ($pageHeroMeta as $item): ?>
           <span><?= h((string) $item) ?></span>
           <?php endforeach; ?>
@@ -35,8 +32,7 @@ $pageHeroMeta = is_array($pageHero["meta"] ?? null) ? (array) $pageHero["meta"] 
           <?php endforeach; ?>
         </div>
         <?php endif; ?>
-      </aside>
-      <?php endif; ?>
+      </div>
     </div>
   </div>
 </section>

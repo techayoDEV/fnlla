@@ -66,7 +66,7 @@ final class TechAyoRemoteControlPlugin
                 "disabled" => false,
                 "reason" => "billing",
                 "provider" => "TechAyo Limited",
-                "title" => "Services suspended",
+                "title" => "Service has been suspended",
                 "message" => "Your services have been suspended. Please contact your service provider.",
                 "contact" => "support@techayo.co.uk",
                 "updated_at" => gmdate(DATE_ATOM),

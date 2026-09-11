@@ -31,7 +31,6 @@ Public route contract:
 */
 $router->get("/", [HomeController::class, "projectHome"])->name("home");
 $router->get("/about", [PageController::class, "about"])->name("about");
-$router->get("/services", [PageController::class, "services"])->name("services");
 $router->get("/contact", [PageController::class, "contact"])->name("contact");
 $router->post("/contact", [PageController::class, "submitContact"])->middleware(["csrf", "throttle"])->name("contact.submit");
 $router->post("/fnlla/consent", [ConsentController::class, "store"])->middleware("throttle")->name("fnlla.consent");

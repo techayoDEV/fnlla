@@ -2,8 +2,17 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Identity";
-$developerPanelLead = "Project name, runtime posture, ownership and preview controls in one focused place.";
+$projectIdentitySection = (string) ($projectIdentitySection ?? "overview");
+$projectIdentitySection = in_array($projectIdentitySection, ["overview", "identity", "runtime", "leadership", "access"], true) ? $projectIdentitySection : "overview";
+$projectIdentityMeta = [
+    "overview" => ["title" => "Project Identity", "lead" => "Project setup status, handover checklist and identity workflow overview."],
+    "identity" => ["title" => "Project Identity", "lead" => "Public name, browser-title slogan and generated project URL metadata."],
+    "runtime" => ["title" => "Runtime Environment", "lead" => "Development or production posture, debug switches and trusted host boundary."],
+    "leadership" => ["title" => "Project Leadership", "lead" => "Optional responsibility record, confirmation state and public visibility."],
+    "access" => ["title" => "Access & Preview", "lead" => "Client preview lock, maintenance password and public service-control scenarios."],
+];
+$developerPanelTitle = (string) $projectIdentityMeta[$projectIdentitySection]["title"];
+$developerPanelLead = (string) $projectIdentityMeta[$projectIdentitySection]["lead"];
 $projectName = (string) ($projectSettings["name"] ?? config("app.name", "FNLLA Project"));
 $projectTagline = (string) ($projectSettings["tagline"] ?? "");
 $projectUrl = (string) ($projectSettings["url"] ?? "");
@@ -15,6 +24,7 @@ $runtimeCheckbox = static fn (string $key, bool $current): bool => (string) old(
 $runtimeDebugEnabled = $runtimeCheckbox("runtime_debug_enabled", (bool) ($runtimeEnvironment["debug_enabled"] ?? app_debug()));
 $runtimeDebugToolbarEnabled = $runtimeCheckbox("runtime_debug_toolbar_enabled", (bool) ($runtimeEnvironment["debug_toolbar_enabled"] ?? config("debug.toolbar", false)));
 $runtimeRequestHistoryEnabled = $runtimeCheckbox("runtime_request_history_enabled", (bool) ($runtimeEnvironment["request_history_enabled"] ?? config("debug.history.enabled", false)));
+$runtimeProductionSelected = $runtimeMode === "production";
 $runtimeProductionReady = (bool) ($runtimeEnvironment["production_ready"] ?? false);
 $runtimeChecks = array_values((array) ($runtimeEnvironment["checks"] ?? []));
 $projectLeadership = is_array($projectSettings["leadership"] ?? null) ? (array) $projectSettings["leadership"] : project_leadership("admin");
@@ -42,6 +52,7 @@ $developerControl ??= [
     "remote_disabled" => false,
     "message" => (string) config("developer_control.disabled_message", ""),
     "contact" => (string) config("developer_control.disabled_contact", ""),
+    "contact_phone" => (string) config("developer_control.disabled_contact_phone", ""),
     "source" => "none",
     "remote_enabled" => false,
 ];
@@ -53,12 +64,35 @@ $remoteEnabled = (bool) ($developerControl["remote_enabled"] ?? false);
 $serviceStatus = (string) ($developerControl["status"] ?? ($serviceDisabled ? "disabled" : "open"));
 $serviceReason = (string) ($developerControl["reason"] ?? "");
 $serviceProvider = (string) ($developerControl["provider"] ?? "");
+$serviceContactPhone = (string) ($developerControl["contact_phone"] ?? config("developer_control.disabled_contact_phone", ""));
 $serviceRemoteSuspended = $serviceDisabled && ($developerControl["source"] ?? "") === "remote" && $serviceStatus === "suspended";
+$serviceLocalScenario = "open";
+if ($serviceLocalDisabled) {
+    $serviceLocalScenario = match ($serviceReason) {
+        "maintenance" => "maintenance",
+        "payment_overdue", "billing" => "suspended_billing",
+        "contract_review" => "suspended_contract",
+        "security_review" => "security_review",
+        default => $serviceStatus === "suspended" ? "suspended_billing" : "disabled",
+    };
+}
+$serviceControlScenario = (string) old("developer_control_status", $serviceLocalScenario);
+$serviceControlScenarios = [
+    "open" => ["label" => "Open public service", "text" => "Public routes are available."],
+    "disabled" => ["label" => "Paused by developer", "text" => "Developer-owned pause with a public support message."],
+    "maintenance" => ["label" => "Maintenance window", "text" => "Planned service pause for maintenance work."],
+    "suspended_billing" => ["label" => "Suspended - payment overdue", "text" => "Payment or billing suspension notice."],
+    "suspended_contract" => ["label" => "Suspended - contract issue", "text" => "Contract or service agreement suspension notice."],
+    "security_review" => ["label" => "Paused - security review", "text" => "Security-review pause while access is checked."],
+];
+$serviceStatusTone = $serviceStatus === "suspended" ? "suspended" : ($serviceDisabled ? "stopped" : "open");
+$previewStatusTone = $maintenanceEnabled ? "locked" : "open";
 $identitySections = [
-    ["href" => "#developer-project-identity", "label" => "Identity", "text" => "Name, slogan and URL"],
-    ["href" => "#runtime-environment", "label" => "Runtime", "text" => "Environment, debug and hosts"],
-    ["href" => "#project-leadership", "label" => "Ownership", "text" => "Lead record and visibility"],
-    ["href" => "#developer-access-preview", "label" => "Preview", "text" => "Client lock and service state"],
+    ["key" => "overview", "href" => route("developer.panel.project_identity"), "label" => "Overview", "text" => "Checklist and flow"],
+    ["key" => "identity", "href" => route("developer.panel.project_identity.identity"), "label" => "Identity", "text" => "Name, slogan and URL"],
+    ["key" => "runtime", "href" => route("developer.panel.project_identity.runtime"), "label" => "Runtime", "text" => "Environment, debug and hosts"],
+    ["key" => "leadership", "href" => route("developer.panel.project_identity.leadership"), "label" => "Leadership", "text" => "Responsibility and visibility"],
+    ["key" => "access", "href" => route("developer.panel.project_identity.access"), "label" => "Access", "text" => "Preview and service state"],
 ];
 require __DIR__ . "/panel-header.php";
 ?>
@@ -74,13 +108,14 @@ require __DIR__ . "/panel-header.php";
 
           <nav class="developer-project-identity-nav" aria-label="Project identity sections">
             <?php foreach ($identitySections as $section): ?>
-            <a href="<?= h((string) $section["href"]) ?>">
+            <a class="<?= $projectIdentitySection === (string) $section["key"] ? "is-active" : "" ?>" href="<?= h((string) $section["href"]) ?>" <?= $projectIdentitySection === (string) $section["key"] ? 'aria-current="page"' : "" ?>>
               <strong><?= h((string) $section["label"]) ?></strong>
               <span><?= h((string) $section["text"]) ?></span>
             </a>
             <?php endforeach; ?>
           </nav>
 
+          <?php if ($projectIdentitySection === "overview"): ?>
           <div class="developer-dashboard-status-grid" id="developer-setup-checklist">
             <article class="developer-dashboard-status-card developer-setup-progress-card">
               <div class="developer-dashboard-card-head"><strong>Setup progress</strong><span class="developer-dashboard-ok"><?= h((string) $readyPercent) ?>%</span></div>
@@ -135,6 +170,8 @@ require __DIR__ . "/panel-header.php";
           </div>
           </details>
 
+          <?php endif; ?>
+          <?php if ($projectIdentitySection === "identity"): ?>
           <div class="developer-dashboard-section-head mt-3">
             <h2 class="developer-dashboard-section-title">Project identity</h2>
             <span class="developer-dashboard-refresh">Environment metadata</span>
@@ -204,8 +241,10 @@ require __DIR__ . "/panel-header.php";
               </form>
             </article>
           </div>
+          <?php endif; ?>
         </section>
 
+        <?php if ($projectIdentitySection === "runtime"): ?>
         <section class="developer-dashboard-section" id="runtime-environment" aria-label="Runtime environment">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Runtime environment</h2>
@@ -214,22 +253,22 @@ require __DIR__ . "/panel-header.php";
 
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Mode</strong><span class="developer-dashboard-ok"><?= h(strtoupper((string) ($runtimeEnvironment["mode"] ?? $runtimeMode))) ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Mode</strong><span class="developer-dashboard-ok is-<?= $runtimeMode === "production" ? "production" : "development" ?>"><?= h(strtoupper((string) ($runtimeEnvironment["mode"] ?? $runtimeMode))) ?></span></div>
               <h3><?= h((string) ($runtimeEnvironment["label"] ?? ucfirst($runtimeMode))) ?></h3>
               <p><?= ((string) ($runtimeEnvironment["mode"] ?? $runtimeMode)) === "production" ? "Setup UI is closed and production guards apply." : "Local setup and developer diagnostics can stay available." ?></p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Debug exposure</strong><span class="developer-dashboard-ok"><?= (bool) ($runtimeEnvironment["diagnostics_safe"] ?? false) ? "OFF" : "ON" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Debug exposure</strong><span class="developer-dashboard-ok <?= (bool) ($runtimeEnvironment["diagnostics_safe"] ?? false) ? "is-debug-off" : "is-debug-on" ?>"><?= (bool) ($runtimeEnvironment["diagnostics_safe"] ?? false) ? "OFF" : "ON" ?></span></div>
               <h3><?= (bool) ($runtimeEnvironment["debug_enabled"] ?? false) ? "APP_DEBUG on" : "APP_DEBUG off" ?></h3>
               <p>Production save forces APP_DEBUG, toolbar and request history off.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Trusted hosts</strong><span class="developer-dashboard-ok"><?= h((string) count((array) ($runtimeEnvironment["trusted_hosts"] ?? []))) ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Trusted hosts</strong><span class="developer-dashboard-ok <?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? "is-ready" : "is-review" ?>"><?= h((string) count((array) ($runtimeEnvironment["trusted_hosts"] ?? []))) ?></span></div>
               <h3><?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? "Pinned host boundary" : "Not configured" ?></h3>
               <p><?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? h(implode(", ", (array) ($runtimeEnvironment["trusted_hosts"] ?? []))) : "Set this before a real production deployment." ?></p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Production readiness</strong><span class="developer-dashboard-ok"><?= $runtimeProductionReady ? "READY" : "REVIEW" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Production readiness</strong><span class="developer-dashboard-ok <?= $runtimeProductionReady ? "is-ready" : "is-review" ?>"><?= $runtimeProductionReady ? "READY" : "REVIEW" ?></span></div>
               <h3><?= $runtimeProductionReady ? "Runtime switches align" : "Review required" ?></h3>
               <ul class="developer-dashboard-check-list">
                 <?php foreach ($runtimeChecks as $check): ?>
@@ -243,7 +282,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-panel-fieldset-card">
               <p class="feature-kicker">Runtime mode</p>
               <h2 class="content-title">Switch environment</h2>
-              <form class="form stack gap-md" action="<?= h(route("developer.settings.runtime_environment")) ?>" method="post" novalidate>
+              <form class="form stack gap-md" action="<?= h(route("developer.settings.runtime_environment")) ?>" method="post" novalidate data-developer-runtime-form>
                 <?= csrf_field() ?>
                 <div class="developer-runtime-mode-options" role="radiogroup" aria-label="Runtime environment mode">
                   <label class="developer-runtime-mode-option">
@@ -263,17 +302,17 @@ require __DIR__ . "/panel-header.php";
                   <p class="help-text">Use host names without paths. Wildcard subdomains such as <code>*.example.com</code> are supported.</p>
                 </div>
                 <div class="developer-runtime-switch-grid">
-                  <label class="developer-analytics-toggle">
-                    <input type="checkbox" name="runtime_debug_enabled" value="1" <?= $runtimeDebugEnabled ? "checked" : "" ?>>
-                    <span><strong>APP_DEBUG</strong><small>Detailed error output for development only.</small></span>
+                  <label class="developer-analytics-toggle <?= $runtimeProductionSelected ? "is-forced-off" : "" ?>" data-developer-runtime-diagnostic>
+                    <input type="checkbox" name="runtime_debug_enabled" value="1" <?= !$runtimeProductionSelected && $runtimeDebugEnabled ? "checked" : "" ?> <?= $runtimeProductionSelected ? "disabled" : "" ?>>
+                    <span><strong>APP_DEBUG</strong><small><?= $runtimeProductionSelected ? "Forced off while Production is selected." : "Detailed error output for development only." ?></small></span>
                   </label>
-                  <label class="developer-analytics-toggle">
-                    <input type="checkbox" name="runtime_debug_toolbar_enabled" value="1" <?= $runtimeDebugToolbarEnabled ? "checked" : "" ?>>
-                    <span><strong>Debug toolbar</strong><small>Developer-only toolbar when debug mode is available.</small></span>
+                  <label class="developer-analytics-toggle <?= $runtimeProductionSelected ? "is-forced-off" : "" ?>" data-developer-runtime-diagnostic>
+                    <input type="checkbox" name="runtime_debug_toolbar_enabled" value="1" <?= !$runtimeProductionSelected && $runtimeDebugToolbarEnabled ? "checked" : "" ?> <?= $runtimeProductionSelected ? "disabled" : "" ?>>
+                    <span><strong>Debug toolbar</strong><small><?= $runtimeProductionSelected ? "Forced off while Production is selected." : "Developer-only toolbar when debug mode is available." ?></small></span>
                   </label>
-                  <label class="developer-analytics-toggle">
-                    <input type="checkbox" name="runtime_request_history_enabled" value="1" <?= $runtimeRequestHistoryEnabled ? "checked" : "" ?>>
-                    <span><strong>Request history</strong><small>Private aggregate request timing during local diagnostics.</small></span>
+                  <label class="developer-analytics-toggle <?= $runtimeProductionSelected ? "is-forced-off" : "" ?>" data-developer-runtime-diagnostic>
+                    <input type="checkbox" name="runtime_request_history_enabled" value="1" <?= !$runtimeProductionSelected && $runtimeRequestHistoryEnabled ? "checked" : "" ?> <?= $runtimeProductionSelected ? "disabled" : "" ?>>
+                    <span><strong>Request history</strong><small><?= $runtimeProductionSelected ? "Forced off while Production is selected." : "Private aggregate request timing during local diagnostics." ?></small></span>
                   </label>
                 </div>
                 <button class="btn btn-primary" type="submit">Save runtime environment</button>
@@ -297,7 +336,9 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
         </section>
+        <?php endif; ?>
 
+        <?php if ($projectIdentitySection === "leadership"): ?>
         <section class="developer-dashboard-section" id="project-leadership" aria-label="Project leadership">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Project leadership</h2>
@@ -315,28 +356,28 @@ require __DIR__ . "/panel-header.php";
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label class="label" for="project-leadership-organization">Delivery organisation</label>
-                  <input class="input" id="project-leadership-organization" name="project_leadership_organization" type="text" value="<?= h((string) ($projectLeadership["organization"] ?? "")) ?>" maxlength="120" placeholder="TechAyo Limited">
+                  <input class="input" id="project-leadership-organization" name="project_leadership_organization" type="text" value="<?= h((string) ($projectLeadership["organization"] ?? "")) ?>" maxlength="120" placeholder="e.g. FNLLA Company">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-leadership-person-name">Responsible person</label>
-                  <input class="input" id="project-leadership-person-name" name="project_leadership_person_name" type="text" value="<?= h((string) ($projectLeadership["person_name"] ?? "")) ?>" maxlength="120" autocomplete="name" placeholder="Name Surname">
+                  <input class="input" id="project-leadership-person-name" name="project_leadership_person_name" type="text" value="<?= h((string) ($projectLeadership["person_name"] ?? "")) ?>" maxlength="120" autocomplete="name" placeholder="e.g. Lead Developer Name">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-leadership-person-email">Confirmation email</label>
-                  <input class="input" id="project-leadership-person-email" name="project_leadership_person_email" type="email" value="<?= h((string) ($projectLeadership["person_email"] ?? "")) ?>" maxlength="160" autocomplete="email" placeholder="lead@example.com">
+                  <input class="input" id="project-leadership-person-email" name="project_leadership_person_email" type="email" value="<?= h((string) ($projectLeadership["person_email"] ?? "")) ?>" maxlength="160" autocomplete="email" placeholder="e.g. leader@example.com">
                   <p class="help-text">The named person can confirm with this developer email. Lead developers can also approve the responsibility record.</p>
                 </div>
                 <div class="form-group">
-                  <label class="label" for="project-leadership-person-role">Role or position</label>
-                  <input class="input" id="project-leadership-person-role" name="project_leadership_person_role" type="text" value="<?= h((string) ($projectLeadership["person_role"] ?? "")) ?>" maxlength="120" placeholder="Director of TechAyo">
+                  <label class="label" for="project-leadership-person-role">Role or position <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-leadership-person-role" name="project_leadership_person_role" type="text" value="<?= h((string) ($projectLeadership["person_role"] ?? "")) ?>" maxlength="120" placeholder="e.g. Project Manager">
                 </div>
                 <div class="form-group">
-                  <label class="label" for="project-leadership-responsibility">Responsibility scope</label>
-                  <input class="input" id="project-leadership-responsibility" name="project_leadership_responsibility" type="text" value="<?= h((string) ($projectLeadership["responsibility"] ?? "")) ?>" maxlength="240" placeholder="product direction, roadmap and technical delivery">
+                  <label class="label" for="project-leadership-responsibility">Responsibility scope <span class="content-text">(optional)</span></label>
+                  <input class="input" id="project-leadership-responsibility" name="project_leadership_responsibility" type="text" value="<?= h((string) ($projectLeadership["responsibility"] ?? "")) ?>" maxlength="240" placeholder="e.g. product direction, roadmap and technical delivery">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-leadership-profile-url">Profile or contact URL <span class="content-text">(optional)</span></label>
-                  <input class="input" id="project-leadership-profile-url" name="project_leadership_profile_url" type="url" value="<?= h((string) ($projectLeadership["profile_url"] ?? "")) ?>" maxlength="2048" inputmode="url" placeholder="https://example.com/contact">
+                  <input class="input" id="project-leadership-profile-url" name="project_leadership_profile_url" type="url" value="<?= h((string) ($projectLeadership["profile_url"] ?? "")) ?>" maxlength="2048" inputmode="url" placeholder="e.g. https://example.com/contact">
                 </div>
                 <div class="form-group">
                   <label class="label" for="project-leadership-visibility">Visibility</label>
@@ -372,7 +413,9 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
         </section>
+        <?php endif; ?>
 
+        <?php if ($projectIdentitySection === "access"): ?>
         <section class="developer-dashboard-section" id="developer-access-preview" aria-label="Access and preview settings">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Access & preview</h2>
@@ -381,24 +424,24 @@ require __DIR__ . "/panel-header.php";
 
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Preview mode</strong><span class="developer-dashboard-ok"><?= $maintenanceEnabled ? "LOCKED" : "OPEN" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Preview mode</strong><span class="developer-dashboard-ok is-<?= h($previewStatusTone) ?>"><?= $maintenanceEnabled ? "LOCKED" : "OPEN" ?></span></div>
               <h3><?= $maintenanceEnabled ? "Password required" : "Public routes open" ?></h3>
               <p><?= $maintenanceEnabled
                   ? "Maintenance mode is currently on. Public routes require the preview password."
                   : "Maintenance mode is currently off. Save a password here when you want to prepare a private preview lock." ?></p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Password state</strong><span class="developer-dashboard-ok"><?= $maintenanceConfigured ? "READY" : "MISSING" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Password state</strong><span class="developer-dashboard-ok <?= $maintenanceConfigured ? "is-ready" : "is-review" ?>"><?= $maintenanceConfigured ? "READY" : "MISSING" ?></span></div>
               <h3><?= $maintenanceConfigured ? "Prepared" : "Not prepared" ?></h3>
               <p>Rotate it here before sharing a private build.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok"><?= $serviceDisabled ? "STOPPED" : "OPEN" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Service control</strong><span class="developer-dashboard-ok is-<?= h($serviceStatusTone) ?>"><?= $serviceStatus === "suspended" ? "SUSPENDED" : ($serviceDisabled ? "STOPPED" : "OPEN") ?></span></div>
               <h3><?= $serviceRemoteSuspended ? "Suspended by service provider" : ($serviceDisabled ? "Public service disabled" : "Public service available") ?></h3>
               <p>Source: <?= h((string) ($developerControl["source"] ?? "none")) ?><?= $serviceReason !== "" ? ". Reason: " . h($serviceReason) : "" ?><?= $serviceProvider !== "" ? ". Provider: " . h($serviceProvider) : "" ?>.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Remote contract</strong><span class="developer-dashboard-ok <?= $remoteEnabled ? "is-ready" : "is-neutral" ?>"><?= $remoteEnabled ? "ON" : "OFF" ?></span></div>
               <h3><?= $remoteEnabled ? "Remote control enabled" : "Local control only" ?></h3>
               <p>Configure the adapter from Integrations.</p>
             </article>
@@ -413,21 +456,34 @@ require __DIR__ . "/panel-header.php";
                   : "Use this when the website should be stopped immediately with a developer-owned message while the private developer panel remains available." ?></p>
               <form class="form stack gap-md" action="<?= h(route("developer.settings.service_control")) ?>" method="post" novalidate>
                 <?= csrf_field() ?>
-                <input type="hidden" name="developer_control_disabled" value="0">
                 <div class="form-group">
-                  <label class="label" for="developer-control-disabled">
-                    <input id="developer-control-disabled" name="developer_control_disabled" type="checkbox" value="1" <?= $serviceLocalDisabled ? "checked" : "" ?>>
-                    <?= $serviceLocalDisabled ? "Keep local public-service lock enabled" : "Enable local public-service lock after saving" ?>
-                  </label>
+                  <label class="label" for="developer-control-status">Public-service scenario</label>
+                  <select class="select" id="developer-control-status" name="developer_control_status">
+                    <?php foreach ($serviceControlScenarios as $scenarioValue => $scenario): ?>
+                    <option value="<?= h((string) $scenarioValue) ?>" <?= $serviceControlScenario === $scenarioValue ? "selected" : "" ?>><?= h((string) $scenario["label"]) ?></option>
+                    <?php endforeach; ?>
+                  </select>
                   <p class="help-text">Current source: <?= h((string) ($developerControl["source"] ?? "none")) ?>. Status: <?= h($serviceStatus) ?><?= $serviceReason !== "" ? ", reason: " . h($serviceReason) : "" ?>. Remote control is <?= $remoteEnabled ? "enabled" : "disabled" ?>.</p>
                 </div>
-                <div class="form-group">
-                  <label class="label" for="developer-control-message">Public message</label>
-                  <textarea class="textarea" id="developer-control-message" name="developer_control_message" rows="3"><?= h((string) ($developerControl["message"] ?? config("developer_control.disabled_message", ""))) ?></textarea>
+                <div class="developer-service-scenario-grid">
+                  <?php foreach ($serviceControlScenarios as $scenarioValue => $scenario): ?>
+                  <span class="<?= $serviceControlScenario === $scenarioValue ? "is-active" : "" ?>" data-developer-service-scenario="<?= h((string) $scenarioValue) ?>">
+                    <strong><?= h((string) $scenario["label"]) ?></strong>
+                    <small><?= h((string) $scenario["text"]) ?></small>
+                  </span>
+                  <?php endforeach; ?>
                 </div>
                 <div class="form-group">
-                  <label class="label" for="developer-control-contact">Developer contact</label>
-                  <input class="input" id="developer-control-contact" name="developer_control_contact" type="text" value="<?= h((string) ($developerControl["contact"] ?? config("developer_control.disabled_contact", ""))) ?>">
+                  <label class="label" for="developer-control-message">Public message override <span class="content-text">(optional)</span></label>
+                  <textarea class="textarea" id="developer-control-message" name="developer_control_message" rows="3" placeholder="Leave blank to use the selected scenario message."><?= h((string) old("developer_control_message", (string) ($developerControl["message"] ?? ""))) ?></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-contact">Developer contact email</label>
+                  <input class="input" id="developer-control-contact" name="developer_control_contact" type="email" value="<?= h((string) old("developer_control_contact", (string) ($developerControl["contact"] ?? config("developer_control.disabled_contact", "")))) ?>" placeholder="developer@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="developer-control-contact-phone">Developer contact phone <span class="content-text">(optional)</span></label>
+                  <input class="input" id="developer-control-contact-phone" name="developer_control_contact_phone" type="tel" value="<?= h((string) old("developer_control_contact_phone", $serviceContactPhone)) ?>" placeholder="+44 20 0000 0000">
                 </div>
                 <button class="btn btn-primary" type="submit">Save service control</button>
               </form>
@@ -465,5 +521,6 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
         </section>
+        <?php endif; ?>
 
 <?php require __DIR__ . "/panel-footer.php"; ?>

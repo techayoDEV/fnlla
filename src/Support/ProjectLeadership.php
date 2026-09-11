@@ -39,8 +39,9 @@ final class ProjectLeadership
         $personRole = $this->text((string) ($config["person_role"] ?? ""), 120);
         $responsibility = $this->text((string) ($config["responsibility"] ?? ""), 240);
         $configured = $visibility !== self::VISIBILITY_DISABLED
+            && $organization !== ""
             && $personName !== ""
-            && $responsibility !== "";
+            && $email !== "";
         $publicVisible = $configured
             && $visibility === self::VISIBILITY_PUBLIC
             && $status === self::STATUS_CONFIRMED;

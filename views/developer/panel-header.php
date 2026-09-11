@@ -107,11 +107,16 @@ $headerDebugEnabled = (bool) ($headerRuntime["debug_enabled"] ?? app_debug());
 $headerRuntimeState = $headerRuntimeMode === "production"
     ? ($headerRuntimeReady ? "Ready" : "Review")
     : ($headerDebugEnabled ? "Debug on" : "Debug off");
-$developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->items(
-    $developerLinks,
-    (array) ($developerAccess["current_capabilities"] ?? []),
-    $panelNavigationGroups
-);
+$headerRuntimeTone = $headerRuntimeMode === "production"
+    ? ($headerRuntimeReady ? "production-ready" : "production-review")
+    : ($headerDebugEnabled ? "development-debug" : "development-quiet");
+$headerMaintenanceEnabled = (bool) ($maintenanceAccess["enabled"] ?? false);
+$headerPreviewTone = $headerMaintenanceEnabled ? "preview-locked" : "preview-open";
+$headerPreviewState = $headerMaintenanceEnabled ? "Locked" : "Open";
+$headerServiceDisabled = (bool) ($developerControl["disabled"] ?? false);
+$headerServiceStatus = (string) ($developerControl["status"] ?? ($headerServiceDisabled ? "disabled" : "open"));
+$headerServiceTone = $headerServiceStatus === "suspended" ? "service-suspended" : ($headerServiceDisabled ? "service-stopped" : "service-open");
+$headerServiceState = $headerServiceStatus === "suspended" ? "Suspended" : ($headerServiceDisabled ? "Stopped" : "Open");
 ?>
 <section class="developer-workspace" aria-label="Developer workspace">
   <script src="<?= h(asset("assets/developer-panel.js")) ?>" defer></script>
@@ -132,23 +137,25 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
       </a>
     </div>
     <span class="developer-workspace-header-divider" aria-hidden="true"></span>
-    <a class="developer-runtime-header-badge" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>#runtime-environment" data-fnlla-tooltip="Runtime environment" data-fnlla-tooltip-position="bottom">
-      <span><?= h(strtoupper($headerRuntimeMode)) ?></span>
-      <strong><?= h($headerRuntimeState) ?></strong>
-    </a>
+    <div class="developer-header-status-strip" aria-label="Runtime and public access status">
+      <a class="developer-runtime-header-badge is-<?= h($headerRuntimeTone) ?>" href="<?= h((string) ($developerLinks["runtime_environment"] ?? route("developer.panel.project_identity.runtime"))) ?>" data-fnlla-tooltip="Runtime environment" data-fnlla-tooltip-position="bottom">
+        <span><?= h(strtoupper($headerRuntimeMode)) ?></span>
+        <strong><?= h($headerRuntimeState) ?></strong>
+      </a>
+      <a class="developer-runtime-header-badge developer-header-state-badge is-<?= h($headerPreviewTone) ?>" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_identity.access"))) ?>" data-fnlla-tooltip="Public preview access" data-fnlla-tooltip-position="bottom">
+        <span>PUBLIC</span>
+        <strong><?= h($headerPreviewState) ?></strong>
+      </a>
+      <a class="developer-runtime-header-badge developer-header-state-badge is-<?= h($headerServiceTone) ?>" href="<?= h((string) ($developerLinks["project_settings"] ?? route("developer.panel.project_identity.access"))) ?>" data-fnlla-tooltip="Service control" data-fnlla-tooltip-position="bottom">
+        <span>SERVICE</span>
+        <strong><?= h($headerServiceState) ?></strong>
+      </a>
+    </div>
     <div class="developer-workspace-actions">
       <div class="developer-header-tools" aria-label="Developer quick tools">
-        <button class="developer-header-tool-button" type="button" data-developer-command-open aria-controls="developer-command-palette" aria-expanded="false" aria-label="Open command palette">
-          <span class="developer-header-tool-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="m20 20-3.5-3.5"></path>
-            </svg>
-          </span>
-        </button>
         <?php if (\Fnlla\Php\Support\DeveloperModules::enabled("workspace")): ?>
         <div class="dropdown developer-header-tool-dropdown developer-header-todo-dropdown" data-fnlla-dropdown>
-          <button class="developer-header-tool-button" type="button" data-fnlla-dropdown-toggle aria-label="Open private to-do list">
+          <button class="developer-header-tool-button" type="button" data-fnlla-dropdown-toggle aria-label="Open My Tasks">
             <span class="developer-header-tool-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false"><use href="<?= h(asset("vendor/fnlla-runtime/assets/icons/sprite.svg")) ?>#circle-check"></use></svg>
             </span>
@@ -158,7 +165,7 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
           </button>
           <div class="dropdown-menu developer-header-tool-menu developer-header-todo-menu" role="menu">
             <div class="developer-header-tool-menu-head">
-              <p class="project-dropdown-heading">My to-do</p>
+              <p class="project-dropdown-heading">My Tasks</p>
               <strong><?= h((string) $headerPrivateTodoCount) ?></strong>
             </div>
             <form class="developer-header-todo-form" action="<?= h(route("developer.private_todo.items.create")) ?>" method="post" role="none" data-developer-ajax>
@@ -189,7 +196,7 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
               </a>
               <?php endforeach; ?>
             </div>
-            <a class="developer-header-tool-footer" role="menuitem" href="<?= h((string) ($developerLinks["private_todo"] ?? route("developer.panel.private_todo"))) ?>">Open full to-do</a>
+            <a class="developer-header-tool-footer" role="menuitem" href="<?= h((string) ($developerLinks["private_todo"] ?? route("developer.panel.private_todo"))) ?>">Open My Tasks</a>
           </div>
         </div>
         <?php endif; ?>
@@ -337,37 +344,6 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
         </div>
       </div>
     </div>
-    <div class="developer-command-palette" id="developer-command-palette" data-developer-command-palette hidden>
-      <button class="developer-command-backdrop" type="button" data-developer-command-close aria-label="Close command palette"></button>
-      <div class="developer-command-dialog" role="dialog" aria-modal="true" aria-labelledby="developer-command-title" aria-describedby="developer-command-help">
-        <div class="developer-command-search">
-          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-3.5-3.5"></path>
-          </svg>
-          <label class="visually-hidden" for="developer-command-input">Search developer panel</label>
-          <input id="developer-command-input" type="search" placeholder="Launch action, section or setting..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="developer-command-results" aria-expanded="true" data-developer-command-input>
-          <span class="developer-command-shortcuts" aria-hidden="true"><kbd>Ctrl K</kbd><kbd>/</kbd></span>
-        </div>
-        <div class="developer-command-list" id="developer-command-results" role="listbox" aria-labelledby="developer-command-title" data-developer-command-list>
-          <div class="developer-command-list-head">
-            <h2 id="developer-command-title">Command launcher</h2>
-            <small id="developer-command-help">Use arrows and Enter, or type a decision, route, setting or export action.</small>
-          </div>
-          <?php foreach ($developerCommandItems as $item): ?>
-          <?php $commandItemId = "developer-command-item-" . substr(hash("sha256", (string) ($item["label"] ?? "") . "|" . (string) ($item["href"] ?? "") . "|" . (string) ($item["kind"] ?? "")), 0, 12); ?>
-          <a class="developer-command-item" id="<?= h($commandItemId) ?>" href="<?= h((string) $item["href"]) ?>" role="option" aria-selected="false" data-developer-command-item data-developer-command-search="<?= h((string) $item["search"]) ?>" data-developer-command-kind="<?= h((string) ($item["kind"] ?? "Open")) ?>" data-developer-command-capability="<?= h((string) ($item["capability"] ?? "")) ?>" data-developer-command-policy="<?= h((string) ($item["environment_policy"] ?? "all")) ?>" data-developer-command-destructive="<?= ($item["destructive"] ?? false) ? "true" : "false" ?>"<?= ($item["external"] ?? false) ? ' target="_blank" rel="noopener noreferrer" data-developer-command-target="_blank"' : "" ?>>
-            <span>
-              <strong><?= h((string) $item["label"]) ?></strong>
-              <em><?= h((string) $item["description"]) ?></em>
-            </span>
-            <small><b><?= h((string) $item["group"]) ?></b><em><?= h((string) ($item["kind"] ?? "Open")) ?></em></small>
-          </a>
-          <?php endforeach; ?>
-          <p class="developer-command-empty" data-developer-command-empty hidden>No matching panel destinations.</p>
-        </div>
-      </div>
-    </div>
   </header>
 
   <div class="developer-workspace-body">
@@ -448,7 +424,7 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
       <section class="developer-dashboard-section" aria-label="Developer path notice">
         <article class="developer-panel-fieldset-card">
           <p class="feature-kicker">Developer session</p>
-          <h2 class="section-title mb-0"><?= h((string) $developerNotice["title"]) ?></h2>
+          <h2 class="developer-dashboard-section-title mb-0"><?= h((string) $developerNotice["title"]) ?></h2>
           <p class="content-text"><?= h((string) $developerNotice["text"]) ?></p>
         </article>
       </section>
@@ -457,7 +433,7 @@ $developerCommandItems = (new \Fnlla\Php\Support\DeveloperCommandRegistry())->it
       <header class="developer-panel-page-head">
         <div>
           <p class="feature-kicker">Developer panel</p>
-          <h1 class="section-title mb-0"><?= h((string) $developerPanelTitle) ?></h1>
+          <h1 class="developer-dashboard-section-title mb-0"><?= h((string) $developerPanelTitle) ?></h1>
           <p class="content-text"><?= h((string) $developerPanelLead) ?></p>
         </div>
       </header>

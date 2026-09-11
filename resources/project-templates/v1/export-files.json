@@ -409,7 +409,6 @@
     "views/pages/legal.php",
     "views/pages/not-found.php",
     "views/pages/product-vision.php",
-    "views/pages/services.php",
     "views/partials/page-hero.php",
     "views/partials/framework-wordmark.php",
     "views/partials/project-leadership.php"

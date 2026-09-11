@@ -67,7 +67,7 @@ final class PageController extends Controller
             "serviceTracks" => [
                 [
                     "title" => "Web product delivery",
-                    "text" => "Service pages, contact journeys, protected portals and product workflows can grow from the same server-rendered base.",
+                    "text" => "Public pages, contact journeys, protected portals and product workflows can grow from the same server-rendered base.",
                 ],
                 [
                     "title" => "Developer operations",
@@ -121,55 +121,6 @@ final class PageController extends Controller
                     "number" => "3",
                     "title" => "Improve with checks",
                     "text" => "Use tests, linting, runtime validation and framework update reports to keep later changes deliberate.",
-                ],
-            ],
-        ]);
-    }
-
-    public function services(Request $request): Response
-    {
-        return $this->view("pages/services", [
-            "pageTitle" => "Services and delivery paths",
-            "pageTitleSection" => "Offers, modules and workflows",
-            "pageHero" => [
-                "eyebrow" => "Services",
-                "title" => "Useful services, modules and workflows shaped for the first real release.",
-                "text" => "Use this page to present what the project offers, how each path works and which next step a visitor or operator should take.",
-                "meta" => ["Service pages", "Product modules", "Workflow entry points"],
-            ],
-            "serviceCards" => [
-                [
-                    "title" => "Business websites",
-                    "text" => "Service pages, landing pages, contact journeys and public content structures for clear project launches.",
-                ],
-                [
-                    "title" => "Web applications",
-                    "text" => "Authenticated portals, admin panels, job flows and team tools built with explicit server-rendered behaviour.",
-                ],
-                [
-                    "title" => "FNLLA delivery",
-                    "text" => "Project exports, runtime validation, framework updates and application surfaces built on the maintained stack.",
-                ],
-                [
-                    "title" => "Handover and recovery",
-                    "text" => "Environment notes, validation reports and operator documentation that keep launches and updates safer.",
-                ],
-            ],
-            "deliverySteps" => [
-                [
-                    "number" => "1",
-                    "title" => "Define the useful first release",
-                    "text" => "Pick the smallest complete surface that can be launched, understood and improved.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Build with operational checks",
-                    "text" => "Keep linting, runtime validation, health routes and maintenance surfaces active as the project grows.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Prepare the next iteration",
-                    "text" => "Keep routes, content and components readable so the next improvement is not a rebuild.",
                 ],
             ],
         ]);

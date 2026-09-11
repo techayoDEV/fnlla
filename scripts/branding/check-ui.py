@@ -88,7 +88,7 @@ with sync_playwright() as p:
                     require(page.locator('#client-preview-unlock-modal').is_visible(), 'preview unlock modal did not open')
                     page.keyboard.press('Escape')
                     require(page.locator('#client-preview-unlock-modal').is_visible(), 'locked preview dialog dismissed unexpectedly')
-                if name == 'panel-workspace':
+                if name == 'panel-tasks':
                     require(page.locator('.developer-kanban-task').count() >= 8, 'populated Kanban fixture missing')
                 for selector in ('.fnlla-cookie-title', '.fnlla-cookie-text', '.developer-kanban-task-head strong',
                                  '.developer-kanban-task p', '.customer-kanban-card h3', '.customer-kanban-card p',

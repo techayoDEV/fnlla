@@ -162,24 +162,24 @@ The normal page workflow is:
 Example route:
 
 ```php
-$router->get("/services", [PageController::class, "services"])->name("services");
+$router->get("/features", [PageController::class, "features"])->name("features");
 ```
 
 Example controller method:
 
 ```php
-public function services(Request $request): Response
+public function features(Request $request): Response
 {
-    return $this->view("pages/services", [
-        "pageTitle" => "Services",
-        "services" => [
+    return $this->view("pages/features", [
+        "pageTitle" => "Features",
+        "features" => [
             [
-                "title" => "Advisory",
-                "text" => "Delivery guidance for teams building with FNLLA.",
+                "title" => "Fast start",
+                "text" => "A focused public page for the project's first useful workflow.",
             ],
             [
-                "title" => "Implementation",
-                "text" => "Hands-on website and application delivery.",
+                "title" => "Operational base",
+                "text" => "Maintenance, contact and review flows stay close to the application.",
             ],
         ],
     ]);
@@ -193,15 +193,15 @@ Example page template:
   <div class="container">
     <div class="stack gap-lg">
       <header class="stack gap-sm">
-        <h1>Services</h1>
+        <h1>Features</h1>
         <p class="content-text">Build the page with the shipped runtime primitives and plain PHP data output.</p>
       </header>
 
       <div class="grid grid-2 gap-md">
-        <?php foreach ($services as $service): ?>
+        <?php foreach ($features as $feature): ?>
         <article class="card">
-          <h2 class="card-title"><?= h($service["title"]) ?></h2>
-          <p class="card-text"><?= h($service["text"]) ?></p>
+          <h2 class="card-title"><?= h($feature["title"]) ?></h2>
+          <p class="card-text"><?= h($feature["text"]) ?></p>
         </article>
         <?php endforeach; ?>
       </div>
@@ -221,7 +221,7 @@ Pass `pageHero` from the controller:
 
 ```php
 "pageHero" => [
-    "eyebrow" => "Services",
+    "eyebrow" => "Features",
     "title" => "Describe the real page purpose.",
     "text" => "Use one clear paragraph that tells visitors what happens here.",
     "meta" => ["Public page", "Starter module"],
@@ -278,8 +278,8 @@ Healthy default:
   <div class="container">
     <div class="stack gap-lg">
       <header class="stack gap-sm">
-        <span class="badge">Services</span>
-        <h1>Services</h1>
+        <span class="badge">Features</span>
+        <h1>Features</h1>
         <p class="content-text">Describe the page with plain PHP output and shipped runtime classes.</p>
       </header>
 
