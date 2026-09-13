@@ -16,20 +16,13 @@ Purpose:
 namespace Fnlla\Php\Support;
 
 use Fnlla\Php\Routing\RouteDefinition;
+use Fnlla\Php\Observability\MetricsRecorder;
 
 trait DeveloperMetricsReportHelpers
 {
-    private function readMetrics(): array
+    private function readMetrics(): ?array
     {
-        $path = storage_path(ltrim((string) config("observability.metrics.path", "framework/metrics.json"), "\\/"));
-
-        if (!is_file($path)) {
-            return [];
-        }
-
-        $decoded = json_decode((string) file_get_contents($path), true);
-
-        return is_array($decoded) ? $decoded : [];
+        return app(MetricsRecorder::class)->snapshotForReport();
     }
 
     private function averageDuration(array $metrics): float

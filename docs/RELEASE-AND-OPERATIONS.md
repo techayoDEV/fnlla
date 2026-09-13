@@ -796,6 +796,41 @@ FNLLA records lightweight request observability without external dependencies:
 - structured access logs are written through the redacting JSON logger
 - local request metrics are stored in `storage/framework/metrics.json`
 
+Metric updates, panel snapshots and clearing share a persistent `.lock` file
+beside the configured JSON file. Writers publish a complete replacement from the
+same directory; readers wait for an in-progress update. The PHP process needs
+permission to create temporary files, lock files and replace the metrics file.
+Use a local filesystem with working advisory locks and atomic rename semantics;
+this does not establish distributed or network-filesystem support.
+
+The JSON schema and environment settings are unchanged, and existing aggregate
+files retain their supported size. A failed write preserves the previous
+snapshot. Invalid JSON is reported and preserved instead of being silently
+replaced with empty counters. After diagnosing corruption, restore a valid
+snapshot with application processes stopped, or deliberately reset disposable
+metrics with `app(\Fnlla\Php\Observability\MetricsRecorder::class)->clear()`.
+`php fnlla cache:clear` also resets metrics in the Full runtime, along with the
+application cache. Clearing retains the lock file so waiting processes keep
+using the same lock; do not manually remove it while the application is running.
+
+Analytics, Heatmap, Operations and Error Monitor reports expose
+`metrics_available`. When storage cannot be read, this flag is `false`, measured
+counters and rates are `null`, and metric charts are empty. Developer and customer
+views show "Metrics are unavailable" instead of zero statistics. Settings, request
+history, runtime issues, logs and independent operational checks remain available;
+live debug polling refreshes the notice and metrics after storage recovers. A new,
+missing metrics file is a valid empty store (`metrics_available: true`), not a
+storage failure. Consumers of these reports must check availability before using
+metric values. Existing metric fields retain their meanings when available;
+the stored JSON schema is unchanged.
+
+`MetricsRecorder::snapshot()` remains a strict read that throws on storage errors.
+The presentation-oriented `snapshotForReport(): ?array` returns `null` on JSON or
+storage read failures and `[]` for a valid empty store. It does not clear or repair
+data. Writes remain strict, so an unavailable report never authorizes overwriting
+the existing aggregate file. Check JSON validity, directory permissions and lock
+file access before restoring a snapshot or explicitly clearing disposable data.
+
 Environment controls:
 
 ```env

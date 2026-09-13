@@ -6,6 +6,32 @@ compatibility and upgrade procedures rather than maintaining one file per releas
 
 ## Compatibility Notes
 
+### Updating to 2.2.4
+
+Metrics updates, report reads and clearing now coordinate through the persistent
+`.lock` file beside the configured metrics JSON. Stop application processes while
+replacing framework files so old and new recorder implementations do not overlap.
+The PHP process needs permission to create temporary and lock files and replace
+the metrics file in its directory. Use a local filesystem with working advisory
+locks and atomic rename semantics. Keep the lock file while requests are running.
+
+Invalid or unreadable metrics no longer appear as empty statistics in Developer
+or customer reports. The analytics, heatmap, operations and debug report payloads
+add `metrics_available`; measured counters and rates are `null` when it is false.
+Update custom report consumers to check the flag before calculating or displaying
+values. `MetricsRecorder::snapshot()` and recording methods throw on corrupt
+storage; `snapshotForReport(): ?array` returns `null` for a read failure and `[]`
+for a valid empty store. Existing aggregate JSON and successful metric values
+remain compatible. Restore a valid snapshot or deliberately clear disposable data
+after diagnosing the failure; the recorder never silently overwrites corruption.
+See [metrics recovery](RELEASE-AND-OPERATIONS.md#observability).
+
+No database migration or new environment variable is required. Existing accounts,
+configuration defaults and first-run setup behavior are unchanged: fresh Full
+exports require local Project Setup, while Plain has no Developer Panel setup.
+
+### Earlier compatibility changes
+
 The 2.2.0 default database seeder no longer creates a demo administrator. Existing
 accounts are untouched: audit any accounts created by older demo seeders and
 explicitly revoke or rotate them. Do not delete an account based on its email
@@ -15,7 +41,7 @@ mutating migration commands. Update reviewed deployment scripts accordingly.
 
 The current business blueprint now lives at `resources/business-reference/`, and
 the active performance policy at `resources/performance-baselines/policy.json`.
-Their manifests declare edition 2.2.0; historical changelog entries and published
+Their manifests follow the current source edition; historical changelog entries and published
 migration identifiers remain unchanged.
 
 The 2.2.0 candidate retires the repository's generated HTML documentation and

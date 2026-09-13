@@ -1,6 +1,6 @@
 {
   "schema": "fnlla.performance_baseline_policy.v1",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "decision_gate": "perf:budget",
   "targets": [
     {

@@ -21,7 +21,9 @@ final class DeveloperOperationsReport
 
     public function build(): array
     {
-        $metrics = $this->readMetrics();
+        $snapshot = $this->readMetrics();
+        $metricsAvailable = $snapshot !== null;
+        $metrics = $snapshot ?? [];
         $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
         $backupBuilder = new BackupPlanBuilder();
         $backupPlan = $backupBuilder->build();
@@ -32,6 +34,7 @@ final class DeveloperOperationsReport
         return [
             "schema" => "fnlla.developer_operations.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
+            "metrics_available" => $metricsAvailable,
             "privacy" => [
                 "mode" => (string) $telemetryPolicy["mode"],
                 "profile" => (string) $telemetryPolicy["profile"],
@@ -45,7 +48,7 @@ final class DeveloperOperationsReport
                 "retention_days" => (int) $telemetryPolicy["retention_days"],
                 "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             ],
-            "analytics" => $this->analytics($metrics, $telemetryPolicy),
+            "analytics" => $this->analytics($metrics, $telemetryPolicy, $metricsAvailable),
             "performance" => $this->performanceProbes(),
             "forms" => $this->formInbox(),
             "audit_log" => [
@@ -67,7 +70,7 @@ final class DeveloperOperationsReport
         ];
     }
 
-    private function analytics(array $metrics, array $telemetryPolicy): array
+    private function analytics(array $metrics, array $telemetryPolicy, bool $metricsAvailable): array
     {
         $routeCounts = (array) ($metrics["page_route_counts"] ?? $metrics["route_counts"] ?? []);
         $referrerCounts = (array) ($metrics["referrer_counts"] ?? []);
@@ -81,9 +84,9 @@ final class DeveloperOperationsReport
             "query_strings_tracked" => (bool) $telemetryPolicy["query_strings_tracked"],
             "retention_days" => (int) $telemetryPolicy["retention_days"],
             "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
-            "page_views" => (int) ($metrics["page_views"] ?? 0),
-            "total_requests" => (int) ($metrics["total_requests"] ?? 0),
-            "average_response_ms" => $this->averageDuration($metrics),
+            "page_views" => $metricsAvailable ? (int) ($metrics["page_views"] ?? 0) : null,
+            "total_requests" => $metricsAvailable ? (int) ($metrics["total_requests"] ?? 0) : null,
+            "average_response_ms" => $metricsAvailable ? $this->averageDuration($metrics) : null,
             "top_routes" => $this->topMap($routeCounts, 5, false),
             "referrers" => $this->topMap($referrerCounts, 5, false),
             "status_counts" => $this->topMap((array) ($metrics["status_counts"] ?? []), 5, false),
@@ -93,8 +96,8 @@ final class DeveloperOperationsReport
                 "ready_event" => "fnlla:cookie-consent-ready",
                 "analytics_event" => "fnlla:analytics-consent-granted",
                 "marketing_event" => "fnlla:marketing-consent-granted",
-                "backend_rate" => $consentEvents > 0 ? round(($analyticsConsentEvents / $consentEvents) * 100, 2) : 0.0,
-                "events" => $consentEvents,
+                "backend_rate" => !$metricsAvailable ? null : ($consentEvents > 0 ? round(($analyticsConsentEvents / $consentEvents) * 100, 2) : 0.0),
+                "events" => $metricsAvailable ? $consentEvents : null,
                 "counts" => $this->topMap((array) ($metrics["consent_counts"] ?? []), 5, false),
                 "note" => "The framework exposes consent events; projects can record consent aggregates without storing raw IP addresses.",
             ],

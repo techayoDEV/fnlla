@@ -9,6 +9,7 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Maintenance\DeveloperAccessManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Observability\DebugToolbar;
+use Fnlla\Php\Observability\MetricsRecorder;
 use Fnlla\Php\Observability\RequestHistory;
 use Fnlla\Php\Observability\RuntimeIssueTracker;
 use Fnlla\Php\Support\Logger;
@@ -138,7 +139,9 @@ final class DeveloperDebugController extends DeveloperPanelController
 
     private function debugReport(DebugToolbar $toolbar, RequestHistory $history, RuntimeIssueTracker $issues, array $historyEntries): array
     {
-        $metrics = $this->readMetrics();
+        $snapshot = $this->readMetrics();
+        $metricsAvailable = $snapshot !== null;
+        $metrics = $snapshot ?? [];
         $totalRequests = (int) ($metrics["total_requests"] ?? 0);
         $statusCounts = (array) ($metrics["status_counts"] ?? []);
         $errorRequests = 0;
@@ -152,6 +155,7 @@ final class DeveloperDebugController extends DeveloperPanelController
         return [
             "schema" => "fnlla.debug_report.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
+            "metrics_available" => $metricsAvailable,
             "environment" => [
                 "app_env" => app_environment(),
                 "app_debug" => app_debug(),
@@ -162,11 +166,11 @@ final class DeveloperDebugController extends DeveloperPanelController
             ],
             "metrics" => [
                 "enabled" => (bool) config("observability.metrics.enabled", true),
-                "total_requests" => $totalRequests,
-                "average_response_ms" => $this->averageDuration($metrics),
-                "max_response_ms" => (float) ($metrics["max_duration_ms"] ?? 0.0),
-                "error_requests" => $errorRequests,
-                "error_rate" => $totalRequests > 0 ? round(($errorRequests / $totalRequests) * 100, 2) : 0.0,
+                "total_requests" => $metricsAvailable ? $totalRequests : null,
+                "average_response_ms" => $metricsAvailable ? $this->averageDuration($metrics) : null,
+                "max_response_ms" => $metricsAvailable ? (float) ($metrics["max_duration_ms"] ?? 0.0) : null,
+                "error_requests" => $metricsAvailable ? $errorRequests : null,
+                "error_rate" => !$metricsAvailable ? null : ($totalRequests > 0 ? round(($errorRequests / $totalRequests) * 100, 2) : 0.0),
                 "last_request" => $this->lastRequestSummary((array) ($metrics["last_request"] ?? [])),
                 "status_counts" => $this->topMap($statusCounts, 8),
                 "method_counts" => $this->topMap((array) ($metrics["method_counts"] ?? []), 8),
@@ -188,17 +192,9 @@ final class DeveloperDebugController extends DeveloperPanelController
         ];
     }
 
-    private function readMetrics(): array
+    private function readMetrics(): ?array
     {
-        $path = storage_path(ltrim((string) config("observability.metrics.path", "framework/metrics.json"), "\\/"));
-
-        if (!is_file($path)) {
-            return [];
-        }
-
-        $decoded = json_decode((string) file_get_contents($path), true);
-
-        return is_array($decoded) ? $decoded : [];
+        return app(MetricsRecorder::class)->snapshotForReport();
     }
 
     private function lastRequestSummary(array $request): array

@@ -7,6 +7,7 @@ use Fnlla\Php\Support\DeveloperPanelLabels;
 $developerPanelTitle = "Operations";
 $developerPanelLead = "Operational priorities for access, review decisions, release readiness, observability and project-owned adapters.";
 $report = is_array($operationsReport ?? null) ? $operationsReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $analytics = (array) ($report["analytics"] ?? []);
 $performance = (array) ($report["performance"] ?? []);
 $forms = (array) ($report["forms"] ?? []);
@@ -37,6 +38,7 @@ $reviewCritical = max(0, (int) ($reviewQueue["critical_count"] ?? 0));
 $reviewWarnings = max(0, (int) ($reviewQueue["warning_count"] ?? 0));
 $releaseStatus = ((bool) ($release["acceptance"]["ok"] ?? true) && (bool) ($release["backup_restore"]["ok"] ?? true)) ? "OK" : "Check";
 $observabilityStatus = ((bool) ($analytics["enabled"] ?? false) || strtolower((string) ($heatmaps["status"] ?? "off")) !== "off") ? "ON" : "Review";
+$observabilityStatus = $metricsAvailable ? $observabilityStatus : "Unavailable";
 $operationLanes = [
     ["priority" => "P0", "title" => "Access & security", "text" => "Developer accounts, roles, TOTP, customer review access.", "href" => (string) ($developerLinks["access"] ?? route("developer.panel.access")), "status" => $reviewCritical > 0 ? "Critical" : "Review"],
     ["priority" => "P0", "title" => "Review queue", "text" => "Global decisions from setup, security and release checks.", "href" => (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications")), "status" => (string) $reviewTotal],
@@ -123,7 +125,14 @@ require __DIR__ . "/panel-header.php";
             <h2 class="developer-dashboard-section-title">Observability</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Open traffic analytics</a>
           </div>
+        <?php if (!$metricsAvailable): ?>
+        <div class="alert alert-warning" role="status" data-metrics-unavailable>
+          <strong>Metrics are unavailable.</strong>
+          <p>Statistics cannot be read right now. Ask the project maintainer to check the metrics storage and restore it if needed.</p>
+        </div>
+        <?php endif; ?>
           <div class="developer-dashboard-status-grid">
+            <?php if ($metricsAvailable): ?>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
                 <strong>Page views</strong>
@@ -148,6 +157,7 @@ require __DIR__ . "/panel-header.php";
               <?php $renderMiniList((array) ($analytics["referrers"] ?? []), "No referrers have been recorded yet."); ?>
             </article>
 
+            <?php endif; ?>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
                 <strong>Consent</strong>

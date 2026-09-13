@@ -21,7 +21,9 @@ final class DeveloperAnalyticsReport
 
     public function build(): array
     {
-        $metrics = $this->readMetrics();
+        $snapshot = $this->readMetrics();
+        $metricsAvailable = $snapshot !== null;
+        $metrics = $snapshot ?? [];
         $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
         $routeDurationTotals = $this->publicMetricMap((array) ($metrics["route_duration_totals"] ?? []));
         $routeDurationCounts = $this->publicMetricMap((array) ($metrics["route_duration_counts"] ?? []));
@@ -53,6 +55,7 @@ final class DeveloperAnalyticsReport
         return [
             "schema" => "fnlla.developer_analytics.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
+            "metrics_available" => $metricsAvailable,
             "enabled" => (bool) config("observability.metrics.enabled", true) && (bool) config("observability.analytics.enabled", true),
             "privacy" => [
                 "mode" => (string) $telemetryPolicy["mode"],
@@ -71,20 +74,20 @@ final class DeveloperAnalyticsReport
                 "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             ],
             "summary" => [
-                "page_views" => $pageViews,
-                "total_requests" => $totalRequests,
-                "average_response_ms" => $averageResponseMs,
-                "max_response_ms" => (float) ($metrics["analytics_max_duration_ms"] ?? max(array_map(static fn (mixed $value): float => (float) $value, $routeDurationTotals ?: [0.0]))),
-                "error_requests" => $errors,
-                "error_rate" => $errorRate,
-                "conversion_events" => $conversions,
-                "conversion_rate" => $conversionRate,
-                "slow_requests" => $this->mapTotal($slowRouteCounts),
-                "bot_page_view_requests" => (int) ($metrics["bot_page_view_requests"] ?? 0),
-                "consent_events" => $consentEvents,
-                "analytics_consent_rate" => $analyticsConsentRate,
+                "page_views" => $metricsAvailable ? $pageViews : null,
+                "total_requests" => $metricsAvailable ? $totalRequests : null,
+                "average_response_ms" => $metricsAvailable ? $averageResponseMs : null,
+                "max_response_ms" => $metricsAvailable ? (float) ($metrics["analytics_max_duration_ms"] ?? max(array_map(static fn (mixed $value): float => (float) $value, $routeDurationTotals ?: [0.0]))) : null,
+                "error_requests" => $metricsAvailable ? $errors : null,
+                "error_rate" => $metricsAvailable ? $errorRate : null,
+                "conversion_events" => $metricsAvailable ? $conversions : null,
+                "conversion_rate" => $metricsAvailable ? $conversionRate : null,
+                "slow_requests" => $metricsAvailable ? $this->mapTotal($slowRouteCounts) : null,
+                "bot_page_view_requests" => $metricsAvailable ? (int) ($metrics["bot_page_view_requests"] ?? 0) : null,
+                "consent_events" => $metricsAvailable ? $consentEvents : null,
+                "analytics_consent_rate" => $metricsAvailable ? $analyticsConsentRate : null,
             ],
-            "charts" => [
+            "charts" => $metricsAvailable ? [
                 "top_routes" => $this->topMap($pageRouteCounts, 8),
                 "referrers" => $this->topMap((array) ($metrics["referrer_counts"] ?? []), 8),
                 "status_counts" => $this->topMap($statusCounts, 8),
@@ -98,19 +101,19 @@ final class DeveloperAnalyticsReport
                 "daily_page_views" => $this->series((array) ($metrics["daily_page_views"] ?? []), 14, "day"),
                 "hourly_page_views" => $this->series((array) ($metrics["hourly_page_views"] ?? []), 24, "hour"),
                 "route_response_times" => $this->routeAverages($publicMetrics, 8),
-            ],
-            "public_pages" => $this->publicPageOptions($pageRouteCounts),
+            ] : [],
+            "public_pages" => $metricsAvailable ? $this->publicPageOptions($pageRouteCounts) : [],
             "last_request" => $lastRequest,
             "last_consent_event" => (array) ($metrics["last_consent_event"] ?? []),
-            "goals" => $this->goals($metrics),
-            "insights" => $this->insights($pageViews, $totalRequests, $errors, $conversions, $averageResponseMs),
+            "goals" => $metricsAvailable ? $this->goals($metrics) : [],
+            "insights" => $metricsAvailable ? $this->insights($pageViews, $totalRequests, $errors, $conversions, $averageResponseMs) : [],
             "settings" => $this->settings(),
             "data_quality" => [
                 "storage_path" => "storage/" . ltrim((string) config("observability.metrics.path", "framework/metrics.json"), "\\/"),
-                "updated_at_utc" => (string) ($metrics["updated_at_utc"] ?? ""),
+                "updated_at_utc" => $metricsAvailable ? (string) ($metrics["updated_at_utc"] ?? "") : null,
                 "events_are_aggregate_only" => true,
                 "query_strings_tracked" => (bool) $telemetryPolicy["query_strings_tracked"],
-                "consent_rate_source" => $consentEvents > 0 ? "backend aggregate consent events" : "waiting for consent events",
+                "consent_rate_source" => !$metricsAvailable ? "metrics unavailable" : ($consentEvents > 0 ? "backend aggregate consent events" : "waiting for consent events"),
             ],
             "integrations" => [
                 "fnlla_internal" => [

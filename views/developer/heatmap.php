@@ -5,6 +5,7 @@ declare(strict_types=1);
 $developerPanelTitle = "Heatmap";
 $developerPanelLead = "First-party public-page click, scroll, element and device intelligence stored inside FNLLA after analytics consent.";
 $report = is_array($heatmapReport ?? null) ? (array) $heatmapReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
 $privacy = (array) ($report["privacy"] ?? []);
@@ -113,6 +114,14 @@ $coverageRows = [
 require __DIR__ . "/panel-header.php";
 ?>
 
+        <?php if (!$metricsAvailable): ?>
+        <div class="alert alert-warning" role="status" data-metrics-unavailable>
+          <strong>Metrics are unavailable.</strong>
+          <p>Statistics cannot be read right now. Ask the project maintainer to check the metrics storage and restore it if needed.</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Heatmap summary">
           <section class="developer-analytics-blueprint developer-analytics-blueprint-heatmap" aria-label="Heatmap blueprint">
             <div class="developer-analytics-blueprint-grid" aria-hidden="true">
@@ -288,6 +297,8 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
+        <?php endif; ?>
+
         <section class="developer-dashboard-section" aria-label="Heatmap settings">
           <div class="developer-dashboard-section-head">
             <h2 class="developer-dashboard-section-title">Heatmap settings <span class="developer-info-tip" tabindex="0" aria-label="Sampling limits how many behavior events are stored.">i<span>Sampling controls event volume. Grid size controls how click positions are grouped before storage.</span></span></h2>
@@ -320,6 +331,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Heatmap privacy model">
           <div class="developer-dashboard-overview-grid">
+            <?php if ($insights !== []): ?>
             <article class="developer-dashboard-card developer-dashboard-card-wide">
               <p class="feature-kicker">Insights</p>
               <ul class="developer-analytics-insights">
@@ -328,6 +340,7 @@ require __DIR__ . "/panel-header.php";
                 <?php endforeach; ?>
               </ul>
             </article>
+            <?php endif; ?>
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Data boundary</p>
               <p class="content-text mb-0">The recorder keeps aggregate counts only. It is a FNLLA-owned behavior map, not a session replay recorder.</p>

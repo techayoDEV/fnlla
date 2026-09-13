@@ -5,7 +5,7 @@ Product website: [fnlla.com](https://fnlla.com). Policy edition: **2.2.0**.
 
 ## Version And Support Boundary
 
-The source tree identifies version 2.2.0. A source version is not evidence
+The source edition is recorded in [VERSION](VERSION). A source version is not evidence
 of a published release or a security certification. Consult the repository's
 [releases](https://github.com/techayoDEV/fnlla/releases) and security advisories
 for available updates; do not assume an unpublished build has release support.
@@ -30,12 +30,11 @@ alone does not prove that an email was received.
 
 ## Security Maintenance For 2.2.x
 
-Once 2.2.0 is published, the latest published 2.2.x patch is the primary target
+The latest published 2.2.x patch is the primary target
 for security fixes. Reports affecting earlier patches are triaged against that
 patch first; fixes normally ship in a new 2.2.x patch, never by replacing an
 existing tag or download. Existing 2.1.x deployments must review the migration
-guide; parallel backports and LTS are not promised. Until 2.2.0 is published,
-2.1.3 remains the current public release.
+guide; parallel backports and LTS are not promised.
 
 Maintainers prioritize confirmed authentication bypass, unauthorized data access,
 code execution and data-loss risks. Publish an advisory with affected/fixed

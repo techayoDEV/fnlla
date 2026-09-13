@@ -7,6 +7,7 @@ use Fnlla\Php\Support\DeveloperPanelLabels;
 $developerPanelTitle = "Analytics";
 $developerPanelLead = "First-party public-view traffic, conversion, consent and performance intelligence without third-party analytics scripts.";
 $report = is_array($analyticsReport ?? null) ? (array) $analyticsReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
 $privacy = (array) ($report["privacy"] ?? []);
@@ -181,6 +182,14 @@ $journeyRows = [
 require __DIR__ . "/panel-header.php";
 ?>
 
+        <?php if (!$metricsAvailable): ?>
+        <div class="alert alert-warning" role="status" data-metrics-unavailable>
+          <strong>Metrics are unavailable.</strong>
+          <p>Statistics cannot be read right now. Ask the project maintainer to check the metrics storage and restore it if needed.</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Analytics summary">
           <section class="developer-analytics-blueprint" aria-label="Analytics blueprint">
             <div class="developer-analytics-blueprint-grid" aria-hidden="true">
@@ -353,6 +362,8 @@ require __DIR__ . "/panel-header.php";
           </div>
         </section>
 
+        <?php endif; ?>
+
         <section class="developer-dashboard-section" aria-label="Analytics settings">
           <div class="developer-dashboard-section-head">
               <h2 class="developer-dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage, sampling, retention and bot filtering for this project.</span></span></h2>
@@ -403,6 +414,7 @@ require __DIR__ . "/panel-header.php";
           </form>
         </section>
 
+        <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Analytics details">
           <div class="developer-analytics-detail-grid developer-analytics-detail-grid-stacked">
             <article class="developer-dashboard-card">
@@ -429,6 +441,8 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
         </section>
+
+        <?php endif; ?>
 
         <section class="developer-dashboard-section" aria-label="Analytics privacy and data quality">
           <div class="developer-dashboard-overview-grid">

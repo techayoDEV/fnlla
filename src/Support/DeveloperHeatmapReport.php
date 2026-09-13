@@ -21,7 +21,9 @@ final class DeveloperHeatmapReport
 
     public function build(string $selectedPage = ""): array
     {
-        $metrics = $this->readMetrics();
+        $snapshot = $this->readMetrics();
+        $metricsAvailable = $snapshot !== null;
+        $metrics = $snapshot ?? [];
         $telemetryPolicy = DeveloperPanelPolicy::telemetryPolicy();
         $enabled = (bool) config("observability.heatmap.enabled", true) && (bool) $telemetryPolicy["heatmap_allowed"];
         $pageCounts = $this->publicMetricMap((array) ($metrics["heatmap_page_counts"] ?? []));
@@ -47,6 +49,7 @@ final class DeveloperHeatmapReport
         return [
             "schema" => "fnlla.developer_heatmap.v1",
             "generated_at_utc" => gmdate(DATE_ATOM),
+            "metrics_available" => $metricsAvailable,
             "enabled" => $enabled,
             "privacy" => [
                 "mode" => $enabled ? "first-party aggregate heatmap" : ((bool) $telemetryPolicy["regulated"] ? "regulated disabled" : "first-party aggregate heatmap"),
@@ -64,15 +67,15 @@ final class DeveloperHeatmapReport
                 "excluded_paths" => (array) $telemetryPolicy["excluded_paths"],
             ],
             "summary" => [
-                "behavior_events" => $behaviorEvents,
-                "click_events" => $clickEvents,
-                "scroll_events" => $scrollEvents,
-                "view_events" => $eventCounts["view"],
-                "pages_seen" => count($pageCounts),
+                "behavior_events" => $metricsAvailable ? $behaviorEvents : null,
+                "click_events" => $metricsAvailable ? $clickEvents : null,
+                "scroll_events" => $metricsAvailable ? $scrollEvents : null,
+                "view_events" => $metricsAvailable ? $eventCounts["view"] : null,
+                "pages_seen" => $metricsAvailable ? count($pageCounts) : null,
                 "public_pages_available" => count($publicPages),
-                "top_page" => $topPage,
+                "top_page" => $metricsAvailable ? $topPage : null,
             ],
-            "charts" => [
+            "charts" => $metricsAvailable ? [
                 "pages" => $this->topMap($pageCounts, 10),
                 "devices" => $this->topMap((array) ($metrics["heatmap_device_counts"] ?? []), 6),
                 "events" => $this->topMap($eventCounts, 6),
@@ -80,10 +83,10 @@ final class DeveloperHeatmapReport
                 "daily_behavior_events" => $this->series((array) ($metrics["daily_behavior_events"] ?? []), 14),
                 "top_page_click_grid" => $this->clickGrid($topPage, (array) ($clickZones[$topPage] ?? []), (array) ($clickTargets[$topPage] ?? [])),
                 "top_page_scroll_depth" => $this->scrollDepth((array) ($scrollDepth[$topPage] ?? [])),
-            ],
+            ] : [],
             "last_behavior_event" => $lastBehaviorEvent,
             "selected_page" => $topPage,
-            "public_pages" => $publicPages,
+            "public_pages" => $metricsAvailable ? $publicPages : [],
             "settings" => [
                 "sample_rate" => max(1, min(100, (int) config("observability.heatmap.sample_rate", 100))),
                 "grid_columns" => max(1, min(12, (int) config("observability.heatmap.click_grid_columns", 5))),
@@ -93,7 +96,7 @@ final class DeveloperHeatmapReport
             ],
             "insights" => array_values(array_filter(array_merge(
                 !$enabled && (bool) $telemetryPolicy["regulated"] ? ["Regulated telemetry policy keeps heatmap disabled until explicit project opt-in."] : [],
-                $this->insights($metrics, $topPage)
+                $metricsAvailable ? $this->insights($metrics, $topPage) : []
             ))),
         ];
     }

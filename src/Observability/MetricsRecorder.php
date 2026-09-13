@@ -17,6 +17,7 @@ namespace Fnlla\Php\Observability;
 
 use Fnlla\Php\Http\Request;
 use Fnlla\Php\Http\Response;
+use Fnlla\Php\Support\LockedJsonStore;
 
 final class MetricsRecorder
 {
@@ -30,8 +31,7 @@ final class MetricsRecorder
             return;
         }
 
-        $this->locked(function () use ($request, $response, $durationMs): void {
-            $metrics = $this->read();
+        $this->store()->update(function (array $metrics) use ($request, $response, $durationMs): array {
             $recordedAt = gmdate(DATE_ATOM);
             $today = gmdate("Y-m-d");
             $hour = gmdate("H:00");
@@ -123,13 +123,24 @@ final class MetricsRecorder
                 "recorded_at_utc" => $recordedAt,
             ];
 
-            $this->write($metrics);
+            return $metrics;
         });
     }
 
     public function snapshot(): array
     {
-        return $this->read();
+        return $this->store()->read();
+    }
+
+    /** Returns null when aggregate storage cannot be read; an empty store returns []. */
+    public function snapshotForReport(): ?array
+    {
+        try {
+            return $this->snapshot();
+        } catch (\JsonException | \RuntimeException | \ErrorException) {
+            // Presentation may degrade; strict reads and writes must still report failures.
+            return null;
+        }
     }
 
     public function recordConsent(array $preferences): void
@@ -138,8 +149,7 @@ final class MetricsRecorder
             return;
         }
 
-        $this->locked(function () use ($preferences): void {
-            $metrics = $this->read();
+        $this->store()->update(function (array $metrics) use ($preferences): array {
             $recordedAt = gmdate(DATE_ATOM);
             $today = gmdate("Y-m-d");
             $analytics = (bool) ($preferences["analytics"] ?? false);
@@ -163,7 +173,7 @@ final class MetricsRecorder
 
             $metrics = $this->trimTimeBuckets($metrics);
 
-            $this->write($metrics);
+            return $metrics;
         });
     }
 
@@ -194,8 +204,7 @@ final class MetricsRecorder
         $viewportWidth = $this->intRange($payload["viewport_width"] ?? 0, 0, 10000);
         $viewportHeight = $this->intRange($payload["viewport_height"] ?? 0, 0, 10000);
 
-        $this->locked(function () use ($payload, $type, $path, $device, $viewportWidth, $viewportHeight): void {
-            $metrics = $this->read();
+        $this->store()->update(function (array $metrics) use ($payload, $type, $path, $device, $viewportWidth, $viewportHeight): array {
             $recordedAt = gmdate(DATE_ATOM);
             $today = gmdate("Y-m-d");
 
@@ -247,21 +256,13 @@ final class MetricsRecorder
             $metrics["heatmap_page_counts"] = $this->trimMap((array) ($metrics["heatmap_page_counts"] ?? []), 80);
             $metrics["heatmap_click_elements"] = $this->trimMap((array) ($metrics["heatmap_click_elements"] ?? []), 80);
 
-            $this->write($metrics);
+            return $metrics;
         });
     }
 
     public function clear(): void
     {
-        $path = $this->path();
-
-        if (is_file($path)) {
-            unlink($path);
-        }
-
-        if (is_file($path . ".lock")) {
-            unlink($path . ".lock");
-        }
+        $this->store()->clear();
     }
 
     private function enabled(): bool
@@ -599,64 +600,11 @@ final class MetricsRecorder
         return strlen($value) <= $maxLength ? $value : substr($value, 0, $maxLength);
     }
 
-    private function read(): array
-    {
-        $path = $this->path();
-
-        if (!is_file($path)) {
-            return [];
-        }
-
-        $decoded = json_decode((string) file_get_contents($path), true);
-
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    private function write(array $metrics): void
-    {
-        $path = $this->path();
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        file_put_contents(
-            $path,
-            json_encode($metrics, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL,
-            LOCK_EX
-        );
-    }
-
-    private function locked(callable $callback): void
-    {
-        $path = $this->path();
-        $directory = dirname($path);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
-        }
-
-        $handle = fopen($path . ".lock", "c");
-
-        if (!is_resource($handle)) {
-            $callback();
-            return;
-        }
-
-        try {
-            flock($handle, LOCK_EX);
-            $callback();
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
-    }
-
-    private function path(): string
+    private function store(): LockedJsonStore
     {
         $configured = (string) config("observability.metrics.path", "framework/metrics.json");
 
-        return storage_path(ltrim($configured, "\\/"));
+        // Preserve existing aggregate sizes; the private-state default is only 2 MiB.
+        return new LockedJsonStore(storage_path(ltrim($configured, "\\/")), PHP_INT_MAX);
     }
 }

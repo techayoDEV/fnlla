@@ -3,6 +3,41 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.2.4
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.4 fixes concurrent metrics access and keeps diagnostic panels usable
+when aggregate storage is corrupt or unreadable. Request, consent and behavior
+updates share a lock with report readers, publish complete snapshots atomically
+and preserve existing data on failure.
+
+Analytics, Heatmap, Operations and Error Monitor show an unavailable state instead
+of failing or displaying zero statistics. Settings and independent diagnostics
+remain accessible, and live debug reports recover after storage is restored.
+Customer analytics and heatmap views use the same availability handling.
+
+No database migration or new environment settings are required. Report consumers
+must check `metrics_available` before reading counters, which are `null` during
+storage failures. Review [migration notes](https://github.com/techayoDEV/fnlla/blob/v2.2.4/docs/MIGRATION.md)
+and [metrics operations](https://github.com/techayoDEV/fnlla/blob/v2.2.4/docs/RELEASE-AND-OPERATIONS.md#observability)
+for lock permissions, strict reads and deliberate recovery procedures.
+
+### Fixed
+
+- Coordinate request metrics, Analytics, Heatmap, Operations and Error Monitor
+  readers through the same file lock. Publish complete metric snapshots atomically
+  and serialize clearing without removing the shared lock file.
+- Preserve existing metrics when a write fails or stored JSON is corrupt. Corrupt
+  metrics now report an error instead of silently resetting counters; restore a
+  valid snapshot or explicitly clear disposable metrics after diagnosis.
+- Keep Analytics, Heatmap, Operations and Error Monitor usable when metrics
+  storage is corrupt or unreadable. Show an unavailable notice instead of zero
+  statistics, including customer reports; keep settings and independent diagnostics
+  accessible. Live debug metrics recover automatically once storage is readable.
+
 ## 2.2.3
 
 Publication dates and downloadable assets are recorded in GitHub Releases.

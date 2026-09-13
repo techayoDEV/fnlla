@@ -5,6 +5,7 @@ declare(strict_types=1);
 $customerPanelTitle = "Heatmap";
 $customerPanelLead = "Aggregate public-website click and scroll signals grouped into customer-safe zones.";
 $report = is_array($heatmapReport ?? null) ? (array) $heatmapReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
 $grid = (array) ($charts["top_page_click_grid"] ?? []);
@@ -32,6 +33,14 @@ $renderBars = static function (array $items, string $empty): void { ?>
 require __DIR__ . "/panel-header.php";
 ?>
 
+        <?php if (!$metricsAvailable): ?>
+        <div class="alert alert-warning" role="status" data-metrics-unavailable>
+          <strong>Metrics are unavailable.</strong>
+          <p>Statistics cannot be read right now. Ask the project maintainer to check the metrics storage and restore it if needed.</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($metricsAvailable): ?>
       <section class="customer-overview-grid" aria-label="Heatmap metrics">
         <article class="customer-card">
           <p class="feature-kicker">Behavior events</p>
@@ -67,5 +76,7 @@ require __DIR__ . "/panel-header.php";
           <?php $renderBars((array) ($charts["top_page_scroll_depth"] ?? []), "No scroll-depth data has been recorded yet."); ?>
         </article>
       </section>
+
+<?php endif; ?>
 
 <?php require __DIR__ . "/panel-footer.php"; ?>

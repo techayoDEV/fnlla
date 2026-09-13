@@ -5,6 +5,7 @@ declare(strict_types=1);
 $developerPanelTitle = "Error Monitor";
 $developerPanelLead = "FNLLA-owned runtime issue monitor with local fingerprints, request history and triage into debt or Kanban.";
 $report = is_array($debugReport ?? null) ? $debugReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $environment = (array) ($report["environment"] ?? []);
 $metrics = (array) ($report["metrics"] ?? []);
 $historySummary = (array) ($report["history"] ?? []);
@@ -52,6 +53,13 @@ require VIEW_ROOT . "/developer/panel-header.php";
     </div>
   </div>
 
+  <div data-debug-metrics-unavailable <?= $metricsAvailable ? "hidden" : "" ?>>
+    <div class="alert alert-warning" role="status" data-metrics-unavailable>
+      <strong>Metrics are unavailable.</strong>
+      <p>Statistics cannot be read right now. Check the metrics storage and restore it if needed. Request history, runtime issues and logs remain available.</p>
+    </div>
+  </div>
+
   <div class="developer-dashboard-status-grid">
     <article class="developer-dashboard-status-card">
       <div class="developer-dashboard-card-head">
@@ -66,10 +74,10 @@ require VIEW_ROOT . "/developer/panel-header.php";
     <article class="developer-dashboard-status-card">
       <div class="developer-dashboard-card-head">
         <strong>Live requests</strong>
-        <span class="developer-dashboard-ok" data-debug-total-requests><?= h((string) ($metrics["total_requests"] ?? 0)) ?></span>
+        <span class="developer-dashboard-ok" data-debug-total-requests><?= h((string) ($metrics["total_requests"] ?? "n/a")) ?></span>
       </div>
       <h3 data-debug-average-response><?= h($formatMetric($metrics["average_response_ms"] ?? null, "ms avg")) ?></h3>
-      <p>Max <?= h($formatMetric($metrics["max_response_ms"] ?? null, "ms")) ?>. Errors <span data-debug-error-rate><?= h($formatMetric($metrics["error_rate"] ?? null, "%")) ?></span>.</p>
+      <p>Max <span data-debug-max-response><?= h($formatMetric($metrics["max_response_ms"] ?? null, "ms")) ?></span>. Errors <span data-debug-error-rate><?= h($formatMetric($metrics["error_rate"] ?? null, "%")) ?></span>.</p>
       <p class="developer-dashboard-status is-neutral">History entries: <span data-debug-history-count><?= h((string) ($historySummary["entries"] ?? count($historyEntries))) ?></span></p>
     </article>
 
@@ -174,17 +182,23 @@ require VIEW_ROOT . "/developer/panel-header.php";
   <div class="developer-dashboard-overview-grid developer-debug-aggregate-grid">
     <article class="developer-dashboard-card">
       <p class="feature-kicker">Status counts</p>
-      <?php $renderMiniList((array) ($metrics["status_counts"] ?? []), "No status counts have been recorded yet."); ?>
+      <div data-debug-metric-list="status_counts" data-empty="No status counts have been recorded yet.">
+        <?php $renderMiniList((array) ($metrics["status_counts"] ?? []), $metricsAvailable ? "No status counts have been recorded yet." : "Metrics are unavailable."); ?>
+      </div>
     </article>
 
     <article class="developer-dashboard-card">
       <p class="feature-kicker">Methods</p>
-      <?php $renderMiniList((array) ($metrics["method_counts"] ?? []), "No method counts have been recorded yet."); ?>
+      <div data-debug-metric-list="method_counts" data-empty="No method counts have been recorded yet.">
+        <?php $renderMiniList((array) ($metrics["method_counts"] ?? []), $metricsAvailable ? "No method counts have been recorded yet." : "Metrics are unavailable."); ?>
+      </div>
     </article>
 
     <article class="developer-dashboard-card">
       <p class="feature-kicker">Slow routes</p>
-      <?php $renderMiniList((array) ($metrics["slow_routes"] ?? []), "No slow route candidates have been recorded yet."); ?>
+      <div data-debug-metric-list="slow_routes" data-empty="No slow route candidates have been recorded yet.">
+        <?php $renderMiniList((array) ($metrics["slow_routes"] ?? []), $metricsAvailable ? "No slow route candidates have been recorded yet." : "Metrics are unavailable."); ?>
+      </div>
     </article>
 
     <article class="developer-dashboard-card">
@@ -257,6 +271,32 @@ require VIEW_ROOT . "/developer/panel-header.php";
       body.appendChild(row);
     }
   };
+  const renderMetricLists = (metrics, available) => {
+    for (const target of document.querySelectorAll('[data-debug-metric-list]')) {
+      const items = metrics[target.dataset.debugMetricList] || [];
+      target.textContent = '';
+      if (!available || items.length === 0) {
+        const message = document.createElement('p');
+        message.className = 'content-text mb-0';
+        message.textContent = available ? target.dataset.empty : 'Metrics are unavailable.';
+        target.appendChild(message);
+        continue;
+      }
+      const list = document.createElement('ul');
+      list.className = 'developer-dashboard-check-list is-metric-list';
+      for (const item of items) {
+        const row = document.createElement('li');
+        for (const [key, className] of [['count', 'developer-dashboard-check-count'], ['label', 'developer-dashboard-check-label']]) {
+          const cell = document.createElement('span');
+          cell.className = className;
+          cell.textContent = String(item[key] ?? '');
+          row.appendChild(cell);
+        }
+        list.appendChild(row);
+      }
+      target.appendChild(list);
+    }
+  };
   const refresh = async () => {
     const status = document.querySelector('[data-debug-live-status]');
     try {
@@ -270,9 +310,14 @@ require VIEW_ROOT . "/developer/panel-header.php";
       const report = payload.report || {};
       const metrics = report.metrics || {};
       const issues = report.runtime_issues || {};
-      setText('[data-debug-total-requests]', metrics.total_requests || 0);
-      setText('[data-debug-average-response]', `${formatNumber(metrics.average_response_ms)}ms avg`);
-      setText('[data-debug-error-rate]', `${formatNumber(metrics.error_rate)}%`);
+      const available = report.metrics_available !== false;
+      const notice = document.querySelector('[data-debug-metrics-unavailable]');
+      if (notice) notice.hidden = available;
+      setText('[data-debug-total-requests]', available ? (metrics.total_requests ?? 0) : 'n/a');
+      setText('[data-debug-average-response]', available ? `${formatNumber(metrics.average_response_ms)}ms avg` : 'n/a');
+      setText('[data-debug-max-response]', available ? `${formatNumber(metrics.max_response_ms)}ms` : 'n/a');
+      setText('[data-debug-error-rate]', available ? `${formatNumber(metrics.error_rate)}%` : 'n/a');
+      renderMetricLists(metrics, available);
       setText('[data-debug-history-count]', (report.history || {}).entries || 0);
       setText('[data-debug-open-issues]', issues.open || 0);
       setText('[data-debug-issue-occurrences]', issues.occurrences || 0);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 $customerPanelTitle = "Analytics";
 $customerPanelLead = "Aggregate project traffic and performance signals without raw visitor identity.";
 $report = is_array($analyticsReport ?? null) ? (array) $analyticsReport : [];
+$metricsAvailable = ($report["metrics_available"] ?? true) === true;
 $summary = (array) ($report["summary"] ?? []);
 $charts = (array) ($report["charts"] ?? []);
 $formatMetric = static fn (mixed $value, string $suffix = ""): string => is_numeric($value) ? rtrim(rtrim((string) round((float) $value, 2), "0"), ".") . $suffix : "0" . $suffix;
@@ -31,6 +32,14 @@ $renderBars = static function (array $items, string $empty): void { ?>
 require __DIR__ . "/panel-header.php";
 ?>
 
+        <?php if (!$metricsAvailable): ?>
+        <div class="alert alert-warning" role="status" data-metrics-unavailable>
+          <strong>Metrics are unavailable.</strong>
+          <p>Statistics cannot be read right now. Ask the project maintainer to check the metrics storage and restore it if needed.</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($metricsAvailable): ?>
       <section class="customer-overview-grid" aria-label="Analytics metrics">
         <article class="customer-card">
           <p class="feature-kicker">Page views</p>
@@ -59,5 +68,7 @@ require __DIR__ . "/panel-header.php";
           <?php $renderBars((array) ($charts["device_counts"] ?? []), "No device buckets have been recorded yet."); ?>
         </article>
       </section>
+
+<?php endif; ?>
 
 <?php require __DIR__ . "/panel-footer.php"; ?>

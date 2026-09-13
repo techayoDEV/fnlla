@@ -8,7 +8,7 @@ use RuntimeException;
 
 final class LockedJsonStore
 {
-    public function __construct(private string $path)
+    public function __construct(private string $path, private int $maxBytes = 2097152)
     {
     }
 
@@ -22,7 +22,12 @@ final class LockedJsonStore
         return $this->locked(true, $change);
     }
 
-    private function locked(bool $write, ?callable $change): array
+    public function clear(): void
+    {
+        $this->locked(true, null, true);
+    }
+
+    private function locked(bool $write, ?callable $change, bool $clear = false): array
     {
         $directory = dirname($this->path);
         if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
@@ -41,9 +46,19 @@ final class LockedJsonStore
                 throw new RuntimeException("Cannot lock private state.");
             }
             clearstatcache(true, $this->path);
+            if (file_exists($this->path) && !is_file($this->path)) {
+                throw new RuntimeException("Private state must be a regular file.");
+            }
+            if ($clear) {
+                if (is_file($this->path) && !unlink($this->path)) {
+                    throw new RuntimeException("Cannot clear private state.");
+                }
+                // Keep the lock file: waiting processes must continue using the same lock.
+                return [];
+            }
             $state = [];
             if (is_file($this->path)) {
-                if (filesize($this->path) > 2097152) {
+                if (filesize($this->path) > $this->maxBytes) {
                     throw new RuntimeException("Private state exceeds the size limit.");
                 }
                 $state = json_decode((string) file_get_contents($this->path), true, 512, JSON_THROW_ON_ERROR);
@@ -54,7 +69,7 @@ final class LockedJsonStore
             if ($change !== null) {
                 $state = $change($state);
                 $json = json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-                if (strlen($json) > 2097152) {
+                if (strlen($json) > $this->maxBytes) {
                     throw new RuntimeException("Private state exceeds the size limit.");
                 }
                 $temporary = tempnam($directory, ".state-");
