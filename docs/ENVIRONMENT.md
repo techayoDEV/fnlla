@@ -273,7 +273,7 @@ is separate from the shared Kanban workspace and Customer Portal.
 ## Customer Portal Access
 
 Customer access is intentionally separate from Developer Panel access. A lead
-developer can create a customer account in **Access & security**, copy the
+developer can create a customer account in **Client review access**, copy the
 first-login link or send it through the configured mail driver. The customer
 sets their own password from that invitation and then signs in through the
 private customer URL.
@@ -353,11 +353,13 @@ Developer service control is a stronger lock than client preview:
 FNLLA_POLICY_PROFILE=standard
 FNLLA_REGULATED_MODE=false
 DEVELOPER_CONTROL_DISABLED_CONTACT=developer@example.com
-DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=
-DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
+DEVELOPER_CONTROL_DISABLED_CONTACT_URL=https://example.com/support
+DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=+44 20 0000 0000
+DEVELOPER_CONTROL_SERVICE_PROVIDER=
 DEVELOPER_CONTROL_SUSPENDED_TITLE=Service has been suspended
 DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
-DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_URL=https://example.com/support
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=+44 20 0000 0000
 DEVELOPER_CONTROL_REMOTE_ENABLED=false
 DEVELOPER_CONTROL_REMOTE_ENDPOINT=
 DEVELOPER_CONTROL_REMOTE_TOKEN=
@@ -396,10 +398,7 @@ remote control endpoint must be HTTPS, token protected and host-allowlisted
 before `security:audit --strict` accepts it. When enabled, FNLLA sends the
 project id, tenant, schema, timestamp, bearer token and optional HMAC signature
 headers, then consumes only the `fnlla.techayo_remote_control_state.v2`
-`open`, `disabled` or `suspended` state. The `suspended` status is intended for
-external provider or billing decisions, shows the configured service-provider
-message and does not grant server access or application admin privileges to the
-remote operator.
+`open`, `paused`, `disabled` or `suspended` state. The `paused` status covers developer-owned pauses, maintenance notices and security-review pauses. The `suspended` status is intended for external provider or billing decisions, shows the configured service-provider message and does not grant server access or application admin privileges to the remote operator.
 
 Developer Panel changes are project-global and are written to the shared
 activity log. Review queue read, archive and restore state is keyed per signed-in

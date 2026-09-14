@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Fnlla\Php\Support\DeveloperPanelLabels;
 
-$developerPanelTitle = "Policy Boundary";
+$developerPanelTitle = "Reference: Policy boundary";
 $developerPanelLead = "The line between FNLLA's framework-managed operations layer and the product application built above it.";
 $policy = is_array($developerPolicy ?? null) ? $developerPolicy : [];
 $boundary = (array) ($policy["boundary"] ?? []);
@@ -35,7 +35,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Policy boundary</p>
-              <h2 class="developer-dashboard-section-title">Framework boundary</h2>
+              <h2 class="dashboard-section-title">Framework boundary</h2>
               <p class="content-text mb-0">This separates FNLLA-managed operations from project-owned application behavior, so the framework remains portable across client products.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -86,7 +86,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Developer role capabilities">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Developer role capabilities <span class="developer-info-tip" tabindex="0" aria-label="These are framework technical permissions, not client business roles.">i<span>These roles control private Developer Panel actions. They are not customer-facing business roles.</span></span></h2>
+            <h2 class="dashboard-section-title">Developer role capabilities <span class="developer-info-tip" tabindex="0" aria-label="These are framework technical permissions, not client business roles.">i<span>These roles control private Developer Panel actions. They are not customer-facing business roles.</span></span></h2>
             <span class="developer-dashboard-refresh">Technical permissions only</span>
           </div>
           <div class="developer-policy-role-grid">
@@ -105,6 +105,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Capability definitions and storage policy">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Capability catalog and storage</h2>
+            <span class="developer-dashboard-refresh">Developer permissions and portable data</span>
+          </div>
+
           <div class="developer-dashboard-overview-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Capability catalog</p>

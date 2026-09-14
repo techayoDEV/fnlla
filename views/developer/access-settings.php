@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Access & security";
-$developerPanelLead = "Named developer accounts, roles, sessions, 2FA and passkey-adapter readiness.";
+$accessSettingsSection = in_array((string) ($accessSettingsSection ?? "developer"), ["developer", "client"], true)
+    ? (string) $accessSettingsSection
+    : "developer";
+$developerPanelTitle = $accessSettingsSection === "client" ? "Operations: Client review access" : "Operations: Developer access";
+$developerPanelLead = $accessSettingsSection === "client"
+    ? "Customer portal invitations, read-only permissions and external review access."
+    : "Named developer accounts, roles, sessions, 2FA and passkey-adapter readiness.";
 $developerAccounts = is_array($developerAccess["accounts"] ?? null) ? (array) $developerAccess["accounts"] : [];
 $currentDeveloper = is_array($developerAccess["current_developer"] ?? null) ? (array) $developerAccess["current_developer"] : [];
 $developerRoleOptions = is_array($developerAccess["role_options"] ?? null) ? (array) $developerAccess["role_options"] : [];
@@ -17,6 +22,7 @@ $customerInviteFlash = flash("customer_access_invite");
 $customerInviteNotice = is_array($customerInviteFlash) ? (array) $customerInviteFlash : [];
 $customerPortalPath = (string) ($customerAccessState["path"] ?? "/client");
 $customerPortalLogin = (string) ($developerLinks["customer_login"] ?? route("customer.login"));
+$customerPortalConfigured = $customerAccounts !== [];
 $customerAccountRoute = (string) ($developerLinks["customer_account"] ?? route("developer.settings.customer_account"));
 $customerAccountDeleteRoute = (string) ($developerLinks["customer_account_delete"] ?? route("developer.settings.customer_account.delete"));
 $security = is_array($developerAccess["security"] ?? null) ? (array) $developerAccess["security"] : [];
@@ -55,18 +61,19 @@ foreach ($developerAccounts as $account) {
 require __DIR__ . "/panel-header.php";
 ?>
 
+        <?php if ($accessSettingsSection === "developer"): ?>
         <section class="developer-dashboard-section" id="developer-access-settings" aria-label="Developer access settings">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Access governance</p>
-              <h2 class="developer-dashboard-section-title">Named developers, lead ownership and personal security live here.</h2>
+              <h2 class="dashboard-section-title">Named developers, lead ownership and personal security live here.</h2>
               <p class="content-text mb-0">Project changes remain global, but every session should be attributable to one developer account. Owner and lead roles manage accounts; operational roles keep review, audit and apply work separated.</p>
             </div>
             <div class="developer-panel-intro-actions">
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["identity"] ?? route("developer.panel.project_identity"))) ?>">Project identity</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>">My profile</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["client_review_access"] ?? route("developer.panel.access.client"))) ?>">Client review access</a>
               <?php if ($canManageDeveloperAccounts): ?>
-              <button class="btn btn-outline btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Add customer</button>
               <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#developer-account-modal">Add developer</button>
               <?php endif; ?>
             </div>
@@ -141,16 +148,23 @@ require __DIR__ . "/panel-header.php";
           </div>
           <?php endif; ?>
         </section>
+        <?php endif; ?>
 
+        <?php if ($accessSettingsSection === "client"): ?>
         <section class="developer-dashboard-section" id="customer-access-settings" aria-label="Customer portal access settings">
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Customer portal</p>
-              <h2 class="developer-dashboard-section-title">Read-only customer access for delivery visibility.</h2>
-              <p class="content-text mb-0">Customers can review client-visible Kanban cards, public-preview access, aggregate analytics and heatmap summaries without entering the Developer Panel.</p>
+              <h2 class="dashboard-section-title">Read-only client review access for delivery visibility.</h2>
+              <p class="content-text mb-0">Clients can review customer-visible Kanban cards, public-preview access, aggregate analytics and heatmap summaries without entering the Developer Panel.</p>
             </div>
             <div class="developer-panel-intro-actions">
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["developer_access"] ?? route("developer.panel.access.developer"))) ?>">Developer access</a>
+              <?php if ($customerPortalConfigured): ?>
               <a class="btn btn-outline btn-sm" href="<?= h($customerPortalLogin) ?>">Open portal</a>
+              <?php else: ?>
+              <span class="developer-dashboard-status is-neutral">Portal opens after invitation</span>
+              <?php endif; ?>
               <?php if ($canManageDeveloperAccounts): ?>
               <button class="btn btn-primary btn-sm" type="button" data-fnlla-modal-open="#customer-account-modal">Invite customer</button>
               <?php endif; ?>
@@ -159,9 +173,9 @@ require __DIR__ . "/panel-header.php";
 
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Customers</strong><span class="developer-dashboard-ok"><?= h((string) count($customerAccounts)) ?></span></div>
+              <div class="developer-dashboard-card-head"><strong>Client reviewers</strong><span class="developer-dashboard-ok"><?= h((string) count($customerAccounts)) ?></span></div>
               <h3><?= h((string) count($customerAccounts)) ?> portal <?= count($customerAccounts) === 1 ? "account" : "accounts" ?></h3>
-              <p>Customer credentials stay separate from developer roles.</p>
+              <p>Client review credentials stay separate from developer roles.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Pending invites</strong><span class="developer-dashboard-ok"><?= h((string) ($customerAccessState["pending_invites_count"] ?? 0)) ?></span></div>
@@ -169,9 +183,9 @@ require __DIR__ . "/panel-header.php";
               <p>Invitation links expire after <?= h((string) ($customerAccessState["invite_ttl_hours"] ?? 72)) ?> hours.</p>
             </article>
             <article class="developer-dashboard-status-card">
-              <div class="developer-dashboard-card-head"><strong>Portal URL</strong><span class="developer-dashboard-ok">PRIVATE</span></div>
+              <div class="developer-dashboard-card-head"><strong>Portal URL</strong><span class="developer-dashboard-ok"><?= $customerPortalConfigured ? "PRIVATE" : "INACTIVE" ?></span></div>
               <h3><?= h($customerPortalPath) ?></h3>
-              <p>Use this URL after the customer sets a password.</p>
+              <p><?= $customerPortalConfigured ? "Use this URL after the customer sets a password." : "This route stays hidden until a customer invitation exists." ?></p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Default scope</strong><span class="developer-dashboard-ok">READ</span></div>
@@ -236,8 +250,15 @@ require __DIR__ . "/panel-header.php";
             <?php endif; ?>
           </div>
         </section>
+        <?php endif; ?>
 
+        <?php if ($accessSettingsSection === "developer"): ?>
         <section class="developer-dashboard-section" id="developer-security" aria-label="Developer security">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Developer security</h2>
+            <span class="developer-dashboard-refresh">Two-factor and passkey readiness</span>
+          </div>
+
           <div class="developer-panel-form-grid is-stacked">
             <article class="developer-panel-fieldset-card">
               <p class="feature-kicker">Two-factor authentication</p>
@@ -309,8 +330,9 @@ require __DIR__ . "/panel-header.php";
             </article>
           </div>
         </section>
+        <?php endif; ?>
 
-        <?php if ($canManageDeveloperAccounts): ?>
+        <?php if ($canManageDeveloperAccounts && $accessSettingsSection === "client"): ?>
         <div class="modal developer-kanban-modal" id="customer-account-modal" data-fnlla-modal role="dialog" aria-modal="true" aria-labelledby="customer-account-modal-title" hidden>
           <div class="developer-kanban-modal-backdrop" data-fnlla-modal-close></div>
           <div class="modal-content developer-kanban-modal-panel" role="document">
@@ -357,7 +379,9 @@ require __DIR__ . "/panel-header.php";
             </form>
           </div>
         </div>
+        <?php endif; ?>
 
+        <?php if ($canManageDeveloperAccounts && $accessSettingsSection === "developer"): ?>
         <div class="modal developer-kanban-modal" id="developer-account-modal" data-fnlla-modal role="dialog" aria-modal="true" aria-labelledby="developer-account-modal-title" hidden>
           <div class="developer-kanban-modal-backdrop" data-fnlla-modal-close></div>
           <div class="modal-content developer-kanban-modal-panel" role="document">

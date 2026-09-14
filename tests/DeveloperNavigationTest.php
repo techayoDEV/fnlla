@@ -30,7 +30,8 @@ final class DeveloperNavigationTest extends TestCase
             self::assertSame("Access & preview", $operator["Workspace"]["identity"]["children"]["project-identity-access"]["label"]);
             self::assertFalse(isset($operator["Workspace"]["technical-debt"]));
             self::assertFalse(isset($operator["Workspace"]["project-changelog"]));
-            self::assertSame("Access & security", $operator["Operations"]["access"]["label"]);
+            self::assertSame("Developer access", $operator["Operations"]["developer-access"]["label"]);
+            self::assertSame("Client review access", $operator["Operations"]["client-review-access"]["label"]);
             self::assertSame("Review queue", $operator["Operations"]["notifications"]["label"]);
             self::assertSame("Release & readiness", $operator["Operations"]["release-readiness"]["label"]);
             self::assertSame("Observability", $operator["Operations"]["observability"]["label"]);
@@ -44,7 +45,8 @@ final class DeveloperNavigationTest extends TestCase
             self::assertSame("Documentation & policy", $operator["Reference"]["documentation"]["label"]);
             self::assertSame(["identity"], array_keys($operator["Workspace"]));
             $expectedOperationsOrder = [
-                "access",
+                "developer-access",
+                "client-review-access",
                 "notifications",
                 "release-readiness",
                 "observability",
@@ -92,7 +94,9 @@ final class DeveloperNavigationTest extends TestCase
             $links = [
                 "overview" => "/developer/panel",
                 "notifications" => "/developer/panel/notifications",
-                "access" => "/developer/panel/access",
+                "access" => "/developer/panel/access/developer",
+                "developer_access" => "/developer/panel/access/developer",
+                "client_review_access" => "/developer/panel/access/client",
                 "release_readiness" => "/developer/panel/release-readiness",
                 "identity" => "/developer/panel/project-identity",
                 "technical_debt" => "/developer/panel/technical-debt",
@@ -119,6 +123,8 @@ final class DeveloperNavigationTest extends TestCase
             $labels = array_column($items, "label");
 
             self::assertContains("Review queue", $labels);
+            self::assertContains("Developer access", $labels);
+            self::assertContains("Client review access", $labels);
             self::assertContains("Framework updates", $labels);
             self::assertContains("Project changelog", $labels);
             self::assertContains("Project logs", $labels);

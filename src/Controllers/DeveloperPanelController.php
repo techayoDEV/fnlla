@@ -227,9 +227,11 @@ abstract class DeveloperPanelController extends Controller
             "runtime_environment" => route("developer.panel.project_identity.runtime"),
             "project_leadership_screen" => route("developer.panel.project_identity.leadership"),
             "project_settings" => route("developer.panel.project_identity.access"),
-            "access" => route("developer.panel.access"),
+            "access" => route("developer.panel.access.developer"),
+            "developer_access" => route("developer.panel.access.developer"),
+            "client_review_access" => route("developer.panel.access.client"),
             "profile" => route("developer.panel.profile"),
-            "security" => route("developer.panel.access"),
+            "security" => route("developer.panel.access.developer") . "#developer-security",
             "settings" => route("developer.panel.settings"),
             "health" => route("developer.panel.release_readiness"),
             "framework_updates" => route("developer.panel.framework_updates"),
@@ -255,6 +257,7 @@ abstract class DeveloperPanelController extends Controller
             "audit_export_csv" => route("developer.panel.audit_export_csv"),
             "project_leadership" => route("developer.settings.project_leadership"),
             "project_leadership_confirmation" => route("developer.settings.project_leadership.confirmation"),
+            "service_control_public_view_test" => route("developer.settings.service_control.public_view_test"),
         ] + $customerLinks;
         $projectSetupChecklist = $this->projectSetupChecklist($developerAccessState, $maintenanceAccessState, $projectLeadership);
         $operationsForNotifications = is_array($extraData["operationsReport"] ?? null) ? (array) $extraData["operationsReport"] : [];
@@ -464,7 +467,11 @@ abstract class DeveloperPanelController extends Controller
     protected function reviewQueueSourceFromHref(string $href): string
     {
         if (str_contains($href, "/access")) {
-            return "Access & security";
+            if (str_contains($href, "/access/client")) {
+                return "Client review access";
+            }
+
+            return "Developer access";
         }
 
         if (str_contains($href, "/release-readiness")) {
@@ -551,7 +558,7 @@ abstract class DeveloperPanelController extends Controller
                 "status" => ((bool) ($developerAccess["configured"] ?? false) && (int) ($developerAccess["users_count"] ?? 0) > 0) ? "ready" : "attention",
                 "status_label" => (string) max(0, (int) ($developerAccess["users_count"] ?? 0)),
                 "text" => ((bool) ($developerAccess["configured"] ?? false)) ? "Named developer access is configured." : "Create at least one named developer account.",
-                "href" => route("developer.panel.access"),
+                "href" => route("developer.panel.access.developer"),
             ],
             [
                 "label" => "Developer URL",
@@ -595,7 +602,7 @@ abstract class DeveloperPanelController extends Controller
                 "status" => (bool) ($security["totp_enabled"] ?? false) ? "ready" : "review",
                 "status_label" => (bool) ($security["totp_enabled"] ?? false) ? "On" : "Off",
                 "text" => (bool) ($security["totp_enabled"] ?? false) ? "Authenticator challenge is enforced for this account." : "Enable TOTP before production handover.",
-                "href" => route("developer.panel.access"),
+                "href" => route("developer.panel.access.developer") . "#developer-security",
             ],
             [
                 "label" => "Security headers",

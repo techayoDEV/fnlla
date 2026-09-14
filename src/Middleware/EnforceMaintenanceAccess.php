@@ -46,6 +46,8 @@ final class EnforceMaintenanceAccess implements MiddlewareInterface
                     "error" => "Service Disabled",
                     "message" => (string) ($state["message"] ?? "This service is temporarily disabled by the developer team."),
                     "contact" => (string) ($state["contact"] ?? ""),
+                    "contact_url" => (string) ($state["contact_url"] ?? ""),
+                    "contact_phone" => (string) ($state["contact_phone"] ?? ""),
                     "source" => (string) ($state["source"] ?? "local"),
                     "local_disabled" => (bool) ($state["local_disabled"] ?? false),
                     "remote_disabled" => (bool) ($state["remote_disabled"] ?? false),

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Panel Settings";
+$developerPanelTitle = "Developer account: Panel settings";
 $developerPanelLead = "Entry route, session window and developer navigation behavior.";
 $developerPath = (string) ($developerAccess["path"] ?? "/developer");
 $navMode = (string) ($developerAccess["operations_nav_mode"] ?? "hidden");
@@ -21,7 +21,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Runtime and storage</p>
-              <h2 class="developer-dashboard-section-title">Keep the private entry, session window and local storage contract predictable.</h2>
+              <h2 class="dashboard-section-title">Keep the private entry, session window and local storage contract predictable.</h2>
               <p class="content-text mb-0">Public navigation stays client-safe. Developer links appear through the private entry or an active developer session.</p>
             </div>
             <div class="developer-panel-intro-actions">

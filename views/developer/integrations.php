@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Fnlla\Php\Support\DeveloperPanelLabels;
 
-$developerPanelTitle = "Integrations";
+$developerPanelTitle = "Operations: Adapters & AI";
 $developerPanelLead = "Project-owned API, AI and remote-control adapters. Analytics, heatmap and error monitoring stay first-party.";
 $report = is_array($operationsReport ?? null) ? (array) $operationsReport : [];
 $integrations = (array) ($report["integrations"] ?? []);
@@ -83,7 +83,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="FNLLA first-party observability">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">FNLLA observability</h2>
+            <h2 class="dashboard-section-title">FNLLA observability</h2>
             <span class="developer-dashboard-refresh">Local first-party signal</span>
           </div>
           <div class="developer-dashboard-status-grid">
@@ -109,7 +109,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Integration adapters">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Project-owned adapters</h2>
+            <h2 class="dashboard-section-title">Project-owned adapters</h2>
             <span class="developer-dashboard-refresh">Disabled unless explicitly configured</span>
           </div>
           <div class="developer-integrations-stack">
@@ -161,7 +161,7 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section developer-ai-settings" aria-labelledby="ai-providers-title">
           <div class="developer-dashboard-section-head">
             <div>
-              <h2 id="ai-providers-title" class="developer-dashboard-section-title">AI providers</h2>
+              <h2 id="ai-providers-title" class="dashboard-section-title">AI providers</h2>
               <p class="content-text mb-0">Choose the runtime contract first, then configure only the external provider credentials the project is allowed to use.</p>
             </div>
             <span class="developer-dashboard-refresh">Server policy gated</span>
@@ -323,7 +323,7 @@ require __DIR__ . "/panel-header.php";
         <?php if (is_array($remoteControl)): ?>
         <section class="developer-dashboard-section" aria-label="Remote control adapter contract">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Remote control adapter contract</h2>
+            <h2 class="dashboard-section-title">Remote control adapter contract</h2>
             <span class="developer-dashboard-refresh"><?= h(DeveloperPanelLabels::contract($remoteControlSchema, "Adapter manifest")) ?></span>
           </div>
           <div class="developer-dashboard-overview-grid developer-remote-control-contract-stack">

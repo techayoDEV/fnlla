@@ -83,7 +83,7 @@ final class DeveloperOperationsController extends DeveloperPanelController
             "Operations",
             "operations",
             [
-                "operationsReport" => $report->build(),
+                "operationsReport" => $report->build(false),
                 "health" => app(HomeController::class)->healthPayload($request),
             ]
         );
@@ -191,7 +191,7 @@ final class DeveloperOperationsController extends DeveloperPanelController
         $developerAccessState = $developerAccess->viewState();
         $maintenanceAccessState = $maintenanceAccess->viewState();
         $dashboard = $this->developerDashboard($developerAccessState, $maintenanceAccessState);
-        $operations = $operationsReport->build();
+        $operations = $operationsReport->build(false);
 
         return $this->renderDeveloperPanel(
             $developerAccess,

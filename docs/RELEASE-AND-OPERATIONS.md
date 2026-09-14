@@ -29,6 +29,13 @@ Review supported proxy/SAPI deployment requirements and any remaining limitation
 Test the exact downloadable artifacts before recommending them to consumers;
 do not substitute a working-tree export for the release download.
 
+Public launch and public package launch are separate decisions. A public GitHub
+release can make source archives available, but Composer registry metadata,
+registry installation and verified consumer installation remain incomplete until
+`resources/modernization-tasks.json` marks `public-package-channel` done. Do not
+advertise Composer registry installation or a stable package channel before that
+verification exists and publication has explicit maintainer approval.
+
 Core Quality also runs release preparation inside `git archive` output, with
 private storage and editable branding masters absent. Its test bootstrap creates
 only empty runtime directories. Successful runs retain the source ZIP and its

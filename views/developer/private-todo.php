@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "My Tasks";
+$developerPanelTitle = "Developer account: My Tasks";
 $developerPanelLead = "Private developer tasks, notes, subtasks and attachments that stay outside shared project work.";
 $todo = is_array($privateTodo ?? null) ? (array) $privateTodo : [];
 $items = array_values((array) ($todo["items"] ?? []));
@@ -103,7 +103,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro developer-private-todo-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Private work queue</p>
-              <h2 class="developer-dashboard-section-title">Personal execution list</h2>
+              <h2 class="dashboard-section-title">Personal execution list</h2>
               <p class="content-text mb-0">Use this for your own reminders, release notes, follow-ups and scratch work. Shared project delivery still belongs in Project work.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -139,7 +139,7 @@ require __DIR__ . "/panel-header.php";
                 <div class="developer-private-todo-composer-head">
                   <div>
                     <p class="feature-kicker">Capture</p>
-                    <h2 class="developer-dashboard-section-title">Quick add a private task</h2>
+                    <h2 class="dashboard-section-title">Quick add a private task</h2>
                   </div>
                   <span class="developer-dashboard-refresh">Stored per developer</span>
                 </div>
@@ -157,7 +157,7 @@ require __DIR__ . "/panel-header.php";
 
             <div class="developer-private-todo-list" aria-label="Private task items">
               <div class="developer-dashboard-section-head">
-                <h2 class="developer-dashboard-section-title">Execution queue</h2>
+                <h2 class="dashboard-section-title">Execution queue</h2>
                 <span class="developer-dashboard-refresh"><?= h((string) count($openItems)) ?> open / <?= h((string) count($doneItems)) ?> done</span>
               </div>
               <?php if ($items === []): ?>

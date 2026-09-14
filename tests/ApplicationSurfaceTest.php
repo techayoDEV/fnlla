@@ -1529,7 +1529,16 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("Session locks in", $developerResponse->body());
         self::assertStringNotContainsString("developer-panel-brand", $developerResponse->body());
         self::assertStringContainsString("developer-panel-page-head", $developerResponse->body());
+        self::assertStringContainsString('<h1 class="dashboard-title">Dashboard</h1>', $developerResponse->body());
+        self::assertStringNotContainsString('<p class="feature-kicker">Developer panel</p>', $developerResponse->body());
         $developerPanelCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
+        self::assertStringContainsString(".developer-panel-page-head .dashboard-title,\n.developer-panel-page-head .section-title", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-page-head .dashboard-title,\nbody.developer-workspace-layout .developer-panel-page-head .section-title", $developerPanelCss);
+        self::assertStringNotContainsString(".developer-panel-page-head .dashboard-section-title", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main .dashboard-section-title {\n  font-weight: 650;\n  text-transform: uppercase;", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main :is(\n  .feature-kicker,\n  .process-kicker,\n  .starter-kicker\n) {\n  font-size: calc(var(--fnlla-font-size-sm) * 0.8);\n  font-weight: 400;", $developerPanelCss);
+        self::assertStringNotContainsString("dashboard-section-title.mb-0", $developerPanelCss);
+        self::assertStringNotContainsString(".developer-panel-page-head .feature-kicker", $developerPanelCss);
         self::assertStringContainsString(".project-brand-mark.is-logo", $developerPanelCss);
         self::assertStringContainsString(".project-brand-mark img", $developerPanelCss);
         self::assertStringContainsString("align-items: start;\n  min-height: auto;", $developerPanelCss);
@@ -1576,7 +1585,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString(">Traffic analytics</span>", $developerResponse->body());
         self::assertStringContainsString(">Behavior heatmap</span>", $developerResponse->body());
         self::assertStringNotContainsString(">Project setup<", $developerResponse->body());
-        self::assertStringContainsString("Access &amp; security", $developerResponse->body());
+        self::assertStringContainsString("Developer access", $developerResponse->body());
+        self::assertStringContainsString("Client review access", $developerResponse->body());
         self::assertStringContainsString("Review queue", $developerResponse->body());
         self::assertStringContainsString("Readiness &amp; health", $developerResponse->body());
         self::assertStringContainsString(">Operations<", $developerResponse->body());
@@ -1639,6 +1649,21 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
         $projectSettingsResponse = $developerApplication->handle(Request::capture("", [
             "REQUEST_URI" => "/developer/panel/project-settings",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        $legacyAccessResponse = $developerApplication->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/access",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        $developerAccessResponse = $developerApplication->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/access/developer",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        $clientReviewAccessResponse = $developerApplication->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/access/client",
             "REQUEST_METHOD" => "GET",
             "REMOTE_ADDR" => "127.0.0.1",
         ]));
@@ -1789,10 +1814,21 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $runtimeResponse->status());
         self::assertSame(200, $leadershipResponse->status());
         self::assertSame(200, $accessPreviewResponse->status());
+        self::assertStringContainsString('data-developer-service-fields="open"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-fields="maintenance"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-fields="notice"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-fields-panel="open"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-fields-panel="notice"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-fields-panel="maintenance"', $accessPreviewResponse->body());
+        self::assertStringContainsString('data-developer-service-message-label', $accessPreviewResponse->body());
         self::assertSame(302, $setupChecklistResponse->status());
         self::assertSame("/developer/panel/project-identity", $setupChecklistResponse->headers()["Location"] ?? null);
         self::assertSame(302, $projectSettingsResponse->status());
         self::assertSame("/developer/panel/project-identity/access-preview", $projectSettingsResponse->headers()["Location"] ?? null);
+        self::assertSame(302, $legacyAccessResponse->status());
+        self::assertSame("/developer/panel/access/developer", $legacyAccessResponse->headers()["Location"] ?? null);
+        self::assertSame(200, $developerAccessResponse->status());
+        self::assertSame(200, $clientReviewAccessResponse->status());
         self::assertSame(200, $panelSettingsResponse->status());
         self::assertSame(200, $profileResponse->status());
         self::assertSame(200, $securityResponse->status());
@@ -1841,6 +1877,8 @@ final class ApplicationSurfaceTest extends TestCase
             $runtimeResponse,
             $leadershipResponse,
             $accessPreviewResponse,
+            $developerAccessResponse,
+            $clientReviewAccessResponse,
             $panelSettingsResponse,
             $profileResponse,
             $securityResponse,
@@ -1866,7 +1904,10 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame("text/csv; charset=UTF-8", $auditCsvExportResponse->headers()["Content-Type"] ?? null);
         self::assertStringContainsString("<title>Project Identity | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $identityResponse->body());
         self::assertStringContainsString("Project setup status, handover checklist and identity workflow overview.", $identityResponse->body());
-        self::assertStringContainsString("developer-project-identity-nav", $identityResponse->body());
+        self::assertStringNotContainsString("developer-project-identity-nav", $identityResponse->body());
+        self::assertStringNotContainsString("Checklist and flow", $identityResponse->body());
+        self::assertStringNotContainsString("Name, slogan and URL", $identityResponse->body());
+        self::assertStringNotContainsString("Start with the name and runtime posture.", $identityResponse->body());
         self::assertStringContainsString("developer-project-identity-drawer", $identityResponse->body());
         self::assertStringContainsString("Release identity checklist", $identityResponse->body());
         self::assertStringContainsString("developer-project-identity-checklist-callout", $identityResponse->body());
@@ -1881,6 +1922,31 @@ final class ApplicationSurfaceTest extends TestCase
         $runtimeBody = $runtimeResponse->body();
         $leadershipBody = $leadershipResponse->body();
         $accessPreviewBody = $accessPreviewResponse->body();
+        self::assertStringContainsString('<h1 class="dashboard-title">Project identity: Overview</h1>', $identityResponse->body());
+        self::assertStringContainsString('<h1 class="dashboard-title">Project identity: Identity</h1>', $identityDetailsBody);
+        self::assertStringContainsString('<h1 class="dashboard-title">Project identity: Runtime</h1>', $runtimeBody);
+        self::assertStringContainsString('<h1 class="dashboard-title">Project identity: Leadership</h1>', $leadershipBody);
+        self::assertStringContainsString('<h1 class="dashboard-title">Project identity: Access &amp; preview</h1>', $accessPreviewBody);
+        self::assertStringNotContainsString('id="developer-project-identity"', $runtimeBody);
+        self::assertStringNotContainsString('id="developer-project-identity"', $leadershipBody);
+        self::assertStringNotContainsString('id="developer-project-identity"', $accessPreviewBody);
+        self::assertStringContainsString("Control private client preview and emergency public-service state from one place.", $accessPreviewBody);
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Runtime environment</h2>', $runtimeBody);
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Preview and service state</h2>', $accessPreviewBody);
+        self::assertStringNotContainsString('<h2 class="dashboard-section-title">Access &amp; preview</h2>', $accessPreviewBody);
+        self::assertStringNotContainsString("Client preview and public-service controls", $accessPreviewBody);
+        self::assertStringContainsString('<h1 class="dashboard-title">Project work: Tasks</h1>', $workspaceResponse->body());
+        self::assertStringContainsString('<h1 class="dashboard-title">Developer account: My Tasks</h1>', $privateTodoResponse->body());
+        self::assertStringContainsString('<h1 class="dashboard-title">Observability: Traffic analytics</h1>', $analyticsResponse->body());
+        self::assertStringContainsString('<h1 class="dashboard-title">Reference: Documentation &amp; policy</h1>', $documentationResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Notification inbox</h2>', $developerResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Workspace summary</h2>', $workspaceResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Developer security</h2>', $securityResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Analytics summary</h2>', $analyticsResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Heatmap summary</h2>', $heatmapResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Form inbox and audit log</h2>', $operationsResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Capability catalog and storage</h2>', $policyResponse->body());
+        self::assertStringContainsString('<h2 class="dashboard-section-title">Installation facts</h2>', $aboutFnllaResponse->body());
         self::assertStringContainsString("Save project identity", $identityDetailsBody);
         self::assertStringContainsString("developer-panel-workbench-grid is-stacked", $identityDetailsBody);
         self::assertStringContainsString("developer-panel-form-grid developer-runtime-environment-grid is-stacked", $runtimeBody);
@@ -1889,12 +1955,13 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Project leadership", $leadershipBody);
         self::assertStringContainsString("id=\"developer-access-preview\"", $accessPreviewBody);
         self::assertStringContainsString("developer-panel-form-grid is-stacked", $accessPreviewBody);
-        self::assertStringContainsString("Save maintenance settings", $accessPreviewBody);
         self::assertStringContainsString("Save service control", $accessPreviewBody);
+        self::assertStringContainsString("Maintenance access", $accessPreviewBody);
+        self::assertStringNotContainsString("Save maintenance settings", $accessPreviewBody);
         self::assertStringAppearsBefore("Live preview", "Save project identity", $identityDetailsBody);
         self::assertStringAppearsBefore("Switch environment", "Environment file writes", $runtimeBody);
         self::assertStringAppearsBefore("Save responsibility details", "Responsibility record", $leadershipBody);
-        self::assertStringAppearsBefore("Save service control", "Save maintenance settings", $accessPreviewBody);
+        self::assertStringContainsString('data-developer-service-fields-panel="maintenance"', $accessPreviewBody);
         self::assertStringContainsString("<title>Framework Updates | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $frameworkUpdatesResponse->body());
         self::assertStringContainsString("<title>Operations | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $operationsResponse->body());
         self::assertStringContainsString("<title>Project Logs | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $projectLogsResponse->body());
@@ -1910,7 +1977,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("framework-update-summary-label", $frameworkUpdatesResponse->body());
         self::assertStringAppearsBefore("Run major readiness", "Last major readiness result", $frameworkUpdatesResponse->body());
         self::assertStringContainsString("<title>Developer Profile | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $profileResponse->body());
-        self::assertStringContainsString("<title>Access &amp; security | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $securityResponse->body());
+        self::assertStringContainsString("<title>Developer security | Developer Panel | Qwerty Client Portal - Business systems delivered clearly</title>", $securityResponse->body());
         self::assertStringContainsString("Public navigation result", $panelSettingsResponse->body());
         self::assertStringContainsString("Footer result", $panelSettingsResponse->body());
         self::assertStringContainsString('<option value="owner_developer"', $securityResponse->body());
@@ -2127,7 +2194,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("linear-gradient(var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
         self::assertStringNotContainsString("linear-gradient(90deg, var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
         self::assertStringContainsString("--fnlla-blueprint-shadow: none;", $developerCss);
-        self::assertStringContainsString(".developer-dashboard-section-title {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.18rem;\n  font-weight: 600;", $developerCss);
+        self::assertStringContainsString(".dashboard-section-title {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.18rem;\n  font-weight: 700;\n  line-height: 1.2;\n  text-transform: uppercase;", $developerCss);
         self::assertStringContainsString(".developer-dashboard-card h3,\n.developer-dashboard-status-card h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1rem;\n  font-weight: 550;", $developerCss);
         self::assertStringContainsString(".developer-policy-zone h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.25rem;\n  font-weight: 600;", $developerCss);
         self::assertStringContainsString(".starter-kicker,\n.process-kicker,\n.feature-kicker {\n  color: var(--fnlla-color-primary);\n  font-size: var(--fnlla-font-size-sm);\n  font-weight: 600;", $developerCss);
@@ -2195,7 +2262,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("FNLLA framework", $documentationResponse->body());
         self::assertStringContainsString("What the framework owns", $documentationResponse->body());
         self::assertStringContainsString("Workspace &gt; Project identity", $documentationResponse->body());
-        self::assertStringContainsString("Operations &gt; Access &amp; security", $documentationResponse->body());
+        self::assertStringContainsString("Operations &gt; Developer access", $documentationResponse->body());
         self::assertStringContainsString("FNLLA Public", $documentationResponse->body());
         self::assertStringContainsString("Developer Panel", $documentationResponse->body());
         self::assertStringContainsString("Technical contracts", $documentationResponse->body());
@@ -2565,10 +2632,10 @@ final class ApplicationSurfaceTest extends TestCase
             "_token" => csrf_token(),
             "developer_notification_key" => "developer-totp-disabled",
             "developer_notification_action" => "review",
-            "developer_notification_redirect" => "/developer/panel/access",
+            "developer_notification_redirect" => "/developer/panel/access/developer",
         ]));
         self::assertSame(302, $notificationReviewResponse->status());
-        self::assertSame("/developer/panel/access", $notificationReviewResponse->headers()["Location"] ?? null);
+        self::assertSame("/developer/panel/access/developer", $notificationReviewResponse->headers()["Location"] ?? null);
 
         $notificationReadResponse = $developerApplication->handle(Request::capture("", [
             "REQUEST_URI" => "/developer/panel/notifications/action",
@@ -2592,11 +2659,11 @@ final class ApplicationSurfaceTest extends TestCase
             "_token" => csrf_token(),
             "developer_notification_key" => "checklist:developer-totp",
             "developer_notification_action" => "acknowledge",
-            "developer_notification_redirect" => "/developer/panel/access",
+            "developer_notification_redirect" => "/developer/panel/access/developer",
         ]));
 
         self::assertSame(302, $checklistReadResponse->status());
-        self::assertSame("/developer/panel/access", $checklistReadResponse->headers()["Location"] ?? null);
+        self::assertSame("/developer/panel/access/developer", $checklistReadResponse->headers()["Location"] ?? null);
 
         $checklistArchiveResponse = $developerApplication->handle(Request::capture("", [
             "REQUEST_URI" => "/developer/panel/notifications/action",
@@ -2635,8 +2702,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString(">Restore<", $notificationsArchivedResponse->body());
         self::assertStringContainsString("Save project identity", $identityDetailsResponse->body());
         self::assertStringContainsString("Project slogan", $identityDetailsResponse->body());
-        self::assertStringContainsString("Save maintenance settings", $accessPreviewResponse->body());
         self::assertStringContainsString("Save service control", $accessPreviewResponse->body());
+        self::assertStringContainsString("Maintenance access", $accessPreviewResponse->body());
+        self::assertStringNotContainsString("Save maintenance settings", $accessPreviewResponse->body());
         self::assertStringContainsString("Maintenance mode is currently off.", $accessPreviewResponse->body());
         self::assertStringContainsString("Save panel settings", $panelSettingsResponse->body());
         self::assertStringContainsString("Save profile", $profileResponse->body());
@@ -3742,8 +3810,102 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(503, $homeResponse->status());
         self::assertStringContainsString("Service paused by developer", $homeResponse->body());
+        self::assertStringContainsString("Status:</dt>", $homeResponse->body());
+        self::assertStringContainsString("Paused", $homeResponse->body());
         self::assertStringContainsString("developer@example.test", $homeResponse->body());
         self::assertSame(200, $developerResponse->status());
+    }
+
+
+    public function testDeveloperServiceControlMaintenanceModeEnablesMaintenanceAccess(): void
+    {
+        $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
+            . DIRECTORY_SEPARATOR
+            . "fnlla-service-control-maintenance-"
+            . bin2hex(random_bytes(4));
+        mkdir($this->temporaryEnvironmentDirectory, 0777, true);
+        $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
+        $envExamplePath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env.example";
+        file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
+
+        config_set("developer_control", array_merge((array) config("developer_control", []), [
+            "local_state_path" => "framework/testing/developer-control-" . bin2hex(random_bytes(4)) . ".json",
+            "remote" => array_merge((array) config("developer_control.remote", []), [
+                "enabled" => false,
+            ]),
+        ]));
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => false,
+            "password" => "",
+            "username" => "",
+            "env_path" => $envPath,
+            "env_example_path" => $envExamplePath,
+        ]));
+        config_set("developer_access", array_merge((array) config("developer_access", []), [
+            "enabled" => true,
+            "email" => "dev@example.test",
+            "users" => developer_access()->serializeAccounts([
+                $this->developerAccountFixture("dev@example.test"),
+            ]),
+            "operations_nav_mode" => "hidden",
+        ]));
+
+        $application = $this->makeApplication();
+        developer_access()->grantAccess($this->developerAccountFixture("dev@example.test"));
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/settings/service-control",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+            "developer_control_status" => "maintenance",
+            "developer_control_message" => "",
+            "developer_control_contact" => "support@example.test",
+            "developer_control_contact_url" => "https://support.example.test/maintenance",
+            "developer_control_contact_phone" => "+44 20 0000 0000",
+            "maintenance_access_password" => "maintenance-pass",
+            "maintenance_access_password_confirmation" => "maintenance-pass",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame("/developer/panel/project-identity/access-preview", $response->headers()["Location"] ?? null);
+        self::assertStringContainsString("MAINTENANCE_MODE_ENABLED=true", (string) file_get_contents($envPath));
+        self::assertStringContainsString("MAINTENANCE_ACCESS_PASSWORD=maintenance-pass", (string) file_get_contents($envPath));
+        self::assertFalse((bool) developer_control()->state()["disabled"]);
+
+        developer_access()->lock();
+        $homeResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(302, $homeResponse->status());
+        self::assertStringStartsWith("/maintenance", (string) ($homeResponse->headers()["Location"] ?? ""));
+
+        developer_access()->grantAccess($this->developerAccountFixture("dev@example.test"));
+        $publicViewTestResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/settings/service-control/public-view-test",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+        ]));
+        $accessPreviewResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/project-identity/access-preview",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(302, $publicViewTestResponse->status());
+        self::assertSame("/developer/panel/project-identity/access-preview#service-control-public-view-test", $publicViewTestResponse->headers()["Location"] ?? null);
+        self::assertSame(200, $accessPreviewResponse->status());
+        self::assertStringContainsString("Maintenance mode", $accessPreviewResponse->body());
+        self::assertStringNotContainsString("Maintenance " . "window", $accessPreviewResponse->body());
+        self::assertStringContainsString("Developer sessions bypass maintenance mode", $accessPreviewResponse->body());
+        self::assertStringContainsString("Test public view", $accessPreviewResponse->body());
+        self::assertStringContainsString("Locked by maintenance mode", $accessPreviewResponse->body());
+        self::assertStringContainsString("GET / -&gt; 302 /maintenance", $accessPreviewResponse->body());
     }
 
     public function testDeveloperServiceControlCanPublishPaymentSuspensionWithPhoneContact(): void
@@ -3751,6 +3913,7 @@ final class ApplicationSurfaceTest extends TestCase
         config_set("developer_control", array_merge((array) config("developer_control", []), [
             "local_state_path" => "framework/testing/developer-control-" . bin2hex(random_bytes(4)) . ".json",
             "service_provider" => "FNLLA Company",
+            "suspended_contact_url" => "https://support.example.test/billing",
             "remote" => array_merge((array) config("developer_control.remote", []), [
                 "enabled" => false,
             ]),
@@ -3775,6 +3938,7 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_control_status" => "suspended_billing",
             "developer_control_message" => "",
             "developer_control_contact" => "billing@example.test",
+            "developer_control_contact_url" => "https://billing.example.test/support",
             "developer_control_contact_phone" => "+44 20 0000 0000",
         ]));
 
@@ -3791,11 +3955,92 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(503, $homeResponse->status());
         self::assertStringContainsString("Service has been suspended", $homeResponse->body());
         self::assertStringContainsString("payment is overdue", $homeResponse->body());
-        self::assertStringContainsString("Status:</span>", $homeResponse->body());
+        self::assertStringContainsString("Status:</dt>", $homeResponse->body());
         self::assertStringContainsString("Suspended", $homeResponse->body());
+        self::assertStringContainsString("Reason:</dt>", $homeResponse->body());
         self::assertStringContainsString("Payment overdue", $homeResponse->body());
-        self::assertStringContainsString("billing@example.test", $homeResponse->body());
+        self::assertStringContainsString("https://billing.example.test/support", $homeResponse->body());
         self::assertStringContainsString("+44 20 0000 0000", $homeResponse->body());
+        self::assertStringContainsString("billing@example.test", $homeResponse->body());
+    }
+
+    public function testDeveloperServiceControlOpenClearsMaintenanceModeAndLocalDisable(): void
+    {
+        $this->temporaryEnvironmentDirectory = sys_get_temp_dir()
+            . DIRECTORY_SEPARATOR
+            . "fnlla-service-control-open-"
+            . bin2hex(random_bytes(4));
+        mkdir($this->temporaryEnvironmentDirectory, 0777, true);
+        $envPath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env";
+        $envExamplePath = $this->temporaryEnvironmentDirectory . DIRECTORY_SEPARATOR . ".env.example";
+        file_put_contents($envPath, "MAINTENANCE_MODE_ENABLED=true" . PHP_EOL . "MAINTENANCE_ACCESS_PASSWORD=maintenance-pass" . PHP_EOL);
+        file_put_contents($envExamplePath, "APP_ENV=development" . PHP_EOL . "APP_DEBUG=true" . PHP_EOL);
+
+        config_set("developer_control", array_merge((array) config("developer_control", []), [
+            "local_state_path" => "framework/testing/developer-control-" . bin2hex(random_bytes(4)) . ".json",
+            "remote" => array_merge((array) config("developer_control.remote", []), [
+                "enabled" => false,
+            ]),
+        ]));
+        config_set("maintenance", array_merge((array) config("maintenance", []), [
+            "enabled" => true,
+            "password" => "maintenance-pass",
+            "username" => "",
+            "env_path" => $envPath,
+            "env_example_path" => $envExamplePath,
+        ]));
+        config_set("developer_access", array_merge((array) config("developer_access", []), [
+            "enabled" => true,
+            "email" => "dev@example.test",
+            "users" => developer_access()->serializeAccounts([
+                $this->developerAccountFixture("dev@example.test"),
+            ]),
+            "operations_nav_mode" => "hidden",
+        ]));
+
+        $application = $this->makeApplication();
+        $developer = $this->developerAccountFixture("dev@example.test");
+        developer_access()->grantAccess($developer);
+        developer_control()->disable(
+            "Service paused before reopening.",
+            "developer@example.test",
+            $developer,
+            "paused",
+            "security_review",
+            "Service paused for security review"
+        );
+
+        $response = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/settings/service-control",
+            "REQUEST_METHOD" => "POST",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ], [], [
+            "_token" => csrf_token(),
+            "developer_control_status" => "open",
+        ]));
+
+        self::assertSame(302, $response->status());
+        self::assertSame("/developer/panel/project-identity/access-preview", $response->headers()["Location"] ?? null);
+        self::assertStringContainsString("MAINTENANCE_MODE_ENABLED=false", (string) file_get_contents($envPath));
+        self::assertFalse((bool) config("maintenance.enabled"));
+        self::assertFalse((bool) developer_control()->state()["disabled"]);
+        self::assertSame("open", (string) developer_control()->state()["status"]);
+
+        developer_access()->lock();
+        $homeResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        $apiResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/api/health",
+            "REQUEST_METHOD" => "GET",
+            "HTTP_ACCEPT" => "application/json",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $homeResponse->status());
+        self::assertSame(200, $apiResponse->status());
     }
 
     public function testRemoteProviderSuspensionBlocksApplicationButKeepsDeveloperEntryOpen(): void
@@ -3815,6 +4060,8 @@ final class ApplicationSurfaceTest extends TestCase
             "title" => "Service has been suspended",
             "message" => "Your services have been suspended. Please contact your service provider.",
             "contact" => "support@techayo.co.uk",
+            "contact_url" => "https://techayo.co.uk/support",
+            "contact_phone" => "+44 20 0000 0000",
             "updated_at" => gmdate(DATE_ATOM),
             "updated_by" => "techayo-billing",
             "command_id" => "cmd-test-suspended",
@@ -3867,6 +4114,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Service has been suspended", $homeResponse->body());
         self::assertStringContainsString("Your services have been suspended", $homeResponse->body());
         self::assertStringContainsString("TechAyo Limited", $homeResponse->body());
+        self::assertStringContainsString("https://techayo.co.uk/support", $homeResponse->body());
+        self::assertStringContainsString("+44 20 0000 0000", $homeResponse->body());
         self::assertSame(503, $customerResponse->status());
         self::assertSame(503, $apiResponse->status());
         $apiPayload = json_decode($apiResponse->body(), true, 512, JSON_THROW_ON_ERROR);
@@ -4049,6 +4298,23 @@ final class ApplicationSurfaceTest extends TestCase
         $application = $this->makeApplication();
         developer_access()->grantAccess($developerAccount);
 
+        $emptyAccessPageResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/developer/panel/access/client",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+        $emptyCustomerEntryResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/client",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $emptyAccessPageResponse->status());
+        self::assertStringContainsString("No customer access yet", $emptyAccessPageResponse->body());
+        self::assertStringContainsString("Portal opens after invitation", $emptyAccessPageResponse->body());
+        self::assertStringNotContainsString('href="/client">Open portal</a>', $emptyAccessPageResponse->body());
+        self::assertSame(404, $emptyCustomerEntryResponse->status());
+
         $response = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/developer/panel/settings/customer-account",
             "REQUEST_METHOD" => "POST",
@@ -4066,11 +4332,20 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $response->status());
-        self::assertSame("/developer/panel/access#customer-access-settings", $response->headers()["Location"] ?? null);
+        self::assertSame("/developer/panel/access/client#customer-access-settings", $response->headers()["Location"] ?? null);
         self::assertFileExists($envPath);
         self::assertStringContainsString("CUSTOMER_ACCESS_ENABLED=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("CUSTOMER_ACCESS_PATH=/client", (string) file_get_contents($envPath));
         self::assertStringContainsString("CUSTOMER_ACCESS_USERS=client@example.test|", (string) file_get_contents($envPath));
+
+        $customerEntryAfterInviteResponse = $application->handle(Request::capture("", [
+            "REQUEST_URI" => "/client",
+            "REQUEST_METHOD" => "GET",
+            "REMOTE_ADDR" => "127.0.0.1",
+        ]));
+
+        self::assertSame(200, $customerEntryAfterInviteResponse->status());
+        self::assertStringContainsString("Customer Portal Sign In", $customerEntryAfterInviteResponse->body());
 
         $mailLogPath = storage_path("framework/testing/customer-mail/" . gmdate("Ymd") . ".log");
         self::assertFileExists($mailLogPath);
@@ -4217,7 +4492,7 @@ final class ApplicationSurfaceTest extends TestCase
         ]));
 
         self::assertSame(302, $response->status());
-        self::assertSame("/developer/panel/access#customer-access-settings", $response->headers()["Location"] ?? null);
+        self::assertSame("/developer/panel/access/client#customer-access-settings", $response->headers()["Location"] ?? null);
         self::assertFalse(is_file($envPath));
         self::assertStringContainsString("Choose at least one customer portal section.", (string) ($_SESSION["_flash"]["status"]["text"] ?? ""));
     }

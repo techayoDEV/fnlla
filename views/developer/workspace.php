@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Tasks";
+$developerPanelTitle = "Project work: Tasks";
 $developerPanelLead = "Shared delivery tasks with task board, timeline, Gantt, owners, subtasks and attachments.";
 $board = is_array($workspaceBoard ?? null) ? $workspaceBoard : [];
 $columns = (array) ($board["columns"] ?? []);
@@ -208,6 +208,11 @@ require __DIR__ . "/panel-header.php";
 ?>
 
         <section class="developer-dashboard-section developer-workspace-summary" aria-label="Workspace summary">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Workspace summary</h2>
+            <span class="developer-dashboard-refresh">Tasks, priority and delivery status</span>
+          </div>
+
           <div class="developer-dashboard-status-grid">
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head">
@@ -244,7 +249,7 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section" id="developer-workspace-task-board" aria-label="Kanban board">
           <div class="developer-dashboard-section-head developer-kanban-board-head">
             <div>
-              <h2 class="developer-dashboard-section-title">Task board</h2>
+              <h2 class="dashboard-section-title">Task board</h2>
               <span class="developer-dashboard-refresh">Shared workspace / <?= h((string) ($board["completion_percent"] ?? 0)) ?>% complete</span>
             </div>
             <div class="developer-kanban-participants" aria-label="Workspace participants">

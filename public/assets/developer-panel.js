@@ -177,7 +177,7 @@
         <div class="developer-confirm-icon" aria-hidden="true">!</div>
         <div class="developer-confirm-copy">
           <p class="feature-kicker">Confirm destructive action</p>
-          <h2 class="developer-dashboard-section-title" id="developer-confirm-title">Delete item?</h2>
+          <h2 class="dashboard-section-title" id="developer-confirm-title">Delete item?</h2>
           <p class="content-text mb-0" id="developer-confirm-message">This action cannot be undone.</p>
         </div>
         <div class="developer-confirm-actions">
@@ -331,9 +331,55 @@
         select.setAttribute('data-developer-service-control-ready', 'true');
         const form = select.closest('form');
         const cards = Array.from(form?.querySelectorAll('[data-developer-service-scenario]') || []);
+        const fieldPanels = Array.from(form?.querySelectorAll('[data-developer-service-fields-panel]') || []);
+        const messageInput = form?.querySelector('textarea[name="developer_control_message"]') || null;
+        const messageLabel = form?.querySelector('[data-developer-service-message-label]') || null;
+        const contactHeading = form?.querySelector('[data-developer-service-contact-heading]') || null;
+        const contactHelp = form?.querySelector('[data-developer-service-contact-help]') || null;
+        let firstSync = true;
+        let userEditedMessage = false;
+        if (messageInput) {
+          messageInput.addEventListener('input', () => { userEditedMessage = true; });
+        }
+        const selectedOption = () => select.selectedOptions?.[0] || Array.from(select.options || []).find(option => option.value === select.value) || null;
         const sync = () => {
+          const option = selectedOption();
+          const fieldMode = option?.dataset.developerServiceFields || 'notice';
           cards.forEach(card => card.classList.toggle('is-active', card.getAttribute('data-developer-service-scenario') === select.value));
+          fieldPanels.forEach(panel => { panel.hidden = panel.getAttribute('data-developer-service-fields-panel') !== fieldMode; });
+          if (messageLabel && option?.dataset.developerServiceMessageLabel) {
+            messageLabel.textContent = option.dataset.developerServiceMessageLabel;
+          }
+          if (messageInput && option?.dataset.developerServiceMessagePlaceholder) {
+            messageInput.placeholder = option.dataset.developerServiceMessagePlaceholder;
+            if (!firstSync && !userEditedMessage) {
+              messageInput.value = option.dataset.developerServiceDefaultMessage || '';
+            }
+          }
+          if (contactHeading && option?.dataset.developerServiceContactHeading) {
+            contactHeading.textContent = option.dataset.developerServiceContactHeading;
+          }
+          if (contactHelp && option?.dataset.developerServiceContactHelp) {
+            contactHelp.textContent = option.dataset.developerServiceContactHelp;
+          }
+          firstSync = false;
         };
+        cards.forEach(card => {
+          const activate = () => {
+            const value = card.getAttribute('data-developer-service-scenario') || '';
+            if (value !== '' && select.value !== value) {
+              select.value = value;
+              select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          };
+          card.addEventListener('click', activate);
+          card.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              activate();
+            }
+          });
+        });
         select.addEventListener('change', sync);
         sync();
       });

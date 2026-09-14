@@ -45,7 +45,7 @@ final class DeveloperModules
     public static function forRoute(string $name): array
     {
         $modules = [];
-        if (str_starts_with($name, "customer.") || str_contains($name, "customer_account")) {
+        if (str_starts_with($name, "customer.") || str_contains($name, "customer_account") || str_contains($name, "access.client")) {
             $modules[] = "customer_portal";
         }
         foreach (["workspace" => ["workspace", "kanban"], "analytics" => ["analytics"], "heatmap" => ["heatmap"]] as $module => $parts) {

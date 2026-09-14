@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Readiness & Health";
+$developerPanelTitle = "Release & readiness: Readiness & health";
 $developerPanelLead = "Production gate for security, backup, framework drift, cache, acceptance and runtime health.";
 $report = is_array($operationsReport ?? null) ? (array) $operationsReport : [];
 $release = (array) ($report["release_readiness"] ?? []);
@@ -31,7 +31,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Release command center</p>
-              <h2 class="developer-dashboard-section-title">Use this page as the production gate before sharing, staging or deploying.</h2>
+              <h2 class="dashboard-section-title">Use this page as the production gate before sharing, staging or deploying.</h2>
               <p class="content-text mb-0">Security, backup restore, framework drift, cache, acceptance and runtime health are shown together so release blockers do not hide on separate pages.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -70,7 +70,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Runtime health">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Runtime health</h2>
+            <h2 class="dashboard-section-title">Runtime health</h2>
             <span class="developer-dashboard-refresh"><?= h((string) ($service["timestamp"] ?? "Live snapshot")) ?></span>
           </div>
           <div class="developer-dashboard-status-grid">
@@ -106,7 +106,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Release checklist">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Production gate commands</h2>
+            <h2 class="dashboard-section-title">Production gate commands</h2>
             <span class="developer-dashboard-refresh">Run locally before release</span>
           </div>
           <div class="developer-dashboard-glance-table">

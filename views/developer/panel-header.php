@@ -424,7 +424,7 @@ $headerServiceState = $headerServiceStatus === "suspended" ? "Suspended" : ($hea
       <section class="developer-dashboard-section" aria-label="Developer path notice">
         <article class="developer-panel-fieldset-card">
           <p class="feature-kicker">Developer session</p>
-          <h2 class="developer-dashboard-section-title mb-0"><?= h((string) $developerNotice["title"]) ?></h2>
+          <h2 class="dashboard-section-title mb-0"><?= h((string) $developerNotice["title"]) ?></h2>
           <p class="content-text"><?= h((string) $developerNotice["text"]) ?></p>
         </article>
       </section>
@@ -432,8 +432,7 @@ $headerServiceState = $headerServiceStatus === "suspended" ? "Suspended" : ($hea
 
       <header class="developer-panel-page-head">
         <div>
-          <p class="feature-kicker">Developer panel</p>
-          <h1 class="developer-dashboard-section-title mb-0"><?= h((string) $developerPanelTitle) ?></h1>
+          <h1 class="dashboard-title"><?= h((string) $developerPanelTitle) ?></h1>
           <p class="content-text"><?= h((string) $developerPanelLead) ?></p>
         </div>
       </header>

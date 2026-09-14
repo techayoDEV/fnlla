@@ -19,6 +19,7 @@ use Fnlla\Php\Support\DeveloperNotificationCenter;
 use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
+use Fnlla\Php\Support\ApplicationProbe;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
 use Fnlla\Php\Support\ProjectLeadership;
@@ -82,6 +83,8 @@ final class DeveloperProjectController extends DeveloperPanelController
         Request $request,
         DeveloperAccessManager $developerAccess,
         DeveloperControlManager $developerControl,
+        MaintenanceAccessManager $maintenanceAccess,
+        EnvironmentFileManager $environmentFileManager,
         DeveloperActivityLog $activityLog
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "service_control.write")) {
@@ -95,7 +98,10 @@ final class DeveloperProjectController extends DeveloperPanelController
             ),
             "developer_control_message" => trim((string) $request->input("developer_control_message", "")),
             "developer_control_contact" => trim((string) $request->input("developer_control_contact", "")),
+            "developer_control_contact_url" => trim((string) $request->input("developer_control_contact_url", "")),
             "developer_control_contact_phone" => trim((string) $request->input("developer_control_contact_phone", "")),
+            "maintenance_access_password" => trim((string) $request->input("maintenance_access_password", "")),
+            "maintenance_access_password_confirmation" => trim((string) $request->input("maintenance_access_password_confirmation", "")),
         ];
         $scenario = $this->developerControlScenario($payload["developer_control_status"]);
 
@@ -104,13 +110,26 @@ final class DeveloperProjectController extends DeveloperPanelController
                 "developer_control_status" => ["required", "string"],
                 "developer_control_message" => ["nullable", "string", "max:240"],
                 "developer_control_contact" => ["nullable", "string", "max:160"],
+                "developer_control_contact_url" => ["nullable", "url", "max:2048"],
                 "developer_control_contact_phone" => ["nullable", "string", "max:60"],
+                "maintenance_access_password" => ["nullable", "string", "max:255"],
             ]);
 
             if ($scenario === null) {
                 throw new ValidationException([
                     "developer_control_status" => ["Choose a supported public-service scenario."],
                 ]);
+            }
+
+            if (($scenario["maintenance_access"] ?? false) === true) {
+                $maintenancePasswordProvided = $payload["maintenance_access_password"] !== ""
+                    || $payload["maintenance_access_password_confirmation"] !== "";
+
+                if (!$maintenanceAccess->configured() || $maintenancePasswordProvided) {
+                    $this->validate($payload, [
+                        "maintenance_access_password" => ["required", "string", "min:8", "max:255", "confirmed"],
+                    ]);
+                }
             }
         } catch (ValidationException $exception) {
             flash_set("errors", $exception->errors());
@@ -126,20 +145,44 @@ final class DeveloperProjectController extends DeveloperPanelController
         }
 
         $developer = $developerAccess->currentDeveloper();
+        $maintenanceScenario = ($scenario["maintenance_access"] ?? false) === true;
         $disabled = (bool) ($scenario["disabled"] ?? false);
 
-        if ($disabled) {
-            $developerControl->disable(
-                $payload["developer_control_message"] !== "" ? $payload["developer_control_message"] : (string) $scenario["message"],
-                $payload["developer_control_contact"],
-                $developer,
-                (string) $scenario["status"],
-                (string) $scenario["reason"],
-                (string) $scenario["title"],
-                $payload["developer_control_contact_phone"]
-            );
-        } else {
-            $developerControl->enable($developer);
+        try {
+            if ($maintenanceScenario) {
+                $this->applyMaintenanceAccessSettings($environmentFileManager, $maintenanceAccess, true, $payload["maintenance_access_password"]);
+                $developerControl->enable($developer);
+                $developerAccess->grantAccess($developer);
+            } else {
+                if ($maintenanceAccess->enabled()) {
+                    $this->applyMaintenanceAccessSettings($environmentFileManager, $maintenanceAccess, false);
+                }
+
+                if ($disabled) {
+                    $developerControl->disable(
+                        $payload["developer_control_message"] !== "" ? $payload["developer_control_message"] : (string) $scenario["message"],
+                        $payload["developer_control_contact"],
+                        $developer,
+                        (string) $scenario["status"],
+                        (string) $scenario["reason"],
+                        (string) $scenario["title"],
+                        $payload["developer_control_contact_phone"],
+                        $payload["developer_control_contact_url"]
+                    );
+                } else {
+                    $developerControl->enable($developer);
+                }
+            }
+        } catch (\RuntimeException $exception) {
+            flash_set("status", [
+                "variant" => "danger",
+                "title" => "Service control could not be saved",
+                "text" => $exception->getMessage(),
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.project_identity.access"));
         }
         $currentControlState = $developerControl->state();
         $remoteStillDisabled = !$disabled
@@ -148,8 +191,8 @@ final class DeveloperProjectController extends DeveloperPanelController
 
         $activityLog->record(
             "service_control",
-            $disabled ? (string) $scenario["activity_title"] : "Public service re-enabled",
-            $disabled
+            ($disabled || $maintenanceScenario) ? (string) $scenario["activity_title"] : "Public service re-enabled",
+            ($disabled || $maintenanceScenario)
                 ? (string) $scenario["activity_text"]
                 : ($remoteStillDisabled ? "The local service lock was cleared, but a remote provider suspension is still active." : "Public routes were reopened by the developer team."),
             $developer
@@ -157,8 +200,8 @@ final class DeveloperProjectController extends DeveloperPanelController
 
         flash_set("status", [
             "variant" => "success",
-            "title" => $disabled ? (string) $scenario["flash_title"] : ($remoteStillDisabled ? "Local lock cleared" : "Service enabled"),
-            "text" => $disabled
+            "title" => ($disabled || $maintenanceScenario) ? (string) $scenario["flash_title"] : ($remoteStillDisabled ? "Local lock cleared" : "Service enabled"),
+            "text" => ($disabled || $maintenanceScenario)
                 ? (string) $scenario["flash_text"]
                 : ($remoteStillDisabled ? "Remote service suspension is still active and must be changed from the configured provider control plane." : "The local developer service lock was cleared."),
             "toast" => true,
@@ -166,6 +209,26 @@ final class DeveloperProjectController extends DeveloperPanelController
         regenerate_csrf_token();
 
         return $this->redirect(route("developer.panel.project_identity.access"));
+    }
+
+    public function testServiceControlPublicView(Request $request, DeveloperAccessManager $developerAccess): Response
+    {
+        if (!$this->ensureDeveloperCapability($developerAccess, "service_control.write")) {
+            return $this->redirect(route("developer.panel.project_identity.access"));
+        }
+
+        $result = $this->probeServiceControlPublicView();
+        flash_set("service_control_public_test", $result);
+        $_SESSION["_flash_old"]["service_control_public_test"] = $result;
+        flash_set("status", [
+            "variant" => (bool) ($result["ok"] ?? false) ? "success" : "warning",
+            "title" => "Public view test complete",
+            "text" => (string) ($result["summary"] ?? "Review the public-view status below."),
+            "toast" => true,
+        ]);
+        regenerate_csrf_token();
+
+        return $this->redirect(route("developer.panel.project_identity.access") . "#service-control-public-view-test");
     }
 
     public function updateProjectSettings(
@@ -557,15 +620,8 @@ final class DeveloperProjectController extends DeveloperPanelController
             return $this->redirect(route("developer.panel.project_identity.access"));
         }
 
-        $environmentValues = [
-            "MAINTENANCE_MODE_ENABLED" => $maintenanceEnabled ? "true" : "false",
-            "MAINTENANCE_ACCESS_USERNAME" => "",
-            "MAINTENANCE_ACCESS_PASSWORD" => $payload["maintenance_access_password"],
-        ];
-
         try {
-            $environmentFileManager->write($environmentValues);
-            $environmentFileManager->apply($environmentValues);
+            $this->applyMaintenanceAccessSettings($environmentFileManager, $maintenanceAccess, $maintenanceEnabled, $payload["maintenance_access_password"]);
         } catch (\RuntimeException $exception) {
             flash_set("status", [
                 "variant" => "danger",
@@ -577,13 +633,6 @@ final class DeveloperProjectController extends DeveloperPanelController
 
             return $this->redirect(route("developer.panel.project_identity.access"));
         }
-
-        config_set("maintenance", array_merge((array) config("maintenance", []), [
-            "enabled" => $maintenanceEnabled,
-            "username" => $environmentValues["MAINTENANCE_ACCESS_USERNAME"],
-            "password" => $environmentValues["MAINTENANCE_ACCESS_PASSWORD"],
-        ]));
-        $maintenanceAccess->lock();
         $developerAccess->grantAccess();
         developer_activity()->record(
             "client_preview",
@@ -603,6 +652,107 @@ final class DeveloperProjectController extends DeveloperPanelController
         regenerate_csrf_token();
 
         return $this->redirect(route("developer.panel.project_identity.access"));
+    }
+
+
+    private function applyMaintenanceAccessSettings(
+        EnvironmentFileManager $environmentFileManager,
+        MaintenanceAccessManager $maintenanceAccess,
+        bool $enabled,
+        string $password = ""
+    ): void {
+        if ($enabled && $password === "" && !$maintenanceAccess->configured()) {
+            throw new \RuntimeException("Choose a maintenance password before enabling maintenance mode.");
+        }
+
+        $environmentValues = [
+            "MAINTENANCE_MODE_ENABLED" => $enabled ? "true" : "false",
+            "MAINTENANCE_ACCESS_USERNAME" => "",
+        ];
+
+        if ($password !== "") {
+            $environmentValues["MAINTENANCE_ACCESS_PASSWORD"] = $password;
+        }
+
+        $environmentFileManager->write($environmentValues);
+        $environmentFileManager->apply($environmentValues);
+
+        $maintenanceConfig = [
+            "enabled" => $enabled,
+            "username" => "",
+        ];
+
+        if ($password !== "") {
+            $maintenanceConfig["password"] = $password;
+        }
+
+        config_set("maintenance", array_merge((array) config("maintenance", []), $maintenanceConfig));
+        $maintenanceAccess->lock();
+    }
+
+    private function probeServiceControlPublicView(): array
+    {
+        $containerBackup = $GLOBALS["fnlla_container"] ?? $GLOBALS["fnlla_php_container"] ?? null;
+        $sessionBackup = $_SESSION ?? [];
+        $probe = new ApplicationProbe();
+
+        try {
+            $_SESSION = [];
+            $home = $probe->get("/");
+            $api = $probe->get("/api/health?format=json", [
+                "HTTP_ACCEPT" => "application/json",
+            ]);
+            $maintenance = $probe->get("/maintenance");
+        } finally {
+            if ($containerBackup !== null) {
+                $GLOBALS["fnlla_container"] = $containerBackup;
+                $GLOBALS["fnlla_php_container"] = $containerBackup;
+            }
+            $_SESSION = $sessionBackup;
+        }
+
+        $homeStatus = $home->status();
+        $homeLocation = (string) ($home->headers()["Location"] ?? "");
+        $apiStatus = $api->status();
+        $maintenanceStatus = $maintenance->status();
+        $publicLabel = match (true) {
+            $homeStatus === 302 && str_starts_with($homeLocation, "/maintenance") => "Locked by maintenance mode",
+            $homeStatus === 503 => "Blocked by service-control notice",
+            $homeStatus === 200 => "Open to public visitors",
+            default => "Unexpected public response",
+        };
+        $apiLabel = match ($apiStatus) {
+            200 => "API health is public",
+            503 => "API health is protected",
+            default => "Unexpected API response",
+        };
+        $maintenanceLabel = $maintenanceStatus === 200 ? "Maintenance access available" : "Maintenance access needs review";
+        $ok = in_array($homeStatus, [200, 302, 503], true)
+            && in_array($apiStatus, [200, 503], true)
+            && $maintenanceStatus === 200;
+
+        return [
+            "ok" => $ok,
+            "generated_at" => date("H:i:s"),
+            "summary" => $publicLabel . ". " . $apiLabel . ". " . $maintenanceLabel . ".",
+            "checks" => [
+                [
+                    "label" => "Public route",
+                    "value" => $publicLabel,
+                    "detail" => "GET / -> " . (string) $homeStatus . ($homeLocation !== "" ? " " . $homeLocation : ""),
+                ],
+                [
+                    "label" => "API health",
+                    "value" => $apiLabel,
+                    "detail" => "GET /api/health?format=json -> " . (string) $apiStatus,
+                ],
+                [
+                    "label" => "Maintenance page",
+                    "value" => $maintenanceLabel,
+                    "detail" => "GET /maintenance -> " . (string) $maintenanceStatus,
+                ],
+            ],
+        ];
     }
 
     private function normalizeProjectName(string $value): string
@@ -627,7 +777,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ],
             "disabled" => [
                 "disabled" => true,
-                "status" => "disabled",
+                "status" => "paused",
                 "reason" => "developer",
                 "title" => "Service paused by developer",
                 "message" => "This service is temporarily paused by the developer team. Please contact the project developer for assistance.",
@@ -637,15 +787,16 @@ final class DeveloperProjectController extends DeveloperPanelController
                 "flash_text" => "Public routes now show the developer-owned pause notice while developer access remains available.",
             ],
             "maintenance" => [
-                "disabled" => true,
-                "status" => "disabled",
+                "disabled" => false,
+                "maintenance_access" => true,
+                "status" => "paused",
                 "reason" => "maintenance",
                 "title" => "Service paused for maintenance",
                 "message" => "This service is temporarily paused for planned maintenance. Please contact the project developer if access is urgent.",
                 "activity_title" => "Public service paused for maintenance",
-                "activity_text" => "Public routes now show the planned maintenance service notice.",
-                "flash_title" => "Maintenance notice enabled",
-                "flash_text" => "Public routes now show the planned maintenance service notice.",
+                "activity_text" => "Public routes are now protected by maintenance access.",
+                "flash_title" => "Maintenance access enabled",
+                "flash_text" => "The maintenance password is active and public visitors can use the maintenance access screen.",
             ],
             "suspended_billing" => [
                 "disabled" => true,
@@ -671,7 +822,7 @@ final class DeveloperProjectController extends DeveloperPanelController
             ],
             "security_review" => [
                 "disabled" => true,
-                "status" => "disabled",
+                "status" => "paused",
                 "reason" => "security_review",
                 "title" => "Service paused for security review",
                 "message" => "This service is temporarily paused while a security review is completed. Please contact the project developer for assistance.",

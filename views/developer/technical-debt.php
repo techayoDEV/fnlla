@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Fnlla\Php\Support\TechnicalDebtRegistry;
 
-$developerPanelTitle = "Technical Debt";
+$developerPanelTitle = "Project work: Technical debt";
 $developerPanelLead = "Release triage for known debt, accepted risk and source markers.";
 $allDebtItems = array_values((array) ($debtState["items"] ?? []));
 $statusFilter = is_string($debtStatusFilter ?? null) ? $debtStatusFilter : "";
@@ -90,7 +90,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
   <div class="debt-command">
     <div>
       <p class="feature-kicker">Release triage</p>
-      <h2 id="debt-title" class="developer-dashboard-section-title">Decide what blocks release, what is accepted, and what is done.</h2>
+      <h2 id="debt-title" class="dashboard-section-title">Decide what blocks release, what is accepted, and what is done.</h2>
       <p class="content-text mb-0">Source markers, promoted runtime issues and manual notes land in one register.</p>
     </div>
     <div class="debt-command-actions">

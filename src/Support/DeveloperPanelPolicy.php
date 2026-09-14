@@ -87,7 +87,7 @@ final class DeveloperPanelPolicy
             ],
             [
                 "key" => "maintenance_window",
-                "label" => "Maintenance window confirmed",
+                "label" => "Maintenance mode confirmed",
                 "met" => !$strict || (bool) config("framework_update.apply_policy.maintenance_window_confirmed", false),
                 "evidence" => "FRAMEWORK_UPDATE_APPLY_MAINTENANCE_WINDOW_CONFIRMED",
             ],

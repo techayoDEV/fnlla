@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Changelog";
+$developerPanelTitle = "Project work: Project changelog";
 $developerPanelLead = "Project-specific change history made through the Developer Panel and local operations.";
 $report = is_array($projectChangelogReport ?? null) ? $projectChangelogReport : [];
 $items = array_values((array) ($report["items"] ?? []));
@@ -49,7 +49,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Project changelog</p>
-              <h2 class="developer-dashboard-section-title">Shared project changes every developer should see before continuing work.</h2>
+              <h2 class="dashboard-section-title">Shared project changes every developer should see before continuing work.</h2>
               <p class="content-text mb-0">This is the project changelog for the application built on FNLLA. It is generated from Developer Panel activity and local operational changes, not from FNLLA framework release notes.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -102,7 +102,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-dashboard-section-head">
             <div>
               <p class="feature-kicker">Manual changelog entry</p>
-              <h2 class="developer-dashboard-section-title">Add a project-facing change that did not come from an automated panel action.</h2>
+              <h2 class="dashboard-section-title">Add a project-facing change that did not come from an automated panel action.</h2>
             </div>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["project_changelog"] ?? route("developer.panel.changelog"))) ?>#project-changelog-timeline">Refresh timeline</a>
           </div>
@@ -130,7 +130,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="project-changelog-timeline" aria-label="Project changelog timeline">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Project change timeline</h2>
+            <h2 class="dashboard-section-title">Project change timeline</h2>
             <span class="developer-dashboard-refresh">Latest 120 project events</span>
           </div>
 

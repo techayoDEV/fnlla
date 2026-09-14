@@ -41,7 +41,8 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `/developer/panel/project-identity/leadership`,
   `/developer/panel/project-identity/access-preview`,
   `/developer/panel/project-settings`,
-  `/developer/panel/access`, `/developer/panel/profile`,
+  `/developer/panel/access`, `/developer/panel/access/developer`,
+  `/developer/panel/access/client`, `/developer/panel/profile`,
   `/developer/panel/settings`, `/developer/panel/tasks`,
   `/developer/panel/my-tasks`, `/developer/panel/operations`,
   `/developer/panel/analytics`, `/developer/panel/notifications`,
@@ -56,7 +57,7 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `/developer/panel/framework-updates`.
   `/developer/panel/setup-checklist`, `/developer/panel/project-settings`,
   `/developer/panel/security` and `/developer/panel/health` remain compatibility
-  routes that lead to the integrated Project Setup, Access & security,
+  routes that lead to the integrated Project Setup, Developer access, Client review access,
   Readiness & Health, Tasks and My Tasks surfaces.
 - Customer portal routes: `/client`, `/client/invite`, `/client/panel`,
   `/client/panel/kanban`, `/client/panel/analytics` and

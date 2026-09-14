@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Error Monitor";
+$developerPanelTitle = "Observability: Error monitor";
 $developerPanelLead = "FNLLA-owned runtime issue monitor with local fingerprints, request history and triage into debt or Kanban.";
 $report = is_array($debugReport ?? null) ? $debugReport : [];
 $metricsAvailable = ($report["metrics_available"] ?? true) === true;
@@ -43,7 +43,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
   <div class="developer-panel-intro">
     <div class="developer-panel-intro-copy">
       <p class="feature-kicker">Operations / Observability / Error monitor</p>
-      <h2 id="debug-title" class="developer-dashboard-section-title">FNLLA Error Monitor for local runtime issue triage.</h2>
+      <h2 id="debug-title" class="dashboard-section-title">FNLLA Error Monitor for local runtime issue triage.</h2>
       <p class="content-text mb-0">Error fingerprints, request timing and recent log entries stay local and bounded. Issue candidates are promoted to technical debt only after developer review.</p>
     </div>
     <div class="developer-panel-intro-actions">
@@ -114,7 +114,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
 
 <section class="developer-dashboard-section" aria-labelledby="debug-history-title">
   <div class="developer-dashboard-section-head">
-    <h2 id="debug-history-title" class="developer-dashboard-section-title">Live request stream</h2>
+    <h2 id="debug-history-title" class="dashboard-section-title">Live request stream</h2>
     <span class="developer-dashboard-refresh">Auto refresh: 4s</span>
   </div>
   <div class="developer-history-table">
@@ -132,7 +132,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
 
 <section class="developer-dashboard-section" id="runtime-issues" aria-labelledby="runtime-issues-title">
   <div class="developer-dashboard-section-head">
-    <h2 id="runtime-issues-title" class="developer-dashboard-section-title">Error monitor triage</h2>
+    <h2 id="runtime-issues-title" class="dashboard-section-title">Error monitor triage</h2>
     <span class="developer-dashboard-refresh"><?= h((string) count($runtimeIssues)) ?> open candidates</span>
   </div>
 
@@ -218,7 +218,7 @@ require VIEW_ROOT . "/developer/panel-header.php";
   </div>
 
   <div class="developer-dashboard-section-head">
-    <h2 class="developer-dashboard-section-title">Recent error log</h2>
+    <h2 class="dashboard-section-title">Recent error log</h2>
     <span class="developer-dashboard-refresh"><?= h((string) ($logs["path"] ?? "storage/logs/app.log")) ?></span>
   </div>
   <div class="developer-history-table">

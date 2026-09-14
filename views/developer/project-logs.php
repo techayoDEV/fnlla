@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Project Logs";
+$developerPanelTitle = "Observability: Project logs";
 $developerPanelLead = "Human-readable project activity, developer changes and internal delivery history.";
 $report = is_array($projectLogReport ?? null) ? $projectLogReport : [];
 $items = array_values((array) ($report["items"] ?? []));
@@ -48,7 +48,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Project logs</p>
-              <h2 class="developer-dashboard-section-title">Readable timeline of project changes, developer work and operational actions.</h2>
+              <h2 class="dashboard-section-title">Readable timeline of project changes, developer work and operational actions.</h2>
               <p class="content-text mb-0">This page uses the same activity source as the audit exports, but groups the record into practical daily change history for handover and release review.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -100,7 +100,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Project activity timeline">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Activity timeline</h2>
+            <h2 class="dashboard-section-title">Activity timeline</h2>
             <span class="developer-dashboard-refresh">Latest 120 events</span>
           </div>
 

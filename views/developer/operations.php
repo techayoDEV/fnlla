@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
+use Fnlla\Php\Support\DeveloperModules;
 use Fnlla\Php\Support\DeveloperPanelLabels;
 
-$developerPanelTitle = "Operations";
+$developerPanelTitle = "Observability: Overview";
 $developerPanelLead = "Operational priorities for access, review decisions, release readiness, observability and project-owned adapters.";
 $report = is_array($operationsReport ?? null) ? $operationsReport : [];
 $metricsAvailable = ($report["metrics_available"] ?? true) === true;
@@ -40,7 +41,8 @@ $releaseStatus = ((bool) ($release["acceptance"]["ok"] ?? true) && (bool) ($rele
 $observabilityStatus = ((bool) ($analytics["enabled"] ?? false) || strtolower((string) ($heatmaps["status"] ?? "off")) !== "off") ? "ON" : "Review";
 $observabilityStatus = $metricsAvailable ? $observabilityStatus : "Unavailable";
 $operationLanes = [
-    ["priority" => "P0", "title" => "Access & security", "text" => "Developer accounts, roles, TOTP, customer review access.", "href" => (string) ($developerLinks["access"] ?? route("developer.panel.access")), "status" => $reviewCritical > 0 ? "Critical" : "Review"],
+    ["priority" => "P0", "title" => "Developer access", "text" => "Developer accounts, roles, sessions, TOTP and passkey readiness.", "href" => (string) ($developerLinks["developer_access"] ?? route("developer.panel.access.developer")), "status" => $reviewCritical > 0 ? "Critical" : "Review"],
+    ["priority" => "P0", "title" => "Client review access", "text" => "Customer portal invitations, review permissions and /client readiness.", "href" => (string) ($developerLinks["client_review_access"] ?? route("developer.panel.access.client")), "status" => "Portal", "module" => "customer_portal"],
     ["priority" => "P0", "title" => "Review queue", "text" => "Global decisions from setup, security and release checks.", "href" => (string) ($developerLinks["notifications"] ?? route("developer.panel.notifications")), "status" => (string) $reviewTotal],
     ["priority" => "P1", "title" => "Release & readiness", "text" => "Release gate, runtime health, backup evidence and framework updates.", "href" => (string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness")), "status" => $releaseStatus],
     ["priority" => "P2", "title" => "Observability", "text" => "Project logs, runtime errors, public-only analytics and behavior heatmap.", "href" => (string) ($developerLinks["operations"] ?? route("developer.panel.operations")) . "#developer-operations-observability", "status" => $observabilityStatus],
@@ -48,6 +50,11 @@ $operationLanes = [
 ];
 $operationLanes = array_values(array_filter($operationLanes, static function (array $lane) use ($currentCapabilities): bool {
     $capability = (string) ($lane["capability"] ?? "");
+    $module = (string) ($lane["module"] ?? "");
+
+    if ($module !== "" && !DeveloperModules::enabled($module)) {
+        return false;
+    }
 
     return $capability === "" || in_array($capability, $currentCapabilities, true);
 }));
@@ -59,11 +66,14 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Operations overview</p>
-              <h2 class="developer-dashboard-section-title">Daily operating view for access, decisions, releases and runtime signals.</h2>
+              <h2 class="dashboard-section-title">Daily operating view for access, decisions, releases and runtime signals.</h2>
               <p class="content-text mb-0">Use this as the first Operations stop: clear security and review decisions, then inspect release posture, observability and outbound adapters.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Access & security</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["developer_access"] ?? route("developer.panel.access.developer"))) ?>">Developer access</a>
+              <?php if (DeveloperModules::enabled("customer_portal")): ?>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["client_review_access"] ?? route("developer.panel.access.client"))) ?>">Client review access</a>
+              <?php endif; ?>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Review queue</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Release & readiness</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["operations"] ?? route("developer.panel.operations")) . "#developer-operations-observability") ?>">Observability</a>
@@ -74,7 +84,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Operations priority map">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Operations priority map</h2>
+            <h2 class="dashboard-section-title">Operations priority map</h2>
             <span class="developer-dashboard-refresh">P0 first, telemetry after risk</span>
           </div>
           <div class="developer-operations-priority-grid">
@@ -91,7 +101,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Operations review queue">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Review queue</h2>
+            <h2 class="dashboard-section-title">Review queue</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["notifications"] ?? route("developer.panel.notifications"))) ?>">Open full queue</a>
           </div>
           <div class="developer-review-queue-list developer-review-queue-list-compact">
@@ -122,7 +132,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="developer-operations-observability" aria-label="Observability">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Observability</h2>
+            <h2 class="dashboard-section-title">Observability</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["analytics"] ?? route("developer.panel.analytics"))) ?>">Open traffic analytics</a>
           </div>
         <?php if (!$metricsAvailable): ?>
@@ -181,7 +191,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Performance probes">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Performance probes</h2>
+            <h2 class="dashboard-section-title">Performance probes</h2>
             <span class="developer-dashboard-refresh">Slow route threshold: <?= h((string) ($performance["threshold_ms"] ?? 750)) ?>ms</span>
           </div>
           <div class="developer-dashboard-status-grid">
@@ -204,6 +214,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Form inbox and audit log">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Form inbox and audit log</h2>
+            <span class="developer-dashboard-refresh">Public submissions and project activity</span>
+          </div>
+
           <div class="developer-dashboard-overview-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Form inbox</p>
@@ -248,7 +263,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Readiness and health">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Readiness & health</h2>
+            <h2 class="dashboard-section-title">Readiness & health</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["release_readiness"] ?? route("developer.panel.release_readiness"))) ?>">Open readiness & health</a>
           </div>
           <div class="developer-dashboard-status-grid">
@@ -292,7 +307,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Consent-aware integrations">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Adapter registry</h2>
+            <h2 class="dashboard-section-title">Adapter registry</h2>
             <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["integrations"] ?? route("developer.panel.integrations"))) ?>">Open integrations</a>
           </div>
           <div class="developer-dashboard-glance-table">

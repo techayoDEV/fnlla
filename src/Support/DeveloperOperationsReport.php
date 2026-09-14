@@ -19,8 +19,11 @@ final class DeveloperOperationsReport
 {
     use DeveloperMetricsReportHelpers;
 
-    public function build(): array
+    private ?array $recentLogLines = null;
+
+    public function build(bool $includeAcceptanceGate = true): array
     {
+        $this->recentLogLines = null;
         $snapshot = $this->readMetrics();
         $metricsAvailable = $snapshot !== null;
         $metrics = $snapshot ?? [];
@@ -29,7 +32,7 @@ final class DeveloperOperationsReport
         $backupPlan = $backupBuilder->build();
         $backupVerification = $backupBuilder->verify($backupPlan);
         $securityAudit = (new SecurityAuditReport())->build();
-        $acceptance = (new ProjectAcceptanceReportBuilder())->build();
+        $acceptance = $includeAcceptanceGate ? (new ProjectAcceptanceReportBuilder())->build() : null;
 
         return [
             "schema" => "fnlla.developer_operations.v1",
@@ -148,10 +151,10 @@ final class DeveloperOperationsReport
         ];
     }
 
-    private function releaseReadiness(array $securityAudit, array $backupVerification, array $acceptance): array
+    private function releaseReadiness(array $securityAudit, array $backupVerification, ?array $acceptance): array
     {
         $securitySummary = (array) ($securityAudit["summary"] ?? []);
-        $acceptanceSummary = (array) ($acceptance["summary"] ?? []);
+        $acceptanceSummary = (array) (($acceptance ?? [])["summary"] ?? []);
 
         return [
             "security_audit" => [
@@ -170,9 +173,10 @@ final class DeveloperOperationsReport
                 "queue_writable" => is_dir(storage_path("framework/queue")) && is_writable(storage_path("framework/queue")),
             ],
             "acceptance" => [
-                "ok" => (bool) ($acceptance["ok"] ?? false),
+                "ok" => $acceptance === null ? null : (bool) ($acceptance["ok"] ?? false),
                 "failures" => (int) ($acceptanceSummary["failures"] ?? 0),
                 "warnings" => (int) ($acceptanceSummary["warnings"] ?? 0),
+                "deferred" => $acceptance === null,
             ],
         ];
     }
@@ -227,7 +231,11 @@ final class DeveloperOperationsReport
 
     private function recentLogLines(): array
     {
-        return RecentFileLines::read(Logger::configuredPath(), 250);
+        if ($this->recentLogLines === null) {
+            $this->recentLogLines = RecentFileLines::read(Logger::configuredPath(), 250);
+        }
+
+        return $this->recentLogLines;
     }
 
     private function readJsonLines(string $path, int $limit): array

@@ -134,6 +134,9 @@ final class DeveloperAccessManager
         ],
     ];
 
+    private ?string $accountsCacheSource = null;
+    private array $accountsCache = [];
+
     public function __construct(
         private SessionStore $session,
         private RateLimiter $limiter
@@ -432,26 +435,38 @@ final class DeveloperAccessManager
 
     public function viewState(): array
     {
+        $accounts = $this->accounts();
+        $configured = $accounts !== [];
+        $unlocked = $this->isUnlocked();
+        $expiresAt = $unlocked ? (int) $this->session->get($this->expiresAtKey(), 0) : 0;
+        $currentDeveloper = $this->currentDeveloper();
+        $operationsNavMode = "hidden";
+
+        if ($configured) {
+            $mode = trim((string) config("developer_access.operations_nav_mode", "hidden"));
+            $operationsNavMode = in_array($mode, ["visible", "developer_session_only", "hidden"], true) ? $mode : "hidden";
+        }
+
         return [
             "enabled" => $this->enabled(),
-            "configured" => $this->configured(),
+            "configured" => $configured,
             "path" => $this->path(),
-            "unlocked" => $this->isUnlocked(),
-            "expires_at" => $this->expiresAt(),
-            "seconds_remaining" => $this->secondsRemaining(),
+            "unlocked" => $unlocked,
+            "expires_at" => $expiresAt,
+            "seconds_remaining" => max(0, $expiresAt - time()),
             "unlock_ttl_minutes" => max(1, (int) config("developer_access.unlock_ttl_minutes", 120)),
             "absolute_ttl_minutes" => max(1, (int) config("developer_access.absolute_ttl_minutes", 480)),
-            "operations_nav_mode" => $this->operationsNavMode(),
-            "operations_nav_visible" => $this->operationsNavVisible(),
+            "operations_nav_mode" => $operationsNavMode,
+            "operations_nav_visible" => $unlocked,
             "email_required" => true,
-            "multi_developer_enabled" => count($this->accounts()) > 1,
-            "users_count" => count($this->accounts()),
-            "current_developer" => $this->currentDeveloper(),
-            "accounts" => array_map(fn (array $account): array => $this->publicAccount($account), $this->accounts()),
+            "multi_developer_enabled" => count($accounts) > 1,
+            "users_count" => count($accounts),
+            "current_developer" => $currentDeveloper,
+            "accounts" => array_map(fn (array $account): array => $this->publicAccount($account), $accounts),
             "role_options" => $this->roleOptions(),
             "capability_options" => $this->capabilityCatalog(),
-            "current_capabilities" => $this->capabilitiesFor($this->currentDeveloper()),
-            "security" => $this->securityState($this->currentDeveloper()),
+            "current_capabilities" => $this->capabilitiesFor($currentDeveloper),
+            "security" => $this->securityState($currentDeveloper),
         ];
     }
 
@@ -481,13 +496,14 @@ final class DeveloperAccessManager
 
     public function accounts(): array
     {
-        $accounts = $this->parseConfiguredAccounts((string) config("developer_access.users", ""));
+        $source = (string) config("developer_access.users", "");
 
-        if ($accounts !== []) {
-            return $accounts;
+        if ($this->accountsCacheSource !== $source) {
+            $this->accountsCacheSource = $source;
+            $this->accountsCache = $this->parseConfiguredAccounts($source);
         }
 
-        return [];
+        return $this->accountsCache;
     }
 
     public function serializeAccounts(array $accounts): string

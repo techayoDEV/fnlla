@@ -15,8 +15,8 @@ use Fnlla\Php\Maintenance\DeveloperControlManager;
 use Fnlla\Php\Maintenance\MaintenanceAccessManager;
 use Fnlla\Php\Support\DeveloperAnalyticsReport;
 use Fnlla\Php\Support\DeveloperHeatmapReport;
+use Fnlla\Php\Support\DeveloperIntegrationRegistry;
 use Fnlla\Php\Support\DeveloperNotificationCenter;
-use Fnlla\Php\Support\DeveloperOperationsReport;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\DeveloperModules;
@@ -38,7 +38,7 @@ final class DeveloperSettingsController extends DeveloperPanelController
         );
     }
 
-    public function integrations(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess, DeveloperOperationsReport $report): Response
+    public function integrations(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
         if (!$this->ensureDeveloperCapability($developerAccess, "operations.view")) {
             return $this->redirect(route("developer.panel"));
@@ -51,7 +51,9 @@ final class DeveloperSettingsController extends DeveloperPanelController
             "Integrations",
             "integrations",
             [
-                "operationsReport" => $report->build(),
+                "operationsReport" => [
+                    "integrations" => (new DeveloperIntegrationRegistry())->all(),
+                ],
             ]
         );
     }

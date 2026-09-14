@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Fnlla\Php\Support\DeveloperPanelLabels;
 
-$developerPanelTitle = "Analytics";
+$developerPanelTitle = "Observability: Traffic analytics";
 $developerPanelLead = "First-party public-view traffic, conversion, consent and performance intelligence without third-party analytics scripts.";
 $report = is_array($analyticsReport ?? null) ? (array) $analyticsReport : [];
 $metricsAvailable = ($report["metrics_available"] ?? true) === true;
@@ -191,6 +191,11 @@ require __DIR__ . "/panel-header.php";
 
         <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Analytics summary">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Analytics summary</h2>
+            <span class="developer-dashboard-refresh">First-party measurement overview</span>
+          </div>
+
           <section class="developer-analytics-blueprint" aria-label="Analytics blueprint">
             <div class="developer-analytics-blueprint-grid" aria-hidden="true">
               <span></span>
@@ -235,7 +240,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Traffic timeline">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Traffic timeline</h2>
+            <h2 class="dashboard-section-title">Traffic timeline</h2>
             <span class="developer-dashboard-refresh">First-party aggregate data</span>
           </div>
           <div class="developer-analytics-chart-grid developer-analytics-chart-grid-stacked">
@@ -256,7 +261,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Behaviour and performance analytics">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Acquisition and performance</h2>
+            <h2 class="dashboard-section-title">Acquisition and performance</h2>
             <span class="developer-dashboard-refresh">No raw IP or fingerprinting</span>
           </div>
           <div class="developer-analytics-workbench developer-analytics-workbench-stacked">
@@ -301,7 +306,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Analytics replacement signals">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Replacement signals</h2>
+            <h2 class="dashboard-section-title">Replacement signals</h2>
             <span class="developer-dashboard-refresh">Traffic, product and privacy in one local dataset</span>
           </div>
           <div class="developer-dashboard-overview-grid developer-analytics-replacement-grid">
@@ -335,6 +340,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Analytics goals and insights">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Goals and insights</h2>
+            <span class="developer-dashboard-refresh">Configured goals and operating signals</span>
+          </div>
+
           <div class="developer-dashboard-overview-grid developer-analytics-goal-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Goals</p>
@@ -366,7 +376,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Analytics settings">
           <div class="developer-dashboard-section-head">
-              <h2 class="developer-dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage, sampling, retention and bot filtering for this project.</span></span></h2>
+              <h2 class="dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage, sampling, retention and bot filtering for this project.</span></span></h2>
             <span class="developer-dashboard-refresh">Saved to project .env</span>
           </div>
           <form class="form developer-analytics-settings-form" action="<?= h(route("developer.panel.analytics.settings")) ?>" method="post">
@@ -416,6 +426,11 @@ require __DIR__ . "/panel-header.php";
 
         <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Analytics details">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Measurement details</h2>
+            <span class="developer-dashboard-refresh">Latest request and data quality</span>
+          </div>
+
           <div class="developer-analytics-detail-grid developer-analytics-detail-grid-stacked">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Last measured request</p>
@@ -445,6 +460,11 @@ require __DIR__ . "/panel-header.php";
         <?php endif; ?>
 
         <section class="developer-dashboard-section" aria-label="Analytics privacy and data quality">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Privacy and data quality</h2>
+            <span class="developer-dashboard-refresh">Consent-safe analytics boundary</span>
+          </div>
+
           <div class="developer-dashboard-overview-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Privacy model</p>

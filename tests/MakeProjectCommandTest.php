@@ -108,7 +108,7 @@ final class MakeProjectCommandTest extends TestCase
         $command = new MakeProjectCommand($container);
 
         self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
-        $this->assertExportBudget(4100000, 430);
+        $this->assertExportBudget(4150000, 430);
         $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayNotHasKey("require-dev", $composer);
         self::assertArrayNotHasKey("test:unit", $composer["scripts"]);

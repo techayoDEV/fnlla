@@ -24,7 +24,7 @@ final class RecentFileLines
             return [];
         }
 
-        $handle = fopen($path, "rb");
+        $handle = @fopen($path, "rb");
 
         if (!is_resource($handle)) {
             return [];

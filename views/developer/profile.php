@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Developer Profile";
+$developerPanelTitle = "Developer account: Profile";
 $developerPanelLead = "Personal developer identity, avatar and password rotation for this project.";
 $currentDeveloper = is_array($developerAccess["current_developer"] ?? null) ? (array) $developerAccess["current_developer"] : [];
 $developerRoleOptions = is_array($developerAccess["role_options"] ?? null) ? (array) $developerAccess["role_options"] : [];
@@ -27,11 +27,11 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Developer identity</p>
-              <h2 class="developer-dashboard-section-title">Your profile controls how developer-panel changes are attributed. <span class="developer-info-tip" tabindex="0" aria-label="Profile data is used by audit and workspace activity.">i<span>Name and avatar make audit logs, account actions and kanban work easier to identify.</span></span></h2>
+              <h2 class="dashboard-section-title">Your profile controls how developer-panel changes are attributed. <span class="developer-info-tip" tabindex="0" aria-label="Profile data is used by audit and workspace activity.">i<span>Name and avatar make audit logs, account actions and kanban work easier to identify.</span></span></h2>
               <p class="content-text mb-0">Project-level changes remain global, but audit events, kanban activity and account actions should identify the person who made them.</p>
             </div>
             <div class="developer-panel-intro-actions">
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Access &amp; security</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["developer_access"] ?? route("developer.panel.access.developer"))) ?>">Developer access</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["overview"] ?? route("developer.panel"))) ?>">Dashboard</a>
             </div>
           </div>

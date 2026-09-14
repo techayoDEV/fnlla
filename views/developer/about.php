@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "About FNLLA";
+$developerPanelTitle = "Reference: About FNLLA";
 $developerPanelLead = "Framework identity, runtime version and maintainer information for this project installation.";
 $about = is_array($aboutFnlla ?? null) ? (array) $aboutFnlla : [];
 $officialUrl = (string) ($about["official_url"] ?? config("framework.official_url", "https://fnlla.com"));
@@ -44,7 +44,7 @@ require __DIR__ . "/panel-header.php";
               </div>
               <?php endif; ?>
               <p class="feature-kicker">Framework information</p>
-              <h2 class="developer-dashboard-section-title">FNLLA by TechAyo</h2>
+              <h2 class="dashboard-section-title">FNLLA by TechAyo</h2>
               <p class="content-text" data-framework-lead><?= h((string) ($about["lead_role"] ?? \Fnlla\Php\Support\FrameworkIdentity::LEAD_ROLE)) ?> - <?= h((string) ($about["lead_name"] ?? \Fnlla\Php\Support\FrameworkIdentity::LEAD_NAME)) ?></p>
               <p class="content-text mb-0">FNLLA is the framework-managed base used to deliver the public project surface and private developer operations panel. The official framework website is <a class="fnlla-literal" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a>.</p>
             </div>
@@ -82,7 +82,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="System information">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">System information</h2>
+            <h2 class="dashboard-section-title">System information</h2>
             <span class="developer-dashboard-refresh">Responsibility record</span>
           </div>
           <?php
@@ -100,7 +100,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Framework principles">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">What this installation contains</h2>
+            <h2 class="dashboard-section-title">What this installation contains</h2>
             <span class="developer-dashboard-refresh">Framework boundary</span>
           </div>
           <div class="developer-documentation-grid">
@@ -115,6 +115,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="About technical facts">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Installation facts</h2>
+            <span class="developer-dashboard-refresh">Runtime and framework metadata</span>
+          </div>
+
           <article class="developer-dashboard-card developer-dashboard-card-wide">
             <p class="feature-kicker">Installation facts</p>
             <div class="developer-dashboard-glance-table">

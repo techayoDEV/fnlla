@@ -28,12 +28,30 @@ final class DeveloperAccountController extends DeveloperPanelController
 {
     public function accessSettings(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
     {
+        return $this->redirect(route("developer.panel.access.developer"));
+    }
+
+    public function developerAccessSettings(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
         return $this->renderDeveloperPanel(
             $developerAccess,
             $maintenanceAccess,
             "developer/access-settings",
-            "Access & security",
-            "access"
+            "Developer access",
+            "developer-access",
+            ["accessSettingsSection" => "developer"]
+        );
+    }
+
+    public function clientReviewAccessSettings(Request $request, DeveloperAccessManager $developerAccess, MaintenanceAccessManager $maintenanceAccess): Response
+    {
+        return $this->renderDeveloperPanel(
+            $developerAccess,
+            $maintenanceAccess,
+            "developer/access-settings",
+            "Client review access",
+            "client-review-access",
+            ["accessSettingsSection" => "client"]
         );
     }
 
@@ -43,7 +61,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         $payload = [
@@ -80,7 +98,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         $currentDeveloper = $developerAccess->currentDeveloper();
@@ -109,7 +127,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
@@ -134,7 +152,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.access"));
+        return $this->redirect(route("developer.panel.access.developer"));
     }
 
     public function deleteDeveloperAccount(
@@ -143,7 +161,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         $email = strtolower(trim((string) $request->input("developer_account_email", "")));
@@ -158,7 +176,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         $accounts = $developerAccess->removeAccount($email);
@@ -183,7 +201,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         config_set("developer_access", array_merge((array) config("developer_access", []), [
@@ -208,7 +226,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.access"));
+        return $this->redirect(route("developer.panel.access.developer"));
     }
 
     public function saveCustomerAccount(
@@ -219,7 +237,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         Mailer $mailer
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.client"));
         }
 
         $permissionOptions = $customerAccess->permissionOptions();
@@ -253,7 +271,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+            return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
         }
 
         try {
@@ -277,7 +295,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+            return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
         }
 
         $invitation = $customerAccess->createInvitation([
@@ -308,7 +326,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+            return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
         }
 
         config_set("customer_access", array_merge((array) config("customer_access", []), [
@@ -348,7 +366,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
     }
 
     public function deleteCustomerAccount(
@@ -358,7 +376,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         EnvironmentFileManager $environmentFileManager
     ): Response {
         if (!$this->ensureDeveloperCapability($developerAccess, "developer.accounts.write")) {
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.client"));
         }
 
         $email = strtolower(trim((string) $request->input("customer_account_email", "")));
@@ -381,7 +399,7 @@ final class DeveloperAccountController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+            return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
         }
 
         config_set("customer_access", array_merge((array) config("customer_access", []), [
@@ -402,7 +420,7 @@ final class DeveloperAccountController extends DeveloperPanelController
         ]);
         regenerate_csrf_token();
 
-        return $this->redirect(route("developer.panel.access") . "#customer-access-settings");
+        return $this->redirect(route("developer.panel.access.client") . "#customer-access-settings");
     }
 
     private function sendCustomerInvitationMail(Mailer $mailer, array $account, string $url, string $expiresAt): void

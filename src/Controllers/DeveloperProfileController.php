@@ -47,8 +47,9 @@ final class DeveloperProfileController extends DeveloperPanelController
             $developerAccess,
             $maintenanceAccess,
             "developer/access-settings",
-            "Access & security",
-            "access"
+            "Developer security",
+            "developer-access",
+            ["accessSettingsSection" => "developer"]
         );
     }
 
@@ -96,7 +97,7 @@ final class DeveloperProfileController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         try {
@@ -242,7 +243,7 @@ final class DeveloperProfileController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer"));
         }
 
         $accounts = $developerAccess->updateAccountProfile($currentEmail, [
@@ -320,7 +321,7 @@ final class DeveloperProfileController extends DeveloperPanelController
             ]);
             regenerate_csrf_token();
 
-            return $this->redirect(route("developer.panel.access"));
+            return $this->redirect(route("developer.panel.access.developer") . "#developer-security");
         }
 
         $action = trim((string) $request->input("developer_security_action", ""));
@@ -441,7 +442,7 @@ final class DeveloperProfileController extends DeveloperPanelController
     {
         return (string) $request->input("developer_password_redirect", "") === "profile"
             ? route("developer.panel.profile")
-            : route("developer.panel.access");
+            : route("developer.panel.access.developer");
     }
 
     private function resolveDeveloperAvatar(Request $request, array $payload): string

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Heatmap";
+$developerPanelTitle = "Observability: Behavior heatmap";
 $developerPanelLead = "First-party public-page click, scroll, element and device intelligence stored inside FNLLA after analytics consent.";
 $report = is_array($heatmapReport ?? null) ? (array) $heatmapReport : [];
 $metricsAvailable = ($report["metrics_available"] ?? true) === true;
@@ -123,6 +123,11 @@ require __DIR__ . "/panel-header.php";
 
         <?php if ($metricsAvailable): ?>
         <section class="developer-dashboard-section" aria-label="Heatmap summary">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Heatmap summary</h2>
+            <span class="developer-dashboard-refresh">First-party behavior overview</span>
+          </div>
+
           <section class="developer-analytics-blueprint developer-analytics-blueprint-heatmap" aria-label="Heatmap blueprint">
             <div class="developer-analytics-blueprint-grid" aria-hidden="true">
               <span></span>
@@ -167,7 +172,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Heatmap replacement signals">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Behavior intelligence</h2>
+            <h2 class="dashboard-section-title">Behavior intelligence</h2>
             <span class="developer-dashboard-refresh">First-party aggregate capture</span>
           </div>
           <div class="developer-dashboard-overview-grid developer-heatmap-behavior-grid">
@@ -202,7 +207,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section developer-heatmap-click-section" aria-label="Click intensity map">
           <div class="developer-dashboard-section-head developer-heatmap-section-head">
-            <h2 class="developer-dashboard-section-title">Public click intensity</h2>
+            <h2 class="dashboard-section-title">Public click intensity</h2>
             <div class="developer-heatmap-page-picker" aria-label="Public page selector">
               <span class="developer-heatmap-page-picker-label" id="developer-heatmap-page-picker-label">Public page</span>
               <div class="dropdown developer-heatmap-page-dropdown" data-fnlla-dropdown>
@@ -260,6 +265,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Heatmap breakdowns">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Heatmap breakdowns</h2>
+            <span class="developer-dashboard-refresh">Pages, elements and device buckets</span>
+          </div>
+
           <div class="developer-analytics-workbench developer-heatmap-breakdown-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Top pages</p>
@@ -281,6 +291,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Heatmap trend and settings">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Heatmap trends</h2>
+            <span class="developer-dashboard-refresh">Daily behavior and runtime settings</span>
+          </div>
+
           <div class="developer-analytics-detail-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Last 14 days</p>
@@ -301,7 +316,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Heatmap settings">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Heatmap settings <span class="developer-info-tip" tabindex="0" aria-label="Sampling limits how many behavior events are stored.">i<span>Sampling controls event volume. Grid size controls how click positions are grouped before storage.</span></span></h2>
+            <h2 class="dashboard-section-title">Heatmap settings <span class="developer-info-tip" tabindex="0" aria-label="Sampling limits how many behavior events are stored.">i<span>Sampling controls event volume. Grid size controls how click positions are grouped before storage.</span></span></h2>
             <span class="developer-dashboard-refresh">Saved to project .env</span>
           </div>
           <form class="form developer-analytics-settings-form developer-heatmap-settings-form" action="<?= h(route("developer.panel.heatmap.settings")) ?>" method="post">
@@ -330,6 +345,11 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Heatmap privacy model">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Heatmap privacy model</h2>
+            <span class="developer-dashboard-refresh">Aggregate-only behavior map</span>
+          </div>
+
           <div class="developer-dashboard-overview-grid">
             <?php if ($insights !== []): ?>
             <article class="developer-dashboard-card developer-dashboard-card-wide">

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Setup Checklist";
+$developerPanelTitle = "Project identity: Setup checklist";
 $developerPanelLead = "Readiness checklist for identity, private access, preview mode and public visibility.";
 $checklist = is_array($projectSetupChecklist ?? null) ? (array) $projectSetupChecklist : [];
 $checklistItems = array_values((array) ($checklist["items"] ?? []));
@@ -17,7 +17,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Project setup</p>
-              <h2 class="developer-dashboard-section-title">Confirm the project is named, reachable, private where needed and safe to hand over.</h2>
+              <h2 class="dashboard-section-title">Confirm the project is named, reachable, private where needed and safe to hand over.</h2>
               <p class="content-text mb-0">This checklist reads current environment and developer-panel state. It does not save anything by itself.</p>
             </div>
             <div class="developer-panel-intro-actions">

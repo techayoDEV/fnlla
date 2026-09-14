@@ -329,7 +329,7 @@ screens available through cards, direct links and sidebar disclosure groups:
 - `Workspace` contains Project identity and the Project work disclosure group.
   Project work expands or collapses the shared task board, timeline/Gantt,
   Technical debt and Project changelog submenu instead of navigating away.
-- `Operations` contains Access & security, Review queue, Release & readiness,
+- `Operations` contains Developer access, Client review access, Review queue, Release & readiness,
   Observability and Adapters & AI. Release & readiness and Observability are
   disclosure groups: they expand or collapse their operational submenus without
   navigating. Release & readiness contains Readiness & health and Framework
@@ -354,7 +354,7 @@ a separate private route, defaulting to `/client`, with its own session,
 credential fingerprint and invitation flow.
 
 A lead developer creates or rotates a customer account from
-`/developer/panel/access`. FNLLA writes `CUSTOMER_ACCESS_USERS` to the local
+`/developer/panel/access/client`. FNLLA writes `CUSTOMER_ACCESS_USERS` to the local
 environment file and can send the first-login link through the configured mail
 driver. The customer follows `/client/invite?token=...`, sets their own
 password, and then signs in through `/client`.
@@ -526,11 +526,13 @@ DEVELOPER_CONTROL_REMOTE_PROJECT_ID=<project-id>
 DEVELOPER_CONTROL_REMOTE_TENANT=example-tenant
 DEVELOPER_CONTROL_REMOTE_TOKEN=<project-token>
 DEVELOPER_CONTROL_REMOTE_SIGNATURE_SECRET=<optional-hmac-secret>
-DEVELOPER_CONTROL_SERVICE_PROVIDER=TechAyo Limited
-DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=
+DEVELOPER_CONTROL_SERVICE_PROVIDER=
+DEVELOPER_CONTROL_DISABLED_CONTACT_URL=https://example.com/support
+DEVELOPER_CONTROL_DISABLED_CONTACT_PHONE=+44 20 0000 0000
 DEVELOPER_CONTROL_SUSPENDED_TITLE=Service has been suspended
 DEVELOPER_CONTROL_SUSPENDED_MESSAGE=Your services have been suspended. Please contact your service provider.
-DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_URL=https://example.com/support
+DEVELOPER_CONTROL_SUSPENDED_CONTACT_PHONE=+44 20 0000 0000
 ```
 
 When enabled, FNLLA polls the configured HTTPS endpoint and sends only technical
@@ -555,6 +557,7 @@ The expected response schema is `fnlla.techayo_remote_control_state.v2`:
   "title": "Service has been suspended",
   "message": "Your services have been suspended. Please contact your service provider.",
   "contact": "support@example.com",
+  "contact_url": "https://example.com/support",
   "contact_phone": "+44 20 0000 0000",
   "updated_at": "2026-08-29T12:00:00+00:00",
   "updated_by": "authorized-operator",
@@ -563,17 +566,9 @@ The expected response schema is `fnlla.techayo_remote_control_state.v2`:
 }
 ```
 
-Valid `status` values are `open`, `disabled` and `suspended`. `disabled` is a
-technical project lock, while `suspended` is reserved for service-provider
-decisions such as unpaid or inactive service. FNLLA still accepts the legacy
-`disabled` boolean for compatibility, but new adapters should publish `status`
-and `reason` explicitly.
+Valid `status` values are `open`, `paused`, `disabled` and `suspended`. `paused` covers developer-owned pauses, maintenance mode and security-review notices. `disabled` remains accepted as a technical project lock for compatibility, while `suspended` is reserved for service-provider decisions such as unpaid or inactive service. FNLLA still accepts the legacy `disabled` boolean for compatibility, but new adapters should publish `status` and `reason` explicitly.
 
-The local Developer Panel service-control form exposes common public-service
-scenarios: open, paused by developer, maintenance window, payment overdue
-suspension, contract suspension and security review. These local scenarios write
-the same `status`, `reason`, title, message, email contact and optional phone
-contact shape that the remote adapter consumes.
+The local Developer Panel service-control form exposes common public-service scenarios: open, paused by developer, maintenance mode, payment overdue suspension, contract suspension and security review. The selected scenario controls the visible fields: open shows a clear-state note, maintenance shows the maintenance password fields, and pause or suspension scenarios show public message and support-contact fields. `Maintenance mode` enables password-protected maintenance access from the same Save service control action, while the other pause and suspension scenarios write the same `status`, `reason`, title, message, email contact, optional support URL and optional phone contact shape that the remote adapter consumes.
 
 The external operations service is responsible for operator login, project
 authorization, central audit, billing/account policy and emergency decisions.
@@ -729,6 +724,46 @@ php fnlla project:acceptance --json
 php fnlla ops:backup-plan --verify
 php fnlla perf:budget --iterations=5 --max-regression=20 --max-regression-ms=1000
 ```
+
+## Public Launch Readiness
+
+Developer Panel changes can be treated as public-launch candidates only after the
+source checkout, generated starter and update-source copy are reviewed together.
+The expected pre-launch pass is:
+
+- review `git status --short` and `git diff --stat`, then inspect the changed
+  controller, route, view, asset, documentation and test files as one change set;
+- run the focused Developer Panel and customer-portal tests in the source tree,
+  the generated starter and the update-source copy;
+- run a browser smoke through an unlocked Developer Panel session on desktop and
+  mobile for Dashboard, Project identity, Developer access, Client review access
+  and Access & preview / Service Control;
+- verify the old `Access & security` label is absent from rendered panel pages;
+- verify `/developer/panel/access` redirects to Developer access,
+  `/developer/panel/access/developer` renders developer accounts/security and
+  `/developer/panel/access/client` renders customer-review invitations;
+- verify `/client` stays unavailable before a customer invitation exists and the
+  customer portal remains read-only after an invitation is created;
+- compare SHA-256 hashes for synchronized Developer Panel files across the
+  framework source, generated starter and update-source copy.
+
+Known limitations must be explicit in release notes and public copy:
+
+- Client review access is a read-only project-review portal, not a full customer
+  account system or CRM.
+- `/client` is intentionally unavailable until at least one customer invitation
+  exists; customers never enter the Developer Panel.
+- Passkeys are adapter-readiness metadata. FNLLA does not bundle a WebAuthn
+  provider or key-attestation store.
+- Public GitHub release assets are not the same as public Composer registry
+  availability. Registry metadata, registry installation and verified consumer
+  installation remain governed by the modernization ledger.
+- Normal PHP request lifecycle is the supported runtime model. Long-lived worker
+  isolation and comparative framework benchmarks remain unfinished acceptance
+  criteria until the ledger says otherwise.
+- Application production recovery requires application-owned backup/restore,
+  secrets and external-provider evidence; framework-local synthetic recovery is
+  not enough for a real customer deployment.
 
 ## Product Message
 

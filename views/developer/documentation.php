@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Fnlla\Php\Support\DeveloperPanelLabels;
 
-$developerPanelTitle = "Documentation & Policy";
+$developerPanelTitle = "Reference: Documentation & policy";
 $developerPanelLead = "Operational, descriptive, policy and technical reference for FNLLA public surfaces and the Developer Panel.";
 $policy = is_array($developerPolicy ?? null) ? $developerPolicy : [];
 $boundary = (array) ($policy["boundary"] ?? []);
@@ -243,7 +243,7 @@ $manualChapters = [
         "text" => "Framework Updates is a controlled workflow: check source, inspect dry-run output, review blocked items, apply only when policy allows it and validate the project afterwards.",
         "items" => [
             "Major updates require compatibility review before apply.",
-            "Production apply should be tied to backup, maintenance window and CI/CD approval.",
+            "Production apply should be tied to backup, maintenance mode and CI/CD approval.",
             "Keep accepted risk and unresolved decisions visible in Review queue or technical debt.",
         ],
     ],
@@ -313,7 +313,7 @@ $runbookDocs = [
         "text" => "Use this sequence immediately after generating or claiming a project.",
         "items" => [
             "Confirm APP_NAME, APP_TAGLINE and public URL before sharing the build.",
-            "Open Operations > Access & security and create at least one named developer account.",
+            "Open Operations > Developer access and create at least one named developer account.",
             "Set preview-lock behavior and leadership visibility before client handover.",
         ],
     ],
@@ -322,7 +322,7 @@ $runbookDocs = [
         "text" => "Use this when a private preview link is about to be sent to a client.",
         "items" => [
             "Open Workspace > Project identity and confirm identity, leadership and public route state.",
-            "Open Operations > Access & security and confirm developer account state.",
+            "Open Operations > Developer access and confirm developer account state.",
             "Check Project work for blocked or urgent cards.",
             "Review queue and project logs for unresolved release or security notes.",
         ],
@@ -411,7 +411,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Documentation & policy</p>
-              <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-overview", "Overview")) ?></h2>
+              <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-overview", "Overview")) ?></h2>
               <p class="content-text mb-0">A complete in-panel HTML reference for the FNLLA framework, the public starter surface, the private Developer Panel, policy boundaries and installation facts. Official framework identity lives at <?= h($officialUrl) ?> and remains separate from downstream project branding.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -432,7 +432,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-operating-map" aria-label="Documentation operating map">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-operating-map", "Operating map")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-operating-map", "Operating map")) ?></h2>
             <span class="developer-dashboard-refresh">Where to start</span>
           </div>
           <div class="developer-documentation-operating-map">
@@ -448,7 +448,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-start" aria-label="FNLLA in-panel manual">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-start", "Start here")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-start", "Start here")) ?></h2>
             <span class="developer-dashboard-refresh">Complete HTML manual</span>
           </div>
           <div class="developer-documentation-chapter-grid">
@@ -469,7 +469,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-framework" aria-label="FNLLA framework documentation">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-framework", "FNLLA framework")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-framework", "FNLLA framework")) ?></h2>
             <span class="developer-dashboard-refresh">What the framework owns</span>
           </div>
           <div class="developer-documentation-grid">
@@ -485,7 +485,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-policy-boundary" aria-label="Policy boundary documentation">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-policy-boundary", "Policy boundary")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-policy-boundary", "Policy boundary")) ?></h2>
             <span class="developer-dashboard-refresh">Framework vs project ownership</span>
           </div>
           <div class="developer-policy-map">
@@ -512,7 +512,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-leadership" aria-label="Project leadership documentation">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Project leadership</h2>
+            <h2 class="dashboard-section-title">Project leadership</h2>
             <span class="developer-dashboard-refresh">Responsibility, not promotion</span>
           </div>
           <div class="developer-dashboard-overview-grid">
@@ -536,7 +536,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-public" aria-label="FNLLA public documentation">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-public", "FNLLA Public")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-public", "FNLLA Public")) ?></h2>
             <span class="developer-dashboard-refresh">Client-facing layer</span>
           </div>
           <div class="developer-documentation-grid">
@@ -552,7 +552,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-developer-panel" aria-label="Developer Panel documentation">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-developer-panel", "Developer Panel")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-developer-panel", "Developer Panel")) ?></h2>
             <span class="developer-dashboard-refresh">Private operations layer</span>
           </div>
           <div class="developer-documentation-grid">
@@ -568,7 +568,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-runbooks" aria-label="Operational runbooks">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-runbooks", "Runbooks")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-runbooks", "Runbooks")) ?></h2>
             <span class="developer-dashboard-refresh">How to use the panel</span>
           </div>
           <div class="developer-documentation-grid">
@@ -589,7 +589,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-config-storage" aria-label="Configuration and storage map">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-config-storage", "Config & data")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-config-storage", "Config & data")) ?></h2>
             <span class="developer-dashboard-refresh">Configuration and data map</span>
           </div>
           <div class="developer-dashboard-overview-grid developer-documentation-map-stack">
@@ -620,7 +620,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-technical-reference" aria-label="Technical reference">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-technical-reference", "Technical reference")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-technical-reference", "Technical reference")) ?></h2>
             <span class="developer-dashboard-refresh">Contracts and stable identifiers</span>
           </div>
           <div class="developer-dashboard-overview-grid developer-documentation-map-stack">
@@ -650,7 +650,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-changelog" aria-label="FNLLA changelog">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-changelog", "Changelog")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-changelog", "Changelog")) ?></h2>
             <span class="developer-dashboard-refresh">Current release line</span>
           </div>
           <article class="developer-dashboard-card developer-dashboard-card-wide">
@@ -669,7 +669,7 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section" id="docs-source-reference" aria-label="Source-backed FNLLA documentation">
           <div class="developer-dashboard-section-head">
             <div>
-              <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-source-reference", "Source manual")) ?></h2>
+              <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-source-reference", "Source manual")) ?></h2>
               <p class="content-text mb-0">Source-backed FNLLA docs are rendered here as HTML so developers can read the maintained framework reference without opening raw Markdown files.</p>
             </div>
             <span class="developer-dashboard-refresh"><?= h((string) count($sourceDocumentation)) ?> source documents</span>
@@ -700,7 +700,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" id="docs-installation-facts" aria-label="Installation facts">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title"><?= h($documentationSectionTitle("docs-installation-facts", "Installation facts")) ?></h2>
+            <h2 class="dashboard-section-title"><?= h($documentationSectionTitle("docs-installation-facts", "Installation facts")) ?></h2>
             <span class="developer-dashboard-refresh">Current installation context</span>
           </div>
           <article class="developer-dashboard-card developer-dashboard-card-wide">

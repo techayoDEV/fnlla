@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Review Queue";
+$developerPanelTitle = "Operations: Review queue";
 $developerPanelLead = "Global decision queue for actionable Developer Panel alerts, release checks and setup follow-up.";
 $report = is_array($notificationsReport ?? null) ? (array) $notificationsReport : [];
 $queue = is_array($developerReviewQueue ?? null) ? (array) $developerReviewQueue : [];
@@ -39,7 +39,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Review queue</p>
-              <h2 class="developer-dashboard-section-title">Prioritized decision list for release and operations work.</h2>
+              <h2 class="dashboard-section-title">Prioritized decision list for release and operations work.</h2>
               <p class="content-text mb-0">The header bell, dashboard and Operations view use this same queue. Resolve critical items first, then clear warnings and informational review items.</p>
             </div>
             <div class="developer-panel-intro-actions">
@@ -180,7 +180,7 @@ require __DIR__ . "/panel-header.php";
         <?php if ($archivedItems !== []): ?>
         <section class="developer-dashboard-section" aria-label="Archived developer notifications">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Archived notifications</h2>
+            <h2 class="dashboard-section-title">Archived notifications</h2>
             <span class="developer-dashboard-refresh">Restore if the item needs attention again</span>
           </div>
           <div class="developer-notification-list developer-notification-list-archived">

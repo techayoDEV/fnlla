@@ -56,7 +56,7 @@ $dashboardNotificationSourceFor = static function (array $item): string {
     }
 
     if (str_contains($key, "totp") || str_contains($key, "access") || str_contains($key, "security")) {
-        return "Access & security";
+        return "Developer access";
     }
 
     if (str_contains($key, "readiness") || str_contains($key, "backup") || str_contains($key, "audit")) {
@@ -81,7 +81,7 @@ require __DIR__ . "/panel-header.php";
 ?>
 
         <section class="developer-dashboard-section" aria-label="Project overview">
-          <h2 class="developer-dashboard-section-title">Project overview</h2>
+          <h2 class="dashboard-section-title">Project overview</h2>
           <div class="developer-dashboard-overview-grid">
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Project identity</p>
@@ -110,7 +110,7 @@ require __DIR__ . "/panel-header.php";
               <h3><?= h((string) $developerCount) ?> named <?= $developerCount === 1 ? "developer" : "developers" ?></h3>
               <p class="developer-dashboard-status <?= $developerCount > 0 ? "is-active" : "is-neutral" ?>"><?= $developerCount > 0 ? "Access configured" : "Access not configured" ?></p>
               <p class="content-text">Each developer can use a unique email and password while project settings stay global.</p>
-              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["access"] ?? route("developer.panel.access"))) ?>">Manage access</a>
+              <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["developer_access"] ?? route("developer.panel.access.developer"))) ?>">Manage developer access</a>
             </article>
 
             <article class="developer-dashboard-card">
@@ -124,6 +124,10 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Dashboard notifications">
+          <div class="developer-dashboard-section-head">
+            <h2 class="dashboard-section-title">Notification inbox</h2>
+          </div>
+
           <details class="developer-dashboard-notification-drawer">
             <summary>
               <span>
@@ -158,7 +162,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Environment status">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Environment status</h2>
+            <h2 class="dashboard-section-title">Environment status</h2>
             <span class="developer-dashboard-refresh">Last checked: just now</span>
           </div>
           <div class="developer-environment-strip" role="list">
@@ -192,7 +196,7 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="Management actions">
-          <h2 class="developer-dashboard-section-title">Management</h2>
+          <h2 class="dashboard-section-title">Management</h2>
           <div class="developer-dashboard-management-list">
             <article class="developer-dashboard-management-row">
               <div>
@@ -241,7 +245,7 @@ require __DIR__ . "/panel-header.php";
 
         <section class="developer-dashboard-section" aria-label="Recent developer activity">
           <div class="developer-dashboard-section-head">
-            <h2 class="developer-dashboard-section-title">Developer activity</h2>
+            <h2 class="dashboard-section-title">Developer activity</h2>
             <span class="developer-dashboard-refresh">Shared across all developer sessions</span>
           </div>
           <?php if ($developerActivity === []): ?>
@@ -262,7 +266,7 @@ require __DIR__ . "/panel-header.php";
         </section>
 
         <section class="developer-dashboard-section" aria-label="At a glance">
-          <h2 class="developer-dashboard-section-title">At a glance</h2>
+          <h2 class="dashboard-section-title">At a glance</h2>
           <div class="developer-dashboard-glance-table">
             <?php foreach ($atAGlance as $row): ?>
             <div class="developer-dashboard-glance-row">

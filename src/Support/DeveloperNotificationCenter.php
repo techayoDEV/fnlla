@@ -30,7 +30,7 @@ final class DeveloperNotificationCenter
         }
 
         if (self::containsAny($key, ["totp", "access", "security"])) {
-            return "Access & security";
+            return "Developer access";
         }
 
         if (self::containsAny($key, ["readiness", "backup", "audit"])) {
@@ -66,7 +66,7 @@ final class DeveloperNotificationCenter
         }
 
         if (self::containsAny($key, ["totp", "access", "security"])) {
-            return (string) ($developerLinks["security"] ?? route("developer.panel.access"));
+            return (string) ($developerLinks["security"] ?? route("developer.panel.access.developer") . "#developer-security");
         }
 
         if (self::containsAny($key, ["readiness", "backup", "audit"]) || str_contains($action, "readiness")) {

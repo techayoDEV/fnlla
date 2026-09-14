@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$developerPanelTitle = "Framework Updates";
+$developerPanelTitle = "Release & readiness: Framework updates";
 $developerPanelLead = "Official FNLLA update checks, dry-runs and safe apply controls inside the developer workspace.";
 $pageState = is_array($frameworkUpdatePageState ?? null) ? (array) $frameworkUpdatePageState : [];
 $lock = is_array($frameworkUpdateLock ?? null) ? (array) $frameworkUpdateLock : [];
@@ -19,7 +19,7 @@ require __DIR__ . "/panel-header.php";
           <div class="developer-panel-intro">
             <div class="developer-panel-intro-copy">
               <p class="feature-kicker">Framework update command center</p>
-              <h2 class="developer-dashboard-section-title">Check, dry-run and apply only the safe part of official FNLLA updates.</h2>
+              <h2 class="dashboard-section-title">Check, dry-run and apply only the safe part of official FNLLA updates.</h2>
               <p class="content-text mb-0">The workflow below keeps the source explicit, validates official release metadata and separates safe framework changes from files that need manual merge review.</p>
             </div>
             <div class="developer-panel-intro-actions">
