@@ -41,6 +41,7 @@
 .env export-ignore
 .env.* export-ignore
 .env.example -export-ignore
+.env.platform.example -export-ignore
 .env.full.example -export-ignore
 /.fnlla/ export-ignore
 /framework/ export-ignore
