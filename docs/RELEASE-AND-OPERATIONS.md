@@ -18,8 +18,9 @@ is bundled.
 
 Long-lived HTTP workers, independently removable Platform modules and comparative
 Laravel/Symfony performance claims are outside this release scope. Package mode
-remains opt-in; bundled Composer path packages do not establish public registry
-availability. Application recovery objectives require application-owned evidence.
+remains opt-in; bundled Composer path packages are separate from the public
+GitHub VCS installation flow. Application recovery objectives require
+application-owned evidence.
 These boundaries do not close the corresponding modernization tasks.
 
 Before announcing availability, record the exact clean commit and successful
@@ -30,12 +31,11 @@ Review supported proxy/SAPI deployment requirements and any remaining limitation
 Test the exact downloadable artifacts before recommending them to consumers;
 do not substitute a working-tree export for the release download.
 
-Public launch and public package launch are separate decisions. A public GitHub
-release can make source archives available, but Composer registry metadata,
-registry installation and verified consumer installation remain incomplete until
-`resources/modernization-tasks.json` marks `public-package-channel` done. Do not
-advertise Composer registry installation or a stable package channel before that
-verification exists and publication has explicit maintainer approval.
+Public launch and public package launch are separate decisions. FNLLA Core uses
+GitHub as its public source, release and Composer VCS installation channel, with
+`https://fnlla.com` as the public website and documentation hub. Do not advertise
+any alternate package index as an official source unless a future maintainer
+decision explicitly introduces one.
 
 Core Quality also runs release preparation inside `git archive` output, with
 private storage and editable branding masters absent. Its test bootstrap creates
@@ -241,8 +241,9 @@ This is the canonical checklist for both incremental and major releases.
 7. Push the approved candidate and require Core Quality, Hardening and Release
    Gate to pass for that exact commit. Inspect every matrix job, not an older
    green run or a workflow still in progress.
-8. Inspect source archives, SBOMs and checksums; verify consumer installation and
-   upgrade from the actual immutable artifacts. Preserve evidence privately.
+8. Inspect source archives, SBOMs and checksums; verify consumer installation
+   from the public GitHub VCS repository and upgrade from the actual immutable
+   artifacts. Preserve evidence privately.
 9. Obtain separate tag/publication approval. Align release notes, version/runtime
    metadata and migration instructions; attach only reviewed release assets.
 

@@ -86,7 +86,7 @@ layout and asset/CSS isolation before adding screens.
 
 Optional PSR-3/11/7/15, SMTP and deployment adapters have package documentation and
 contract tests. Use standard interfaces and proven transports. A local Composer
-path package is not proof of public registry publication.
+path package is not proof of public GitHub VCS consumer installation.
 
 Core and full FNLLA need a common versioned ownership contract for assets, config,
 routes and package removal. Test actual published upgrades while preserving

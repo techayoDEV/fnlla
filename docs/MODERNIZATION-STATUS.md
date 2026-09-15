@@ -7,7 +7,7 @@ This ledger describes the architecture acceptance for edition **2.2.0**.
 versions; the ledger is not an availability announcement. Do not retag or reuse a published version.
 
 The [JSON ledger](../resources/modernization-tasks.json) is the sole live register.
-Current totals: **21 done, 2 partial, 2 open, 1 blocked**. Document consolidation
+Current totals: **22 done, 2 partial, 2 open, 0 blocked**. Document consolidation
 does not change acceptance or erase unfinished work. In particular, the 2.2.0
 database defaults, updated security policy, tooling fixes and unified brand kit
 are implemented improvements, not evidence that the five remaining architecture
@@ -17,10 +17,10 @@ The v2.2.0 GitHub release and CI evidence close the previous upgrade and HTTP
 edge criteria: the maintained workflow consumes the accepted source archive,
 exercises the FNLLA, FNLLA Core and package previews through Nginx TLS ingress, an
 origin proxy, PHP-FPM 8.3 and OPcache, and the release assets are public. This
-does not close public Composer registry installation, application-owned recovery,
-long-lived worker isolation, package uninstallability or comparative framework
-benchmarking. Notification delivery and website hosting are separate operational
-checks, not inferred from repository configuration.
+does not close application-owned recovery, long-lived worker isolation, package
+uninstallability or comparative framework benchmarking. Notification delivery and
+website hosting are separate operational checks, not inferred from repository
+configuration.
 
 ## Remaining Acceptance
 
@@ -30,7 +30,6 @@ checks, not inferred from repository configuration.
 | Partial | Business recovery | Application-specific offsite schedule, secrets, consistent restore and external-effect reconciliation. |
 | Open | HTTP workers | Sequential/concurrent globals, statics and session isolation; normal PHP requests remain supported. |
 | Open | Comparative benchmarks | Pinned equivalent applications, cold/warm latency percentiles and memory. |
-| Blocked | Public packages | Composer registry metadata, registry installation and verified consumer installation. |
 
 Implemented criteria and source/test evidence remain in the ledger. See
 [Architecture](ARCHITECTURE-ROADMAP.md), [Runtime contracts](framework/RUNTIME-CONTRACTS.md)
@@ -65,7 +64,7 @@ release records. Do not publish credentials, customer domains, workstation paths
 or private evidence locations in framework documentation.
 
 Synthetic restores do not prove production RPO/RTO. Local packages do not prove
-registry installation. Module toggles are not uninstallers. Artifacts prepared
+public GitHub VCS installation. Module toggles are not uninstallers. Artifacts prepared
 with --skip-tests do not establish release readiness.
 
 ```console

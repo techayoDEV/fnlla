@@ -773,9 +773,9 @@ Known limitations must be explicit in release notes and public copy:
   exists; customers never enter the Developer Panel.
 - Passkeys are adapter-readiness metadata. FNLLA does not bundle a WebAuthn
   provider or key-attestation store.
-- Public GitHub release assets are not the same as public Composer registry
-  availability. Registry metadata, registry installation and verified consumer
-  installation remain governed by the modernization ledger.
+- FNLLA Core's public package channel is GitHub plus the `fnlla.com` entrypoint.
+  Consumer installation evidence should verify the public GitHub VCS repository,
+  not an alternate package index.
 - Normal PHP request lifecycle is the supported runtime model. Long-lived worker
   isolation and comparative framework benchmarks remain unfinished acceptance
   criteria until the ledger says otherwise.

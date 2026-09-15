@@ -104,15 +104,17 @@ preview, analytics, heatmaps, Kanban, AI, UI assets or their update scripts.
 Application classes live in `app/` under `App\\`; the engine is the independent
 `techayodev/fnlla-core` Composer library in `packages/fnlla-core/`.
 
-Run `composer install` in the export. The bundled path repository needs no
-public package registry; Composer mirrors it into `vendor/`. Before installation,
-the offline bootstrap resolves the bundled package directly. No absolute source
-workspace paths are embedded. Test with `php scripts/test.php`, lint with
+Run `composer install` in the export. The bundled path repository is local to the
+export; Composer mirrors it into `vendor/`. Before installation, the offline
+bootstrap resolves the bundled package directly. No absolute source workspace
+paths are embedded. Test with `php scripts/test.php`, lint with
 `php scripts/lint.php` and inspect routes with `php fnlla route:list`.
 
 Core uses Composer dependency updates, not `framework:update`. Its README
 documents replacing the reviewed bundled package and updating the exact version.
-A public Composer release channel is not yet published.
+The public FNLLA Core source and Composer VCS install channel is
+`https://github.com/techayoDEV/fnlla-core`, with `https://fnlla.com` as the
+public website and documentation hub.
 
 When a Core project later needs Developer Panel, Client Portal, diagnostics,
 analytics or FIONN AI integration, use the guarded upgrade command:
