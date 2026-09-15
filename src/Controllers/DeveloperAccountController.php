@@ -21,6 +21,7 @@ use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 use Fnlla\Php\Support\ProjectLeadership;
 use Fnlla\Php\Validation\ValidationException;
 
@@ -426,6 +427,10 @@ final class DeveloperAccountController extends DeveloperPanelController
     private function sendCustomerInvitationMail(Mailer $mailer, array $account, string $url, string $expiresAt): void
     {
         $projectName = (string) config("app.name", "FNLLA Project");
+        $panelBrand = PanelBranding::state();
+        $brandName = $panelBrand["name"] !== "" ? $panelBrand["name"] : $projectName;
+        $copyright = trim((string) $panelBrand["copyright"]);
+        $poweredBy = (string) $panelBrand["powered_by"];
         $name = trim((string) ($account["name"] ?? "Customer"));
         $email = strtolower(trim((string) ($account["email"] ?? "")));
 
@@ -435,11 +440,15 @@ final class DeveloperAccountController extends DeveloperPanelController
 
         $expiresLabel = $expiresAt !== "" ? $expiresAt : "the configured invitation window";
         $html = "<p>Hello " . h($name) . ",</p>"
-            . "<p>You have been invited to the customer portal for " . h($projectName) . ".</p>"
+            . "<p>You have been invited to the customer portal for " . h($projectName) . " by " . h($brandName) . ".</p>"
             . "<p><a href=\"" . h($url) . "\">Set your customer portal password</a></p>"
-            . "<p>This first-login link expires at " . h($expiresLabel) . ".</p>";
-        $text = "Hello {$name},\n\nYou have been invited to the customer portal for {$projectName}.\n\nSet your customer portal password:\n{$url}\n\nThis first-login link expires at {$expiresLabel}.";
+            . "<p>This first-login link expires at " . h($expiresLabel) . ".</p>"
+            . ($copyright !== "" ? "<p>" . h($copyright) . "</p>" : "")
+            . "<p>" . h($poweredBy) . "</p>";
+        $text = "Hello {$name},\n\nYou have been invited to the customer portal for {$projectName} by {$brandName}.\n\nSet your customer portal password:\n{$url}\n\nThis first-login link expires at {$expiresLabel}."
+            . ($copyright !== "" ? "\n\n{$copyright}" : "")
+            . "\n{$poweredBy}";
 
-        $mailer->send($email, "Project access invitation for " . $projectName, $html, $text);
+        $mailer->send($email, "Project access invitation for " . $projectName . " from " . $brandName, $html, $text);
     }
 }

@@ -19,7 +19,7 @@ POSTS = [
      'Actual FNLLA 2.2.0 / configured demo / dashboard detail'),
     ('02-setup', 'PROJECT SETUP', 'Your project.\nYour identity.',
      'Start locally with your own application\nname and developer access.', 'setup',
-     'Actual full starter / fresh first-run setup / cropped view'),
+      'Actual FNLLA / fresh first-run setup / cropped view'),
     ('03-diagnostics', 'DEVELOPMENT DIAGNOSTICS', 'Understand\neach request.',
      'Inspect status, timing and memory\nfrom your development workspace.', 'diagnostics',
      'Configured demo / local request sample, not a benchmark'),

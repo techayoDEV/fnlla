@@ -52,7 +52,7 @@ Projects that enable local learning should store reviewed records under
 exported or reviewed by humans. The integrated bundle remains read-only
 framework material.
 
-FIONN AI is created by TechAyo; its gateway is built into the full starter.
+FIONN AI is created by TechAyo; its gateway is built into the FNLLA starter.
 FIONN AI-specific memory, private knowledge, model packages, evals, learning queue
 state and service implementation do not belong in this repository. FNLLA keeps
 only a small opt-in HTTP bridge contract in `FionnRuntimeBridge`; the FIONN AI

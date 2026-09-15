@@ -48,11 +48,11 @@ final class TechAyoRemoteControlPlugin
                 ],
             ],
             "admin_responsibilities" => [
-                "authenticate each TechAyo operator separately",
+                "authenticate each remote-control operator separately",
                 "authorize which project can be remotely controlled",
-                "return only the open, disabled or suspended service state required by FNLLA",
+                "return only the open, disabled or suspended service state required by the FNLLA runtime",
                 "store the central audit trail outside the public project",
-                "avoid sending private customer or FIONN AI knowledge to FNLLA",
+                "avoid sending private customer data, AI-provider knowledge or product logic to the remote-control provider",
             ],
             "project_responsibilities" => [
                 "configure endpoint, project id, token and optional signature secret",

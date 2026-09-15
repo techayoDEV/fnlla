@@ -242,7 +242,7 @@ final class ReleaseArtifactBuilder
             || in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), $this->excludedExtensions, true)) {
             return true;
         }
-        if (str_starts_with($name, ".env") && !in_array($name, [".env.example", ".env.full.example"], true)) {
+        if (str_starts_with($name, ".env") && !in_array($name, [".env.example", ".env.platform.example"], true)) {
             return true;
         }
 

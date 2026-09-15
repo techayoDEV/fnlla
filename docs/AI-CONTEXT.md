@@ -1,6 +1,6 @@
 # FNLLA AI Context
 
-FNLLA is an AI-ready web framework, not a local AI engine. The full starter
+FNLLA is an AI-ready web framework, not a local AI engine. The FNLLA starter
 includes a gateway to **FIONN AI, Persistent Personal Intelligence created by
 TechAyo**, plus optional OpenAI API / Anthropic API integrations. FIONN AI
 requires an appropriate developer account, API access and explicit configuration.
@@ -218,13 +218,13 @@ not model capabilities.
 
 ## Controlled FIONN AI Bridge
 
-The full starter includes a built-in gateway to **FIONN AI, Persistent Personal
+The FNLLA starter includes a built-in gateway to **FIONN AI, Persistent Personal
 Intelligence created by TechAyo**. A FIONN developer account with suitable API
 access and credentials is required for the service. FNLLA does not register or
 link accounts automatically, include API credit or provide a local FIONN model.
 The gateway is shipped code; the brain runs as a separately configured service.
 Its HTTP connection remains opt-in. Built-in does not mean bundled model weights
-or an already-running service, and the core-only plain profile excludes this surface.
+or an already-running service, and the FNLLA Core profile excludes this surface.
 
 The external provider owns its data, models and implementation. FNLLA ships only
 an explicit HTTP adapter and its validation policy. The fionn driver name and
@@ -336,11 +336,11 @@ responsibility. FNLLA does not call learning or administration endpoints.
 
 ## OpenAI API And Anthropic API
 
-The full starter includes two opt-in, server-side text-generation adapters:
+The FNLLA starter includes two opt-in, server-side text-generation adapters:
 `OpenAiRuntimeProvider` uses OpenAI Responses; `AnthropicRuntimeProvider` uses
 the Claude Platform Messages API. These are API integrations, not ChatGPT/Claude
 chat-app subscriptions, bundled models, endorsements or autonomous agents.
-The plain profile remains core-only and does not include the AI surface.
+The FNLLA Core profile remains core-only and does not include the AI surface.
 
 Configure Developer Panel > Integrations > AI providers with
 `panel.settings.write` permission, or use `.env`:

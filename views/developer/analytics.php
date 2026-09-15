@@ -377,49 +377,69 @@ require __DIR__ . "/panel-header.php";
         <section class="developer-dashboard-section" aria-label="Analytics settings">
           <div class="developer-dashboard-section-head">
               <h2 class="dashboard-section-title">Internal analytics settings <span class="developer-info-tip" tabindex="0" aria-label="These settings affect local FNLLA metrics only.">i<span>These switches configure first-party storage, sampling, retention and bot filtering for this project.</span></span></h2>
-            <span class="developer-dashboard-refresh">Saved to project .env</span>
           </div>
           <form class="form developer-analytics-settings-form" action="<?= h(route("developer.panel.analytics.settings")) ?>" method="post">
             <?= csrf_field() ?>
-            <label class="developer-analytics-toggle">
-              <input type="hidden" name="observability_metrics_enabled" value="0">
-              <input type="checkbox" name="observability_metrics_enabled" value="1" <?= ($settings["metrics_enabled"] ?? true) ? "checked" : "" ?>>
-              <span><strong>Request metrics</strong><small>Collect aggregate request counters and response timing.</small></span>
-            </label>
-            <label class="developer-analytics-toggle">
-              <input type="hidden" name="observability_analytics_enabled" value="0">
-              <input type="checkbox" name="observability_analytics_enabled" value="1" <?= ($settings["analytics_enabled"] ?? true) ? "checked" : "" ?>>
-              <span><strong>Analytics cockpit</strong><small>Record aggregate page-view, source, form and route analytics.</small></span>
-            </label>
-            <label class="developer-analytics-toggle">
-              <input type="hidden" name="observability_analytics_bot_filtering" value="0">
-              <input type="checkbox" name="observability_analytics_bot_filtering" value="1" <?= ($settings["bot_filtering"] ?? true) ? "checked" : "" ?>>
-              <span><strong>Bot filtering</strong><small>Exclude obvious bot user agents from page-view analytics.</small></span>
-            </label>
-            <label class="developer-analytics-toggle">
-              <input type="hidden" name="observability_analytics_device_detection" value="0">
-              <input type="checkbox" name="observability_analytics_device_detection" value="1" <?= ($settings["device_detection"] ?? true) ? "checked" : "" ?>>
-              <span><strong>Device aggregation</strong><small>Store desktop, mobile, tablet or unknown buckets only.</small></span>
-            </label>
-            <label class="developer-analytics-toggle">
-              <input type="hidden" name="observability_analytics_track_query_strings" value="0">
-              <input type="checkbox" name="observability_analytics_track_query_strings" value="1" <?= ($settings["track_query_strings"] ?? false) ? "checked" : "" ?>>
-              <span><strong>Query strings</strong><small>Keep disabled unless the project explicitly needs route-level query analytics.</small></span>
-            </label>
-            <div class="form-group developer-analytics-setting-field">
-              <label class="label" for="observability-analytics-retention">Retention days</label>
-              <input class="input" id="observability-analytics-retention" name="observability_analytics_retention_days" type="number" min="1" max="730" value="<?= h((string) ($settings["retention_days"] ?? 90)) ?>">
-            </div>
-            <div class="form-group developer-analytics-setting-field">
-              <label class="label" for="observability-analytics-sample">Sample rate</label>
-              <input class="input" id="observability-analytics-sample" name="observability_analytics_sample_rate" type="number" min="1" max="100" value="<?= h((string) ($settings["sample_rate"] ?? 100)) ?>">
-            </div>
-            <div class="form-group developer-analytics-setting-field">
-              <label class="label" for="observability-slow-threshold">Slow route threshold ms</label>
-              <input class="input" id="observability-slow-threshold" name="observability_slow_route_threshold_ms" type="number" min="50" max="30000" value="<?= h((string) ($settings["slow_route_threshold_ms"] ?? 750)) ?>">
-            </div>
-            <div class="developer-analytics-setting-action">
-              <button class="btn btn-primary" type="submit">Save analytics settings</button>
+            <div class="developer-analytics-settings-panel">
+              <div class="developer-analytics-settings-group">
+                <div class="developer-analytics-settings-copy">
+                  <p class="feature-kicker">Collection controls</p>
+                  <strong>Aggregate signals</strong>
+                  <span>Choose which first-party analytics signals are recorded for this project.</span>
+                </div>
+                <div class="developer-analytics-toggle-grid">
+                  <label class="developer-analytics-toggle">
+                    <input type="hidden" name="observability_metrics_enabled" value="0">
+                    <input type="checkbox" name="observability_metrics_enabled" value="1" <?= ($settings["metrics_enabled"] ?? true) ? "checked" : "" ?>>
+                    <span><strong>Request metrics</strong><small>Collect aggregate request counters and response timing.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="hidden" name="observability_analytics_enabled" value="0">
+                    <input type="checkbox" name="observability_analytics_enabled" value="1" <?= ($settings["analytics_enabled"] ?? true) ? "checked" : "" ?>>
+                    <span><strong>Analytics cockpit</strong><small>Record aggregate page-view, source, form and route analytics.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="hidden" name="observability_analytics_bot_filtering" value="0">
+                    <input type="checkbox" name="observability_analytics_bot_filtering" value="1" <?= ($settings["bot_filtering"] ?? true) ? "checked" : "" ?>>
+                    <span><strong>Bot filtering</strong><small>Exclude obvious bot user agents from page-view analytics.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="hidden" name="observability_analytics_device_detection" value="0">
+                    <input type="checkbox" name="observability_analytics_device_detection" value="1" <?= ($settings["device_detection"] ?? true) ? "checked" : "" ?>>
+                    <span><strong>Device aggregation</strong><small>Store desktop, mobile, tablet or unknown buckets only.</small></span>
+                  </label>
+                  <label class="developer-analytics-toggle">
+                    <input type="hidden" name="observability_analytics_track_query_strings" value="0">
+                    <input type="checkbox" name="observability_analytics_track_query_strings" value="1" <?= ($settings["track_query_strings"] ?? false) ? "checked" : "" ?>>
+                    <span><strong>Query strings</strong><small>Keep disabled unless the project explicitly needs route-level query analytics.</small></span>
+                  </label>
+                </div>
+              </div>
+              <div class="developer-analytics-settings-group developer-analytics-settings-group-parameters">
+                <div class="developer-analytics-settings-copy">
+                  <p class="feature-kicker">Storage policy</p>
+                  <strong>Sampling and retention</strong>
+                  <span>Keep local aggregate storage bounded and flag routes that need attention.</span>
+                </div>
+                <div class="developer-analytics-field-grid">
+                  <div class="form-group developer-analytics-setting-field">
+                    <label class="label" for="observability-analytics-retention">Retention days</label>
+                    <input class="input" id="observability-analytics-retention" name="observability_analytics_retention_days" type="number" min="1" max="730" value="<?= h((string) ($settings["retention_days"] ?? 90)) ?>">
+                  </div>
+                  <div class="form-group developer-analytics-setting-field">
+                    <label class="label" for="observability-analytics-sample">Sample rate</label>
+                    <input class="input" id="observability-analytics-sample" name="observability_analytics_sample_rate" type="number" min="1" max="100" value="<?= h((string) ($settings["sample_rate"] ?? 100)) ?>">
+                  </div>
+                  <div class="form-group developer-analytics-setting-field">
+                    <label class="label" for="observability-slow-threshold">Slow route threshold ms</label>
+                    <input class="input" id="observability-slow-threshold" name="observability_slow_route_threshold_ms" type="number" min="50" max="30000" value="<?= h((string) ($settings["slow_route_threshold_ms"] ?? 750)) ?>">
+                  </div>
+                </div>
+              </div>
+              <div class="developer-analytics-settings-footer">
+                <span>Saved to project .env</span>
+                <button class="btn btn-primary" type="submit">Save analytics settings</button>
+              </div>
             </div>
           </form>
         </section>

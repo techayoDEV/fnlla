@@ -43,7 +43,7 @@ See [LinkedIn's creation and review process](https://www.linkedin.com/help/linke
 427 characters, excluding the surrounding code fence:
 
 ```text
-FNLLA is an open-source web framework with a PHP foundation and developer tools built in. Its full starter combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates, while your application's identity stays yours. Optional workspace tools and a built-in gateway to FIONN AI by TechAyo extend the workflow. FIONN AI requires a separate developer account and API access. MIT-licensed.
+FNLLA is an open-source web framework with a PHP foundation and developer tools built in. FNLLA combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates, while your application's identity stays yours. Optional workspace tools and a built-in gateway to FIONN AI by TechAyo extend the workflow. FIONN AI requires a separate developer account and API access. MIT-licensed.
 ```
 
 ### Pricing Overview
@@ -111,7 +111,7 @@ observability and links to project operations, alongside private navigation.
 
 **Title:** Start with your project's identity.
 
-**Caption:** A fresh full starter opens local Project Setup before developer
+**Caption:** A fresh FNLLA starter opens local Project Setup before developer
 sign-in. Set the application identity and create the first named developer account.
 No shared default credentials. The image shows the upper part of the real form.
 
@@ -192,7 +192,7 @@ Your next web application needs more than a first page.
 
 FNLLA brings a PHP foundation and developer operations together: Project Setup, private developer access, request diagnostics and controlled framework updates.
 
-The full starter gives you a working place to begin. Your application keeps its own identity. FNLLA is open source and MIT-licensed.
+FNLLA gives you a working place to begin. Your application keeps its own identity. FNLLA is open source and MIT-licensed.
 
 Explore FNLLA 2.2.0 and build your first project:
 https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
@@ -225,7 +225,7 @@ Use a text post, not an invented connected-AI screenshot.
 ```text
 AI connectivity should be a choice, not a hidden dependency.
 
-FNLLA's full starter includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. The gateway is built in; the separate AI service is not. A suitable FIONN developer account and API access are required.
+FNLLA includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. The gateway is built in; the separate AI service is not. A suitable FIONN developer account and API access are required.
 
 OpenAI API and Anthropic API adapters are additional opt-in connections. No language model or provider credits are bundled with FNLLA.
 
@@ -243,7 +243,7 @@ not establish a commercial partnership or provider endorsement.
 
 | Name in copy | Accurate description |
 | --- | --- |
-| FIONN AI | Built-in gateway in the full starter; separate TechAyo service, appropriate developer account and API access required |
+| FIONN AI | Built-in gateway in FNLLA; separate TechAyo service, appropriate developer account and API access required |
 | OpenAI API | Additional opt-in integration; developer-provided API credentials and model configuration |
 | Anthropic API | Additional opt-in integration; developer-provided API credentials and model configuration |
 

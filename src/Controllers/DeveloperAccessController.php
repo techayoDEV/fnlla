@@ -21,6 +21,7 @@ use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 use Fnlla\Php\Support\ProjectLeadership;
 use Fnlla\Php\Validation\ValidationException;
 
@@ -50,6 +51,7 @@ final class DeveloperAccessController extends DeveloperPanelController
             "developerLinks" => [
                 "home" => route("home"),
             ],
+            "panelBrand" => PanelBranding::state(),
             "projectSettings" => $this->projectSettings(),
             "developerNotice" => flash("developer_access_notice"),
             "developerTotpRequired" => (bool) flash("developer_access_totp_required", false),

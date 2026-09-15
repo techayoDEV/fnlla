@@ -60,18 +60,18 @@ final class MakeProjectCommandTest extends TestCase
         rmdir($this->targetPath);
     }
 
-    public function testPlainExportHasNoPanelAndPassesRuntimeAndHttpChecks(): void
+    public function testCoreExportHasNoPanelAndPassesRuntimeAndHttpChecks(): void
     {
         $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
-        self::assertSame(0, $command->handle([$this->targetPath, "Plain test", "--profile=plain"]));
-        $this->assertExportBudget(400000, 160);
+        self::assertSame(0, $command->handle([$this->targetPath, "Core test", "--profile=core"]));
+        $this->assertExportBudget(450000, 170);
         $this->assertPrivateStorageAndWindowsLauncher();
         foreach (["views/developer", "views/customer", "views/maintenance", "routes/maintenance.php", "src/Controllers/DeveloperAccessController.php", "public/assets/developer-panel.css"] as $path) {
             self::assertFalse(file_exists($this->targetPath . "/" . $path), $path);
         }
-        self::assertSame("plain", trim((string) file_get_contents($this->targetPath . "/.fnlla/project-profile")));
+        self::assertSame("core", trim((string) file_get_contents($this->targetPath . "/.fnlla/project-profile")));
         foreach (["public/vendor", "src", "config/ai.php", "config/developer_access.php", "packages/fnlla-core/src/Maintenance",
-            "packages/fnlla-core/src/Ai", "packages/fnlla-core/src/Support/optional_helpers.php", "MANIFEST.json", ".env.full.example"] as $path) {
+            "packages/fnlla-core/src/Ai", "packages/fnlla-core/src/Support/optional_helpers.php", "MANIFEST.json", ".env.platform.example"] as $path) {
             self::assertFalse(file_exists($this->targetPath . "/" . $path), $path);
         }
         $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true);
@@ -95,7 +95,7 @@ final class MakeProjectCommandTest extends TestCase
             self::assertSame(0, $exit, $output);
         }
         $cached = require $this->targetPath . "/storage/framework/cache/routes.php";
-        self::assertSame("plain", $cached["profile"]);
+        self::assertSame("core", $cached["profile"]);
         [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["cache:clear"]);
         self::assertSame(0, $exit, $output);
     }
@@ -108,7 +108,7 @@ final class MakeProjectCommandTest extends TestCase
         $command = new MakeProjectCommand($container);
 
         self::assertSame(0, $command->handle([$this->targetPath, "Project Test", "--no-interaction"]));
-        $this->assertExportBudget(4150000, 430);
+        $this->assertExportBudget(4250000, 440);
         $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayNotHasKey("require-dev", $composer);
         self::assertArrayNotHasKey("test:unit", $composer["scripts"]);
@@ -241,7 +241,7 @@ final class MakeProjectCommandTest extends TestCase
         );
         self::assertStringContainsString(
             "FNLLA_OFFICIAL_URL=https://fnlla.com",
-            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.full.example")
+            (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . ".env.platform.example")
         );
         self::assertStringContainsString(
             "MAIL_FROM_ADDRESS=no-reply@example.com",
@@ -679,7 +679,7 @@ final class MakeProjectCommandTest extends TestCase
     public function testFailedCacheRebuildsPreservePreviouslyWorkingExports(): void
     {
         $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
-        self::assertSame(0, $command->handle([$this->targetPath, "Cache test", "--profile=full", "--no-interaction"]));
+        self::assertSame(0, $command->handle([$this->targetPath, "Cache test", "--profile=fnlla", "--no-interaction"]));
         $configPath = $this->targetPath . "/storage/framework/cache/bootstrap-config.php";
         [$exit, $output] = $this->runPhpScript($this->targetPath . "/fnlla", ["config:cache"]);
         self::assertSame(0, $exit, $output);
@@ -708,13 +708,13 @@ final class MakeProjectCommandTest extends TestCase
         self::assertSame($oldRoutes, hash_file("sha256", $routePath));
     }
 
-    public function testCompletePackagePreviewUsesTheSameCoreInventoryAndBootsOffline(): void
+    public function testFnllaPackagePreviewUsesTheSameCoreInventoryAndBootsOffline(): void
     {
         $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
-        self::assertSame(0, $command->handle([$this->targetPath, "Package test", "--profile=full", "--packages", "--no-interaction"]));
+        self::assertSame(0, $command->handle([$this->targetPath, "Package test", "--profile=fnlla", "--packages", "--no-interaction"]));
         $metadata = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayHasKey("techayodev/fnlla-core", $metadata["require"]);
-        self::assertArrayHasKey("techayodev/fnlla-complete", $metadata["require"]);
+        self::assertArrayHasKey("techayodev/fnlla", $metadata["require"]);
         $core = json_decode((string) file_get_contents(base_path("resources/project-templates/v1/core-files.json")), true, 512, JSON_THROW_ON_ERROR);
         foreach ($core["files"] as $path) {
             self::assertSame(hash_file("sha256", base_path($path)), hash_file("sha256", $this->targetPath . "/packages/fnlla-core/" . $path), $path);
@@ -726,11 +726,61 @@ final class MakeProjectCommandTest extends TestCase
         self::assertStringContainsString("developer.panel", $output);
     }
 
+    public function testCoreProjectCanUpgradeToFnllaWithoutReplacingApplicationSurface(): void
+    {
+        $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
+        self::assertSame(0, $command->handle([$this->targetPath, "Upgrade test", "--profile=core", "--no-interaction"]));
+
+        $applicationFiles = [
+            "routes/web.php",
+            "views/pages/home.php",
+            "views/layouts/app.php",
+            "public/assets/app.css",
+        ];
+        $before = [];
+        foreach ($applicationFiles as $path) {
+            $before[$path] = hash_file("sha256", $this->targetPath . "/" . $path);
+        }
+
+        [$planExit, $planOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["fnlla:upgrade", "--source", base_path(), "--json"]);
+        self::assertSame(0, $planExit, $planOutput);
+        $plan = json_decode($planOutput, true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame("fnlla.upgrade.v1", $plan["schema"] ?? null);
+        self::assertSame("upgrade-ready", $plan["status"] ?? null);
+        self::assertSame([], $plan["conflicts"] ?? null);
+        self::assertNotSame([], $plan["adds"] ?? []);
+
+        [$applyExit, $applyOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["fnlla:upgrade", "--source", base_path(), "--apply", "--json"]);
+        self::assertSame(0, $applyExit, $applyOutput);
+        $applied = json_decode($applyOutput, true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame("applied", $applied["status"] ?? null);
+        self::assertSame("fnlla", trim((string) file_get_contents($this->targetPath . "/.fnlla/project-profile")));
+        self::assertFileExists($this->targetPath . "/.fnlla/core-to-fnlla-upgrade.json");
+        self::assertFileExists($this->targetPath . "/.fnlla/framework-lock.json");
+        self::assertFileExists($this->targetPath . "/views/developer/panel-header.php");
+        self::assertFileExists($this->targetPath . "/views/customer/panel.php");
+        self::assertFileExists($this->targetPath . "/public/vendor/fnlla-runtime/assets/css/fnlla-runtime.css");
+        self::assertFileExists($this->targetPath . "/.env.platform.example");
+        $composer = json_decode((string) file_get_contents($this->targetPath . "/composer.json"), true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey("techayodev/fnlla-core", $composer["require"]);
+        self::assertArrayHasKey("techayodev/fnlla", $composer["require"]);
+
+        foreach ($applicationFiles as $path) {
+            self::assertSame($before[$path], hash_file("sha256", $this->targetPath . "/" . $path), $path);
+        }
+
+        [$routeExit, $routeOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
+        self::assertSame(0, $routeExit, $routeOutput);
+        self::assertStringContainsString("GET     /", $routeOutput);
+        self::assertStringContainsString("GET     /developer/panel", $routeOutput);
+        self::assertStringContainsString("developer.panel", $routeOutput);
+    }
+
     public function testGeneratorsWorkInBothPresetsAndPackagePreview(): void
     {
-        foreach (["plain", "full", "packages"] as $profile) {
+        foreach (["core", "fnlla", "packages"] as $profile) {
             $root = $this->targetPath . "/" . $profile;
-            $options = $profile === "packages" ? ["--profile=full", "--packages"] : ["--profile=" . $profile];
+            $options = $profile === "packages" ? ["--profile=fnlla", "--packages"] : ["--profile=" . $profile];
             $command = new MakeProjectCommand($GLOBALS["fnlla_container"]);
             self::assertSame(0, $command->handle([$root, "Generator test", ...$options]));
             $generated = ["controller" => "app/Controllers/ExampleController.php",

@@ -19,14 +19,14 @@ cleanup() {
 trap cleanup EXIT
 unzip -q "$archive" -d "$work/source"
 source="$work/source"
-for profile in full plain packages; do
-    options=(--profile=full)
-    if [[ "$profile" == plain ]]; then options=(--profile=plain); fi
+for profile in platform core packages; do
+    options=(--profile=fnlla)
+    if [[ "$profile" == core ]]; then options=(--profile=core); fi
     if [[ "$profile" == packages ]]; then options+=(--packages); fi
     "$php_bin" "$source/fnlla" make:project "$work/$profile" 'Acceptance Application' "${options[@]}"
     (cd "$work/$profile" && composer install --no-dev --no-interaction --prefer-dist && "$php_bin" scripts/test.php && "$php_bin" scripts/lint.php)
 done
-project="$work/full"
+project="$work/platform"
 touch "$project/.fnlla-http-acceptance"
 base=https://127.0.0.1:18443
 "$php_bin" "$source/scripts/acceptance/http-smoke.php" "$project" "$base" prepare
@@ -116,4 +116,4 @@ wait "$fpm_pid" || true
 fpm_pid=$!
 sleep 1
 "$php_bin" "$source/scripts/acceptance/http-smoke.php" "$project" "$base" after-reload
-echo 'PASS source ZIP, Full/Plain/package installs, TLS proxy, PHP-FPM and OPcache acceptance'
+echo 'PASS source ZIP, Platform/Core/package installs, TLS proxy, PHP-FPM and OPcache acceptance'

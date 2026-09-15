@@ -28,6 +28,7 @@
         "ops:backup-plan",
         "project:acceptance",
         "developer:install-storage",
+        "fnlla:upgrade",
         "app:map",
         "upgrade:check",
         "perf:budget",
@@ -57,6 +58,7 @@
         "fnlla.debug_report.v1",
         "fnlla.debug_live.v1",
         "fnlla.runtime_issue_tracker.v1",
+        "fnlla.upgrade.v1",
         "fnlla.developer_private_todo.v1"
     ],
     "data": [

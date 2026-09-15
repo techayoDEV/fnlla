@@ -139,7 +139,7 @@ final class ReleaseStore
                 if ($file->isLink()) { throw new RuntimeException("Release artifacts cannot contain symbolic links."); }
                 $path = str_replace("\\", "/", substr($file->getPathname(), strlen($root) + 1));
                 return !in_array($path, [".git", "storage", "public/uploads", ".fnlla-release.json"], true)
-                    && (!str_starts_with($path, ".env") || in_array($path, [".env.example", ".env.full.example"], true));
+                    && (!str_starts_with($path, ".env") || in_array($path, [".env.example", ".env.platform.example"], true));
             }
         ));
         foreach ($iterator as $file) {

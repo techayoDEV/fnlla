@@ -6,19 +6,26 @@ $customerAccess = is_array($customerAccess ?? null) ? (array) $customerAccess : 
 $customerNotice = is_array($customerNotice ?? null) ? (array) $customerNotice : [];
 $projectSettings = is_array($projectSettings ?? null) ? (array) $projectSettings : [];
 $projectName = (string) ($projectSettings["name"] ?? config("app.name", "Project"));
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandName = (string) ($panelBrand["name"] ?? $projectName);
+$panelBrandLogo = is_string($panelBrand["logo"] ?? null) ? (string) $panelBrand["logo"] : null;
+$panelBrandMark = (string) ($panelBrand["mark"] ?? \Fnlla\Php\Support\PanelBranding::mark($panelBrandName));
+$panelBrandCopyright = trim((string) ($panelBrand["copyright"] ?? ""));
+$panelBrandPoweredBy = (string) ($panelBrand["powered_by"] ?? "Powered by FNLLA");
+$panelBrandPoweredByUrl = (string) ($panelBrand["powered_by_url"] ?? config("framework.official_url", "https://fnlla.com"));
 ?>
 
 <section class="customer-auth" aria-label="Customer portal sign in">
   <div class="customer-auth-card">
     <a class="customer-auth-brand" href="<?= h(route("home")) ?>">
-      <span class="project-brand-mark <?= project_brand_logo_asset() !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
-        <?php if (project_brand_logo_asset() !== null): ?>
-        <img src="<?= h((string) project_brand_logo_asset()) ?>" alt="" width="1205" height="1176" decoding="async">
+      <span class="project-brand-mark <?= $panelBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
+        <?php if ($panelBrandLogo !== null): ?>
+        <img src="<?= h($panelBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
         <?php else: ?>
-        <?= h(project_brand_mark()) ?>
+        <?= h($panelBrandMark) ?>
         <?php endif; ?>
       </span>
-      <span><?= h($projectName) ?></span>
+      <span><?= h($panelBrandName) ?></span>
     </a>
     <div>
       <p class="feature-kicker">Customer Portal</p>
@@ -48,5 +55,9 @@ $projectName = (string) ($projectSettings["name"] ?? config("app.name", "Project
       </div>
       <button class="btn btn-primary" type="submit">Open customer portal</button>
     </form>
+    <footer class="panel-brand-attribution">
+      <?php if ($panelBrandCopyright !== ""): ?><span><?= h($panelBrandCopyright) ?></span><?php endif; ?>
+      <a href="<?= h($panelBrandPoweredByUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($panelBrandPoweredBy) ?></a>
+    </footer>
   </div>
 </section>

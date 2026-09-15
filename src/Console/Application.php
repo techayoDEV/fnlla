@@ -35,6 +35,11 @@ final class Application
     {
         $command = $this->container->make($commandClass);
         $this->commands[$command->name()] = $command;
+        if (method_exists($command, "aliases")) {
+            foreach ($command->aliases() as $alias) {
+                $this->commands[(string) $alias] = $command;
+            }
+        }
     }
 
     public function run(array $argv): int
@@ -103,7 +108,10 @@ final class Application
 
         ksort($this->commands);
 
-        foreach ($this->commands as $command) {
+        foreach ($this->commands as $name => $command) {
+            if ($name !== $command->name()) {
+                continue;
+            }
             if ($command->hidden()) {
                 continue;
             }

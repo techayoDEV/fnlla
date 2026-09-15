@@ -35,12 +35,12 @@ try {
     try { Copy-FnllaUiRuntime -SourceRuntimePath $source -ProjectRoot $project } catch { $rejected = $true }
     if (-not $rejected -or (Get-FileHash -LiteralPath (Join-Path $targetIcons 'sprite.svg')).Hash -ne $before) { throw 'Failed sync damaged the installed runtime.' }
     Remove-Item -LiteralPath (Join-Path $source 'assets/icons/broken.svg')
-    Set-Content -LiteralPath (Join-Path $project '.fnlla/ui-distribution') -Value 'full'
+    Set-Content -LiteralPath (Join-Path $project '.fnlla/ui-distribution') -Value 'platform'
     Copy-FnllaUiRuntime -SourceRuntimePath $source -ProjectRoot $project
-    if (-not (Test-Path -LiteralPath (Join-Path $targetIcons 'search.svg'))) { throw 'Full distribution lost individual icons.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $targetIcons 'search.svg'))) { throw 'Platform distribution lost individual icons.' }
     Remove-Item -LiteralPath (Join-Path $project '.fnlla/ui-distribution')
     Copy-FnllaUiRuntime -SourceRuntimePath $source -ProjectRoot $project
-    if (-not (Test-Path -LiteralPath (Join-Path $targetIcons 'search.svg'))) { throw 'Legacy projects must retain the full distribution.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $targetIcons 'search.svg'))) { throw 'Legacy projects must retain the platform distribution.' }
     Set-Content -LiteralPath (Join-Path $project '.fnlla/ui-distribution') -Value 'sprite'
     foreach ($name in @('search', 'old-search-alias')) { Remove-Item -LiteralPath (Join-Path $source "assets/icons/$name.svg") }
     Set-Content -LiteralPath (Join-Path $source 'assets/icons/sprite.svg') -Value '<svg xmlns="http://www.w3.org/2000/svg"><symbol id="search" viewBox="0 0 24 24"><path d="M1 1L2 2"/></symbol></svg>'

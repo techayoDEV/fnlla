@@ -27,7 +27,7 @@ foreach ($relative in ($files | Sort-Object -Unique)) {
     $skip = $false
     foreach ($prefix in $policy.excluded_prefixes) { if ($relative.StartsWith($prefix)) { $skip = $true } }
     $name = [IO.Path]::GetFileName($relative)
-    if ($name.StartsWith('.env', [StringComparison]::OrdinalIgnoreCase) -and $name -notin @('.env.example', '.env.full.example')) { $skip = $true }
+    if ($name.StartsWith('.env', [StringComparison]::OrdinalIgnoreCase) -and $name -notin @('.env.example', '.env.platform.example')) { $skip = $true }
     if ($name -in $policy.excluded_names) { $skip = $true }
     if ([IO.Path]::GetExtension($name).TrimStart('.') -in $policy.excluded_extensions) { $skip = $true }
     if ($skip) { $excludedBytes += (Get-Item -LiteralPath $source).Length; continue }

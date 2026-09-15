@@ -1,12 +1,14 @@
 <?php
 declare(strict_types=1);
 $titles = ["request" => "Forgot password?", "sent" => "Check your inbox", "reset" => "Choose a new password", "invalid" => "This link is unavailable", "complete" => "Password updated"];
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandName = (string) ($panelBrand["name"] ?? config("app.name", "Project workspace"));
 ?>
 <section class="developer-sign-in" aria-labelledby="developer-sign-in-title">
   <?php require __DIR__ . "/access-hero.php"; ?>
   <div class="developer-sign-in-main"><div class="developer-sign-in-inner">
     <a class="developer-sign-in-brand" href="<?= h(route("home")) ?>">
-      <span><?= h((string) config("app.name", "FNLLA")) ?></span>
+      <span><?= h($panelBrandName) ?></span>
     </a>
     <h1 id="developer-sign-in-title"><?= h($titles[$step]) ?></h1>
     <?php if ($recoveryError !== ""): ?><p class="alert alert-warning" role="alert"><?= h($recoveryError) ?></p><?php endif; ?>

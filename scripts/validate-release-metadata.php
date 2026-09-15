@@ -44,7 +44,7 @@ foreach ($editionFiles as $path => $field) {
 
 $requiredContains = [
     '.env.example' => ['# Version: ' . $version],
-    '.env.full.example' => ['# Version: ' . $version],
+    '.env.platform.example' => ['# Version: ' . $version],
     '.github/ISSUE_TEMPLATE/config.yml' => [
         'https://github.com/techayoDEV/fnlla/blob/main/.github/CONTRIBUTING.md',
         'https://github.com/techayoDEV/fnlla/releases',
@@ -109,7 +109,7 @@ $requiredContains = [
         'fnlla.technical_debt_update.v1',
     ],
     'docs/ENVIRONMENT.md' => [
-        '.env.full.example',
+        '.env.platform.example',
         'CLIENT_PREVIEW_ENABLED',
         'FIONN AI Bridge',
         'AI_FIONN_ENDPOINT',

@@ -23,6 +23,7 @@ use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 use Fnlla\Php\Support\ProjectLeadership;
 use Fnlla\Php\Validation\ValidationException;
 
@@ -231,7 +232,7 @@ abstract class DeveloperPanelController extends Controller
             "developer_access" => route("developer.panel.access.developer"),
             "client_review_access" => route("developer.panel.access.client"),
             "profile" => route("developer.panel.profile"),
-            "security" => route("developer.panel.access.developer") . "#developer-security",
+            "security" => route("developer.panel.security"),
             "settings" => route("developer.panel.settings"),
             "health" => route("developer.panel.release_readiness"),
             "framework_updates" => route("developer.panel.framework_updates"),
@@ -284,6 +285,7 @@ abstract class DeveloperPanelController extends Controller
             "developerActivity" => developer_activity()->recent(),
             "developerControl" => $developerControl,
             "customerAccess" => $customerAccessState,
+            "panelBrand" => PanelBranding::state(),
             "developerHeaderNotifications" => $developerHeaderNotifications,
             "developerReviewQueue" => $developerReviewQueue,
             "developerHeaderPrivateTodo" => $developerHeaderPrivateTodo,

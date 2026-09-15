@@ -7,7 +7,7 @@ if (is_file(APP_ROOT . "/vendor/autoload.php")) {
     require_once APP_ROOT . "/vendor/autoload.php";
 } else {
     spl_autoload_register(static function (string $class): void {
-        $prefixes = ["Fnlla\\Php\\" => ["src/", "packages/fnlla-core/src/", "packages/fnlla-complete/src/"],
+        $prefixes = ["Fnlla\\Php\\" => ["src/", "packages/fnlla-core/src/", "packages/fnlla/src/"],
             "App\\" => ["app/"], "Database\\Seeders\\" => ["database/seeders/"], "Database\\Factories\\" => ["database/factories/"]];
         foreach ($prefixes as $prefix => $directories) {
             if (!str_starts_with($class, $prefix)) { continue; }
@@ -17,7 +17,7 @@ if (is_file(APP_ROOT . "/vendor/autoload.php")) {
             }
         }
     });
-    require_once APP_ROOT . "/packages/fnlla-complete/src/Support/optional_helpers.php";
+    require_once APP_ROOT . "/packages/fnlla/src/Support/optional_helpers.php";
 }
 define("FNLLA_ENGINE_ROOT", dirname((new ReflectionClass(\Fnlla\Php\Container\Container::class))->getFileName(), 3));
 return require FNLLA_ENGINE_ROOT . "/bootstrap/common.php";

@@ -9,12 +9,13 @@
 [![Release Gate on main](https://github.com/techayoDEV/fnlla/actions/workflows/fnlla-release-gate.yml/badge.svg?branch=main)](https://github.com/techayoDEV/fnlla/actions/workflows/fnlla-release-gate.yml?query=branch%3Amain)
 [![UI Runtime](https://img.shields.io/badge/UI-integrated%20FNLLA%20runtime-18352f?style=flat-square)](./public/vendor/fnlla-runtime/README.md)
 
-**Web framework. PHP foundation. Developer tools built in.**
+**Open PHP core. Commercial project platform. Developer tools built in.**
 
-Build from blueprint. FNLLA brings application foundations, Project Setup and a
-private Developer Panel into one maintained stack. Spend less time connecting
-the basics: routing, data access, diagnostics, previews and update tooling are
-already part of the integrated starter. Your application keeps its own identity.
+Build from blueprint. FNLLA is the full project platform; FNLLA Core is the open
+PHP foundation for teams that only need the framework base. Spend
+less time connecting the basics: routing, data access, diagnostics, previews and
+update tooling are already part of the FNLLA starter. Your application keeps
+its own identity.
 
 **Build with continuity.** Connect **FIONN AI, Persistent Personal Intelligence
 created by TechAyo**, through the built-in gateway. An appropriate FIONN developer
@@ -56,7 +57,7 @@ Official source repository: [techayoDEV/fnlla](https://github.com/techayoDEV/fnl
 
 ## Start A Real Project
 
-![Full starter workflow: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with the Developer Panel, diagnostics and update checks. Plain is the advanced core-only option.](./docs/assets/brand/fnlla-workflow.png)
+![FNLLA starter workflow: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with the Developer Panel, diagnostics and update checks. FNLLA Core is the open core edition.](./docs/assets/brand/fnlla-workflow.png)
 
 ```bash
 php fnlla make:project ../my-product "My Product"
@@ -114,6 +115,8 @@ documentation set:
 
 - [`docs/BUILDING-WITH-FNLLA.md`](./docs/BUILDING-WITH-FNLLA.md) for the
   practical build guide.
+- [`docs/PRODUCT-MODEL.md`](./docs/PRODUCT-MODEL.md) for the FNLLA,
+  FNLLA Core, fnlla.com and FIONN AI repository split.
 - [`docs/PUBLIC-API.md`](./docs/PUBLIC-API.md) for the stable public contract.
 - [`docs/RELEASE-AND-OPERATIONS.md`](./docs/RELEASE-AND-OPERATIONS.md) for
   releases, root file policy, production gates, performance budgets, backups,
@@ -123,7 +126,7 @@ documentation set:
   contract, storage, diagnostics, recovery, technical debt and
   framework-vs-product boundary.
 - [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) for `.env.example`,
-  `.env.full.example`, client preview and the FIONN AI bridge boundary.
+  `.env.platform.example`, client preview and the FIONN AI bridge boundary.
 - [`docs/BUSINESS-APP-REFERENCE.md`](./docs/BUSINESS-APP-REFERENCE.md) for the
   reference business-application checklist.
 - [`resources/business-reference/`](./resources/business-reference/) for
@@ -162,10 +165,11 @@ Source edition: **2.2.4**. Use the published, versioned downloads from
 [GitHub Releases](https://github.com/techayoDEV/fnlla/releases), not a moving `main`
 checkout, for reproducible installations. An unpublished tag or draft is not a release.
 
-The default Full starter includes Project Setup, the private Developer Panel,
-diagnostics and controlled file updates. Plain is an explicit core-only preset.
-Both use the normal isolated PHP request lifecycle. Public Composer registry
-packages and long-lived HTTP workers are not part of the supported 2.2.x scope.
+The default FNLLA starter includes Project Setup, the private Developer
+Panel, diagnostics and controlled file updates. FNLLA Core is the explicit
+core-only preset. Core projects can later run `php fnlla fnlla:upgrade --source PATH`
+to add full FNLLA files without overwriting the product surface. Public Composer registry packages and long-lived HTTP
+workers are not part of the supported 2.2.x scope.
 
 Matching source/runtime version markers do not establish completed publication
 acceptance. Historical CI results do not validate a later commit. See

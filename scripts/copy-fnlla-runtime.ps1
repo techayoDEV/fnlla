@@ -80,8 +80,9 @@ function Copy-FnllaUiRuntime {
     $destination = [System.IO.Path]::GetFullPath((Join-Path $resolvedProject 'public/vendor/fnlla-runtime'))
     $vendorDirectory = Split-Path -Path $destination -Parent
     $profilePath = Join-Path $resolvedProject '.fnlla/ui-distribution'
-    $profile = if (Test-Path -LiteralPath $profilePath) { (Get-Content -LiteralPath $profilePath -Raw).Trim() } else { 'full' }
-    if ($profile -notin @('sprite', 'full')) { throw "Unknown FNLLA UI distribution: $profile" }
+    $profile = if (Test-Path -LiteralPath $profilePath) { (Get-Content -LiteralPath $profilePath -Raw).Trim() } else { 'platform' }
+    if ($profile -eq 'full') { $profile = 'platform' }
+    if ($profile -notin @('sprite', 'platform')) { throw "Unknown FNLLA UI distribution: $profile" }
     if (-not $destination.StartsWith($resolvedProject + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'Runtime destination is outside the project.'
     }
@@ -97,7 +98,7 @@ function Copy-FnllaUiRuntime {
     $installed = $false
     $null = New-Item -ItemType Directory -Path $stage
     try {
-        if ($profile -eq 'full') {
+        if ($profile -eq 'platform') {
             Get-ChildItem -LiteralPath $SourceRuntimePath -Force | ForEach-Object {
                 Copy-Item -LiteralPath $_.FullName -Destination $stage -Recurse -Force
             }

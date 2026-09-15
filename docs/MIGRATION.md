@@ -27,8 +27,9 @@ after diagnosing the failure; the recorder never silently overwrites corruption.
 See [metrics recovery](RELEASE-AND-OPERATIONS.md#observability).
 
 No database migration or new environment variable is required. Existing accounts,
-configuration defaults and first-run setup behavior are unchanged: fresh Full
-exports require local Project Setup, while Plain has no Developer Panel setup.
+configuration defaults and first-run setup behavior are unchanged: fresh
+Platform exports require local Project Setup, while Core has no
+Developer Panel setup.
 
 ### Earlier compatibility changes
 
@@ -76,7 +77,7 @@ non-local migrations require --force, application auth revalidates account ident
 cache writers preserve working files, forwarded protocol must be canonical, and
 new exports support application generators. Review and explicitly run only the
 migrations required by the application; never run migrations just to clear a checklist.
-Full file updates and package-mode updates have different contracts; do not migrate
+Platform file updates and package-mode updates have different contracts; do not migrate
 an existing installation by merely editing its profile or package marker.
 
 Persistent sessions now enforce idle and absolute time limits on the server.
@@ -87,7 +88,9 @@ New integrated exports enable all modules. Panel Settings and explicit
 environment values can disable unwanted modules; updating an existing project's
 code preserves its settings.
 `make:project` no longer prompts automatically. Use `--interactive` for the retained
-advanced chooser or `--profile=plain` for an explicit core-only export.
+advanced chooser or `--profile=core` for an explicit core-only export. Use
+`fnlla:upgrade --source PATH` when an existing Core project should gain
+full FNLLA features later.
 
 Back up before changes, test login/roles/CRUD/forms/uploads/queue/mail/health on a
 staging copy, and retain private recovery evidence following
@@ -186,7 +189,7 @@ Files that require special care:
 - `routes/`, `views/`, `database/`, `tests/` and application controllers may
   contain product-owned changes; review dry-run output before accepting upstream
   changes in these paths.
-- `.env.example` and `.env.full.example` may gain new documented keys, but the
+- `.env.example` and `.env.platform.example` may gain new documented keys, but the
   real `.env` remains environment-owned.
 - `storage/`, `dist/`, logs, sessions, uploads and backups should not be used as
   source-of-truth framework files.

@@ -105,5 +105,5 @@
 <text fill="#0b1220" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-184" x="1072">Developer Panel. Diagnostics.</tspan></text>
 <text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="26" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-140" x="1072">Updates and release checks.</tspan></text>
 <path transform="matrix(1,0,0,-1,0,480)" d="M0 0H1600V72H0Z" fill="#f1f3f5" fill-rule="evenodd" />
-<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="24" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-24" x="64">Full: the integrated starter. Plain: an advanced core-only option.</tspan></text>
+<text fill="#374151" xml:space="preserve" transform="matrix(1 0 -0 1 0 480)" font-size="24" font-family="Space Grotesk" style="font-kerning:none;letter-spacing:0"><tspan y="-24" x="64">Platform: developer operations. Core: open framework foundation.</tspan></text>
 </svg>

@@ -7,20 +7,27 @@ $invitation = is_array($invitation ?? null) ? (array) $invitation : [];
 $account = is_array($invitation["account"] ?? null) ? (array) $invitation["account"] : [];
 $projectSettings = is_array($projectSettings ?? null) ? (array) $projectSettings : [];
 $projectName = (string) ($projectSettings["name"] ?? config("app.name", "Project"));
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandName = (string) ($panelBrand["name"] ?? $projectName);
+$panelBrandLogo = is_string($panelBrand["logo"] ?? null) ? (string) $panelBrand["logo"] : null;
+$panelBrandMark = (string) ($panelBrand["mark"] ?? \Fnlla\Php\Support\PanelBranding::mark($panelBrandName));
+$panelBrandCopyright = trim((string) ($panelBrand["copyright"] ?? ""));
+$panelBrandPoweredBy = (string) ($panelBrand["powered_by"] ?? "Powered by FNLLA");
+$panelBrandPoweredByUrl = (string) ($panelBrand["powered_by_url"] ?? config("framework.official_url", "https://fnlla.com"));
 $expiresAt = trim((string) ($invitation["expires_at_utc"] ?? ""));
 ?>
 
 <section class="customer-auth" aria-label="Set customer portal password">
   <div class="customer-auth-card">
     <a class="customer-auth-brand" href="<?= h(route("home")) ?>">
-      <span class="project-brand-mark <?= project_brand_logo_asset() !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
-        <?php if (project_brand_logo_asset() !== null): ?>
-        <img src="<?= h((string) project_brand_logo_asset()) ?>" alt="" width="1205" height="1176" decoding="async">
+      <span class="project-brand-mark <?= $panelBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
+        <?php if ($panelBrandLogo !== null): ?>
+        <img src="<?= h($panelBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
         <?php else: ?>
-        <?= h(project_brand_mark()) ?>
+        <?= h($panelBrandMark) ?>
         <?php endif; ?>
       </span>
-      <span><?= h($projectName) ?></span>
+      <span><?= h($panelBrandName) ?></span>
     </a>
 
     <?php if ($invitation === []): ?>
@@ -64,5 +71,9 @@ $expiresAt = trim((string) ($invitation["expires_at_utc"] ?? ""));
       <button class="btn btn-primary" type="submit">Save password and open portal</button>
     </form>
     <?php endif; ?>
+    <footer class="panel-brand-attribution">
+      <?php if ($panelBrandCopyright !== ""): ?><span><?= h($panelBrandCopyright) ?></span><?php endif; ?>
+      <a href="<?= h($panelBrandPoweredByUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($panelBrandPoweredBy) ?></a>
+    </footer>
   </div>
 </section>

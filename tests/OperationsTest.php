@@ -217,6 +217,10 @@ final class OperationsTest extends TestCase
         self::assertSame("https://techayo.co.uk/admin", $manifest["admin_surface"] ?? null);
         self::assertSame("https://techayo.co.uk/admin/fnlla/projects/qwerty/control.json", $manifest["fnlla_runtime_contract"]["endpoint"] ?? null);
         self::assertStringContainsString("X-FNLLA-Control-Signature", $encoded);
+        self::assertStringContainsString("authenticate each remote-control operator separately", $encoded);
+        self::assertStringContainsString("AI-provider knowledge or product logic", $encoded);
+        self::assertStringNotContainsString("authenticate each TechAyo operator separately", $encoded);
+        self::assertStringNotContainsString("private customer or FIONN AI knowledge", $encoded);
         self::assertStringNotContainsString("secret=hidden", $encoded);
         self::assertStringNotContainsString("do-not-leak", $encoded);
     }

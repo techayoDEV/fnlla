@@ -195,7 +195,7 @@ php scripts/lint.php
 Open the project locally to complete Project Setup. Serve only `public/` in
 production and follow the
 [installation guide](https://github.com/techayoDEV/fnlla/blob/v2.2.0/docs/STARTING-A-NEW-PROJECT.md).
-For a deliberate core-only installation, add `--profile=plain` to `make:project`.
+For a deliberate core-only installation, add `--profile=core` to `make:project`.
 
 #### Upgrading From 2.1.3
 
@@ -406,7 +406,7 @@ breaking operational changes before updating an existing application.
 - Named database managers with explicit PDO registration, transaction-safe
   purge, and migration schema/ledger binding verified against real MySQL.
 - Opt-in, bounded developer request history with redaction, retention,
-  permissions and CSRF protection; excluded from Core/plain.
+  permissions and CSRF protection; excluded from Core.
 - Private layout and base stylesheet are now framework-owned during upgrades;
   public application views, styles, routes, `.env` and data remain project-owned.
 - Upgrade source scanning skips the active transaction journal/lock.
@@ -463,7 +463,7 @@ breaking operational changes before updating an existing application.
   `make:project` export and before commercial product work begins.
 - In-process HTTP performance probes for `/` and `/api/health`.
 - `ops:backup-plan --verify` readiness checks and an explicit restore command.
-- `.env.full.example` as the complete environment reference beside the shorter
+- `.env.platform.example` as the complete environment reference beside the shorter
   `.env.example` starter.
 - `docs/ENVIRONMENT.md` and generated `docs/environment.html` for environment
   layers, client preview and the FIONN AI bridge boundary.

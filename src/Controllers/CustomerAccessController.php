@@ -23,6 +23,7 @@ use Fnlla\Php\Support\DeveloperAnalyticsReport;
 use Fnlla\Php\Support\DeveloperHeatmapReport;
 use Fnlla\Php\Support\DeveloperWorkspaceBoard;
 use Fnlla\Php\Support\EnvironmentFileManager;
+use Fnlla\Php\Support\PanelBranding;
 use Fnlla\Php\Validation\ValidationException;
 
 final class CustomerAccessController extends Controller
@@ -50,6 +51,7 @@ final class CustomerAccessController extends Controller
             "layoutChromeMode" => "developer-panel",
             "customerAccess" => $customerAccess->viewState(),
             "customerLinks" => $this->customerLinks(),
+            "panelBrand" => PanelBranding::state(),
             "projectSettings" => $this->projectSettings(),
             "customerNotice" => flash("customer_access_notice"),
         ]);
@@ -96,6 +98,7 @@ final class CustomerAccessController extends Controller
             "layoutChromeMode" => "developer-panel",
             "customerAccess" => $customerAccess->viewState(),
             "customerLinks" => $this->customerLinks(),
+            "panelBrand" => PanelBranding::state(),
             "projectSettings" => $this->projectSettings(),
             "customerNotice" => flash("customer_access_notice"),
             "invitation" => $invitation,
@@ -271,6 +274,7 @@ final class CustomerAccessController extends Controller
             "customerPanelActive" => $activeSection,
             "customerAccess" => $customerAccessState,
             "customerLinks" => $this->customerLinks(),
+            "panelBrand" => PanelBranding::state(),
             "projectSettings" => $this->projectSettings(),
             "customerNotice" => flash("customer_access_notice"),
         ], $extraData));

@@ -168,7 +168,7 @@ final class FrameworkUpdateTransaction
     {
         if (preg_match('~^(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+$~D', $relative) !== 1
             || array_intersect([".", ".."], explode("/", $relative)) !== []
-            || str_starts_with($relative, ".env") || str_starts_with($relative, "storage/")
+            || $this->isPrivateEnvironmentPath($relative) || str_starts_with($relative, "storage/")
             || str_starts_with($relative, "public/uploads/") || str_starts_with($relative, ".git/")) {
             throw new RuntimeException("Unsafe update transaction path.");
         }
@@ -199,5 +199,14 @@ final class FrameworkUpdateTransaction
                 @unlink($path);
             }
         }
+    }
+
+    private function isPrivateEnvironmentPath(string $relative): bool
+    {
+        if (!str_starts_with($relative, ".env")) {
+            return false;
+        }
+
+        return !in_array($relative, [".env.example", ".env.platform.example"], true);
     }
 }

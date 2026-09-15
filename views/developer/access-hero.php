@@ -1,19 +1,21 @@
-<?php declare(strict_types=1); ?>
-<aside class="developer-sign-in-hero" aria-label="FNLLA Framework">
-  <div class="developer-sign-in-hero-top"><span>FNLLA / DEVELOPER</span><span>WORKSPACE</span></div>
+<?php
+declare(strict_types=1);
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandCopyright = trim((string) ($panelBrand["copyright"] ?? ""));
+$panelBrandPoweredBy = (string) ($panelBrand["powered_by"] ?? "Powered by FNLLA");
+$panelBrandPoweredByUrl = (string) ($panelBrand["powered_by_url"] ?? config("framework.official_url", "https://fnlla.com"));
+$panelBrandEditionLabel = strtoupper((string) ($panelBrand["edition_label"] ?? \Fnlla\Php\Support\ProjectProfile::editionLabel()));
+$panelBrandEditionHeader = $panelBrandEditionLabel === "FNLLA" ? "FNLLA" : "FNLLA / " . $panelBrandEditionLabel;
+?>
+<aside class="developer-sign-in-hero" aria-label="FNLLA Framework workspace">
+  <div class="developer-sign-in-hero-top"><span><?= h($panelBrandEditionHeader) ?></span><span>WORKSPACE</span></div>
   <div class="developer-sign-in-hero-content">
     <?php require dirname(__DIR__) . "/partials/framework-wordmark.php"; ?>
-    <p class="developer-sign-in-pronunciation" aria-label="FNLLA is pronounced fin EL uh, like Finella.">
-      <span class="developer-sign-in-pronunciation-label">Say it</span>
-      <span class="developer-sign-in-pronunciation-divider" aria-hidden="true">/</span>
-      <strong>fin-EL-uh</strong>
-      <span class="developer-sign-in-pronunciation-divider" aria-hidden="true">/</span>
-      <small>sounds like Finella</small>
-    </p>
+    <p class="developer-sign-in-hero-edition"><?= h((string) ($panelBrand["edition"] ?? \Fnlla\Php\Support\ProjectProfile::edition())) ?></p>
     <p class="developer-sign-in-hero-title">Your project.<br>Your workspace.</p>
   </div>
   <div class="developer-sign-in-hero-footer">
-    <span>Build from blueprint.</span>
-    <span class="developer-sign-in-creator">Framework created &amp; maintained by <a href="<?= h((string) config("framework.maintainer_url", "https://techayo.co.uk")) ?>" target="_blank" rel="noopener noreferrer">TechAyo</a></span>
+    <span><?= h($panelBrandCopyright !== "" ? $panelBrandCopyright : "Private delivery workspace.") ?></span>
+    <span class="developer-sign-in-creator"><a href="<?= h($panelBrandPoweredByUrl) ?>" target="_blank" rel="noopener noreferrer"><?= h($panelBrandPoweredBy) ?></a></span>
   </div>
 </aside>

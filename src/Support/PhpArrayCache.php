@@ -57,8 +57,8 @@ final class PhpArrayCache
             if (!is_array($cached["routes"] ?? null)) { throw new RuntimeException("Invalid cached route payload."); }
             return $cached["routes"];
         }
-        // Read old exports, but new publications never split data and profile across files.
-        $legacyProfile = is_file($path . ".profile") ? trim((string) file_get_contents($path . ".profile")) : "full";
+        // Read pre-profile-cache exports, but new publications keep data and profile together.
+        $legacyProfile = is_file($path . ".profile") ? trim((string) file_get_contents($path . ".profile")) : "fnlla";
         return $legacyProfile === $profile ? $cached : null;
     }
 

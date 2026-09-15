@@ -27,7 +27,13 @@ $customerCompany = trim((string) ($currentCustomer["company"] ?? ""));
 $customerEmail = strtolower(trim((string) ($currentCustomer["email"] ?? "")));
 $customerInitialSource = preg_replace('/[^A-Za-z0-9]/', '', $customerDisplayName) ?: "CU";
 $customerInitials = strtoupper(substr((string) $customerInitialSource, 0, 2));
-$projectBrandLogo = project_brand_logo_asset();
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandName = (string) ($panelBrand["name"] ?? ($projectSettings["name"] ?? config("app.name", "Project")));
+$panelBrandLogo = is_string($panelBrand["logo"] ?? null) ? (string) $panelBrand["logo"] : null;
+$panelBrandMark = (string) ($panelBrand["mark"] ?? \Fnlla\Php\Support\PanelBranding::mark($panelBrandName));
+$panelBrandCopyright = trim((string) ($panelBrand["copyright"] ?? ""));
+$panelBrandPoweredBy = (string) ($panelBrand["powered_by"] ?? "Powered by FNLLA");
+$panelBrandPoweredByUrl = (string) ($panelBrand["powered_by_url"] ?? config("framework.official_url", "https://fnlla.com"));
 $navigation = [
     "overview" => ["label" => "Overview", "href" => (string) ($customerLinks["overview"] ?? route("customer.panel")), "visible" => true],
     "kanban" => ["label" => "Project Kanban", "href" => (string) ($customerLinks["kanban"] ?? route("customer.panel.kanban")), "visible" => $canSee("kanban")],
@@ -38,14 +44,14 @@ $navigation = [
 <section class="customer-portal" aria-label="Customer portal">
   <header class="customer-portal-header">
     <a class="customer-portal-brand" href="<?= h((string) ($customerLinks["overview"] ?? route("customer.panel"))) ?>">
-      <span class="project-brand-mark <?= $projectBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
-        <?php if ($projectBrandLogo !== null): ?>
-        <img src="<?= h($projectBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
+      <span class="project-brand-mark <?= $panelBrandLogo !== null ? "is-logo" : "is-initials" ?>" aria-hidden="true">
+        <?php if ($panelBrandLogo !== null): ?>
+        <img src="<?= h($panelBrandLogo) ?>" alt="" width="1205" height="1176" decoding="async">
         <?php else: ?>
-        <?= h(project_brand_mark()) ?>
+        <?= h($panelBrandMark) ?>
         <?php endif; ?>
       </span>
-      <span><?= h((string) ($projectSettings["name"] ?? config("app.name", "Project"))) ?></span>
+      <span><?= h($panelBrandName) ?></span>
     </a>
     <nav class="customer-portal-nav" aria-label="Customer portal navigation">
       <?php foreach ($navigation as $key => $item): ?>

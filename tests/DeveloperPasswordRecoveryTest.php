@@ -237,10 +237,14 @@ final class DeveloperPasswordRecoveryTest extends TestCase
         $login = $application->handle(new Request("GET", "/private-tools"));
         self::assertSame(200, $login->status());
         self::assertStringContainsString("developer-sign-in-hero", $login->body());
-        self::assertStringContainsString('aria-label="FNLLA is pronounced fin EL uh, like Finella."', $login->body());
-        self::assertStringContainsString('<span class="developer-sign-in-pronunciation-label">Say it</span>', $login->body());
-        self::assertStringContainsString("<strong>fin-EL-uh</strong>", $login->body());
-        self::assertStringContainsString("<small>sounds like Finella</small>", $login->body());
+        self::assertStringContainsString(">FNLLA</span><span>WORKSPACE</span>", $login->body());
+        self::assertStringContainsString("fnlla-framework-wordmark", $login->body());
+        self::assertStringContainsString("src=\"/assets/brand/fnlla/wordmark.svg?v=", $login->body());
+        self::assertStringContainsString("src=\"/assets/brand/fnlla/wordmark-on-black.svg?v=", $login->body());
+        self::assertStringContainsString("Private delivery workspace.", $login->body());
+        self::assertStringContainsString("Powered by FNLLA", $login->body());
+        self::assertStringNotContainsString("project-brand-mark", $login->body());
+        self::assertStringNotContainsString('aria-label="FNLLA is pronounced fin EL uh, like Finella."', $login->body());
         self::assertStringContainsString("Forgot password?", $login->body());
         foreach (["forgot-password", "reset-password"] as $path) {
             $response = $application->handle(new Request("POST", "/private-tools/" . $path, [], [], [], ["accept" => "application/json"]));

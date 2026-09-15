@@ -1,7 +1,7 @@
 # CLI And Runtime Contracts
 
 These contracts describe the changes prepared for FNLLA 2.2.0. They do not declare
-that version published. Core/plain and Complete/full share these primitives;
+that version published. FNLLA and FNLLA Core share these primitives;
 the Developer Panel and its account store are separate from application auth.
 
 ## Application Generators

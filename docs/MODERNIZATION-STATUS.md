@@ -15,7 +15,7 @@ criteria have passed.
 
 The v2.2.0 GitHub release and CI evidence close the previous upgrade and HTTP
 edge criteria: the maintained workflow consumes the accepted source archive,
-exercises the Full, Plain and package previews through Nginx TLS ingress, an
+exercises the FNLLA, FNLLA Core and package previews through Nginx TLS ingress, an
 origin proxy, PHP-FPM 8.3 and OPcache, and the release assets are public. This
 does not close public Composer registry installation, application-owned recovery,
 long-lived worker isolation, package uninstallability or comparative framework
@@ -26,7 +26,7 @@ checks, not inferred from repository configuration.
 
 | Status | Area | Required evidence |
 | --- | --- | --- |
-| Partial | Complete packages | Independent modules and versioned assets/config/routes publication and removal; package mode remains opt-in. |
+| Partial | FNLLA packages | Independent modules and versioned assets/config/routes publication and removal; package mode remains opt-in. |
 | Partial | Business recovery | Application-specific offsite schedule, secrets, consistent restore and external-effect reconciliation. |
 | Open | HTTP workers | Sequential/concurrent globals, statics and session isolation; normal PHP requests remain supported. |
 | Open | Comparative benchmarks | Pinned equivalent applications, cold/warm latency percentiles and memory. |

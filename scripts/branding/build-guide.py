@@ -518,7 +518,7 @@ def repository_outputs():
             p.text(first, x, 270, 26)
             p.text(second, x, 314, 26, ink="text")
         p.rect(0, 408, p.w, 72, "campaign_surface")
-        p.text("Full: the integrated starter. Plain: an advanced core-only option.", 64, 432, 24, ink="text")
+        p.text("Platform: developer operations. Core: open framework foundation.", 64, 432, 24, ink="text")
 
     def ai_boundary(p):
         p.rect(0, 0, p.w, p.h)

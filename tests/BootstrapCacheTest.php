@@ -44,13 +44,13 @@ final class BootstrapCacheTest extends TestCase
     public function testRouteProfileIsPublishedWithItsDataAndLegacyCachesRemainReadable(): void
     {
         $path = $this->directory . "/routes.php";
-        PhpArrayCache::write($path, ["schema" => "fnlla.routes.v1", "profile" => "plain", "routes" => [["path" => "/fixture"]]]);
-        file_put_contents($path . ".profile", "full");
-        self::assertSame([["path" => "/fixture"]], PhpArrayCache::routes($path, "plain"));
-        self::assertSame(null, PhpArrayCache::routes($path, "full"));
+        PhpArrayCache::write($path, ["schema" => "fnlla.routes.v1", "profile" => "core", "routes" => [["path" => "/fixture"]]]);
+        file_put_contents($path . ".profile", "platform");
+        self::assertSame([["path" => "/fixture"]], PhpArrayCache::routes($path, "core"));
+        self::assertSame(null, PhpArrayCache::routes($path, "platform"));
         PhpArrayCache::write($path, [["path" => "/legacy"]]);
-        self::assertSame([["path" => "/legacy"]], PhpArrayCache::routes($path, "full"));
-        self::assertSame(null, PhpArrayCache::routes($path, "plain"));
+        self::assertSame([["path" => "/legacy"]], PhpArrayCache::routes($path, "platform"));
+        self::assertSame(null, PhpArrayCache::routes($path, "core"));
     }
 
     public function testConcurrentReadersNeverObservePartiallyWrittenPhp(): void

@@ -92,6 +92,7 @@ $headerPrivateTodoPriorityLabels = [
     "high" => "High",
 ];
 $developerFrameworkWordmark = framework_brand_asset("wordmark");
+$developerFrameworkEdition = \Fnlla\Php\Support\ProjectProfile::editionLabel();
 $reviewHref = static function (array $item) use ($developerLinks): string {
     $href = trim((string) ($item["href"] ?? ""));
     if ($href !== "") {
@@ -131,9 +132,7 @@ $headerServiceState = $headerServiceStatus === "suspended" ? "Suspended" : ($hea
         <?php else: ?>
         <span class="developer-workspace-framework-wordmark-fallback">FNLLA</span>
         <?php endif; ?>
-        <span class="developer-workspace-framework-meta" aria-hidden="true">
-          Developer workspace
-        </span>
+        <span class="developer-workspace-framework-meta" aria-hidden="true"><?= h($developerFrameworkEdition) ?></span>
       </a>
     </div>
     <span class="developer-workspace-header-divider" aria-hidden="true"></span>
@@ -333,7 +332,7 @@ $headerServiceState = $headerServiceStatus === "suspended" ? "Suspended" : ($hea
             </div>
             <div class="developer-dropdown-group" aria-label="Session actions">
               <a class="dropdown-item" role="menuitem" href="<?= h((string) ($developerLinks["home"] ?? route("home"))) ?>" target="_blank" rel="noopener noreferrer">Open public website</a>
-              <a class="dropdown-item" role="menuitem" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>">Developer profile</a>
+              <a class="dropdown-item" role="menuitem" href="<?= h((string) ($developerLinks["profile"] ?? route("developer.panel.profile"))) ?>">Account &amp; access</a>
               <a class="dropdown-item" role="menuitem" href="<?= h((string) ($developerLinks["settings"] ?? route("developer.panel.settings"))) ?>">Panel settings</a>
             </div>
             <form class="project-dropdown-form" action="<?= h(route("developer.lock")) ?>" method="post">

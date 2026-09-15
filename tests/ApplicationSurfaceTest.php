@@ -43,6 +43,7 @@ final class ApplicationSurfaceTest extends TestCase
     private mixed $frameworkUpdateConfigBackup;
     private mixed $appConfigBackup;
     private mixed $mailConfigBackup;
+    private mixed $panelBrandingConfigBackup;
     private ?string $temporaryEnvironmentDirectory = null;
     private array $cacheConfigBackup;
     private string $temporaryCacheDirectory;
@@ -74,6 +75,7 @@ final class ApplicationSurfaceTest extends TestCase
         $this->frameworkUpdateConfigBackup = config("framework_update");
         $this->appConfigBackup = config("app");
         $this->mailConfigBackup = config("mail");
+        $this->panelBrandingConfigBackup = config("panel_branding");
         $_SESSION = [];
         config_set("maintenance", array_merge((array) config("maintenance", []), [
             "enabled" => false,
@@ -141,6 +143,7 @@ final class ApplicationSurfaceTest extends TestCase
         config_set("framework_update", $this->frameworkUpdateConfigBackup);
         config_set("app", $this->appConfigBackup);
         config_set("mail", $this->mailConfigBackup);
+        config_set("panel_branding", $this->panelBrandingConfigBackup);
 
         foreach ([
             storage_path("framework/testing/developer-workspace-default.json"),
@@ -294,6 +297,34 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(1, preg_match('/\.developer-profile-file-input::file-selector-button\s*\{[^}]*font-weight:\s*600;/s', $css));
         self::assertSame(1, preg_match('/\.developer-kanban-file-input::file-selector-button\s*\{[^}]*font-weight:\s*600;/s', $css));
         self::assertSame(0, preg_match('/::file-selector-button\s*\{[^}]*font-weight:\s*850;/s', $css));
+    }
+
+    public function testPublicPageStatusUsesTopRightNotifierPlacement(): void
+    {
+        $appCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/app.css")));
+
+        self::assertStringContainsString("#page-status {\n  position: fixed;\n  top: max(0.75rem, env(safe-area-inset-top));\n  right: max(0.75rem, env(safe-area-inset-right));\n  bottom: auto;\n  left: auto;\n  z-index: 1600;", $appCss);
+        self::assertStringContainsString("width: min(28rem, calc(100vw - 1.5rem));", $appCss);
+        self::assertStringContainsString("pointer-events: none;", $appCss);
+        self::assertStringContainsString("#page-status[hidden] {\n  display: none;\n}", $appCss);
+        self::assertStringContainsString("#page-status .alert {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;", $appCss);
+        self::assertStringContainsString("pointer-events: auto;", $appCss);
+        self::assertStringNotContainsString("bottom: calc(clamp(1rem, 3vw, 2rem) + var(--fnlla-cookie-banner-offset, 0px));", $appCss);
+        self::assertStringNotContainsString("bottom: calc(0.75rem + var(--fnlla-cookie-banner-offset, 0px));", $appCss);
+    }
+
+    public function testMaintenanceUnlockModalUsesWhiteBlurAndAdvancedLayout(): void
+    {
+        $developerPanelCss = str_replace(["\r\n", "\r"], "\n", (string) file_get_contents(public_path("assets/developer-panel.css")));
+
+        self::assertStringContainsString("#maintenance-unlock-modal.modal {\n  padding: clamp(1rem, 4vw, 2.5rem);\n  background:\n    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(248, 250, 252, 0.72)),", $developerPanelCss);
+        self::assertStringContainsString("-webkit-backdrop-filter: blur(1.35rem) saturate(118%) brightness(1.04);", $developerPanelCss);
+        self::assertStringContainsString("backdrop-filter: blur(1.35rem) saturate(118%) brightness(1.04);", $developerPanelCss);
+        self::assertStringContainsString("#maintenance-unlock-modal .maintenance-unlock-modal-content {\n  display: grid;\n  gap: 1.15rem;", $developerPanelCss);
+        self::assertStringContainsString("max-width: min(46rem, calc(100vw - 2rem));", $developerPanelCss);
+        self::assertStringContainsString(".maintenance-unlock-modal-hero {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) minmax(8rem, auto);", $developerPanelCss);
+        self::assertStringContainsString(".maintenance-unlock-modal-grid {\n  display: grid;\n  grid-template-columns: minmax(12rem, 0.78fr) minmax(0, 1.22fr);", $developerPanelCss);
+        self::assertStringContainsString(".maintenance-unlock-checklist,\n.maintenance-unlock-form {\n  min-width: 0;", $developerPanelCss);
     }
 
     public function testProjectSetupNotesUseBlueprintListStyle(): void
@@ -476,35 +507,56 @@ final class ApplicationSurfaceTest extends TestCase
 
     public function testDeveloperPanelCanUseCustomEntryPath(): void
     {
-        $developerAccount = $this->configureNamedDeveloperAccess([
-            "path" => "/qwerty-team-access",
-            "operations_nav_mode" => "hidden",
-        ]);
-        $application = $this->makeApplication();
+        $savedAppName = config("app.name");
+        $savedPanelBranding = config("panel_branding");
+        try {
+            config_set("app.name", "Agency Client Build");
+            config_set("panel_branding", array_merge((array) config("panel_branding", []), [
+                "white_label_enabled" => false,
+                "name" => "Doland Web Solutions",
+            ]));
+            $developerAccount = $this->configureNamedDeveloperAccess([
+                "path" => "/qwerty-team-access",
+                "operations_nav_mode" => "hidden",
+            ]);
+            $application = $this->makeApplication();
 
-        $oldEntryResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/developer",
-            "REQUEST_METHOD" => "GET",
-        ]));
-        $customEntryResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/qwerty-team-access",
-            "REQUEST_METHOD" => "GET",
-        ]));
+            $oldEntryResponse = $application->handle(Request::capture("", [
+                "REQUEST_URI" => "/developer",
+                "REQUEST_METHOD" => "GET",
+            ]));
+            $customEntryResponse = $application->handle(Request::capture("", [
+                "REQUEST_URI" => "/qwerty-team-access",
+                "REQUEST_METHOD" => "GET",
+            ]));
 
-        self::assertSame(404, $oldEntryResponse->status());
-        self::assertSame(200, $customEntryResponse->status());
-        self::assertStringContainsString("Unlock developer session", $customEntryResponse->body());
-        self::assertStringContainsString("action=\"/qwerty-team-access/unlock\"", $customEntryResponse->body());
+            self::assertSame(404, $oldEntryResponse->status());
+            self::assertSame(200, $customEntryResponse->status());
+            self::assertStringContainsString("Unlock developer session", $customEntryResponse->body());
+            self::assertStringContainsString(">FNLLA</span><span>WORKSPACE</span>", $customEntryResponse->body());
+            self::assertStringContainsString("fnlla-framework-wordmark", $customEntryResponse->body());
+            self::assertStringContainsString("src=\"/assets/brand/fnlla/wordmark.svg?v=", $customEntryResponse->body());
+            self::assertStringContainsString("src=\"/assets/brand/fnlla/wordmark-on-black.svg?v=", $customEntryResponse->body());
+            self::assertStringContainsString("Powered by FNLLA", $customEntryResponse->body());
+            self::assertStringNotContainsString("Agency Client Build / DEVELOPER", $customEntryResponse->body());
+            self::assertStringNotContainsString("Doland Web Solutions / DEVELOPER", $customEntryResponse->body());
+            self::assertStringNotContainsString("project-brand-mark", $customEntryResponse->body());
+            self::assertStringNotContainsString("developer-sign-in-hero-brand", $customEntryResponse->body());
+            self::assertStringContainsString("action=\"/qwerty-team-access/unlock\"", $customEntryResponse->body());
 
-        developer_access()->grantAccess($developerAccount);
-        $panelResponse = $application->handle(Request::capture("", [
-            "REQUEST_URI" => "/qwerty-team-access/panel",
-            "REQUEST_METHOD" => "GET",
-        ]));
+            developer_access()->grantAccess($developerAccount);
+            $panelResponse = $application->handle(Request::capture("", [
+                "REQUEST_URI" => "/qwerty-team-access/panel",
+                "REQUEST_METHOD" => "GET",
+            ]));
 
-        self::assertSame(200, $panelResponse->status());
-        self::assertStringContainsString("action=\"/qwerty-team-access/panel/extend\"", $panelResponse->body());
-        self::assertStringContainsString("href=\"/qwerty-team-access/panel/settings\"", $panelResponse->body());
+            self::assertSame(200, $panelResponse->status());
+            self::assertStringContainsString("action=\"/qwerty-team-access/panel/extend\"", $panelResponse->body());
+            self::assertStringContainsString("href=\"/qwerty-team-access/panel/settings\"", $panelResponse->body());
+        } finally {
+            config_set("app.name", $savedAppName);
+            config_set("panel_branding", $savedPanelBranding);
+        }
     }
 
     public function testCookieConsentEndpointRecordsAggregateTelemetry(): void
@@ -1245,6 +1297,14 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("maintenance_password", $response->body());
         self::assertStringContainsString("maintenance-unlock-modal", $response->body());
         self::assertStringContainsString("data-fnlla-modal-locked", $response->body());
+        self::assertStringContainsString("maintenance-unlock-modal-hero", $response->body());
+        self::assertStringContainsString("maintenance-unlock-status-card", $response->body());
+        self::assertStringContainsString("Session window", $response->body());
+        self::assertStringContainsString("Maintenance access checks", $response->body());
+        self::assertStringContainsString("Protected routes", $response->body());
+        self::assertStringContainsString("Attempt limits", $response->body());
+        self::assertStringContainsString("Browser session", $response->body());
+        self::assertStringContainsString("maintenance-unlock-modal-actions", $response->body());
         self::assertFalse(str_contains($response->body(), "Stay on fallback page"));
     }
 
@@ -1483,8 +1543,10 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-workspace-layout", $developerResponse->body());
         self::assertStringContainsString("developer-workspace-header", $developerResponse->body());
         self::assertStringContainsString("project-navbar-actions", $developerResponse->body());
-        self::assertStringContainsString("developer-environment-strip", $developerResponse->body());
-        self::assertStringContainsString("Change runtime", $developerResponse->body());
+        self::assertSame(1, substr_count($developerResponse->body(), '<h2 class="dashboard-section-title">Environment status</h2>'));
+        self::assertStringNotContainsString("developer-environment-strip", $developerResponse->body());
+        self::assertStringNotContainsString("Change runtime", $developerResponse->body());
+        self::assertStringNotContainsString("At a glance", $developerResponse->body());
         self::assertFileExists(public_path("assets/brand/fnlla/favicon.svg"));
         self::assertStringNotContainsString("src=\"/assets/fnlla-logo.png", $developerResponse->body());
         self::assertStringContainsString("developer-workspace-framework-brand", $developerResponse->body());
@@ -1521,7 +1583,10 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("developer-topbar-session", $developerResponse->body());
         self::assertStringContainsString("developer-dropdown-session-icon", $developerResponse->body());
         self::assertStringNotContainsString(">My Tasks</a>", $developerResponse->body());
-        self::assertStringAppearsBefore(">Developer profile</a>", ">Panel settings</a>", $developerResponse->body());
+        self::assertStringContainsString('href="/developer/panel/profile">Account &amp; access</a>', $developerResponse->body());
+        self::assertStringAppearsBefore(">Account &amp; access</a>", ">Panel settings</a>", $developerResponse->body());
+        self::assertStringNotContainsString(">Developer profile</a>", $developerResponse->body());
+        self::assertStringNotContainsString('href="/developer/panel/access/developer">Developer access</a>', $developerResponse->body());
         self::assertStringContainsString("developer-panel-sidebar", $developerResponse->body());
         self::assertStringNotContainsString("developer-panel-sidebar-icon", $developerResponse->body());
         self::assertStringNotContainsString("developer-dashboard-card-icon", $developerResponse->body());
@@ -1533,9 +1598,15 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString('<p class="feature-kicker">Developer panel</p>', $developerResponse->body());
         $developerPanelCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         self::assertStringContainsString(".developer-panel-page-head .dashboard-title,\n.developer-panel-page-head .section-title", $developerPanelCss);
-        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-page-head .dashboard-title,\nbody.developer-workspace-layout .developer-panel-page-head .section-title", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-page-head .dashboard-title,\nbody.developer-workspace-layout .developer-panel-page-head .section-title {\n  margin: 0;\n  color: #5f6775;", $developerPanelCss);
         self::assertStringNotContainsString(".developer-panel-page-head .dashboard-section-title", $developerPanelCss);
-        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main .dashboard-section-title {\n  font-weight: 650;\n  text-transform: uppercase;", $developerPanelCss);
+        self::assertStringContainsString(".dashboard-section-title { color: #2563eb; font-size: 0.9rem; }", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main .dashboard-section-title {\n  color: #2563eb;\n  font-weight: 700;\n  text-transform: uppercase;", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main .dashboard-section-title,\nbody.developer-workspace-layout .developer-panel-main :is(.section-header .section-title, .contact-card-title) {\n  margin: 0;\n  max-width: 58rem;\n  font-size: var(--developer-panel-section-title-size);", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .dashboard-section-title,\nbody.developer-workspace-layout .developer-panel-main .dashboard-section-title,\nbody.developer-workspace-layout .developer-panel-main h2.dashboard-section-title,\nbody.developer-workspace-layout .developer-confirm-copy .dashboard-section-title {\n  color: #2563eb;\n  font-size: 0.9rem;\n  font-weight: 700;\n}", $developerPanelCss);
+        self::assertStringContainsString("body.developer-workspace-layout .feature-kicker,\nbody.developer-workspace-layout .developer-panel-main .feature-kicker,\nbody.developer-workspace-layout .developer-panel-main p.feature-kicker,\nbody.developer-workspace-layout .developer-panel-main .developer-dashboard-card > p.feature-kicker,\nbody.developer-workspace-layout .developer-workspace .debt-command p.feature-kicker,\nbody.developer-workspace-layout .developer-documentation-toc-head p.feature-kicker,\nbody.developer-workspace-layout .developer-confirm-copy p.feature-kicker {\n  color: var(--fnlla-color-secondary);\n  font-size: var(--developer-panel-kicker-size, calc(var(--fnlla-font-size-sm) * 0.78));\n  font-weight: 420;\n  letter-spacing: 0;\n  line-height: 1.18;\n  text-transform: uppercase;\n}", $developerPanelCss);
+        self::assertStringContainsString(".developer-dashboard-notification-drawer summary strong {\n  color: var(--fnlla-color-text);\n  font-size: calc(var(--fnlla-font-size-sm) * 0.88);\n  font-weight: 480;\n  line-height: 1.5;\n}", $developerPanelCss);
+        self::assertStringContainsString(".developer-dashboard-notification-drawer summary small {\n  color: var(--fnlla-color-muted);\n  font-size: var(--fnlla-font-size-sm);\n  font-weight: 400;\n  line-height: 1.45;\n}", $developerPanelCss);
         self::assertStringContainsString("body.developer-workspace-layout .developer-panel-main :is(\n  .feature-kicker,\n  .process-kicker,\n  .starter-kicker\n) {\n  font-size: calc(var(--fnlla-font-size-sm) * 0.8);\n  font-weight: 400;", $developerPanelCss);
         self::assertStringNotContainsString("dashboard-section-title.mb-0", $developerPanelCss);
         self::assertStringNotContainsString(".developer-panel-page-head .feature-kicker", $developerPanelCss);
@@ -1559,7 +1630,9 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("href=\"/developer/panel/workspace#developer-workspace-task-board\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/my-tasks\"", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/profile\"", $developerResponse->body());
-        self::assertStringContainsString(">Developer profile</a>", $developerResponse->body());
+        self::assertStringContainsString(">Account &amp; access</a>", $developerResponse->body());
+        self::assertStringNotContainsString(">Developer profile</a>", $developerResponse->body());
+        self::assertStringNotContainsString(">Developer access</a>", $developerResponse->body());
         self::assertStringContainsString(">Panel settings</a>", $developerResponse->body());
         self::assertStringNotContainsString(">Integrations</a>", $developerResponse->body());
         self::assertStringContainsString("href=\"/developer/panel/analytics\"", $developerResponse->body());
@@ -1951,6 +2024,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-panel-workbench-grid is-stacked", $identityDetailsBody);
         self::assertStringContainsString("developer-panel-form-grid developer-runtime-environment-grid is-stacked", $runtimeBody);
         self::assertStringContainsString("name=\"runtime_environment\" value=\"production\"", $runtimeBody);
+        self::assertStringContainsString(".developer-runtime-switch-grid .developer-analytics-toggle strong {\n  font-size: calc(var(--fnlla-font-size-sm) * 0.92);\n  font-weight: 520;", $developerPanelCss);
         self::assertStringContainsString("Visibility preview", $leadershipBody);
         self::assertStringContainsString("Project leadership", $leadershipBody);
         self::assertStringContainsString("id=\"developer-access-preview\"", $accessPreviewBody);
@@ -2094,6 +2168,11 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("Adapter manifest", $integrationsResponse->body());
         self::assertStringContainsString("Runtime state response", $integrationsResponse->body());
         self::assertStringContainsString("Configured in environment", $integrationsResponse->body());
+        self::assertStringContainsString("authenticate each remote-control operator separately", $integrationsResponse->body());
+        self::assertStringContainsString("required by the FNLLA runtime", $integrationsResponse->body());
+        self::assertStringContainsString("AI-provider knowledge or product logic", $integrationsResponse->body());
+        self::assertStringNotContainsString("authenticate each TechAyo operator separately", $integrationsResponse->body());
+        self::assertStringNotContainsString("private customer or FIONN AI knowledge", $integrationsResponse->body());
         self::assertStringNotContainsString("fnlla.remote_control_plugin.v1", $integrationsResponse->body());
         self::assertStringNotContainsString("fnlla.techayo_remote_control_state.v1", $integrationsResponse->body());
         self::assertStringNotContainsString("developer-integration-ga4-settings", $integrationsResponse->body());
@@ -2124,8 +2203,11 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("developer-analytics-blueprint-diagram developer-analytics-blueprint-flow", $analyticsResponse->body());
         self::assertStringContainsString("developer-analytics-detail-grid developer-analytics-detail-grid-stacked", $analyticsResponse->body());
         self::assertStringContainsString("Signals without visitor identity", $analyticsResponse->body());
+        self::assertStringContainsString("developer-analytics-settings-panel", $analyticsResponse->body());
+        self::assertStringContainsString("developer-analytics-toggle-grid", $analyticsResponse->body());
+        self::assertStringContainsString("developer-analytics-field-grid", $analyticsResponse->body());
         self::assertStringContainsString("form-group developer-analytics-setting-field", $analyticsResponse->body());
-        self::assertStringContainsString("developer-analytics-setting-action", $analyticsResponse->body());
+        self::assertStringContainsString("developer-analytics-settings-footer", $analyticsResponse->body());
         self::assertStringContainsString("Traffic timeline", $analyticsResponse->body());
         self::assertStringContainsString("Internal analytics settings", $analyticsResponse->body());
         self::assertStringContainsString("Save analytics settings", $analyticsResponse->body());
@@ -2194,7 +2276,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringNotContainsString("linear-gradient(var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
         self::assertStringNotContainsString("linear-gradient(90deg, var(--fnlla-blueprint-grid-line) 1px, transparent 1px)", $developerCss);
         self::assertStringContainsString("--fnlla-blueprint-shadow: none;", $developerCss);
-        self::assertStringContainsString(".dashboard-section-title {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.18rem;\n  font-weight: 700;\n  line-height: 1.2;\n  text-transform: uppercase;", $developerCss);
+        self::assertStringContainsString(".dashboard-section-title {\n  margin: 0;\n  color: #2563eb;\n  font-size: 1.08rem;\n  font-weight: 700;\n  line-height: 1.2;\n  text-transform: uppercase;", $developerCss);
         self::assertStringContainsString(".developer-dashboard-card h3,\n.developer-dashboard-status-card h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1rem;\n  font-weight: 550;", $developerCss);
         self::assertStringContainsString(".developer-policy-zone h3 {\n  margin: 0;\n  color: var(--fnlla-color-text);\n  font-size: 1.25rem;\n  font-weight: 600;", $developerCss);
         self::assertStringContainsString(".starter-kicker,\n.process-kicker,\n.feature-kicker {\n  color: var(--fnlla-color-primary);\n  font-size: var(--fnlla-font-size-sm);\n  font-weight: 600;", $developerCss);
@@ -2210,10 +2292,14 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString(".developer-analytics-workbench-stacked > .developer-dashboard-card,\n.developer-analytics-replacement-grid > .developer-dashboard-card,\n.developer-analytics-goal-grid > .developer-dashboard-card {\n  grid-column: 1 / -1;", $developerPanelCss);
         self::assertStringContainsString(".developer-analytics-blueprint-flow {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));", $developerPanelCss);
         self::assertStringContainsString(".developer-analytics-detail-grid-stacked {\n  grid-template-columns: minmax(0, 1fr);", $developerPanelCss);
-        self::assertStringContainsString(".developer-analytics-settings-form {\n  grid-template-columns: repeat(9, minmax(0, 1fr));", $developerPanelCss);
-        self::assertStringContainsString(".developer-analytics-settings-form .developer-analytics-toggle,\n.developer-analytics-settings-form .developer-analytics-setting-field,\n.developer-analytics-settings-form .developer-analytics-setting-action {\n  min-height: 4.9rem;", $developerPanelCss);
-        self::assertStringContainsString(".developer-analytics-settings-form .input {\n  height: 2.05rem;", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-settings-form {\n  grid-template-columns: minmax(0, 1fr);", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-settings-panel {\n  display: grid;", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-settings-group {\n  display: grid;\n  grid-template-columns: minmax(13rem, 0.34fr) minmax(0, 1fr);", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-toggle-grid {\n  grid-template-columns: repeat(5, minmax(0, 1fr));", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-field-grid {\n  grid-template-columns: repeat(3, minmax(0, 1fr));", $developerPanelCss);
+        self::assertStringContainsString(".developer-analytics-settings-footer {\n  display: flex;", $developerPanelCss);
         self::assertStringContainsString(".developer-sign-in-pronunciation", $developerPanelCss);
+        self::assertStringContainsString(".developer-sign-in a,\n.developer-sign-in a:hover,\n.developer-sign-in a:focus-visible {\n  text-decoration: none;\n}", $developerPanelCss);
         self::assertStringContainsString(".developer-ai-runtime-card {\n  display: grid;\n  grid-template-columns: minmax(0, 1.1fr) minmax(15rem, 0.74fr) auto;", $developerPanelCss);
         self::assertStringContainsString(".developer-integrations-control {\n  display: grid;\n  grid-template-columns: minmax(7.5rem, 1fr) auto;", $developerPanelCss);
         self::assertStringContainsString(".developer-remote-control-contract-stack {\n  grid-template-columns: minmax(0, 1fr);", $developerPanelCss);
@@ -4238,6 +4324,12 @@ final class ApplicationSurfaceTest extends TestCase
             "developer_operations_nav_mode" => "developer_session_only",
             "developer_access_ttl_minutes" => "45",
             "developer_access_absolute_ttl_minutes" => "180",
+            "panel_brand_white_label_enabled" => "1",
+            "panel_brand_name" => "Doland Web Solutions",
+            "panel_brand_tagline" => "Private delivery workspace",
+            "panel_brand_logo" => "none",
+            "panel_brand_url" => "https://doland.example.test",
+            "panel_brand_copyright" => "(c) 2026 Doland Web Solutions. All rights reserved.",
             "fnlla_modules_present" => "1",
             "fnlla_module_workspace" => "1",
         ]));
@@ -4248,10 +4340,22 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("DEVELOPER_OPERATIONS_NAV_MODE=developer_session_only", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_TTL_MINUTES=45", (string) file_get_contents($envPath));
         self::assertStringContainsString("DEVELOPER_ACCESS_ABSOLUTE_TTL_MINUTES=180", (string) file_get_contents($envPath));
+        self::assertStringContainsString("PANEL_BRAND_WHITE_LABEL_ENABLED=true", (string) file_get_contents($envPath));
+        self::assertStringContainsString('PANEL_BRAND_NAME="Doland Web Solutions"', (string) file_get_contents($envPath));
+        self::assertStringContainsString('PANEL_BRAND_TAGLINE="Private delivery workspace"', (string) file_get_contents($envPath));
+        self::assertStringContainsString("PANEL_BRAND_LOGO=none", (string) file_get_contents($envPath));
+        self::assertStringContainsString("PANEL_BRAND_URL=https://doland.example.test", (string) file_get_contents($envPath));
+        self::assertStringContainsString('PANEL_BRAND_COPYRIGHT="(c) 2026 Doland Web Solutions. All rights reserved."', (string) file_get_contents($envPath));
         self::assertSame("/project-team-access", config("developer_access.path"));
         self::assertSame("developer_session_only", config("developer_access.operations_nav_mode"));
         self::assertSame(45, config("developer_access.unlock_ttl_minutes"));
         self::assertSame(180, config("developer_access.absolute_ttl_minutes"));
+        self::assertTrue((bool) config("panel_branding.white_label_enabled"));
+        self::assertSame("Doland Web Solutions", config("panel_branding.name"));
+        self::assertSame("Private delivery workspace", config("panel_branding.tagline"));
+        self::assertSame("none", config("panel_branding.logo"));
+        self::assertSame("https://doland.example.test", config("panel_branding.url"));
+        self::assertSame("(c) 2026 Doland Web Solutions. All rights reserved.", config("panel_branding.copyright"));
         self::assertStringContainsString("FNLLA_MODULE_WORKSPACE=true", (string) file_get_contents($envPath));
         self::assertStringContainsString("FNLLA_MODULE_CUSTOMER_PORTAL=false", (string) file_get_contents($envPath));
         self::assertFalse(config("modules.customer_portal"));
@@ -4293,6 +4397,14 @@ final class ApplicationSurfaceTest extends TestCase
             "enabled" => true,
             "path" => "/client",
             "users" => "",
+        ]));
+        config_set("panel_branding", array_merge((array) config("panel_branding", []), [
+            "white_label_enabled" => true,
+            "name" => "Doland Delivery",
+            "tagline" => "Private client review workspace",
+            "logo" => "none",
+            "url" => "https://doland.example.test",
+            "copyright" => "(c) 2026 Doland Delivery. All rights reserved.",
         ]));
         $developerAccount = $this->configureNamedDeveloperAccess();
         $application = $this->makeApplication();
@@ -4346,11 +4458,17 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $customerEntryAfterInviteResponse->status());
         self::assertStringContainsString("Customer Portal Sign In", $customerEntryAfterInviteResponse->body());
+        self::assertStringContainsString("Doland Delivery", $customerEntryAfterInviteResponse->body());
+        self::assertStringContainsString("(c) 2026 Doland Delivery. All rights reserved.", $customerEntryAfterInviteResponse->body());
+        self::assertStringContainsString("Powered by FNLLA", $customerEntryAfterInviteResponse->body());
 
         $mailLogPath = storage_path("framework/testing/customer-mail/" . gmdate("Ymd") . ".log");
         self::assertFileExists($mailLogPath);
         $mailLog = (string) file_get_contents($mailLogPath);
         self::assertStringContainsString("Project access invitation for " . $this->expectedProjectName(), $mailLog);
+        self::assertStringContainsString("from Doland Delivery", $mailLog);
+        self::assertStringContainsString("(c) 2026 Doland Delivery. All rights reserved.", $mailLog);
+        self::assertStringContainsString("Powered by FNLLA", $mailLog);
         $matchedInviteUrl = preg_match('/\/client\/invite\?token=([a-f0-9]{64})/', $mailLog, $matches);
         self::assertSame(1, $matchedInviteUrl);
         $token = (string) ($matches[1] ?? "");
@@ -4366,6 +4484,9 @@ final class ApplicationSurfaceTest extends TestCase
 
         self::assertSame(200, $inviteResponse->status());
         self::assertStringContainsString("Set your customer portal password", $inviteResponse->body());
+        self::assertStringContainsString("Doland Delivery", $inviteResponse->body());
+        self::assertStringContainsString("(c) 2026 Doland Delivery. All rights reserved.", $inviteResponse->body());
+        self::assertStringContainsString("Powered by FNLLA", $inviteResponse->body());
 
         $passwordResponse = $application->handle(Request::capture("", [
             "REQUEST_URI" => "/client/invite/password",
@@ -4411,6 +4532,8 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $panelResponse->status());
         self::assertStringContainsString("Customer Portal", $panelResponse->body());
         self::assertStringContainsString("Project overview", $panelResponse->body());
+        self::assertStringContainsString("(c) 2026 Doland Delivery. All rights reserved.", $panelResponse->body());
+        self::assertStringContainsString("Powered by FNLLA", $panelResponse->body());
         self::assertStringNotContainsString("Framework updates", $panelResponse->body());
         self::assertSame(200, $kanbanResponse->status());
         self::assertStringContainsString("Client-visible project tasks", $kanbanResponse->body());

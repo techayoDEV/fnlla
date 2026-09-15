@@ -73,7 +73,7 @@ final class FrameworkUpdateTransactionTest extends TestCase
         } catch (RuntimeException $error) {
             self::assertStringContainsString("Another framework update", $error->getMessage());
         }
-        foreach (["../outside", ".env", "storage/app/data.json", "public/uploads/photo.jpg"] as $path) {
+        foreach (["../outside", ".env", ".env.local", "storage/app/data.json", "public/uploads/photo.jpg"] as $path) {
             try {
                 $transaction->run([$path], static fn () => null);
                 self::fail("Expected unsafe path rejection.");
@@ -81,6 +81,16 @@ final class FrameworkUpdateTransactionTest extends TestCase
                 self::assertStringContainsString("Unsafe", $error->getMessage());
             }
         }
+    }
+
+    public function testVersionedEnvironmentExamplesCanBeUpdated(): void
+    {
+        $transaction = new FrameworkUpdateTransaction($this->root);
+        $transaction->run([".env.platform.example"], function (): void {
+            FrameworkUpdateTransaction::replace($this->root . "/.env.platform.example", "APP_ENV=production\n");
+        });
+
+        self::assertSame("APP_ENV=production\n", file_get_contents($this->root . "/.env.platform.example"));
     }
 
     public function testRecoveryRejectsCorruptedBackupBeforeAnyRestore(): void

@@ -8,7 +8,7 @@ business application.
 Start from a clean export:
 
 ```bash
-php fnlla make:project ../example-app "FNLLA Business Reference" --profile=full
+php fnlla make:project ../example-app "FNLLA Business Reference" --profile=fnlla
 ```
 
 Then build the application in the exported project, not inside the maintainer

@@ -1,6 +1,6 @@
 # Building Websites and Web Apps with FNLLA
 
-![Full starter: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with diagnostics and update checks. Plain is core-only.](assets/brand/fnlla-workflow.png)
+![FNLLA starter: 01 Start with project setup and private access; 02 Build with routes, controllers, PHP views and data; 03 Operate with diagnostics and update checks. FNLLA Core is core-only.](assets/brand/fnlla-workflow.png)
 
 ## What this guide is for
 

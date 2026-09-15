@@ -6,8 +6,8 @@ namespace Fnlla\Php\Support;
 
 use RuntimeException;
 
-/** Plain is a positive file inventory, never a full distribution with exclusions. */
-final class PlainProjectExporter
+/** Core is a positive file inventory, never a Platform distribution with exclusions. */
+final class CoreProjectExporter
 {
     public function export(string $target, string $name, string $slug): void
     {
@@ -28,12 +28,12 @@ final class PlainProjectExporter
             "require" => ["php" => "^8.3"], "autoload" => ["psr-4" => ["Fnlla\\Php\\" => "src/"]],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
         $this->write($target . "/composer.json", json_encode([
-            "name" => "project/" . $slug, "description" => $name . " built on FNLLA core", "type" => "project",
+            "name" => "project/" . $slug, "description" => $name . " built on FNLLA Core", "type" => "project",
             "repositories" => [["type" => "path", "url" => "packages/fnlla-core", "options" => ["symlink" => false]]],
             "require" => ["php" => "^8.3", "techayodev/fnlla-core" => $version],
             "suggest" => [
-                "phpunit/phpunit" => "Optional full PHPUnit runner. The plain export ships a dependency-light local smoke-test harness.",
-                "phpstan/phpstan" => "Optional deeper static analysis. The plain export runs a dependency-light baseline without it.",
+                "phpunit/phpunit" => "Optional full PHPUnit runner. The Core export ships a dependency-light local smoke-test harness.",
+                "phpstan/phpstan" => "Optional deeper static analysis. The Core export runs a dependency-light baseline without it.",
             ],
             "autoload" => ["psr-4" => ["App\\" => "app/", "Database\\Seeders\\" => "database/seeders/", "Database\\Factories\\" => "database/factories/"]],
             "scripts" => ["test" => "@php scripts/test.php", "analyse" => "@php scripts/static-analysis.php", "lint" => "@php scripts/lint.php"],
@@ -51,14 +51,14 @@ final class PlainProjectExporter
         }
         foreach (["README.md", ".env.example", "config/app.php", "bootstrap/common.php", "bootstrap/app.php", "bootstrap/router.php",
             "fnlla", "app/Controllers/HomeController.php", "routes/web.php", "views/layouts/app.php", "views/pages/home.php",
-            "views/pages/error.php", "views/pages/not-found.php", "public/assets/app.css", "tests/bootstrap.php", "tests/PlainProjectTest.php", "phpstan.neon"] as $path) {
-            $this->copy(base_path("resources/project-templates/v1/plain"), $path, $target . "/" . $path);
+            "views/pages/error.php", "views/pages/not-found.php", "public/assets/app.css", "tests/bootstrap.php", "tests/CoreProjectTest.php", "phpstan.neon"] as $path) {
+            $this->copy(base_path("resources/project-templates/v1/core"), $path, $target . "/" . $path);
         }
         $this->copy(base_path("resources/project-templates/v1"), "database/seeders/DatabaseSeeder.php", $target . "/database/seeders/DatabaseSeeder.php");
         $this->copy(base_path("resources/project-templates/v1"), "phpunit.xml", $target . "/phpunit.xml");
         $this->copy(base_path("resources/project-templates/v1"), "fnlla.cmd", $target . "/fnlla.cmd");
         $this->write($target . "/storage/.gitignore", "# Runtime data is private, including files created by future modules.\n*\n!*/\n!.gitignore\n");
-        $this->write($target . "/.fnlla/project-profile", "plain\n");
+        $this->write($target . "/.fnlla/project-profile", "core\n");
         $env = (string) file_get_contents($target . "/.env.example");
         $this->write($target . "/.env.example", str_replace("{{APP_NAME}}", str_replace(['"', "\r", "\n"], ["", "", ""], $name), $env));
         foreach (["database/migrations", "storage/app", "storage/logs", "storage/framework/cache", "storage/framework/sessions", "storage/framework/queue"] as $path) {
@@ -85,10 +85,10 @@ final class PlainProjectExporter
     private function write(string $path, string $contents): void
     {
         if (!is_dir(dirname($path)) && !mkdir(dirname($path), 0755, true)) {
-            throw new RuntimeException("Cannot create plain project directory.");
+            throw new RuntimeException("Cannot create core project directory.");
         }
         if (file_put_contents($path, $contents) !== strlen($contents)) {
-            throw new RuntimeException("Cannot write plain project file.");
+            throw new RuntimeException("Cannot write core project file.");
         }
     }
 }

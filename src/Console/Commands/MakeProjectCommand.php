@@ -27,7 +27,7 @@ use RuntimeException;
 
 final class MakeProjectCommand extends Command
 {
-    private string $profile = "full";
+    private string $profile = "fnlla";
     public function name(): string
     {
         return "make:project";
@@ -41,8 +41,8 @@ final class MakeProjectCommand extends Command
     public function handle(array $arguments): int
     {
         if (in_array("--help", $arguments, true) || in_array("-h", $arguments, true)) {
-            $this->line("Usage: make:project <target-path> [App Name] [--profile=full|plain] [--packages] [--interactive|--no-interaction]");
-            $this->line("Creates the integrated FNLLA starter by default. Use --profile=plain for core only; --interactive opens advanced installation options.");
+            $this->line("Usage: make:project <target-path> [App Name] [--profile=fnlla|core] [--packages] [--interactive|--no-interaction]");
+            $this->line("Creates the full FNLLA starter by default. Use --profile=core for FNLLA Core.");
             return 0;
         }
         try {
@@ -59,7 +59,7 @@ final class MakeProjectCommand extends Command
         $appNameArgument = trim(implode(" ", array_slice($arguments, 1)));
 
         if ($targetArgument === "") {
-            $this->error("Usage: make:project <target-path> [App Name] [--profile=full|plain]");
+            $this->error("Usage: make:project <target-path> [App Name] [--profile=fnlla|core]");
 
             return 1;
         }
@@ -90,16 +90,16 @@ final class MakeProjectCommand extends Command
 
         try {
             $this->prepareTargetDirectory($targetPath);
-            if ($this->profile === "plain") {
-                (new \Fnlla\Php\Support\PlainProjectExporter())->export($targetPath, $appName, $packageSlug);
-                $this->line("Exported plain FNLLA core project to: " . $targetPath);
+            if ($this->profile === "core") {
+                (new \Fnlla\Php\Support\CoreProjectExporter())->export($targetPath, $appName, $packageSlug);
+                $this->line("Exported FNLLA Core project to: " . $targetPath);
                 $this->line("Copy .env.example to .env, then run composer install, php scripts/test.php and php fnlla route:list.");
                 return 0;
             }
             $this->copyProjectTree($sourceRoot, $targetPath);
             $this->customizeExport($targetPath, $appName, $packageSlug);
             if ($packages) {
-                (new \Fnlla\Php\Support\CompletePackageExporter())->convert($targetPath);
+                (new \Fnlla\Php\Support\FnllaPackageExporter())->convert($targetPath);
                 $this->line("Composer package preview enabled. Read docs/framework/PACKAGES.md before upgrading.");
             }
         } catch (RuntimeException $exception) {
@@ -110,12 +110,12 @@ final class MakeProjectCommand extends Command
 
         $this->line("Exported FNLLA project base to: " . $targetPath);
         $this->line("Application name: " . $appName);
-        $this->line("Project profile: " . $this->profile);
+        $this->line("Project profile: fnlla");
         $this->line("");
         $this->line("Next steps:");
         $this->line("1. Open the new project directory.");
         $this->line("2. Run php fnlla project:claim --product \"Your Product\" --owner \"Owner\" --developer \"Developer\".");
-        $this->line("3. Copy .env.example to .env. Use .env.full.example only as the advanced environment reference.");
+        $this->line("3. Copy .env.example to .env. Use .env.platform.example only as the advanced environment reference.");
         $this->line("4. Leave ASSET_URL empty unless browser assets are served from a separate asset domain or CDN.");
         $this->line("5. Review routes/web.php, src/Controllers/PageController.php and views/pages/ and reshape the exported project surface into your real pages.");
         $this->line("6. Run php fnlla project:acceptance --json, php fnlla fnlla-runtime:validate, php scripts/test.php, php scripts/lint.php and php scripts/validate-version-manifest.php.");
@@ -166,7 +166,7 @@ final class MakeProjectCommand extends Command
             if (!is_string($relativePath) || preg_match('~^(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+$~D', $relativePath) !== 1
                 || in_array("..", explode("/", $relativePath), true) || str_starts_with($relativePath, "storage/")
                 || str_starts_with($relativePath, "public/uploads/") || str_starts_with($relativePath, ".git/")
-                || (str_starts_with($relativePath, ".env.") && !in_array($relativePath, [".env.example", ".env.full.example"], true))
+                || (str_starts_with($relativePath, ".env.") && !in_array($relativePath, [".env.example", ".env.platform.example"], true))
                 || $relativePath === ".env") {
                 throw new RuntimeException("Unsafe project export path.");
             }
@@ -289,7 +289,7 @@ final class MakeProjectCommand extends Command
         $projectIdentifier = trim($projectIdentifier, "_");
         $projectIdentifier = $projectIdentifier !== "" ? $projectIdentifier : "FNLLA_PROJECT";
 
-        foreach ([".env.example", ".env.full.example"] as $filename) {
+        foreach ([".env.example", ".env.platform.example"] as $filename) {
             $path = $targetRoot . DIRECTORY_SEPARATOR . $filename;
 
             if (!is_file($path)) {

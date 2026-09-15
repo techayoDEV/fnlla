@@ -8,6 +8,13 @@ $developerPath = (string) ($developerAccess["path"] ?? "/developer");
 $navMode = (string) ($developerAccess["operations_nav_mode"] ?? "hidden");
 $sessionMinutes = (int) ($developerAccess["unlock_ttl_minutes"] ?? 120);
 $absoluteMinutes = (int) ($developerAccess["absolute_ttl_minutes"] ?? 480);
+$panelBrand = is_array($panelBrand ?? null) ? (array) $panelBrand : panel_branding();
+$panelBrandName = (string) ($panelBrand["name"] ?? config("app.name", "Project workspace"));
+$panelBrandTagline = (string) ($panelBrand["tagline"] ?? "");
+$panelBrandWhiteLabelEnabled = (bool) config("panel_branding.white_label_enabled", false);
+$panelBrandLogo = (string) config("panel_branding.logo", "auto");
+$panelBrandUrl = (string) ($panelBrand["url"] ?? config("app.base_url", ""));
+$panelBrandCopyright = (string) config("panel_branding.copyright", "");
 $developerFooterPreview = $navMode === "developer_session_only"
     ? "Public footer: no Developer link. Developers must use the private entry URL directly."
     : "Public footer: Developer link appears after a developer account exists.";
@@ -51,6 +58,11 @@ require __DIR__ . "/panel-header.php";
               <h3><?= h((string) $absoluteMinutes) ?> minutes</h3>
               <p>Maximum lifetime before a fresh sign-in.</p>
             </article>
+            <article class="developer-dashboard-status-card">
+              <div class="developer-dashboard-card-head"><strong>Panel brand</strong><span class="developer-dashboard-ok"><?= (bool) ($panelBrand["white_label_enabled"] ?? false) ? "WHITE-LABEL" : "FNLLA" ?></span></div>
+              <h3><?= h($panelBrandName) ?></h3>
+              <p><?= h($panelBrandTagline !== "" ? $panelBrandTagline : "Developer and customer review surfaces use FNLLA until white-label branding is applied.") ?></p>
+            </article>
           </div>
 
           <div class="developer-panel-form-grid">
@@ -71,6 +83,40 @@ require __DIR__ . "/panel-header.php";
                     <option value="developer_session_only" <?= $navMode === "developer_session_only" ? "selected" : "" ?>>Hide footer link</option>
                   </select>
                   <p class="help-text">When hidden, developers must use the configured entry URL directly.</p>
+                </div>
+                <div class="developer-panel-status-note">
+                  <strong>White-label branding</strong>
+                  <span>Shown on developer sign-in, password recovery, Customer Portal sign-in and customer invitation emails only after Apply white label is enabled.</span>
+                </div>
+                <div class="form-check">
+                  <input type="hidden" name="panel_brand_white_label_enabled" value="0">
+                  <input id="panel-brand-white-label-enabled" name="panel_brand_white_label_enabled" type="checkbox" value="1" <?= $panelBrandWhiteLabelEnabled ? "checked" : "" ?>>
+                  <label for="panel-brand-white-label-enabled">Apply white label branding</label>
+                  <p class="help-text">When off, private panel and customer review surfaces keep the FNLLA brand.</p>
+                </div>
+                <div class="form-group">
+                  <label class="label" for="panel-brand-name">Panel brand name</label>
+                  <input class="input" id="panel-brand-name" name="panel_brand_name" type="text" value="<?= h((string) old("panel_brand_name", (string) config("panel_branding.name", ""))) ?>" maxlength="80" placeholder="e.g. Doland Web Solutions">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="panel-brand-tagline">Panel brand slogan</label>
+                  <input class="input" id="panel-brand-tagline" name="panel_brand_tagline" type="text" value="<?= h((string) old("panel_brand_tagline", (string) config("panel_branding.tagline", ""))) ?>" maxlength="160" placeholder="Private delivery workspace">
+                </div>
+                <div class="form-group">
+                  <label class="label" for="panel-brand-copyright">Panel copyright notice</label>
+                  <input class="input" id="panel-brand-copyright" name="panel_brand_copyright" type="text" value="<?= h((string) old("panel_brand_copyright", $panelBrandCopyright)) ?>" maxlength="180" placeholder="© 2026 Doland Web Solutions. All rights reserved.">
+                  <p class="help-text">Shown as an additive white-label notice. <strong>Powered by FNLLA</strong> is always shown separately and cannot be removed from panel surfaces.</p>
+                </div>
+                <div class="developer-modal-form-grid">
+                  <div class="form-group">
+                    <label class="label" for="panel-brand-logo">Panel logo path</label>
+                    <input class="input" id="panel-brand-logo" name="panel_brand_logo" type="text" value="<?= h((string) old("panel_brand_logo", $panelBrandLogo)) ?>" maxlength="180" placeholder="auto, none or assets/brand/company.svg">
+                    <p class="help-text">Use <code>auto</code> to reuse the project logo when available.</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="label" for="panel-brand-url">Panel brand URL</label>
+                    <input class="input" id="panel-brand-url" name="panel_brand_url" type="url" value="<?= h((string) old("panel_brand_url", $panelBrandUrl)) ?>" maxlength="180" placeholder="https://agency.example">
+                  </div>
                 </div>
                 <div class="developer-modal-form-grid">
                   <div class="form-group">

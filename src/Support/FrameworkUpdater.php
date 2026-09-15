@@ -230,7 +230,7 @@ final class FrameworkUpdater
         return $workspace;
     }
 
-    private static function exportSourceProject(string $sourceRoot, string $targetRoot, string $appName, string $profile = "full"): void
+    private static function exportSourceProject(string $sourceRoot, string $targetRoot, string $appName, string $profile = "fnlla"): void
     {
         self::extendExecutionTime();
 

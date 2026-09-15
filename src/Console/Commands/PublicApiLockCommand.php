@@ -25,7 +25,7 @@ final class PublicApiLockCommand extends Command
         $payload = [
             "schema" => "fnlla.public_api_lock.v1",
             "helpers" => ["config", "env", "base_path", "public_path", "storage_path", "url", "asset", "route", "csrf_token", "csrf_field", "csp_nonce", "auth", "db", "cache", "queue", "runtime_ai", "project_leadership", "customer_access", "stream_request_body_to_file"],
-            "commands" => ["doctor", "config:doctor", "security:audit", "ops:backup-plan", "project:acceptance", "developer:install-storage", "app:map", "upgrade:check", "perf:budget", "release:prepare", "release:manifest", "tech-debt:update", "ai:ask", "ai:triage", "ai:explain-log", "ai:brief", "ai:providers",
+            "commands" => ["doctor", "config:doctor", "security:audit", "ops:backup-plan", "project:acceptance", "developer:install-storage", "fnlla:upgrade", "app:map", "upgrade:check", "perf:budget", "release:prepare", "release:manifest", "tech-debt:update", "ai:ask", "ai:triage", "ai:explain-log", "ai:brief", "ai:providers",
                 "make:controller", "make:middleware", "make:command", "make:factory", "make:seeder", "make:migration",
                 "migrate", "migrate:rollback", "migrate:status", "config:cache", "route:cache"],
             "schemas" => [
@@ -34,6 +34,7 @@ final class PublicApiLockCommand extends Command
                 "fnlla.debug_report.v1",
                 "fnlla.debug_live.v1",
                 "fnlla.runtime_issue_tracker.v1",
+                "fnlla.upgrade.v1",
                 "fnlla.developer_private_todo.v1",
             ],
             "data" => [

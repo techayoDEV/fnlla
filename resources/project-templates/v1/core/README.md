@@ -1,4 +1,4 @@
-# Plain FNLLA Project
+# FNLLA Core Project
 
 This project contains the HTTP/application core, not the Developer Panel, UI runtime,
 analytics, heatmaps, Kanban, customer portal, AI tools or demonstration website.
@@ -28,11 +28,30 @@ only when the project needs them.
 ## Core Updates
 
 The core package is bundled locally, not assumed to exist on Packagist. Obtain a reviewed
-new core package from a newer FNLLA plain export, replace `packages/fnlla-core`, update
+new core package from a newer FNLLA Core export, replace `packages/fnlla-core`, update
 the exact version in `composer.json`, then run `composer update techayodev/fnlla-core`.
 Commit `composer.lock` and run project tests. Keep the previous deployment for rollback.
-The full distribution's `framework:update` command is deliberately absent.
+The full FNLLA distribution's `framework:update` command is deliberately absent.
 The package boundary is implemented; a public Composer release channel is not yet published.
+
+## Upgrade To FNLLA
+
+When a Core project needs the Developer Panel, customer review surface, integrated
+runtime assets or AI tooling, run a dry plan first:
+
+```powershell
+php fnlla fnlla:upgrade --source PATH_TO_FNLLA_SOURCE
+```
+
+Apply only after reviewing the report:
+
+```powershell
+php fnlla fnlla:upgrade --source PATH_TO_FNLLA_SOURCE --apply
+```
+
+The upgrade installs full FNLLA files and packages, marks the project profile
+as `fnlla`, and keeps application routes, controllers, views, CSS, `.env`,
+`.env.example` and `README.md` under product ownership.
 
 ## Production
 

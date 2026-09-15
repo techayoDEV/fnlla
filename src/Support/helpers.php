@@ -484,6 +484,11 @@ function project_brand_logo_asset(?string $path = null): ?string
     return asset($normalizedPath);
 }
 
+function panel_branding(): array
+{
+    return \Fnlla\Php\Support\PanelBranding::state();
+}
+
 
 function route(string $name, array $parameters = []): string
 {

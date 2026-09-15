@@ -6,7 +6,8 @@ Do not treat the `techayoDEV/fnlla` repository itself as the normal place where 
 
 The recommended workflow is:
 
-1. Keep `techayoDEV/fnlla` as the framework source and project-export base.
+1. Keep `techayoDEV/fnlla` as the full FNLLA source and project-export base.
+   Use `techayoDEV/fnlla-core` for the standalone Core package source.
 2. Export a new working project into its own directory.
 3. Give that new directory its own project name and its own Git repository.
 4. Build the actual website or application there.
@@ -50,18 +51,18 @@ php scripts/lint.php
 php fnlla route:list
 ```
 
-Open the Full starter locally to complete Project Setup before deployment. There
-is no default developer password. For production, serve only `public/`, configure
-HTTPS and the canonical `APP_URL`, disable `APP_DEBUG`,
+Open the FNLLA starter locally to complete Project Setup before
+deployment. There is no default developer password. For production, serve only
+`public/`, configure HTTPS and the canonical `APP_URL`, disable `APP_DEBUG`,
 `DEVELOPER_ACCESS_SETUP_UI_ENABLED` and `MAINTENANCE_SETUP_UI_ENABLED`, and follow
 the [production checklist](RELEASE-AND-OPERATIONS.md#production-readiness-checklist).
 Verify real mail delivery and queue scheduling for email-based password recovery;
 the documented server-owner recovery link is a separate fallback, not a mail test.
 
-### One Integrated Starter
+### FNLLA Starter
 
-Omitting `--profile` creates the integrated FNLLA starter immediately, including
-in a terminal. Project Setup creates the first developer account; the private
+Omitting `--profile` creates the full FNLLA starter immediately without
+prompting in a terminal. Project Setup creates the first developer account; the private
 panel, UI runtime, diagnostics and updates are included. Workspace, analytics,
 heatmaps and the customer portal are all enabled by default, including before
 `.env` exists. Disable unwanted modules later in Panel Settings or environment
@@ -76,15 +77,16 @@ For an explicit advanced installation chooser, including when piping input:
 php fnlla make:project ../my-project "My Project" --interactive
 ```
 
-Choose `1`/`plain`, `2`/`full`, or `q` to cancel. Enter creates FNLLA (`full`).
-Numeric aliases remain compatible. Scripts may pass `--profile=full` explicitly;
-`--no-interaction` is retained. Input is never read unless `--interactive` is
-explicit. `make:project --help` does not create files.
+Choose `1`/`core`, `2`/`fnlla`, or `q` to cancel. Enter creates FNLLA.
+Scripts should use `--profile=fnlla` or `--profile=core`;
+`--no-interaction` is retained.
+Input is never read unless `--interactive` is explicit. `make:project --help`
+does not create files.
 
 This is a choice during installation, not a browser switch after installation.
-An already exported full project contains panel code; a web toggle cannot turn
-it into the physically minimal Composer starter. Never expose a public endpoint
-that deletes or replaces the installed framework.
+An already exported FNLLA project contains panel code; a web toggle
+cannot turn it into the physically minimal Composer starter. Never expose a
+public endpoint that deletes or replaces the installed framework.
 
 ### Advanced Core-Only Export
 
@@ -92,10 +94,10 @@ For an API or application with its own frontend and operations stack, omit the
 panel, optional modules and UI distribution explicitly:
 
 ```powershell
-php fnlla make:project ../my-api "My API" --profile=plain
+php fnlla make:project ../my-api "My API" --profile=core
 ```
 
-Plain starts with `/`, `/api/health`, generic error pages and focused tests.
+Core starts with `/`, `/api/health`, generic error pages and focused tests.
 It keeps routing, middleware, validation, database, authentication, sessions,
 cache, queues and mail. It does NOT ship panel services, maintenance/client
 preview, analytics, heatmaps, Kanban, AI, UI assets or their update scripts.
@@ -108,20 +110,33 @@ the offline bootstrap resolves the bundled package directly. No absolute source
 workspace paths are embedded. Test with `php scripts/test.php`, lint with
 `php scripts/lint.php` and inspect routes with `php fnlla route:list`.
 
-Plain uses Composer dependency updates, not `framework:update`. Its README
+Core uses Composer dependency updates, not `framework:update`. Its README
 documents replacing the reviewed bundled package and updating the exact version.
-A public Composer release channel is not yet published. Existing legacy plain
-projects are not automatically converted: use a new export and migrate only
-application-owned code/configuration. Changing the profile marker is not migration.
+A public Composer release channel is not yet published.
 
-Full keeps `.env.full.example`, `VERSION` and `MANIFEST.json`; plain does not need
-these integrated-distribution files. Both keep Composer metadata, a short
-`.env.example`, `README.md` and the license at root. Full support/trademark
+When a Core project later needs Developer Panel, Client Portal, diagnostics,
+analytics or FIONN AI integration, use the guarded upgrade command:
+
+```powershell
+php fnlla fnlla:upgrade --source PATH_TO_FNLLA_SOURCE
+php fnlla fnlla:upgrade --source PATH_TO_FNLLA_SOURCE --apply
+```
+
+The first command only reports the plan. The apply run adds full FNLLA files,
+rewires unchanged Core bootstrap files, updates Composer metadata, writes
+`.fnlla/project-profile=fnlla` and preserves the existing application surface.
+It does not overwrite `app/`, `routes/web.php`, `views/pages/`,
+`public/assets/app.css`, `.env`, `.env.example` or `README.md`; changed bootstrap
+files are reported as conflicts for manual merge.
+
+FNLLA keeps `.env.platform.example`, `VERSION` and `MANIFEST.json`; Core does not
+need these integrated-distribution files. Both keep Composer metadata, a short
+`.env.example`, `README.md` and the license at root. FNLLA support/trademark
 references live in `docs/framework/`. The remaining instructions on this page
-describe full projects unless explicitly marked otherwise.
+describe full FNLLA projects unless explicitly marked otherwise.
 
-In full, the panel migration moves to `database/optional/developer-panel/`; normal
-project migration runs do not create its tables. Preview their SQL with
+In FNLLA, the panel migration moves to `database/optional/developer-panel/`;
+normal project migration runs do not create its tables. Preview their SQL with
 `php fnlla developer:install-storage --dry-run` and deliberately install them
 only when selecting database-backed tooling.
 
@@ -269,7 +284,7 @@ php fnlla project:claim \
 ```
 
 The command writes project-owned metadata into `MANIFEST.json`, `.env.example`,
-`README.md` and `config/app.php`. `.env.full.example` remains the full
+`README.md` and `config/app.php`. `.env.platform.example` remains the complete
 operator reference for optional advanced keys.
 
 Claimed metadata records:
@@ -319,7 +334,7 @@ and leaves the framework repository untouched.
 Inside the new project directory:
 
 1. Run `php fnlla project:claim --product "..." --owner "..." --developer "..."`.
-2. Copy `.env.example` to `.env`; use `.env.full.example` only as a reference
+2. Copy `.env.example` to `.env`; use `.env.platform.example` only as a reference
    for advanced keys.
 3. Set `APP_URL`.
 4. Leave `ASSET_URL` empty unless the project serves CSS, JavaScript and images from a separate asset domain or CDN.
@@ -368,15 +383,16 @@ The exported project already contains `public/.htaccess`.
 
 The exported `.env.example` is intentionally short and starts in
 local-development mode so sessions and flash flows work over plain HTTP on
-`127.0.0.1`. `.env.full.example` documents every supported environment key.
+`127.0.0.1`. `.env.platform.example` documents every supported environment key.
 Before production deployment, copy only required advanced values into the real
 environment, switch back to production-safe values and enable HTTPS.
 
-## First Browser Visit: Complete
+## First Browser Visit: FNLLA
 
-An unconfigured Complete (`--profile=full`) export contains no default developer
-account or shared password. Copy `.env.example` to `.env`, start the local PHP
-server with its document root set to `public`, and open `/` on localhost.
+An unconfigured FNLLA (`--profile=fnlla`) export
+contains no default developer account or shared password. Copy `.env.example` to
+`.env`, start the local PHP server with its document root set to `public`, and
+open `/` on localhost.
 Project Setup collects the project identity, developer email, password and
 confirmation. After saving, that account opens the Developer Panel. Later visits
 to `/developer` use the email and password chosen during setup.
@@ -396,7 +412,8 @@ a preconfigured account is not a fresh starter. Never delete existing accounts t
 force setup; use [account recovery](DEVELOPER-PANEL.md#developer-account-recovery)
 instead.
 
-Core (`--profile=plain`) intentionally has no Developer Panel or browser setup.
+FNLLA Core (`--profile=core`) intentionally has no Developer
+Panel or browser setup.
 
 ## First Product Commit
 
@@ -477,8 +494,8 @@ Starters use `.fnlla/ui-distribution` set to `sprite`. The local sprite contains
 all maintained icon names, including aliases, and travels with LICENSE/NOTICE.
 Individual SVGs and the unused FNLLA PNG logo remain in the maintainer checkout.
 The runtime synchronizer stages and validates the compact package before replacing
-the installed runtime. Set the profile to `full` for individual SVG URLs; older
-projects without a profile retain their full runtime distribution.
+the installed runtime. Set the UI distribution to `platform` for individual SVG
+URLs; older projects without a profile retain the platform runtime distribution.
 
 After updating source icons, rebuild the maintained sprite with PowerShell:
 

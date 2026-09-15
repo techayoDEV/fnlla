@@ -9,8 +9,8 @@ final class ProjectProfile
     public static function name(?string $root = null): string
     {
         $path = rtrim($root ?? base_path(), "\\/") . "/.fnlla/project-profile";
-        $profile = is_file($path) ? trim((string) file_get_contents($path)) : "full";
-        if (!in_array($profile, ["full", "plain"], true)) {
+        $profile = self::normalise(is_file($path) ? trim((string) file_get_contents($path)) : "fnlla");
+        if (!in_array($profile, ["fnlla", "core"], true)) {
             throw new \RuntimeException("Invalid FNLLA project profile.");
         }
         return $profile;
@@ -18,7 +18,26 @@ final class ProjectProfile
 
     public static function hasPanel(?string $root = null): bool
     {
-        return self::name($root) === "full";
+        return self::name($root) === "fnlla";
+    }
+
+    public static function edition(?string $root = null): string
+    {
+        return self::hasPanel($root) ? "FNLLA" : "FNLLA Core";
+    }
+
+    public static function editionLabel(?string $root = null): string
+    {
+        return self::hasPanel($root) ? "FNLLA" : "Core";
+    }
+
+    private static function normalise(string $profile): string
+    {
+        return match (strtolower(trim($profile))) {
+            "fnlla", "platform", "full" => "fnlla",
+            "core" => "core",
+            default => trim($profile),
+        };
     }
 
     public static function isPanelFile(string $path): bool

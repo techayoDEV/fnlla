@@ -16,7 +16,6 @@ $observabilityEnabled = (bool) ($dashboard["observability_enabled"] ?? false);
 $runtimeEnvironment = is_array($dashboard["runtime_environment"] ?? null) ? (array) $dashboard["runtime_environment"] : [];
 $runtimeMode = (string) ($runtimeEnvironment["mode"] ?? ((string) ($dashboard["environment"] ?? app_environment()) === "production" ? "production" : "development"));
 $runtimeProductionReady = (bool) ($runtimeEnvironment["production_ready"] ?? false);
-$runtimeDebugEnabled = (bool) ($runtimeEnvironment["debug_enabled"] ?? app_debug());
 $environment = ucfirst($runtimeMode) . ($runtimeMode === "production" ? ($runtimeProductionReady ? " (ready)" : " (review)") : "");
 $sessionMinutes = (int) ($dashboard["developer_session_minutes"] ?? 120);
 $developerCount = (int) ($developerAccess["users_count"] ?? 1);
@@ -160,41 +159,6 @@ require __DIR__ . "/panel-header.php";
           </details>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="Environment status">
-          <div class="developer-dashboard-section-head">
-            <h2 class="dashboard-section-title">Environment status</h2>
-            <span class="developer-dashboard-refresh">Last checked: just now</span>
-          </div>
-          <div class="developer-environment-strip" role="list">
-            <article class="developer-environment-strip-item" role="listitem">
-              <span>Runtime</span>
-              <strong><?= h($environment) ?></strong>
-              <small>APP_DEBUG <?= $runtimeDebugEnabled ? "on" : "off" ?> / hosts <?= ((array) ($runtimeEnvironment["trusted_hosts"] ?? [])) !== [] ? "set" : "unset" ?></small>
-            </article>
-            <article class="developer-environment-strip-item" role="listitem">
-              <span>Framework</span>
-              <strong>FNLLA <?= h((string) ($dashboard["framework_version"] ?? "unknown")) ?></strong>
-              <small>Runtime <?= h((string) ($dashboard["runtime_version"] ?? "unknown")) ?> / lock <?= $frameworkLockReady ? "present" : "missing" ?></small>
-            </article>
-            <article class="developer-environment-strip-item" role="listitem">
-              <span>Storage</span>
-              <strong><?= $allStorageReady ? "Writable" : "Needs attention" ?></strong>
-              <small>storage <?= $storageReady ? "ok" : "check" ?> / sessions <?= $sessionStorageReady ? "ok" : "check" ?> / queue <?= $queueStorageReady ? "ok" : "check" ?></small>
-            </article>
-            <article class="developer-environment-strip-item" role="listitem">
-              <span>Observability</span>
-              <strong><?= $observabilityEnabled ? "Enabled" : "Disabled" ?></strong>
-              <small>analytics, heatmap and runtime issue storage stay first-party</small>
-            </article>
-            <article class="developer-environment-strip-item" role="listitem">
-              <span>Service</span>
-              <strong><?= ($developerControl["disabled"] ?? false) ? "Stopped" : "Open" ?></strong>
-              <small><?= ($developerControl["remote_enabled"] ?? false) ? "remote contract on" : "local control only" ?></small>
-            </article>
-            <a class="btn btn-outline btn-sm developer-environment-strip-action" href="<?= h((string) ($developerLinks["runtime_environment"] ?? route("developer.panel.project_identity.runtime"))) ?>">Change runtime</a>
-          </div>
-        </section>
-
         <section class="developer-dashboard-section" aria-label="Management actions">
           <h2 class="dashboard-section-title">Management</h2>
           <div class="developer-dashboard-management-list">
@@ -265,8 +229,8 @@ require __DIR__ . "/panel-header.php";
           <?php endif; ?>
         </section>
 
-        <section class="developer-dashboard-section" aria-label="At a glance">
-          <h2 class="dashboard-section-title">At a glance</h2>
+        <section class="developer-dashboard-section" aria-label="Environment status">
+          <h2 class="dashboard-section-title">Environment status</h2>
           <div class="developer-dashboard-glance-table">
             <?php foreach ($atAGlance as $row): ?>
             <div class="developer-dashboard-glance-row">

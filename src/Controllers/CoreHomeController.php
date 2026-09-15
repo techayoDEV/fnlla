@@ -6,7 +6,7 @@ namespace Fnlla\Php\Controllers;
 
 use Fnlla\Php\Http\Response;
 
-final class PlainHomeController extends Controller
+final class CoreHomeController extends Controller
 {
     public function index(): Response
     {

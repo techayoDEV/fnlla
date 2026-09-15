@@ -30,7 +30,6 @@ final class DeveloperNavigationTest extends TestCase
             self::assertSame("Access & preview", $operator["Workspace"]["identity"]["children"]["project-identity-access"]["label"]);
             self::assertFalse(isset($operator["Workspace"]["technical-debt"]));
             self::assertFalse(isset($operator["Workspace"]["project-changelog"]));
-            self::assertSame("Developer access", $operator["Operations"]["developer-access"]["label"]);
             self::assertSame("Client review access", $operator["Operations"]["client-review-access"]["label"]);
             self::assertSame("Review queue", $operator["Operations"]["notifications"]["label"]);
             self::assertSame("Release & readiness", $operator["Operations"]["release-readiness"]["label"]);
@@ -45,7 +44,6 @@ final class DeveloperNavigationTest extends TestCase
             self::assertSame("Documentation & policy", $operator["Reference"]["documentation"]["label"]);
             self::assertSame(["identity"], array_keys($operator["Workspace"]));
             $expectedOperationsOrder = [
-                "developer-access",
                 "client-review-access",
                 "notifications",
                 "release-readiness",

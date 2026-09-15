@@ -37,7 +37,7 @@ Open-source web framework. PHP foundation. Developer tools built in. Created by 
 ```text
 FNLLA is an open-source web framework built on PHP, with developer tools built in.
 
-Its full starter combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates. Build your own web application while keeping its identity and application code your own.
+FNLLA combines Project Setup, a private Developer Panel, request diagnostics and controlled framework updates. Build your own web application while keeping its identity and application code your own.
 
 Optional workspace tools support delivery work. A built-in gateway connects to FIONN AI, Persistent Personal Intelligence by TechAyo, with a separate developer account and API access. OpenAI API and Anthropic API adapters are additional opt-in integrations. No language model or provider credits are bundled.
 
@@ -89,7 +89,7 @@ Meet FNLLA: a web framework with a PHP foundation and developer tools built in.
 
 Start with your project's identity. Set up private developer access. Inspect requests. Review framework updates before applying them.
 
-FNLLA 2.2.0 brings these workflows together in its full starter, while your application stays your own. Open source. MIT-licensed.
+FNLLA 2.2.0 brings these workflows together in FNLLA, while your application stays your own. Open source. MIT-licensed.
 
 Explore the release and start a project:
 https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
@@ -107,7 +107,7 @@ Created & maintained by TechAyo.
 ```text
 Your project should start with your identity, not somebody else's demo account.
 
-A fresh FNLLA full starter opens local Project Setup before developer sign-in. Set the project name and create your own developer access. No shared default credentials.
+A fresh FNLLA starter opens local Project Setup before developer sign-in. Set the project name and create your own developer access. No shared default credentials.
 
 Then build the application your project needs.
 
@@ -181,7 +181,7 @@ https://github.com/techayoDEV/fnlla
 ```text
 A built-in gateway. A separate AI service.
 
-FNLLA's full starter includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. Connecting requires a suitable FIONN developer account and API access.
+FNLLA includes a gateway to FIONN AI, Persistent Personal Intelligence created by TechAyo. Connecting requires a suitable FIONN developer account and API access.
 
 The gateway is included. The AI service, language model and provider credits are not. OpenAI API and Anthropic API adapters are additional opt-in connections.
 
@@ -262,13 +262,13 @@ https://github.com/techayoDEV/fnlla/releases/tag/v2.2.0
 ### Czy AI Jest Wbudowane?
 
 ```text
-The full starter includes a gateway to FIONN AI by TechAyo, not a bundled language model. The separate service requires an appropriate developer account and API access. Other API integrations are opt-in.
+FNLLA includes a gateway to FIONN AI by TechAyo, not a bundled language model. The separate service requires an appropriate developer account and API access. Other API integrations are opt-in.
 ```
 
 ### Czy Jest Lepszy Od Laravel Lub Symfony?
 
 ```text
-FNLLA focuses on bringing a PHP application foundation and developer operations together in its full starter. Choose a framework against your application's requirements, ecosystem needs and support expectations. We do not claim universal superiority or unverified performance advantages.
+FNLLA focuses on bringing a PHP application foundation and developer operations together. Choose a framework against your application's requirements, ecosystem needs and support expectations. We do not claim universal superiority or unverified performance advantages.
 ```
 
 ### Zgłoszenie Bezpieczeństwa

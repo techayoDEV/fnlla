@@ -9,6 +9,7 @@ use Fnlla\Php\Http\Response;
 use Fnlla\Php\Maintenance\DeveloperPasswordRecovery;
 use Fnlla\Php\Queue\QueueManager;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 
 final class DeveloperRecoveryController extends Controller
 {
@@ -81,7 +82,7 @@ final class DeveloperRecoveryController extends Controller
             return $this->privateResponse(Response::text("Not Found", 404));
         }
         return $this->privateResponse($this->view("developer/recovery", [
-            "pageTitle" => "Developer Account Recovery", "step" => $step, "recoveryError" => $error,
+            "pageTitle" => "Developer Account Recovery", "step" => $step, "recoveryError" => $error, "panelBrand" => PanelBranding::state(),
         ], $status, "layouts/developer"));
     }
 

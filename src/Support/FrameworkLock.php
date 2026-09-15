@@ -235,7 +235,7 @@ final class FrameworkLock
         if (!self::isSafeRelativePath($relativePath)) {
             return false;
         }
-        if (str_starts_with($relativePath, ".env") || $relativePath === "src/Controllers/PlainHomeController.php") {
+        if (str_starts_with($relativePath, ".env") || $relativePath === "src/Controllers/CoreHomeController.php") {
             return false;
         }
         if ($relativePath === "VERSION" || str_starts_with($relativePath, "docs/framework/")
@@ -248,6 +248,7 @@ final class FrameworkLock
             ".git/",
             ".fnlla/",
             "docs/",
+            "app/",
             "node_modules/",
             "output/",
             "playwright-report/",

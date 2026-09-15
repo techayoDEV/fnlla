@@ -188,32 +188,64 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
   aria-labelledby="maintenance-unlock-modal-title"
   hidden
 >
-  <div class="modal-content maintenance-unlock-modal-content">
-    <div class="mb-3">
-      <p class="feature-kicker mb-2">Maintenance access</p>
-      <h2 class="content-title mb-0" id="maintenance-unlock-modal-title">Unlock the protected project surface</h2>
+  <div class="modal-content maintenance-unlock-modal-content" role="document">
+    <div class="maintenance-unlock-modal-hero">
+      <div>
+        <p class="feature-kicker mb-2">Maintenance access</p>
+        <h2 class="content-title mb-0" id="maintenance-unlock-modal-title">Unlock the protected project surface</h2>
+      </div>
+      <div class="maintenance-unlock-status-card" aria-label="Maintenance session status">
+        <span>Session window</span>
+        <strong><?= h((string) ($maintenanceAccess["unlock_ttl_minutes"] ?? 10)) ?> min</strong>
+      </div>
     </div>
-    <p class="content-text">Enter the maintenance credentials to reopen the requested route in this browser session.</p>
-    <form class="form stack gap-md maintenance-lock-form" action="<?= h(route("maintenance.unlock")) ?>" method="post" novalidate>
-      <?= csrf_field() ?>
-      <input type="hidden" name="maintenance_redirect" value="<?= h((string) $maintenanceRedirectTarget) ?>">
-      <?php if ($maintenanceAccess["username_required"] ?? false): ?>
-      <div class="form-group">
-        <label class="label" for="maintenance-modal-username">Username</label>
-        <input class="input" id="maintenance-modal-username" name="maintenance_username" type="text" autocomplete="username" value="<?= h((string) old("maintenance_username")) ?>" required data-fnlla-modal-initial-focus>
-      </div>
-      <?php endif; ?>
-      <div class="form-group">
-        <label class="label" for="maintenance-modal-password">Password</label>
-        <div class="password-field">
-          <input class="input" id="maintenance-modal-password" name="maintenance_password" type="password" autocomplete="current-password" required <?= ($maintenanceAccess["username_required"] ?? false) ? "" : "data-fnlla-modal-initial-focus" ?>>
-          <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#maintenance-modal-password" aria-label="Toggle password visibility">Show</button>
+    <p class="content-text maintenance-unlock-lead">Enter the maintenance credentials to reopen the requested route in this browser session.</p>
+    <div class="maintenance-unlock-modal-grid">
+      <aside class="maintenance-unlock-checklist" aria-label="Maintenance access checks">
+        <div class="maintenance-unlock-check">
+          <span aria-hidden="true"></span>
+          <div>
+            <strong>Protected routes</strong>
+            <p>Public traffic stays behind maintenance until access succeeds.</p>
+          </div>
         </div>
-      </div>
-      <div class="d-flex flex-wrap gap-md">
-        <button class="btn btn-primary" type="submit">Unlock access</button>
-      </div>
-    </form>
+        <div class="maintenance-unlock-check">
+          <span aria-hidden="true"></span>
+          <div>
+            <strong>Attempt limits</strong>
+            <p>Repeated failed credentials are temporarily blocked.</p>
+          </div>
+        </div>
+        <div class="maintenance-unlock-check">
+          <span aria-hidden="true"></span>
+          <div>
+            <strong>Browser session</strong>
+            <p>Unlock applies only to this browser for the configured window.</p>
+          </div>
+        </div>
+      </aside>
+      <form class="form stack gap-md maintenance-lock-form maintenance-unlock-form" action="<?= h(route("maintenance.unlock")) ?>" method="post" novalidate>
+        <?= csrf_field() ?>
+        <input type="hidden" name="maintenance_redirect" value="<?= h((string) $maintenanceRedirectTarget) ?>">
+        <?php if ($maintenanceAccess["username_required"] ?? false): ?>
+        <div class="form-group">
+          <label class="label" for="maintenance-modal-username">Username</label>
+          <input class="input" id="maintenance-modal-username" name="maintenance_username" type="text" autocomplete="username" value="<?= h((string) old("maintenance_username")) ?>" required data-fnlla-modal-initial-focus>
+        </div>
+        <?php endif; ?>
+        <div class="form-group">
+          <label class="label" for="maintenance-modal-password">Password</label>
+          <div class="password-field">
+            <input class="input" id="maintenance-modal-password" name="maintenance_password" type="password" autocomplete="current-password" required <?= ($maintenanceAccess["username_required"] ?? false) ? "" : "data-fnlla-modal-initial-focus" ?>>
+            <button class="password-toggle" type="button" data-fnlla-password-toggle data-fnlla-password-target="#maintenance-modal-password" aria-label="Toggle password visibility">Show</button>
+          </div>
+          <p class="help-text">Use the maintenance password configured by the developer team.</p>
+        </div>
+        <div class="maintenance-unlock-modal-actions">
+          <button class="btn btn-primary" type="submit">Unlock access</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <noscript>

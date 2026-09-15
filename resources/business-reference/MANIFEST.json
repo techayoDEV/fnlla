@@ -2,7 +2,7 @@
     "schema": "fnlla.business_reference.v1",
     "version": "2.2.4",
     "purpose": "Reference blueprint for professional FNLLA business applications.",
-    "generated_from": "php fnlla make:project <target> \"FNLLA Business Reference\" --profile=full",
+    "generated_from": "php fnlla make:project <target> \"FNLLA Business Reference\" --profile=fnlla",
     "capabilities": [
         "login",
         "roles",

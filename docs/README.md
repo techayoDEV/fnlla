@@ -1,14 +1,17 @@
 # FNLLA Documentation Map
 
 Start with [Creating a project](./STARTING-A-NEW-PROJECT.md), then
-[Building applications](./BUILDING-WITH-FNLLA.md). Full is the normal integrated
-FNLLA experience; plain is an advanced core-only export of the same framework.
+[Building applications](./BUILDING-WITH-FNLLA.md). FNLLA is the normal
+integrated experience; FNLLA Core is the open core export of the same framework.
+The product and repository split is documented in
+[Product model](./PRODUCT-MODEL.md).
 
 ## Project Development
 
 - [Project creation and first-run setup](./STARTING-A-NEW-PROJECT.md)
 - [Routes, controllers, forms and persistence](./BUILDING-WITH-FNLLA.md)
 - [Environment configuration](./ENVIRONMENT.md)
+- [Product model and repository split](./PRODUCT-MODEL.md)
 - [Public API and compatibility](./PUBLIC-API.md)
 - [CLI and runtime contracts](framework/RUNTIME-CONTRACTS.md)
 - [Business application reference](./BUSINESS-APP-REFERENCE.md)
@@ -52,7 +55,7 @@ Validate documentation hygiene and relative links:
 php scripts/check-docs.php
 ```
 
-Examples must match shipped commands and distinguish full-only operations.
+Examples must match shipped commands and distinguish Platform-only operations.
 Keep compatibility in the migration guide and release history in CHANGELOG,
 not a growing collection of one-off upgrade files.
 

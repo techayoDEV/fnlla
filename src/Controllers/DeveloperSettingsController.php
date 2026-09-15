@@ -22,6 +22,7 @@ use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\DeveloperModules;
 use Fnlla\Php\Support\FrameworkIdentity;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 use Fnlla\Php\Support\ProjectLeadership;
 use Fnlla\Php\Validation\ValidationException;
 
@@ -185,6 +186,12 @@ final class DeveloperSettingsController extends DeveloperPanelController
             "developer_operations_nav_mode" => trim((string) $request->input("developer_operations_nav_mode", "hidden")),
             "developer_access_ttl_minutes" => (int) $request->input("developer_access_ttl_minutes", (int) config("developer_access.unlock_ttl_minutes", 120)),
             "developer_access_absolute_ttl_minutes" => (int) $request->input("developer_access_absolute_ttl_minutes", (int) config("developer_access.absolute_ttl_minutes", 480)),
+            "panel_brand_white_label_enabled" => (string) $request->input("panel_brand_white_label_enabled", "0") === "1",
+            "panel_brand_name" => trim((string) $request->input("panel_brand_name", (string) config("panel_branding.name", ""))),
+            "panel_brand_tagline" => trim((string) $request->input("panel_brand_tagline", (string) config("panel_branding.tagline", ""))),
+            "panel_brand_logo" => trim((string) $request->input("panel_brand_logo", (string) config("panel_branding.logo", "auto"))),
+            "panel_brand_url" => trim((string) $request->input("panel_brand_url", (string) config("panel_branding.url", ""))),
+            "panel_brand_copyright" => trim((string) $request->input("panel_brand_copyright", (string) config("panel_branding.copyright", ""))),
         ];
 
         if (!in_array($payload["developer_operations_nav_mode"], ["hidden", "developer_session_only"], true)) {
@@ -209,6 +216,12 @@ final class DeveloperSettingsController extends DeveloperPanelController
                 "developer_operations_nav_mode" => ["required", "string"],
                 "developer_access_ttl_minutes" => ["required", "integer", "min:5", "max:240"],
                 "developer_access_absolute_ttl_minutes" => ["required", "integer", "min:5", "max:720"],
+                "panel_brand_white_label_enabled" => ["nullable"],
+                "panel_brand_name" => ["nullable", "string", "max:80"],
+                "panel_brand_tagline" => ["nullable", "string", "max:160"],
+                "panel_brand_logo" => ["nullable", "string", "max:180"],
+                "panel_brand_url" => ["nullable", "string", "max:180"],
+                "panel_brand_copyright" => ["nullable", "string", "max:180"],
             ]);
         } catch (ValidationException $exception) {
             flash_set("errors", $exception->errors());
@@ -216,6 +229,30 @@ final class DeveloperSettingsController extends DeveloperPanelController
                 "variant" => "warning",
                 "title" => "Developer panel settings still need attention",
                 "text" => "Use a session window between 5 and 240 minutes and an absolute window between 5 and 720 minutes.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.settings"));
+        }
+
+        if ($payload["panel_brand_url"] !== "" && filter_var($payload["panel_brand_url"], FILTER_VALIDATE_URL) === false) {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "Panel brand still needs attention",
+                "text" => "Use a full HTTPS URL for the panel brand site, or leave the field empty.",
+                "toast" => false,
+            ]);
+            regenerate_csrf_token();
+
+            return $this->redirect(route("developer.panel.settings"));
+        }
+
+        if ($payload["panel_brand_white_label_enabled"] && $payload["panel_brand_name"] === "") {
+            flash_set("status", [
+                "variant" => "warning",
+                "title" => "White-label branding still needs attention",
+                "text" => "Add a panel brand name before applying white-label branding.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -240,6 +277,12 @@ final class DeveloperSettingsController extends DeveloperPanelController
                 "DEVELOPER_OPERATIONS_NAV_MODE" => $payload["developer_operations_nav_mode"],
                 "DEVELOPER_ACCESS_TTL_MINUTES" => (string) $payload["developer_access_ttl_minutes"],
                 "DEVELOPER_ACCESS_ABSOLUTE_TTL_MINUTES" => (string) $payload["developer_access_absolute_ttl_minutes"],
+                "PANEL_BRAND_WHITE_LABEL_ENABLED" => $payload["panel_brand_white_label_enabled"],
+                "PANEL_BRAND_NAME" => $payload["panel_brand_name"],
+                "PANEL_BRAND_TAGLINE" => $payload["panel_brand_tagline"],
+                "PANEL_BRAND_LOGO" => $payload["panel_brand_logo"] !== "" ? $payload["panel_brand_logo"] : "auto",
+                "PANEL_BRAND_URL" => $payload["panel_brand_url"],
+                "PANEL_BRAND_COPYRIGHT" => $payload["panel_brand_copyright"],
         ];
         if ($request->input("fnlla_modules_present") === "1") {
             $values += DeveloperModules::environmentValues($request->all());
@@ -266,18 +309,27 @@ final class DeveloperSettingsController extends DeveloperPanelController
             "unlock_ttl_minutes" => $payload["developer_access_ttl_minutes"],
             "absolute_ttl_minutes" => $payload["developer_access_absolute_ttl_minutes"],
         ]));
+        config_set("panel_branding", array_merge((array) config("panel_branding", []), [
+            "white_label_enabled" => $payload["panel_brand_white_label_enabled"],
+            "name" => $payload["panel_brand_name"],
+            "tagline" => $payload["panel_brand_tagline"],
+            "logo" => $payload["panel_brand_logo"] !== "" ? $payload["panel_brand_logo"] : "auto",
+            "url" => $payload["panel_brand_url"],
+            "copyright" => $payload["panel_brand_copyright"],
+        ]));
+        $panelBrand = PanelBranding::state();
         $developerAccess->grantAccess();
         developer_activity()->record(
             "panel_settings",
             "Developer panel settings updated",
-            "Developer entry path, session windows or navigation visibility were changed.",
+            "Developer entry path, session windows, navigation visibility or panel white-label branding were changed.",
             $developerAccess->currentDeveloper()
         );
 
         flash_set("status", [
             "variant" => "success",
             "title" => "Developer panel settings saved",
-            "text" => "The developer entry URL, session window and private navigation preference were saved for this project.",
+            "text" => "The developer entry URL, session window, private navigation preference and " . $panelBrand["name"] . " branding were saved for this project.",
             "toast" => true,
         ]);
         regenerate_csrf_token();

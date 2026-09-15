@@ -9,6 +9,7 @@ use Fnlla\Php\Queue\QueueManager;
 use Fnlla\Php\Support\EnvironmentFileManager;
 use Fnlla\Php\Support\LockedJsonStore;
 use Fnlla\Php\Support\Logger;
+use Fnlla\Php\Support\PanelBranding;
 use RuntimeException;
 
 final class DeveloperPasswordRecovery
@@ -127,7 +128,15 @@ final class DeveloperPasswordRecovery
         Logger::write("notice", "Developer password recovered; existing developer sessions invalidated.", ["event" => "developer_password_recovered"]);
         try {
             if ($this->mailAllowed()) {
-                app(Mailer::class)->send($changedEmail, "Developer password changed", "<p>Your developer password has changed. If this was not you, contact the project owner immediately.</p>");
+                $brand = PanelBranding::state();
+                $brandName = $brand["name"];
+                $copyright = trim((string) $brand["copyright"]);
+                $poweredBy = (string) $brand["powered_by"];
+                app(Mailer::class)->send(
+                    $changedEmail,
+                    $brandName . " developer password changed",
+                    "<p>Your " . h($brandName) . " developer password has changed. If this was not you, contact the project owner immediately.</p>" . ($copyright !== "" ? "<p>" . h($copyright) . "</p>" : "") . "<p>" . h($poweredBy) . "</p>"
+                );
             }
         } catch (\Throwable) {
             Logger::write("error", "Developer password-change notification failed.", ["event" => "developer_recovery_mail_failed"]);

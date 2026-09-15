@@ -39,7 +39,7 @@ conceived and the framework was first written.
 
 Positioning: **Web framework. PHP foundation. Developer tools built in.** Lead
 with Project Setup, private access, diagnostics and controlled updates. AI-ready
-is a supporting capability, not a substitute for these benefits. The full starter
+is a supporting capability, not a substitute for these benefits. FNLLA
 includes the gateway to **FIONN AI, Persistent Personal
 Intelligence created by TechAyo**. An appropriate FIONN developer account and API
 access are required; its brain and memory run separately. **OpenAI API** and
@@ -125,7 +125,7 @@ point the fixture renderer at a project with real accounts or data:
 ```console
 python -m pip install playwright==1.62.0
 python -m playwright install chromium
-php fnlla make:project ../brand-complete "Brand Regression" --profile=full
+php fnlla make:project ../brand-platform "Brand Regression" --profile=platform
 php scripts/branding/ui-fixtures.php ../brand-complete ../brand-fixtures
 python scripts/branding/check-ui.py ../brand-complete ../brand-fixtures
 ```
@@ -135,7 +135,7 @@ and 1440 px in both themes. It checks asset loading, overflow, selected text and
 control contrasts, preview unlock, logo minimum size and project-owned identity.
 No network calls leave the fixture browser. CI retains screenshots and results,
 not fixture HTML. These checks are regression coverage, not WCAG certification.
-Plain remains the advanced core-only choice and intentionally uses system fonts.
+FNLLA Core remains the open core edition and intentionally uses system fonts.
 The source archive omits the optional brand builders and their source-dependent
 `RuntimeBrandTest`; application, access and update regression tests remain in it.
 
@@ -151,7 +151,7 @@ Use Python 3.12+, Pillow from the brand requirements and Playwright 1.62.0 with
 Chromium installed as above. From the repository root, in PowerShell:
 
 ```powershell
-php fnlla make:project "$env:TEMP/fnlla-product-demo" "Example App" --profile=full
+php fnlla make:project "$env:TEMP/fnlla-product-demo" "Example App" --profile=platform
 php scripts/branding/product-fixtures.php "$env:TEMP/fnlla-product-demo" dist/product-media/fixtures
 python scripts/branding/build-product-gallery.py "$env:TEMP/fnlla-product-demo" dist/product-media/fixtures
 ```
@@ -214,9 +214,9 @@ JetBrains Mono Regular and SemiBold are pinned to the
 [official v2.304 release](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304).
 The builder validates each source's actual 400/600 weight metadata, rather than
 trusting its filename. Their respective
-license notices are retained alongside the fonts. The full starter self-hosts
+license notices are retained alongside the fonts. FNLLA self-hosts
 WOFF2 derivatives in `public/assets/brand/fnlla/fonts/`, with `font-display: swap`.
-No CDN request is required. Plain retains its lightweight system-font stylesheet.
+No CDN request is required. FNLLA Core retains its lightweight system-font stylesheet.
 Runtime copy and branding use the same 400/600 weight contract. Literal addresses,
 email, versions and endpoint values use Mono; ordinary link labels and navigation
 stay Space Grotesk. The application may override the font tokens without editing
@@ -239,7 +239,7 @@ does not bundle local AI.
 
 The README uses three complementary graphics rather than repeated full-page
 advertisements. The main cover establishes identity; workflow and AI diagrams
-explain the full starter and the external-service boundary. Their claims remain
+explain FNLLA and the external-service boundary. Their claims remain
 available as Markdown and alt text, including when images are disabled. Link
 the AI diagram to the technical contract. No QR is needed in these clickable
 repository images. New editorial graphics are not added to starter exports.

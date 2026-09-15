@@ -2,16 +2,16 @@
 
 ## Product Boundary
 
-FNLLA is one PHP framework for server-rendered applications with integrated
-development and operations tools. Full is the normal experience: setup, Developer
-Panel, diagnostics, updates and runtime assets. Plain is an advanced core-only
-export for projects with their own frontend and operations stack, not a separate
-framework or competing product identity. Both share the same positive Core inventory.
+FNLLA is one PHP framework for server-rendered applications plus a commercial
+operations layer. FNLLA is the integrated product experience: setup, Developer
+Panel, Client Portal,
+diagnostics, updates, analytics and runtime assets. Both share the same positive
+Core inventory. FNLLA Core is the public core-only framework surface.
 
-Full retains the file-based distribution by default; --packages enables the
-Core/Complete package preview. Independent modules and a versioned resource
-publication/removal contract remain incomplete. Disabling a module is not
-uninstalling it. Editing a profile marker is not a migration between presets.
+FNLLA retains the file-based distribution by default; `--packages`
+enables the Core/full-FNLLA package preview. Independent modules and a versioned
+resource publication/removal contract remain incomplete. Disabling a module is
+not uninstalling it. Editing a profile marker is not a migration between presets.
 
 Application business logic, data, credentials and proprietary service internals
 belong outside the framework repository.
@@ -49,7 +49,7 @@ composer test:unit -- --testsuite framework
 composer analyse
 composer lint
 php scripts/test.php --suite fast
-php fnlla make:project ../example-app "Example Application" --profile=full
+php fnlla make:project ../example-app "Example Application" --profile=fnlla
 ```
 
 PHPUnit and PHPStan are development dependencies. The offline runner is a smoke
@@ -88,14 +88,14 @@ Optional PSR-3/11/7/15, SMTP and deployment adapters have package documentation 
 contract tests. Use standard interfaces and proven transports. A local Composer
 path package is not proof of public registry publication.
 
-Core and Complete need a common versioned ownership contract for assets, config,
+Core and full FNLLA need a common versioned ownership contract for assets, config,
 routes and package removal. Test actual published upgrades while preserving
 application files. File rollback cannot reverse emails, payments, uploads or
 schema changes. See [release operations](RELEASE-AND-OPERATIONS.md#backup-and-recovery).
 
 Measure checkout, source archive, clean export and browser transfer separately.
-Clean-export limits are 400,000 bytes / 160 files for plain and 4,000,000 bytes /
-430 files for full. Dependencies/data are excluded. Tests are the maintained
+Clean-export limits are 450,000 bytes / 170 files for Core and 4,250,000 bytes /
+440 files for FNLLA. Dependencies/data are excluded. Tests are the maintained
 authority, not copied local size snapshots.
 
 scripts/build-source-archive.ps1 packages eligible working-tree sources without

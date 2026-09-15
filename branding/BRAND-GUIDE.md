@@ -16,9 +16,9 @@ Blueprint means a considered plan or technical foundation: start with structure,
 then build your application. It does not promise automatic code generation.
 
 ### One product. Deliberate choices.
-The integrated full starter is the main FNLLA experience. Plain is an advanced
-core-only option from the same framework. Neither option needs a separate logo,
-colour scheme or invented product name.
+FNLLA is the complete developer-operations edition. FNLLA Core is the
+open core edition from the same framework. Both use the same logo, colour scheme
+and product family.
 
 ### How to use this book
 Use the visual examples, then the supplied masters. Outline is the only approved
@@ -57,8 +57,8 @@ Keep FIONN AI below the primary FNLLA offer.
 
 ### Keep one identity
 Use FNLLA in prose, titles and social profiles. Keep literal package names,
-commands and namespaces exactly as shipped. Full and plain describe installation
-choices, not competing brands. Downstream applications keep their own identity.
+commands and namespaces exactly as shipped. Core and Platform describe maintained
+editions, not competing brands. Downstream applications keep their own identity.
 
 ### Bound every claim
 Do not claim universal security, enterprise certification or speed advantages
@@ -70,7 +70,7 @@ specific commit and environment; it does not prove every deployment is ready.
 Build with continuity. FIONN AI brings Persistent Personal Intelligence through a dedicated, opt-in gateway.
 
 ### FIONN AI, created by TechAyo
-FIONN AI is Persistent Personal Intelligence. FNLLA's full starter includes its
+FIONN AI is Persistent Personal Intelligence. FNLLA includes its
 gateway, not a local AI model. Access requires an appropriate FIONN developer
 account, API credentials and explicit activation. The service operates separately;
 installing FNLLA does not create an account or include API credit.
@@ -242,7 +242,7 @@ in interfaces. Avoid exaggerated adjectives and claims that cannot be tested.
 
 ### Use shipped syntax
 Use commands from the current CLI reference. For example: php fnlla make:project
-../example-app --profile=full and php fnlla route:list. Keep illustrative output
+../example-app --profile=platform and php fnlla route:list. Keep illustrative output
 visibly separate from verified output; never invent APIs to improve a mockup.
 
 ### Keep examples neutral

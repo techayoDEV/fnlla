@@ -9,13 +9,14 @@ immutable, tested release artifact.
 
 ### Supported Release Scope
 
-The 2.2.0 acceptance scope is the integrated Full starter and the explicit Plain
-core-only preset, using the normal PHP request lifecycle on the tested PHP/OS
-matrix. Full includes Project Setup, private developer access, diagnostics and
-controlled file-based framework updates. Optional external AI providers require
-separate credentials and explicit activation; no language model is bundled.
+The 2.2.0 acceptance scope is the integrated FNLLA starter and the
+explicit FNLLA Core preset, using the normal PHP request lifecycle on the tested
+PHP/OS matrix. Platform includes Project Setup, private developer access,
+diagnostics and controlled file-based framework updates. Optional external AI
+providers require separate credentials and explicit activation; no language model
+is bundled.
 
-Long-lived HTTP workers, independently removable Complete modules and comparative
+Long-lived HTTP workers, independently removable Platform modules and comparative
 Laravel/Symfony performance claims are outside this release scope. Package mode
 remains opt-in; bundled Composer path packages do not establish public registry
 availability. Application recovery objectives require application-owned evidence.
@@ -89,8 +90,8 @@ Publication itself remains a separate human action, not a workflow side effect.
 ### Production HTTP Acceptance
 
 Core Quality's `production-http` job consumes the accepted source archive and
-installs Full, Plain and package preview with `composer install --no-dev`. It runs
-their project tests/lint, then exercises Full through a disposable TLS Nginx
+installs FNLLA, FNLLA Core and package preview with `composer install --no-dev`. It runs
+their project tests/lint, then exercises FNLLA through a disposable TLS Nginx
 ingress, loopback Nginx origin and PHP-FPM 8.3 on Ubuntu 24.04. The runner uses
 generated test credentials and a one-day local certificate verified by the client.
 No application credentials or bearer links are uploaded as evidence.
@@ -172,6 +173,22 @@ to pretend every roadmap item is finished before an incremental release.
 Exported application projects do not run maintainer-only documentation scripts.
 Publication, tags and remote pushes still require explicit release approval.
 
+## FNLLA To Core Release Flow
+
+`techayoDEV/fnlla-core` is the public FNLLA Core source of truth.
+`techayoDEV/fnlla` is the full FNLLA product source. Any framework primitive
+needed by FNLLA must enter Core through a public pull request with tests,
+documentation and release evidence.
+
+Full-product automation may create a Core proposal branch or pull request. It must
+not push directly to Core `main`, publish a Core tag or create a Core release.
+Core release publication still requires the normal Core Quality, Hardening and
+Release Gate evidence for the exact commit plus explicit maintainer approval.
+
+FNLLA releases must declare the supported Core range, for example `requires
+FNLLA Core ^2.3`, and should fail release preparation when they depend on Core
+changes that are not present in a stable Core release.
+
 ## Clean Source Archives
 
 `scripts/build-source-archive.ps1` requires PowerShell, Git and PHP on PATH. It
@@ -214,7 +231,7 @@ This is the canonical checklist for both incremental and major releases.
 3. Run the documentation checks and `php fnlla release:prepare`. For a major
    compatibility review, also use `--major --target=2.2.0` and inspect its app map,
    upgrade plan and redacted AI review pack. Adjust the target for future releases.
-4. Verify full and plain exports, first-run setup, application-owned files,
+4. Verify Platform and Core exports, first-run setup, application-owned files,
    dry-run/apply behavior and rollback from a supported previous release.
 5. Review CORS, sessions, trusted hosts/proxies, debug and mail policy. Run
    `php fnlla security:audit --strict` with the intended deployment configuration.
@@ -320,7 +337,7 @@ Runtime and performance:
 
 Runtime AI and FIONN AI:
 
-FIONN AI is created by TechAyo. Its gateway ships with the full starter; the
+FIONN AI is created by TechAyo. Its gateway ships with the FNLLA starter; the
 service itself must be configured and operated separately. Optional OpenAI API
 and Anthropic API integrations have their own credentials, terms and
 [request boundaries](AI-CONTEXT.md#openai-api-and-anthropic-api).
@@ -421,14 +438,14 @@ and local-only report before an apply run.
 
 Keep the repository root small, but do not hide files that standard tools expect
 at root. `composer.json`, `composer.lock`, `phpunit.xml`, `phpstan.neon`,
-`phpstan.neon.dist`, `.env.example`, `.env.full.example`, `VERSION`,
+`phpstan.neon.dist`, `.env.example`, `.env.platform.example`, `VERSION`,
 `MANIFEST.json`, `README.md`, `CHANGELOG.md`, `LICENSE.md`, `SECURITY.md`,
 `fnlla` and `fnlla.cmd` stay at root because Composer, PHPUnit, PHPStan, release
 validation, archive consumers or Windows developers use them directly.
 
-Project exports follow the same rule. Full exports keep `VERSION`,
-`MANIFEST.json`, `.env.full.example`, `fnlla` and `fnlla.cmd` because they are an
-integrated framework distribution. Plain exports omit integrated-distribution
+Project exports follow the same rule. Platform exports keep `VERSION`,
+`MANIFEST.json`, `.env.platform.example`, `fnlla` and `fnlla.cmd` because they are an
+integrated framework distribution. Core exports omit integrated-distribution
 metadata and panel/runtime assets, but keep Composer metadata, `.env.example`,
 `README.md`, `LICENSE.md`, `phpunit.xml`, `phpstan.neon.dist` and the CLI launcher.
 
@@ -447,8 +464,8 @@ scripts\windows\lint-project.cmd
 scripts\windows\update-fnlla-runtime.cmd
 ```
 
-Full exports include the Developer Panel, runtime assets, update machinery,
-maintenance preview, analytics modules and project-facing scripts. Plain exports
+Platform exports include the Developer Panel, runtime assets, update machinery,
+maintenance preview, analytics modules and project-facing scripts. Core exports
 ship the core package, focused tests and a minimal app surface; they do not include
 panel, runtime UI distribution or `framework:update`.
 

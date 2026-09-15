@@ -12,10 +12,19 @@ foreach (["csrf" => \Fnlla\Php\Middleware\VerifyCsrfToken::class,
     $router->middleware($alias, $class);
 }
 $cache = framework_route_cache_path();
-$cachedRoutes = ($rebuildRouteCache ?? false) ? null : \Fnlla\Php\Support\PhpArrayCache::routes($cache, "plain");
+$cachedRoutes = ($rebuildRouteCache ?? false) ? null : \Fnlla\Php\Support\PhpArrayCache::routes($cache, \Fnlla\Php\Support\ProjectProfile::name());
 if ($cachedRoutes !== null) {
     $router->loadCachedRoutes($cachedRoutes);
 } else {
+    if (\Fnlla\Php\Support\ProjectProfile::hasPanel() && is_file(base_path("routes/maintenance.php"))) {
+        foreach (["developer-operations" => \Fnlla\Php\Middleware\AuthorizeDeveloperOperations::class,
+            "customer-session" => \Fnlla\Php\Middleware\RequireCustomerSession::class,
+            "developer-session" => \Fnlla\Php\Middleware\RequireDeveloperSession::class,
+            "maintenance" => \Fnlla\Php\Middleware\EnforceMaintenanceAccess::class] as $alias => $class) {
+            $router->middleware($alias, $class);
+        }
+        require base_path("routes/maintenance.php");
+    }
     require base_path("routes/web.php");
 }
 return $router;

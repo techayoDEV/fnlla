@@ -7,9 +7,9 @@ namespace Fnlla\Php\Tests;
 use Fnlla\Php\Http\Request;
 use PHPUnit\Framework\TestCase;
 
-final class PlainProjectTest extends TestCase
+final class CoreProjectTest extends TestCase
 {
-    public function testPlainApplicationBootsWithoutPanelRoutes(): void
+    public function testCoreApplicationBootsWithoutPanelRoutes(): void
     {
         $container = $GLOBALS["fnlla_container"];
         $router = require base_path("bootstrap/router.php");

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// Preserve an earlier installation's opt-in marker; fresh full exports enable all modules.
+// Preserve an earlier installation's opt-in marker; fresh Platform exports enable all modules.
 $defaultEnabled = !is_file(base_path(".fnlla/modules-opt-in"));
 return [
     "workspace" => (bool) env("FNLLA_MODULE_WORKSPACE", $defaultEnabled),

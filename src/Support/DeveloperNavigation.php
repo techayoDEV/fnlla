@@ -35,7 +35,6 @@ final class DeveloperNavigation
                 ["key" => "project-changelog", "label" => "Project changelog", "route" => "changelog", "capability" => "operations.view"],
             ],
         ],
-        ["group" => "Operations", "key" => "developer-access", "label" => "Developer access", "route" => "access.developer", "active_aliases" => ["access"]],
         ["group" => "Operations", "key" => "client-review-access", "label" => "Client review access", "route" => "access.client", "module" => "customer_portal"],
         ["group" => "Operations", "key" => "notifications", "label" => "Review queue", "route" => "notifications", "capability" => "operations.view"],
         [

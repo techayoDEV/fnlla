@@ -5,8 +5,8 @@ parameters:
     paths:
         - src
         - packages/fnlla-core/src
-        - packages/fnlla-complete/src
+        - packages/fnlla/src
     scanFiles:
         - packages/fnlla-core/src/Support/helpers.php
-        - packages/fnlla-complete/src/Support/optional_helpers.php
+        - packages/fnlla/src/Support/optional_helpers.php
     tmpDir: storage/framework/phpstan

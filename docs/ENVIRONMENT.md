@@ -12,11 +12,11 @@ without calling the deprecated `finfo_close()` function.
 FNLLA uses two environment templates:
 
 - `.env.example` is the short starter for a new project.
-- `.env.full.example` is the complete reference for operators and maintainers.
+- `.env.platform.example` is the complete reference for operators and maintainers.
 
 New developers should start with `.env.example`. Production owners, CI
 maintainers and teams enabling optional adapters should review
-`.env.full.example` and this document before deployment.
+`.env.platform.example` and this document before deployment.
 
 ## Why The Starter Is Short
 
@@ -52,7 +52,7 @@ values that really differ per environment.
 `.env.example` is safe to copy into `.env` during local development. It contains
 no secrets and should stay readable enough for a first project export.
 
-`.env.full.example` is a catalogue. It names advanced keys for framework
+`.env.platform.example` is a catalogue. It names advanced keys for framework
 updates, Redis, session hardening, CORS, CSP, mail HTTP relays, observability,
 release signing and runtime AI tuning. Do not copy it blindly into production.
 Use it to discover available knobs, then move only needed values into the real
@@ -98,6 +98,32 @@ FNLLA applications have three practical layers:
 project should treat FNLLA as the lower framework/runtime layer and build the
 commercial product above it.
 
+## Panel White-Label Branding
+
+`APP_NAME`, `APP_TAGLINE`, `APP_BRAND_LOGO` and `APP_URL` describe the public
+product. FNLLA remains the private Developer Panel and Customer Portal review
+brand until `PANEL_BRAND_WHITE_LABEL_ENABLED=true` is applied from Panel
+Settings.
+
+Set `PANEL_BRAND_*` when a delivery team wants the developer login, customer
+login, invitation page and invitation emails to carry its own agency or
+workspace brand. These values are inert until white-label branding is enabled.
+
+```dotenv
+PANEL_BRAND_WHITE_LABEL_ENABLED=true
+PANEL_BRAND_NAME="Doland Web Solutions"
+PANEL_BRAND_TAGLINE="Private delivery workspace"
+PANEL_BRAND_LOGO=assets/brand/doland.svg
+PANEL_BRAND_URL=https://doland.example
+PANEL_BRAND_COPYRIGHT="© 2026 Doland Web Solutions. All rights reserved."
+```
+
+Use `PANEL_BRAND_LOGO=auto` to reuse the public project logo when available, or
+`PANEL_BRAND_LOGO=none` to show generated initials. These settings do not change
+the framework metadata in `config/framework.php`, update provenance or legal
+attribution. `PANEL_BRAND_COPYRIGHT` is additive; panel surfaces and
+framework-generated panel emails always keep `Powered by FNLLA`.
+
 ## Local Development Profile
 
 Recommended local starter values:
@@ -109,6 +135,12 @@ APP_NAME=FNLLA Project
 APP_TAGLINE=
 APP_BRAND_LOGO=auto
 APP_URL=http://127.0.0.1:8080
+PANEL_BRAND_WHITE_LABEL_ENABLED=false
+PANEL_BRAND_NAME=
+PANEL_BRAND_TAGLINE=
+PANEL_BRAND_LOGO=auto
+PANEL_BRAND_URL=
+PANEL_BRAND_COPYRIGHT=
 SESSION_SECURE=false
 DB_HOST=127.0.0.1
 DB_DATABASE=fnlla
@@ -421,7 +453,7 @@ call a model provider.
 
 ## FIONN AI Bridge
 
-**FIONN AI is created by TechAyo.** The full starter ships its dedicated gateway
+**FIONN AI is created by TechAyo.** The FNLLA starter ships its dedicated gateway
 as part of FNLLA. Connect a separately operated AI brain through explicit server
 configuration; its models and memory are not copied into the framework.
 The local assistant stays the default. OpenAI API and Anthropic API are
@@ -486,5 +518,5 @@ If FIONN AI is selected, the provider must report `provider_ready=true` and
 
 Keep committed environment templates useful but boring. Real secrets, runtime
 state and customer data belong in environment storage, not in Git. Optional
-capabilities should be visible in `.env.full.example`, explained in docs and
+capabilities should be visible in `.env.platform.example`, explained in docs and
 enabled in production only after the matching audit command passes.

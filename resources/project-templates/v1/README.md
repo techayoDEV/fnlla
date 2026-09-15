@@ -1,17 +1,17 @@
 # {{APP_NAME}}
 
-This repository is a working application export generated from `techayoDEV/fnlla`.
+This repository is a working FNLLA application export generated from `techayoDEV/fnlla`.
 
 It is intended to be the beginning of a new server-rendered website or web application built on:
 
-- FNLLA
+- FNLLA Core
 - the integrated FNLLA UI surface
 - PHP 8.3
 - MySQL
 
 ## What is already included
 
-- the FNLLA application core
+- the FNLLA Core application foundation
 - the integrated FNLLA UI surface under `public/vendor/fnlla-runtime/`
 - the integrated server-side runtime intelligence bundle under `resources/fnlla-ai-runtime/`
 - the built-in FIONN AI gateway by TechAyo and optional OpenAI API / Anthropic API adapters; external connections disabled by default
@@ -35,7 +35,7 @@ It is intended to be the beginning of a new server-rendered website or web appli
 php fnlla project:claim --product "{{APP_NAME}}" --owner "Owner" --developer "Developer" --maintainer "Developer"
 ```
 
-2. Copy `.env.example` to `.env`. Use `.env.full.example` only as the complete
+2. Copy `.env.example` to `.env`. Use `.env.platform.example` only as the complete
    operator reference when you need advanced keys.
 3. Set `APP_URL`, your MySQL credentials and the client-preview password if the
    site should be reviewed privately before launch.
@@ -68,7 +68,7 @@ For Apache environments, use `public/` as the document root.
 The exported project already includes `public/.htaccess`.
 
 The exported `.env.example` is the short starter for local development and
-client-preview setup. `.env.full.example` is the full framework environment
+client-preview setup. `.env.platform.example` is the complete framework environment
 reference for operators. Before production deployment, move real secrets into
 the host secret store where possible, switch the environment back to
 production-safe values and enable HTTPS.
@@ -79,7 +79,7 @@ Before writing the first product feature, make one clean baseline commit in the
 exported project containing:
 
 - claimed project identity
-- reviewed `.env.example` and any advanced values copied from `.env.full.example`
+- reviewed `.env.example` and any advanced values copied from `.env.platform.example`
 - passing `project:acceptance`
 - passing runtime validation, tests and lint
 - no generated files from `storage/`, `dist/` or local caches
@@ -113,8 +113,9 @@ The `.fnlla/ui-distribution` file selects `sprite` for a compact UI package.
 Use local `vendor/fnlla-runtime/assets/icons/sprite.svg#search` references; the
 sprite includes all icon names, including aliases. Runtime synchronization keeps
 this distribution compact. Projects requiring individual SVG URLs can change the
-file to `full` before the next official runtime sync. Existing projects without
-this file keep the full distribution. Keep the icon LICENSE and NOTICE files.
+file to `platform` before the next official runtime sync. Existing projects
+without this file keep the platform distribution. Keep the icon LICENSE and
+NOTICE files.
 
 That keeps the downstream project focused on application delivery rather than framework maintenance.
 
@@ -201,19 +202,19 @@ live under `scripts/windows/`, and framework policy references live under
 `docs/framework/`.
 
 OpenAI API and Anthropic API can be configured in Developer Panel > Integrations > AI providers or
-through `AI_OPENAI_*` / `AI_ANTHROPIC_*` in `.env.full.example`. Set your API key,
+through `AI_OPENAI_*` / `AI_ANTHROPIC_*` in `.env.platform.example`. Set your API key,
 an available model ID and the selected `AI_RUNTIME_DRIVER`. PHP cURL is required
 only for these cloud adapters. Cloud requests send the explicit question, not
 application context, source files or sessions. Status checks do not call providers;
 costs and provider data policies apply. Never publish provider keys or responses.
 
-Space Grotesk and JetBrains Mono are self-hosted in the full starter. Override
+Space Grotesk and JetBrains Mono are self-hosted in the FNLLA starter. Override
 `--fnlla-font-base`, `--fnlla-font-heading` and `--fnlla-font-mono` for your product;
 keep font license notices with redistributed assets.
 Both families ship real 400/600 weights. Space Grotesk handles body, headings,
 navigation and prose; JetBrains Mono handles literal URLs, email, code, versions
 and metadata. Use `.fnlla-literal` for displayed technical values, not all links.
-The standalone FIONN AI name uses `.fnlla-fionn-name`. Plain keeps system fonts.
+The standalone FIONN AI name uses `.fnlla-fionn-name`. FNLLA Core keeps system fonts.
 
 FNLLA framework authorship: **Lead Developer / Product Manager - Marcin Kordyaczny**.
 This credits the framework, not the ownership or leadership of your application.

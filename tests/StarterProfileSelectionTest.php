@@ -28,31 +28,37 @@ final class StarterProfileSelectionTest extends TestCase
 
     public function testPromptAcceptsProfilesAndRetriesInvalidAnswers(): void
     {
-        foreach (["1\n" => "plain", "plain\n" => "plain", "2\n" => "full", "\n" => "full", "wrong\nfull\n" => "full"] as $answer => $profile) {
+        foreach (["1\n" => "core", "core\n" => "core", "2\n" => "fnlla", "fnlla\n" => "fnlla", "platform\n" => "fnlla", "\n" => "fnlla", "wrong\nfnlla\n" => "fnlla"] as $answer => $profile) {
             $result = $this->resolve(["C:/workspace/project", "Example App", "--interactive"], $answer);
             self::assertSame($profile, $result["profile"]);
             self::assertSame(["C:/workspace/project", "Example App"], $result["arguments"]);
-            self::assertStringContainsString("FNLLA (full, recommended)", $result["output"]);
+            self::assertStringContainsString("FNLLA (fnlla profile, recommended)", $result["output"]);
         }
     }
 
     public function testExplicitProfilesAndAutomationNeverPrompt(): void
     {
-        foreach ([["--profile=plain", "target"], ["target", "--profile", "plain"]] as $arguments) {
+        foreach ([["--profile=core", "target"], ["target", "--profile", "core"]] as $arguments) {
             $result = $this->resolve($arguments);
-            self::assertSame("plain", $result["profile"]);
+            self::assertSame("core", $result["profile"]);
             self::assertSame("", $result["output"]);
         }
-        self::assertSame("full", $this->resolve(["target", "--no-interaction"])["profile"]);
+        foreach ([["--profile=fnlla", "target"], ["target", "--profile", "fnlla"], ["--profile=platform", "target"], ["target", "--profile", "platform"]] as $arguments) {
+            $result = $this->resolve($arguments);
+            self::assertSame("fnlla", $result["profile"]);
+            self::assertSame("", $result["output"]);
+        }
+        self::assertSame("fnlla", $this->resolve(["target", "--no-interaction"])["profile"]);
         self::assertSame("", $this->resolve(["target"])["output"]);
-        self::assertSame("full", $this->resolve(["target"])["profile"]);
+        self::assertSame("fnlla", $this->resolve(["target"])["profile"]);
     }
 
     public function testCancellationAndAmbiguousOptionsFailClosed(): void
     {
         foreach ([[["target", "--interactive"], "q\n"], [["target", "--interactive"], ""],
             [["target", "--interactive", "--no-interaction"], ""], [["target", "--profile=small"], ""],
-            [["target", "--profile=full", "--profile=plain"], ""], [["target", "--profil=plain"], ""]] as [$arguments, $input]) {
+            [["target", "--profile=plain"], ""],
+            [["target", "--profile=platform", "--profile=core"], ""], [["target", "--profil=plain"], ""]] as [$arguments, $input]) {
             try {
                 $this->resolve($arguments, $input);
                 self::fail("Expected cancellation or invalid options to be rejected.");

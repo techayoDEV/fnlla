@@ -34,6 +34,11 @@ the selected runtime provider; `ai:ask` uses the selected provider.
   `upgrade:check`, `perf:budget`, `release:prepare`, `release:manifest`,
   `tech-debt:update`, `ai:ask`, `ai:triage`, `ai:explain-log`, `ai:brief`
   and `ai:providers`.
+- Product profiles: `--profile=fnlla` creates the integrated FNLLA starter;
+  `--profile=core` creates the FNLLA Core starter.
+- Core-to-FNLLA upgrade: `fnlla:upgrade --source PATH` reports a guarded
+  upgrade plan, and `fnlla:upgrade --source PATH --apply` applies it when no
+  conflicts are present.
 - Developer operations routes: `/developer`, `/developer/panel`,
   `/developer/panel/project-identity`, `/developer/panel/setup-checklist`,
   `/developer/panel/project-identity/identity`,
@@ -206,6 +211,7 @@ The following machine-readable schemas are considered project-facing:
 - `fnlla.project_leadership.v1`
 - `fnlla.developer_security.v1`
 - `fnlla.developer_storage_install.v1`
+- `fnlla.upgrade.v1`
 - `fnlla.developer_workspace.v1`
 - `fnlla.developer_private_todo.v1`
 - `fnlla.customer_access.v1`
@@ -221,10 +227,11 @@ documented status fields such as `ok`, `status`, `failures` and `warnings`.
 ## Developer Panel Boundary
 
 The Developer Panel is a stable technical control surface, not a product admin
-panel. It may manage framework-owned operations such as developer access,
-customer portal invitations, client preview, service control, framework
-updates, privacy-light or regulated operations summaries, audit export and the
-technical Kanban workspace.
+panel. In the FNLLA/FNLLA Core product model it belongs to the full FNLLA
+surface, not the Core export. It may manage framework-owned operations
+such as developer access, customer portal invitations, client preview, service
+control, framework updates, privacy-light or regulated operations summaries,
+audit export and the technical Kanban workspace.
 
 The Customer Portal is a separate read-only review surface. It can show
 customer-visible Kanban cards, aggregate analytics, aggregate heatmap summaries

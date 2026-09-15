@@ -6,7 +6,7 @@ require `panel.settings.write` and CSRF validation. Keys are never prefilled;
 blank fields preserve them, and removal requires an explicit checkbox. Saving
 does not contact a provider. Cloud access is off by default and requires PHP cURL,
 an API key and a model. See [AI request boundaries](AI-CONTEXT.md#openai-api-and-anthropic-api)
-before enabling external requests. The full UI self-hosts Space Grotesk for
+before enabling external requests. The Platform UI self-hosts Space Grotesk for
 interface text and JetBrains Mono for literal URLs, email, code, versions,
 endpoints and technical metadata. Both families include 400/600 faces; navigation
 labels remain Space Grotesk. FIONN AI uses Mono SemiBold as a standalone name.
@@ -29,7 +29,7 @@ Panel Settings provides workspace, analytics, heatmap and customer portal
 checkboxes. First-run Project Setup stores only identity and the first private
 developer account. Only developers with `panel.settings.write` can save panel
 configuration; POST and CSRF remain mandatory. All modules default to on in new
-full exports. The heatmap choice also enables analytics. Older settings
+Platform exports. The heatmap choice also enables analytics. Older settings
 submissions without module fields preserve their existing values. No switch
 deletes module code or data.
 
@@ -40,7 +40,7 @@ independently enable the toolbar and request history.
 Both require `APP_DEBUG=true`, a local/development/testing environment and an
 unlocked developer with `operations.view`. Configuration and clearing also require
 `panel.settings.write`, POST and CSRF. Guests and production requests do not get
-the toolbar or request-history recording. Core/plain exports contain neither
+the toolbar or request-history recording. FNLLA Core exports contain neither
 feature.
 
 The toolbar remains a per-request profiler, but it now polls
@@ -110,7 +110,7 @@ settings mutations are CSRF protected. Guests, staging and production are not
 recorded. No shared-browser session, payload viewer, production APM or remote
 telemetry service is included.
 
-Full projects can independently switch modules off in `config/modules.php` or `.env`:
+Full FNLLA projects can independently switch modules off in `config/modules.php` or `.env`:
 
 ```dotenv
 FNLLA_MODULE_WORKSPACE=false
@@ -124,13 +124,13 @@ routes; corresponding launcher and command entries disappear where the disabled
 module is the only destination. Analytics and heatmap switches stop their
 collectors without disabling technical request metrics.
 Customer subpages also require the corresponding workspace/analytics/heatmap module.
-Existing full projects default to enabled for compatibility. Rebuild cached
+Existing full FNLLA projects default to enabled for compatibility. Rebuild cached
 configuration with `php fnlla config:cache` after editing `.env` if caching is used.
-These switches do not remove code from disk. Use plain for physical exclusion.
+These switches do not remove code from disk. Use Core for physical exclusion.
 
 ## Update Recovery
 
-Full updates snapshot all planned files and the framework lock, serialize installation
+FNLLA updates snapshot all planned files and the framework lock, serialize installation
 and roll back on installation or post-check failure. An interrupted update journal
 blocks another installation. Stop application traffic and recover with:
 
@@ -143,11 +143,11 @@ a checksum or filesystem error. Validate the project before restoring traffic.
 This restores framework files, not database migrations, `.env`, uploads, storage,
 external effects of tests, or an entire zero-downtime deployment.
 
-The current starter supports `--profile=plain` for a separate Composer core
+The current starter supports `--profile=core` for a separate Composer core
 without panel code, maintenance, AI, analytics or the UI distribution.
-The full profile includes Technical debt and Debug sections, domain-specific
+The Platform profile includes Technical debt and Debug sections, domain-specific
 controllers, separate panel CSS and collapsible mobile navigation. See
-[starter profiles and developer tools](./STARTING-A-NEW-PROJECT.md#full-or-plain-profile)
+[starter profiles and developer tools](./STARTING-A-NEW-PROJECT.md#fnlla-starter)
 for the safety policy, private storage, optional migrations and update boundary.
 
 The architecture review and remaining work are documented in
@@ -167,6 +167,23 @@ framework support mailbox and `techayoDEV/fnlla` is the official release
 repository. These values are metadata for the framework layer. They do not
 replace a downstream project's `APP_NAME`, `APP_URL`, public logo or mail
 sender.
+
+Developer teams can white-label the private operational surfaces without
+changing the public product identity. FNLLA remains the default private panel
+brand until a lead developer enables **Apply white label branding** in
+**Panel Settings**. That action writes `PANEL_BRAND_WHITE_LABEL_ENABLED=true`;
+only then do `PANEL_BRAND_NAME`, `PANEL_BRAND_TAGLINE`, `PANEL_BRAND_LOGO`,
+`PANEL_BRAND_URL` and the optional `PANEL_BRAND_COPYRIGHT` appear on the
+Developer Panel sign-in, developer password recovery screens, Customer Portal
+sign-in/invitation screens and customer invitation emails.
+
+Use this for agency or delivery-team branding such as "Doland Web Solutions"
+when FNLLA is the underlying framework but the client-facing review experience
+should look like the delivery team's workspace. Custom copyright text is
+additive only. `Powered by FNLLA` remains a required, framework-rendered
+attribution on panel surfaces and framework-generated panel emails. White-label
+branding does not remove framework metadata, update provenance or legal
+attribution; it only controls private panel and customer-review presentation.
 
 ## Purpose
 
@@ -236,8 +253,8 @@ The following belong in FNLLA core:
 - neutral `Product leadership`, `Project leadership`, `Led by` or `System
   information` blocks for named responsibility records;
 - local and remote service-control contract;
-- the optional TechAyo Remote Control plugin contract for projects that should
-  be controllable from an explicitly configured external operations service;
+- the optional remote-control adapter contract for projects that should be
+  controllable from an explicitly configured external operations service;
 - framework update routes and audit;
 - health and release-readiness summaries;
 - privacy-light analytics summaries without raw IP storage;
@@ -329,7 +346,7 @@ screens available through cards, direct links and sidebar disclosure groups:
 - `Workspace` contains Project identity and the Project work disclosure group.
   Project work expands or collapses the shared task board, timeline/Gantt,
   Technical debt and Project changelog submenu instead of navigating away.
-- `Operations` contains Developer access, Client review access, Review queue, Release & readiness,
+- `Operations` contains Client review access, Review queue, Release & readiness,
   Observability and Adapters & AI. Release & readiness and Observability are
   disclosure groups: they expand or collapse their operational submenus without
   navigating. Release & readiness contains Readiness & health and Framework
@@ -339,13 +356,13 @@ screens available through cards, direct links and sidebar disclosure groups:
 - `Reference` contains Documentation & policy when the developer role has the
   policy view capability.
 
-The sidebar is intentionally compact. Header actions are limited to private
-developer tasks, the shared review queue and the developer account menu. Detailed
-tools remain routed and permission-checked, but global header search is not part
-of the panel chrome.
-The developer dropdown contains Developer profile and Panel settings for
-account-adjacent or configuration-heavy destinations that do not need to compete
-with the main sidebar workflow.
+The developer dropdown keeps a compact account surface: Open public website,
+Account & access, Panel settings and Lock session. Account & access opens the
+signed-in developer profile; project-wide developer account management remains
+available from Operations > Developer access and from the profile's management
+shortcut. Header actions are limited to private developer tasks, the shared
+review queue and the developer account menu. Detailed tools remain routed and
+permission-checked, but global header search is not part of the panel chrome.
 
 ## Customer Portal
 
@@ -496,8 +513,9 @@ must be archived, attached to a change request or reviewed outside the panel.
 FNLLA Analytics, FNLLA Heatmap and FNLLA Error Monitor are the first-party
 observability source of truth for the Developer Panel. Optional outbound work is
 described through the adapter registry: AI provider contract, API hook contract
-and remote-control contract. FIONN AI, OpenAI API, Anthropic API and TechAyo
-remote control remain optional adapters, not default FNLLA runtime dependencies.
+and remote-control contract. FIONN AI, OpenAI API, Anthropic API and
+remote-control providers remain optional adapters, not default FNLLA runtime
+dependencies.
 Outbound adapters must stay disabled by default. When enabled, generic browser
 API hooks run from the public layout only after analytics consent. Production
 CSP must explicitly allow the required endpoint hosts before browser hooks can
@@ -797,8 +815,8 @@ worker; the default log transport does not deliver mail.
 
 ### Developer Account Recovery
 
-The Complete starter includes a split Developer Panel sign-in screen, email
-password recovery and a server-owner CLI fallback. Core/plain includes none of
+The FNLLA starter includes a split Developer Panel sign-in screen, email
+password recovery and a server-owner CLI fallback. FNLLA Core includes none of
 these panel files. No database tables or additional Composer dependencies are
 required for recovery.
 
