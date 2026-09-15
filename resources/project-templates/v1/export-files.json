@@ -329,6 +329,7 @@
     "src/Support/LockedJsonStore.php",
     "src/Support/Logger.php",
     "src/Support/PageMeta.php",
+    "src/Support/PanelBranding.php",
     "src/Support/PhpArrayCache.php",
     "src/Support/PerformanceProfiler.php",
     "src/Support/PreloadBuilder.php",

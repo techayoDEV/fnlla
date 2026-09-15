@@ -713,7 +713,7 @@ documentation.
 | `release-documentation` | `pass` | Required release, AI, operations and developer-panel documents are present. |
 | `ai-product-runtime` | `pass` | Local reference lookup and the opt-in FIONN AI gateway contract are present. |
 | `technical-debt-public-contract` | `pass` | Technical-debt command and schema are present in the public API lock. |
-| `modernization-ledger` | `warn` | 5 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
+| `modernization-ledger` | `warn` | 4 modernization criteria remain unfinished. See docs/MODERNIZATION-STATUS.md. |
 
 Generated actions:
 

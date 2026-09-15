@@ -72,7 +72,8 @@ final class ProjectToolingTest extends TestCase
             self::assertStringContainsString(".env.example", $checksums);
             self::assertStringContainsString("public/index.php", $checksums);
             if (is_file(base_path("resources/source-distribution.json"))) {
-                self::assertStringNotContainsString("branding/", $checksums);
+                self::assertStringNotContainsString("  branding/", $checksums);
+                self::assertStringNotContainsString("  scripts/branding/", $checksums);
             }
         } finally {
             foreach ($files as $relativePath) {

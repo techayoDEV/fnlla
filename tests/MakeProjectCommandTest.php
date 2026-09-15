@@ -393,6 +393,7 @@ final class MakeProjectCommandTest extends TestCase
             "src/Support/DeveloperIntegrationRegistry.php",
             "src/Support/DeveloperPanelLabels.php",
             "src/Support/DeveloperPanelPolicy.php",
+            "src/Support/PanelBranding.php",
         ] as $managedSupportFile) {
             self::assertArrayHasKey(
                 $managedSupportFile,
@@ -772,7 +773,7 @@ final class MakeProjectCommandTest extends TestCase
         [$routeExit, $routeOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
         self::assertSame(0, $routeExit, $routeOutput);
         self::assertStringContainsString("GET     /", $routeOutput);
-        self::assertStringContainsString("GET     /developer/panel", $routeOutput);
+        self::assertMatchesRegularExpression('/GET\s+\/(?:developer|project-team-access)\/panel\b/', $routeOutput);
         self::assertStringContainsString("developer.panel", $routeOutput);
     }
 
