@@ -773,7 +773,7 @@ final class MakeProjectCommandTest extends TestCase
         [$routeExit, $routeOutput] = $this->runPhpScript($this->targetPath . "/fnlla", ["route:list"]);
         self::assertSame(0, $routeExit, $routeOutput);
         self::assertStringContainsString("GET     /", $routeOutput);
-        self::assertMatchesRegularExpression('/GET\s+\/(?:developer|project-team-access)\/panel\b/', $routeOutput);
+        self::assertSame(1, preg_match('/GET\s+\/(?:developer|project-team-access)\/panel\b/', $routeOutput));
         self::assertStringContainsString("developer.panel", $routeOutput);
     }
 
