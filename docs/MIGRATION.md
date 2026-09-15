@@ -155,7 +155,8 @@ application or environment layers.
 
 Framework updates are intentionally conservative:
 
-- updates come from the official `techayoDEV/fnlla` GitHub release channel;
+- updates come from the official FNLLA release channel configured for the
+  licensed full-product line;
 - downloaded release sources must contain valid FNLLA manifest/version metadata;
 - `.fnlla/framework-lock.json` records the currently installed framework base;
 - `framework:update --check` and `--dry-run` compare local files before writing;

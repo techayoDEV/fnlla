@@ -66,6 +66,6 @@ performance budgets and publication checks are consolidated in
 technical-debt workflow are consolidated in `DEVELOPER-PANEL.md`.
 
 Website: [fnlla.com](https://fnlla.com).
-Source: [techayoDEV/fnlla](https://github.com/techayoDEV/fnlla).
+Core source: [techayoDEV/fnlla-core](https://github.com/techayoDEV/fnlla-core).
 Support: support@fnlla.com.
 Copyright and license: [LICENSE.md](../LICENSE.md).

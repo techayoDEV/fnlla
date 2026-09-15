@@ -33,7 +33,7 @@ final class FnllaRuntimeSyncCommand extends Command
 
     public function description(): string
     {
-        return "Sync FNLLA's integrated UI surface from the official techayoDEV/fnlla GitHub repository.";
+        return "Sync FNLLA's integrated UI surface from the official FNLLA source channel.";
     }
 
     public function handle(array $arguments): int
@@ -76,27 +76,27 @@ final class FnllaRuntimeSyncCommand extends Command
             }
 
             if (str_starts_with($argument, "--source=")) {
-                throw new RuntimeException("Local runtime source sync is disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Local runtime source sync is disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if ($argument === "--source") {
-                throw new RuntimeException("Local runtime source sync is disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Local runtime source sync is disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if (str_starts_with($argument, "--repo-url=")) {
-                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if ($argument === "--repo-url") {
-                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if (str_starts_with($argument, "--repository=")) {
-                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if ($argument === "--repository") {
-                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository.");
+                throw new RuntimeException("Runtime repository overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel.");
             }
 
             if (str_starts_with($argument, "--working-clone-path=")) {
@@ -130,6 +130,6 @@ final class FnllaRuntimeSyncCommand extends Command
     private function printUsage(): void
     {
         $this->line("Usage: php fnlla fnlla-runtime:sync [--working-clone-path <path>] [--ref <git-ref>]");
-        $this->line("FNLLA clones only the official techayoDEV/fnlla GitHub repository, publishes the integrated UI surface export and syncs from that published output.");
+        $this->line("FNLLA uses only the official source channel, publishes the integrated UI surface export and syncs from that published output.");
     }
 }

@@ -15,7 +15,7 @@ It is written for the official stack:
 
 The patterns below describe the FNLLA application contract without prescribing a particular organization or delivery process.
 
-Before using this guide for a real delivery, read [`STARTING-A-NEW-PROJECT.md`](./STARTING-A-NEW-PROJECT.md). That document explains the official project-export workflow and when not to build directly inside the maintained `techayoDEV/fnlla` repository.
+Before using this guide for a real delivery, read [`STARTING-A-NEW-PROJECT.md`](./STARTING-A-NEW-PROJECT.md). That document explains the official project-export workflow and when not to build directly inside the maintained FNLLA source.
 
 When you need the exact responsibilities of the project scripts and validation
 commands, read the project-facing command reference in
@@ -137,7 +137,7 @@ php scripts/lint.php
 php scripts/validate-version-manifest.php
 ```
 
-Those commands are intentionally the downstream-project subset. The framework docs builder stays in the upstream `techayoDEV/fnlla` repository and is not part of the exported project.
+Those commands are intentionally the downstream-project subset. The framework docs builder stays in the private FNLLA maintainer source and is not part of the exported project.
 
 Start the local server:
 

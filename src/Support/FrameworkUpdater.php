@@ -114,7 +114,7 @@ final class FrameworkUpdater
     {
         return [
             "resolved_path" => null,
-            "origin" => "official GitHub release channel only",
+            "origin" => "official FNLLA release channel only",
             "candidates" => [],
         ];
     }
@@ -200,7 +200,7 @@ final class FrameworkUpdater
 
         if ($source === "") {
             throw new RuntimeException(
-                "Local FNLLA update sources are disabled. Use the official techayoDEV/fnlla GitHub release channel."
+                "Local FNLLA update sources are disabled. Use the official FNLLA release channel."
             );
         }
 
@@ -209,14 +209,14 @@ final class FrameworkUpdater
             : self::normalizePath($projectRoot . DIRECTORY_SEPARATOR . $source);
 
         if (!self::isOfficialReleaseCacheSource($resolved, $projectRoot)) {
-            throw new RuntimeException("Local FNLLA update sources are disabled. Only the validated official GitHub release cache can be used.");
+            throw new RuntimeException("Local FNLLA update sources are disabled. Only the validated official FNLLA release cache can be used.");
         }
 
         if (!is_dir($resolved)) {
             throw new RuntimeException("framework:update source directory does not exist: " . $resolved);
         }
 
-        return [$resolved, "official GitHub release cache"];
+        return [$resolved, "official FNLLA release cache"];
     }
 
     private static function createTempWorkspace(): string
@@ -726,7 +726,7 @@ final class FrameworkUpdater
             || str_contains($message, "local fnlla update sources are disabled")
             || str_contains($message, "local source updates are disabled")
             || str_contains($message, "repository overrides are disabled")
-            || str_contains($message, "only the validated official github release cache")
+            || str_contains($message, "only the validated official fnlla release cache")
         ) {
             return "framework_update.rejected_source";
         }
@@ -860,14 +860,14 @@ final class FrameworkUpdater
         $comparison = (string) ($githubRelease["comparison"] ?? "unknown");
 
         if ($comparison === "same") {
-            return "GitHub release {$tag} matches the current framework version ({$currentVersion}). FNLLA skipped the diff so the GitHub update flow does not suggest a no-op or downgrade over an already current base.";
+            return "FNLLA release {$tag} matches the current framework version ({$currentVersion}). FNLLA skipped the diff so the update flow does not suggest a no-op or downgrade over an already current base.";
         }
 
         if ($comparison === "older") {
-            return "GitHub release {$tag} is older than the current framework base ({$currentVersion}). FNLLA skipped the diff so the GitHub update flow does not suggest a downgrade.";
+            return "FNLLA release {$tag} is older than the current framework base ({$currentVersion}). FNLLA skipped the diff so the update flow does not suggest a downgrade.";
         }
 
-        return "FNLLA could not prove that the selected GitHub release is newer than the current framework base, so the GitHub update flow stopped before diff generation.";
+        return "FNLLA could not prove that the selected release is newer than the current framework base, so the update flow stopped before diff generation.";
     }
 
     private static function isMaintainedSourceRoot(string $path): bool

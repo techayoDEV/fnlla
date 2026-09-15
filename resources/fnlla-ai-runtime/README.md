@@ -33,7 +33,7 @@ runtime files.
 
 ## Version
 
-2.2.4
+2.2.5
 
 ## Security boundary
 

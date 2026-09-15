@@ -294,15 +294,15 @@ Assert-DirectoryExists -Path $projectRoot -Description "Project root"
 Assert-DirectoryExists -Path $publicRoot -Description "Public directory"
 
 if ($SourcePath) {
-    throw "Local runtime source sync is disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+    throw "Local runtime source sync is disabled. FNLLA runtime updates can only use the official FNLLA source channel."
 }
 
 if ($RepoUrl) {
-    throw "Runtime repository URL overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+    throw "Runtime repository URL overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel."
 }
 
 if ($Repository -ne "techayoDEV/fnlla") {
-    throw "Runtime repository overrides are disabled. FNLLA runtime updates can only use the official techayoDEV/fnlla GitHub repository."
+    throw "Runtime repository overrides are disabled. FNLLA runtime updates can only use the official FNLLA source channel."
 }
 
 if (-not $targetRuntimePath.StartsWith($publicRoot, [System.StringComparison]::OrdinalIgnoreCase)) {

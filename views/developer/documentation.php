@@ -11,7 +11,6 @@ $boundary = (array) ($policy["boundary"] ?? []);
 $storage = (array) ($policy["storage"] ?? []);
 $about = is_array($aboutFnlla ?? null) ? (array) $aboutFnlla : [];
 $officialUrl = (string) ($about["official_url"] ?? config("framework.official_url", "https://fnlla.com"));
-$repositoryUrl = (string) ($about["repository"] ?? config("framework.repository_web_url", "https://github.com/techayoDEV/fnlla"));
 $supportEmail = (string) ($about["support_email"] ?? config("framework.support_email", "support@fnlla.com"));
 $facts = [
     "Application name" => (string) ($about["app_name"] ?? config("app.name", "FNLLA")),
@@ -19,7 +18,7 @@ $facts = [
     "Runtime version" => (string) ($about["runtime_version"] ?? config("fnlla_runtime.version", "unknown")),
     "Environment" => (string) ($about["environment"] ?? app_environment()),
     "Official website" => $officialUrl,
-    "Source repository" => $repositoryUrl,
+    "Maintainer source" => "Private TechAyo maintainer source",
     "Support email" => $supportEmail,
     "Maintainer" => (string) ($about["maintainer"] ?? "TechAyo Limited"),
     "License" => (string) ($about["license"] ?? "MIT"),
@@ -251,7 +250,7 @@ $manualChapters = [
 $changelogRows = [
     "Current line" => "FNLLA " . (string) ($about["framework_version"] ?? config("app.framework_version", "unknown")),
     "Release notes source" => "CHANGELOG.md in the maintained FNLLA repository",
-    "Download source" => "Official GitHub Releases for techayoDEV/fnlla",
+    "Download source" => "Official FNLLA release channel",
     "2.2.0 summary" => "Integrated starter, private Developer Panel, diagnostics, framework updates, Project work, first-party analytics and optional AI provider adapters.",
     "Upgrade rule" => "Review migration notes, run dry-run update checks, then validate lint, tests, runtime and version manifest after apply.",
 ];
@@ -331,7 +330,7 @@ $runbookDocs = [
         "title" => "Release and update runbook",
         "text" => "Use this before applying framework updates or publishing a project handover.",
         "items" => [
-            "Run readiness checks and cache the official GitHub release manifest first.",
+            "Run readiness checks and cache the official FNLLA release manifest first.",
             "Review the dry-run report, changed files and conflict notes before applying.",
             "Validate lint, tests and version manifest after changes land.",
         ],
@@ -379,8 +378,8 @@ $technicalRows = [
     ["label" => "Metrics storage", "value" => "First-party aggregate metrics", "id" => "storage/framework/metrics.json"],
     ["label" => "Upload size cap", "value" => "Request and upload byte limits", "id" => "REQUEST_MAX_BODY_BYTES / UPLOAD_MAX_FILE_BYTES"],
     ["label" => "Official framework website", "value" => $officialUrl, "id" => ""],
-    ["label" => "Update source", "value" => "Official FNLLA release manifest", "id" => "techayoDEV/fnlla"],
-    ["label" => "Source repository", "value" => $repositoryUrl, "id" => ""],
+    ["label" => "Update source", "value" => "Official FNLLA release manifest", "id" => "FNLLA release channel"],
+    ["label" => "Maintainer source", "value" => "Private TechAyo maintainer source", "id" => ""],
     ["label" => "Support email", "value" => $supportEmail, "id" => ""],
     ["label" => "Version manifest", "value" => "Framework version manifest", "id" => "version-manifest.json"],
     ["label" => "Framework version source", "value" => "Framework version file", "id" => "VERSION"],
@@ -654,7 +653,7 @@ require __DIR__ . "/panel-header.php";
             <span class="developer-dashboard-refresh">Current release line</span>
           </div>
           <article class="developer-dashboard-card developer-dashboard-card-wide">
-            <p class="content-text">A short in-panel changelog belongs here because developers need release context next to framework updates, migration notes and readiness checks. The authoritative release text remains the maintained repository changelog and GitHub Release entry.</p>
+            <p class="content-text">A short in-panel changelog belongs here because developers need release context next to framework updates, migration notes and readiness checks. The authoritative release text remains the maintained changelog and official FNLLA release channel.</p>
             <div class="developer-dashboard-glance-table">
               <?php foreach ($changelogRows as $label => $value): ?>
               <div class="developer-dashboard-glance-row">

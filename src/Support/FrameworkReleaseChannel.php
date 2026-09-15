@@ -15,7 +15,7 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Resolves the public GitHub release channel for downstream framework-update
+- Resolves the official FNLLA release channel for downstream framework-update
   checks, download caching and release metadata reporting.
 */
 
@@ -33,7 +33,7 @@ final class FrameworkReleaseChannel
     public static function prepareReleaseSource(string $projectRoot, ?string $requestedTag = null): array
     {
         /*
-        GitHub release metadata and cloned source are cached under storage so a
+        Release metadata and cloned source are cached under storage so a
         downstream update page can be refreshed without recloning the same tag
         on every request. The cloned directory is still validated as a maintained
         FNLLA source root before it is trusted by FrameworkUpdater.
@@ -66,7 +66,7 @@ final class FrameworkReleaseChannel
 
         return [
             "source_root" => $sourceRoot,
-            "source_origin" => "downloaded GitHub release cache",
+            "source_origin" => "downloaded FNLLA release cache",
             "cache_root" => $cacheRoot,
             "cache_path" => $releaseDirectory,
             "downloaded_now" => $downloadedNow,
@@ -134,7 +134,7 @@ final class FrameworkReleaseChannel
             || !is_int($release["id"] ?? null) || $release["id"] < 1
             || !is_string($release["published_at"] ?? null) || trim($release["published_at"]) === ""
             || ($release["html_url"] ?? null) !== "https://github.com/" . self::OFFICIAL_REPOSITORY . "/releases/tag/" . $tag) {
-            throw new RuntimeException("GitHub did not confirm a public, stable FNLLA release. No tag fallback is allowed.");
+            throw new RuntimeException("The FNLLA release channel did not confirm a stable release. No tag fallback is allowed.");
         }
         return $release;
     }
@@ -146,11 +146,11 @@ final class FrameworkReleaseChannel
         $configuredCloneUrl = trim((string) config("framework_update.github_clone_url", self::OFFICIAL_CLONE_URL));
 
         if (strcasecmp($configuredSlug, self::OFFICIAL_REPOSITORY) !== 0) {
-            throw new RuntimeException("Refusing FNLLA framework update from non-official GitHub repository: " . $configuredSlug);
+            throw new RuntimeException("Refusing FNLLA framework update from a non-official release source: " . $configuredSlug);
         }
 
         if ($configuredApiBase !== self::OFFICIAL_API_BASE_URL) {
-            throw new RuntimeException("Refusing FNLLA framework update through a non-official GitHub API endpoint.");
+            throw new RuntimeException("Refusing FNLLA framework update through a non-official release API endpoint.");
         }
 
         if (strcasecmp(self::canonicalRepositorySlug($configuredCloneUrl), self::OFFICIAL_REPOSITORY) !== 0) {
@@ -213,7 +213,7 @@ final class FrameworkReleaseChannel
         $gitBinary = trim((string) env("GIT_BINARY", "git"));
 
         if ($tag === "") {
-            throw new RuntimeException("GitHub did not provide a usable FNLLA release tag for framework updates.");
+            throw new RuntimeException("The FNLLA release channel did not provide a usable release tag for framework updates.");
         }
 
         $directory = dirname($sourceRoot);
@@ -237,7 +237,7 @@ final class FrameworkReleaseChannel
             self::removeDirectory($sourceRoot);
 
             throw new RuntimeException(
-                "Unable to download the requested FNLLA release from GitHub into the local update cache."
+                "Unable to download the requested FNLLA release into the local update cache."
                 . PHP_EOL
                 . $result["output"]
             );
@@ -257,11 +257,11 @@ final class FrameworkReleaseChannel
             try {
                 $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
             } catch (JsonException $exception) {
-                throw new RuntimeException("Unable to decode GitHub release metadata for {$context}: " . $exception->getMessage(), 0, $exception);
+                throw new RuntimeException("Unable to decode FNLLA release metadata for {$context}: " . $exception->getMessage(), 0, $exception);
             }
 
             if (!is_array($data)) {
-                throw new RuntimeException("GitHub release metadata for {$context} must decode to a JSON object.");
+                throw new RuntimeException("FNLLA release metadata for {$context} must decode to a JSON object.");
             }
 
             return $data;
@@ -271,7 +271,7 @@ final class FrameworkReleaseChannel
             $curl = curl_init($url);
 
             if ($curl === false) {
-                throw new RuntimeException("Unable to initialize the cURL client for GitHub release metadata.");
+                throw new RuntimeException("Unable to initialize the cURL client for FNLLA release metadata.");
             }
 
             curl_setopt_array($curl, [
@@ -292,20 +292,20 @@ final class FrameworkReleaseChannel
 
             if (!is_string($response) || $response === "") {
                 throw new RuntimeException(
-                    "GitHub release metadata request returned an empty response for {$url}."
+                    "FNLLA release metadata request returned an empty response."
                     . ($error !== "" ? " cURL error: {$error}" : "")
                 );
             }
 
             if ($statusCode < 200 || $statusCode >= 300) {
-                throw new RuntimeException("GitHub release metadata request failed with HTTP {$statusCode} for {$url}.");
+                throw new RuntimeException("FNLLA release metadata request failed with HTTP {$statusCode}.");
             }
 
             return $decoded($response, $url);
         }
 
         if (!ini_get("allow_url_fopen")) {
-            throw new RuntimeException("GitHub release metadata requires either cURL or allow_url_fopen to be enabled.");
+            throw new RuntimeException("FNLLA release metadata requires either cURL or allow_url_fopen to be enabled.");
         }
 
         $context = stream_context_create([
@@ -324,11 +324,11 @@ final class FrameworkReleaseChannel
         $statusLine = $http_response_header[0] ?? "";
 
         if (!is_string($response) || $response === "") {
-            throw new RuntimeException("GitHub release metadata request returned an empty response for {$url}.");
+            throw new RuntimeException("FNLLA release metadata request returned an empty response.");
         }
 
         if (!preg_match('/\s(\d{3})\s/', (string) $statusLine, $matches) || (int) $matches[1] < 200 || (int) $matches[1] >= 300) {
-            throw new RuntimeException("GitHub release metadata request failed for {$url} with response: {$statusLine}");
+            throw new RuntimeException("FNLLA release metadata request failed with response: {$statusLine}");
         }
 
         return $decoded($response, $url);
@@ -375,7 +375,7 @@ final class FrameworkReleaseChannel
         }
 
         if (preg_match('#github\.com[:/]+([^/]+)/([^/.]+)(?:\.git)?$#i', $normalized, $matches) !== 1) {
-            throw new RuntimeException("Unable to derive the GitHub repository slug from: " . $repositoryUrl);
+            throw new RuntimeException("Unable to derive the configured release repository slug.");
         }
 
         return $matches[1] . "/" . $matches[2];
@@ -483,7 +483,7 @@ final class FrameworkReleaseChannel
         $slug = self::parseRepositorySlug($repository);
 
         if (strcasecmp($slug, self::OFFICIAL_REPOSITORY) !== 0 || strcasecmp($expectedSlug, self::OFFICIAL_REPOSITORY) !== 0) {
-            throw new RuntimeException("Downloaded FNLLA release manifest repository does not match the official techayoDEV/fnlla release channel.");
+            throw new RuntimeException("Downloaded FNLLA release manifest repository does not match the official release channel.");
         }
 
         $version = self::readVersionLine($versionPath);

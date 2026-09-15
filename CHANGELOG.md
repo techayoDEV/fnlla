@@ -3,6 +3,38 @@
 All notable FNLLA framework changes should be recorded here before public
 release tags are cut.
 
+## 2.2.5
+
+Publication dates and downloadable assets are recorded in GitHub Releases.
+
+### Release Summary
+
+FNLLA 2.2.5 clarifies the product split after the full FNLLA maintainer source
+became private. Public documentation, generated project templates and Developer
+Panel copy now describe full FNLLA as the commercial product distributed through
+the official FNLLA release channel, while FNLLA Core remains the public framework
+foundation.
+
+The framework update and runtime sync surfaces no longer present the private
+maintainer repository as a public download or update source. Downstream update
+checks still use the validated official release channel and continue to reject
+local sources, forks and release endpoint overrides.
+
+No database migration or environment change is required. Existing projects only
+see wording changes in generated README content, framework update reports and
+private Developer Panel reference screens.
+
+### Changed
+
+- Replace public-facing `techayoDEV/fnlla` repository wording with official
+  FNLLA release/source-channel language across framework update commands,
+  maintenance UI, generated project templates and operations documentation.
+- Document the commercial product model more explicitly: licensed Starter,
+  Admin Panel, Developer Panel and private maintainer source belong to full
+  FNLLA; public framework primitives belong to FNLLA Core.
+- Keep framework-managed update and runtime-sync files synchronized with the
+  official fnlla.com export so downstream wording matches the maintained source.
+
 ## 2.2.4
 
 Publication dates and downloadable assets are recorded in GitHub Releases.

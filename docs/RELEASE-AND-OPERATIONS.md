@@ -176,9 +176,9 @@ Publication, tags and remote pushes still require explicit release approval.
 ## FNLLA To Core Release Flow
 
 `techayoDEV/fnlla-core` is the public FNLLA Core source of truth.
-`techayoDEV/fnlla` is the full FNLLA product source. Any framework primitive
-needed by FNLLA must enter Core through a public pull request with tests,
-documentation and release evidence.
+The private TechAyo FNLLA maintainer source is the full commercial product
+source. Any framework primitive needed by FNLLA must enter Core through a public
+pull request with tests, documentation and release evidence.
 
 Full-product automation may create a Core proposal branch or pull request. It must
 not push directly to Core `main`, publish a Core tag or create a Core release.
@@ -186,18 +186,18 @@ Core release publication still requires the normal Core Quality, Hardening and
 Release Gate evidence for the exact commit plus explicit maintainer approval.
 
 The maintained automation for that proposal flow is
-`.github/workflows/fnlla-core-sync.yml`. Pull requests and pushes in
-`techayoDEV/fnlla` export the standalone Core repository, run Composer
+`.github/workflows/fnlla-core-sync.yml`. Pull requests and pushes in the private
+FNLLA maintainer repository export the standalone Core repository, run Composer
 validation, install, tests, lint and static analysis against the exported
 package, and upload the export artifact for review. On pushes to `main`, the
 workflow opens or updates a branch named `sync/fnlla-core-from-fnlla-<sha>` in
 `techayoDEV/fnlla-core` only when the export differs from Core `main`.
 
 Cross-repository writes require the `FNLLA_CORE_SYNC_TOKEN` repository secret in
-`techayoDEV/fnlla`. The token must have permission to push branches and open pull
-requests in `techayoDEV/fnlla-core`. If the secret is absent, the validation job
-still runs and the proposal job reports a configuration notice instead of
-silently pretending that Core was synchronized.
+the private FNLLA maintainer repository. The token must have permission to push
+branches and open pull requests in `techayoDEV/fnlla-core`. If the secret is
+absent, the validation job still runs and the proposal job reports a
+configuration notice instead of silently pretending that Core was synchronized.
 
 FNLLA releases must declare the supported Core range, for example `requires
 FNLLA Core ^2.3`, and should fail release preparation when they depend on Core
@@ -408,7 +408,7 @@ secret leakage, intended mail transport and backup include-path access.
 Exported projects keep only the scripts and commands that help a delivery team
 build, validate, update and release a downstream application. Maintainer-only
 documentation builders, publishing scripts, ecosystem audits and `make:project`
-remain in `techayoDEV/fnlla`.
+remain in the private FNLLA maintainer source.
 
 The normal downstream command set is:
 
@@ -444,10 +444,10 @@ dependencies plus runtime storage. It catches parse errors, not behavioral bugs.
 `validate-fnlla-runtime.php` checks the integrated UI runtime contract.
 `validate-version-manifest.php` checks version metadata consistency.
 
-`framework:update` uses only the official `techayoDEV/fnlla` GitHub release
-channel. Local `--source` overrides, forks and unpublished checkouts are rejected
-in the public downstream path. A dry run writes the exact safe-change, conflict
-and local-only report before an apply run.
+`framework:update` uses only the official FNLLA release channel configured for
+the licensed full-product line. Local `--source` overrides, forks and
+unpublished checkouts are rejected in the public downstream path. A dry run
+writes the exact safe-change, conflict and local-only report before an apply run.
 
 ## Root File Policy
 
@@ -807,11 +807,11 @@ manifest/version metadata, update code, security controls or runtime bundles.
 
 ## Framework Update Audit
 
-Downstream framework updates use only the official `techayoDEV/fnlla` GitHub release channel.
+Downstream framework updates use only the official FNLLA release channel.
 The public framework website is `https://fnlla.com`; it is a product reference
 and documentation entrypoint, not an alternate update source. Update checks
-still validate the downloaded release manifest against the official GitHub
-repository before trusting cached source.
+still validate the downloaded release manifest against the official release
+channel before trusting cached source.
 
 Useful commands:
 

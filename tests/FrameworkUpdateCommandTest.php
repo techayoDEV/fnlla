@@ -61,7 +61,7 @@ final class FrameworkUpdateCommandTest extends TestCase
 
         self::assertSame(1, $exitCode, $output);
         self::assertStringContainsString("Local source updates are disabled", $output);
-        self::assertStringContainsString("techayoDEV/fnlla GitHub release channel", $output);
+        self::assertStringContainsString("official FNLLA release channel", $output);
         self::assertFileExists($projectRoot . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "logs" . DIRECTORY_SEPARATOR . "framework-update.log");
     }
 
@@ -88,8 +88,8 @@ final class FrameworkUpdateCommandTest extends TestCase
         );
 
         self::assertSame(1, $exitCode, $output);
-        self::assertStringContainsString("GitHub API base URL overrides are disabled", $output);
-        self::assertStringContainsString("https://api.github.com", $output);
+        self::assertStringContainsString("Release API base URL overrides are disabled", $output);
+        self::assertStringContainsString("official release API endpoint", $output);
     }
 
     public function testFrameworkUpdateRejectsCustomCloneUrlOption(): void
@@ -102,8 +102,8 @@ final class FrameworkUpdateCommandTest extends TestCase
         );
 
         self::assertSame(1, $exitCode, $output);
-        self::assertStringContainsString("GitHub clone URL overrides are disabled", $output);
-        self::assertStringContainsString("official techayoDEV/fnlla", $output);
+        self::assertStringContainsString("Release clone URL overrides are disabled", $output);
+        self::assertStringContainsString("official release source", $output);
     }
 
     public function testFrameworkUpdateDoesNotAutoDetectLocalSiblingRepository(): void
@@ -121,7 +121,7 @@ final class FrameworkUpdateCommandTest extends TestCase
         $detection = FrameworkUpdater::detectSourceRoot($projectRoot);
 
         self::assertSame(null, $detection["resolved_path"]);
-        self::assertSame("official GitHub release channel only", $detection["origin"]);
+        self::assertSame("official FNLLA release channel only", $detection["origin"]);
         self::assertSame([], $detection["candidates"]);
     }
 

@@ -95,7 +95,7 @@ def capture(browser, project, fixtures):
                             clip={'x': 72, 'y': 64, 'width': 1296, 'height': 820}, animations='disabled')
         elif name in ('diagnostics', 'updates', 'workspace'):
             selector = {'diagnostics': '[aria-labelledby="debug-title"]',
-                        'updates': '[aria-label="GitHub release channel controls"]',
+                        'updates': '[aria-label="FNLLA release channel controls"]',
                         'workspace': '[aria-label="Kanban board"]'}[name]
             if name == 'workspace':
                 page.set_viewport_size({'width': 1920, 'height': 1000})

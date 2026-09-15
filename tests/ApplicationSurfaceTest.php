@@ -986,7 +986,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertSame(200, $response->status());
         self::assertStringContainsString("section framework-update-stage", $response->body());
         self::assertStringContainsString("Update is ready to apply", $response->body());
-        self::assertStringContainsString("Apply this audited GitHub update", $response->body());
+        self::assertStringContainsString("Apply this audited FNLLA update", $response->body());
         self::assertStringContainsString("Detected version shift:", $response->body());
         self::assertStringContainsString("FNLLA 1.0.0 -&gt; 1.1.0", $response->body());
     }
@@ -1011,7 +1011,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("contact-list project-blueprint-list framework-update-summary-list", $response->body());
         self::assertStringContainsString('<li data-framework-update-posture-key="ui.browser"><span class="framework-update-summary-label">Browser UI</span><strong class="framework-update-summary-value">Yes</strong></li>', $response->body());
         self::assertStringContainsString('<li data-framework-update-posture-key="policy.local_only"><span class="framework-update-summary-label">Local-only mode</span><strong class="framework-update-summary-value">Yes</strong></li>', $response->body());
-        self::assertStringContainsString('<li data-framework-update-posture-key="source.github"><span class="framework-update-summary-label">GitHub release channel</span><strong class="framework-update-summary-value">Enabled</strong></li>', $response->body());
+        self::assertStringContainsString('<li data-framework-update-posture-key="source.release"><span class="framework-update-summary-label">FNLLA release channel</span><strong class="framework-update-summary-value">Enabled</strong></li>', $response->body());
         self::assertStringNotContainsString("<code>ui.browser</code>", $response->body());
         $developerPanelCss = str_replace(["\r\n", "\r"], "\n", $this->stylesheetSource());
         self::assertStringContainsString(".framework-update-major-readiness-grid {\n  grid-template-columns: minmax(0, 1fr);", $developerPanelCss);
@@ -2378,7 +2378,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("php scripts/validate-version-manifest.php", $documentationResponse->body());
         self::assertStringContainsString("https://fnlla.com", $documentationResponse->body());
         self::assertStringContainsString("support@fnlla.com", $documentationResponse->body());
-        self::assertStringContainsString("https://github.com/techayoDEV/fnlla", $documentationResponse->body());
+        self::assertStringContainsString("Private TechAyo maintainer source", $documentationResponse->body());
         self::assertStringContainsString("<span>" . $frameworkVersion . "</span>", $documentationResponse->body());
         self::assertStringContainsString("<span>" . $runtimeVersion . "</span>", $documentationResponse->body());
         self::assertStringNotContainsString("<span>unknown</span>", $documentationResponse->body());
@@ -2387,7 +2387,7 @@ final class ApplicationSurfaceTest extends TestCase
         self::assertStringContainsString("About FNLLA", $aboutFnllaResponse->body());
         self::assertStringContainsString("https://fnlla.com", $aboutFnllaResponse->body());
         self::assertStringContainsString("support@fnlla.com", $aboutFnllaResponse->body());
-        self::assertStringContainsString("https://github.com/techayoDEV/fnlla", $aboutFnllaResponse->body());
+        self::assertStringContainsString("Private TechAyo maintainer source", $aboutFnllaResponse->body());
         self::assertStringContainsString("techayo.co.uk", $aboutFnllaResponse->body());
         self::assertStringContainsString("Lead Developer / Product Manager - Marcin Kordyaczny", $aboutFnllaResponse->body());
         self::assertStringContainsString('<span class="fnlla-literal">' . $frameworkVersion . "</span>", $aboutFnllaResponse->body());

@@ -168,7 +168,7 @@ final class HealthController extends Controller
                 ? ($releaseCacheReady
                     ? "A published framework baseline is already cached locally and can be reviewed or applied from the maintenance surface."
                     : "Published release checks are enabled, but no cached baseline is stored yet for this project.")
-                : "Published release checks are disabled in this environment, so operators must re-enable the official GitHub channel before framework updates can run.",
+                : "Published release checks are disabled in this environment, so operators must re-enable the official FNLLA release channel before framework updates can run.",
         ];
 
         $payload = [

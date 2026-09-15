@@ -15,8 +15,8 @@ the FNLLA framework released under the MIT License and its related delivery scri
 templates and release metadata.
 
 Purpose:
-- Writes a small JSONL audit trail for official GitHub-backed framework update
-  checks, dry-runs, apply runs and rejected update sources.
+- Writes a small JSONL audit trail for official FNLLA release-channel framework
+  update checks, dry-runs, apply runs and rejected update sources.
 */
 
 namespace Fnlla\Php\Support;

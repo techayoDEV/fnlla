@@ -2,11 +2,13 @@
 
 ## Short answer
 
-Do not treat the `techayoDEV/fnlla` repository itself as the normal place where a new client website or new web application should be built.
+Do not treat the maintained FNLLA source itself as the normal place where a new
+client website or new web application should be built.
 
 The recommended workflow is:
 
-1. Keep `techayoDEV/fnlla` as the full FNLLA source and project-export base.
+1. Keep the private TechAyo FNLLA maintainer source as the full product source
+   and project-export base.
    Use `techayoDEV/fnlla-core` for the standalone Core package source.
 2. Export a new working project into its own directory.
 3. Give that new directory its own project name and its own Git repository.
@@ -14,7 +16,8 @@ The recommended workflow is:
 
 ## Why not just clone fnlla and build directly inside it
 
-If you clone `techayoDEV/fnlla` and start editing it directly for every new website, you mix together two different concerns:
+If you clone or unpack the maintained FNLLA source and start editing it directly
+for every new website, you mix together two different concerns:
 
 - framework maintenance
 - one specific downstream project
@@ -28,7 +31,7 @@ That quickly becomes messy because:
 
 ## Official recommended workflow
 
-Use the built-in project export command from the maintained `techayoDEV/fnlla` repository:
+Use the built-in project export command from the maintained FNLLA source:
 
 ```bash
 php fnlla make:project ../my-new-project "My New Project"
@@ -206,7 +209,7 @@ The exported project already includes:
 - a working starter contact form at `/contact` with CSRF, validation, old
   input, flash feedback, honeypot spam friction and log-mail delivery
 - reusable public page-title hero markup under `views/partials/page-hero.php`
-- a local-first `/maintenance/framework-update` page with a GitHub-backed update flow
+- a local-first `/maintenance/framework-update` page with a release-channel update flow
 - an optional password-protected maintenance access screen for client preview or staged review
 - a browser-based first-time maintenance setup flow available from `/maintenance` on a fresh local project export
 - a project README that explains the next steps
@@ -229,7 +232,7 @@ The exported directory should become the actual website or application repositor
 
 That means the normal flow is:
 
-1. Clone or pull the latest `techayoDEV/fnlla`.
+1. Clone, pull or unpack the latest maintained FNLLA source.
 2. Run `php fnlla make:project`.
 3. Open the exported directory.
 4. Initialize a new Git repository there.
@@ -304,7 +307,7 @@ real product identity instead of leaving the exported application described only
 as a template.
 
 Do not copy client branding, proprietary business logic or project-specific
-data back into `techayoDEV/fnlla`. Generic improvements discovered in a
+data back into the maintained FNLLA source. Generic improvements discovered in a
 downstream project should be reimplemented in FNLLA with framework-owned naming,
 tests and documentation.
 
@@ -365,7 +368,7 @@ project root focused. `fnlla.cmd` remains in root as the normal CLI launcher.
 The full root-file policy is maintained in
 `docs/RELEASE-AND-OPERATIONS.md#root-file-policy`.
 
-12. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official `techayoDEV/fnlla` GitHub channel.
+12. Use `/maintenance/framework-update` when you want to compare the project against the latest published FNLLA release, write a dry-run report and apply safe framework-managed changes from the official FNLLA release channel.
 
 13. When client preview should stay private, either open `/maintenance` locally
     and use the built-in setup form, or set `MAINTENANCE_MODE_ENABLED=true`,
@@ -474,7 +477,8 @@ It is also cleaner because it now exports the downstream application surface rat
 
 ## When cloning the repository directly is still acceptable
 
-Cloning `techayoDEV/fnlla` directly is still fine when the goal is:
+Cloning or unpacking the maintained FNLLA source directly is still fine when the
+goal is:
 
 - framework maintenance
 - hardening the project export base itself
@@ -513,9 +517,9 @@ purge live queues, sessions or logs; checksums exclude storage, uploads and loca
 environment variants. Run the real export regression tests and
 `scripts/test-runtime-distribution.ps1` when changing either boundary.
 
-Treat `techayoDEV/fnlla` as:
+Treat the maintained FNLLA source as:
 
-- the maintained framework repository
+- the maintained full-product source
 - the official project export source
 
 Treat each exported directory as:

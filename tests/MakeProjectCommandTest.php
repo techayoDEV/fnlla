@@ -204,7 +204,7 @@ final class MakeProjectCommandTest extends TestCase
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(
-            "does not copy the full maintainer workspace",
+            "does not copy the private FNLLA maintainer workspace",
             (string) file_get_contents($this->targetPath . DIRECTORY_SEPARATOR . "README.md")
         );
         self::assertStringContainsString(

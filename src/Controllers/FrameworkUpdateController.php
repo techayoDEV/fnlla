@@ -100,7 +100,7 @@ final class FrameworkUpdateController extends Controller
             flash_set("status", [
                 "variant" => "warning",
                 "title" => "Unknown framework update action",
-                "text" => "Choose a supported official GitHub framework update action before rerunning the workflow.",
+                "text" => "Choose a supported official FNLLA release-channel action before rerunning the workflow.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -123,8 +123,8 @@ final class FrameworkUpdateController extends Controller
         if (((bool) config("framework_update.github_enabled", true)) !== true) {
             flash_set("status", [
                 "variant" => "warning",
-                "title" => "GitHub release channel is disabled",
-                "text" => "Enable FRAMEWORK_UPDATE_GITHUB_ENABLED in the local environment to let this page fetch FNLLA releases directly from GitHub.",
+                "title" => "FNLLA release channel is disabled",
+                "text" => "Enable the configured FNLLA release channel in the local environment before running release checks from this page.",
                 "toast" => false,
             ]);
             regenerate_csrf_token();
@@ -343,7 +343,7 @@ final class FrameworkUpdateController extends Controller
         }
 
         if ($mode === "github-check") {
-            return "The application checked the selected FNLLA release channel, prepared a structured report and confirmed whether a newer GitHub-backed update is ready.";
+            return "The application checked the selected FNLLA release channel, prepared a structured report and confirmed whether a newer release-channel update is ready.";
         }
 
         return "The application compared its framework base against the maintained source export and prepared a structured report that makes the update decision explicit.";
@@ -403,10 +403,10 @@ final class FrameworkUpdateController extends Controller
             $headlineText = "No upstream framework drift was detected. {$localOnly} framework-managed file(s) still differ locally, but the maintained source kept the same baseline, so no apply run is needed.";
         } else {
             $headlineTitle = $usesGitHub
-                ? "No newer GitHub update is waiting"
+                ? "No newer FNLLA update is waiting"
                 : "Framework base is already aligned";
             $headlineText = $usesGitHub
-                ? "FNLLA checked the selected GitHub release channel and did not find a newer published framework base that should be applied here."
+                ? "FNLLA checked the selected release channel and did not find a newer published framework base that should be applied here."
                 : "The current project already matches the selected maintained framework source.";
         }
 

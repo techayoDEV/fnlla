@@ -36,7 +36,7 @@ final class FrameworkUpdateCommand extends Command
 
     public function description(): string
     {
-        return "Check or apply FNLLA framework-base updates from the official techayoDEV/fnlla GitHub release channel.";
+        return "Check or apply FNLLA framework-base updates from the official FNLLA release channel.";
     }
 
     public function handle(array $arguments): int
@@ -152,27 +152,27 @@ final class FrameworkUpdateCommand extends Command
 
             if (str_starts_with($argument, "--source=")) {
                 $this->auditRejectedOption($argument);
-                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
+                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official FNLLA release channel.");
             }
 
             if ($argument === "--source") {
                 $this->auditRejectedOption($argument);
-                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
+                throw new RuntimeException("Local source updates are disabled. FNLLA updates can only use the official FNLLA release channel.");
             }
 
             if (str_starts_with($argument, "--repository=") || $argument === "--repository") {
                 $this->auditRejectedOption($argument);
-                throw new RuntimeException("Repository overrides are disabled. FNLLA updates can only use the official techayoDEV/fnlla GitHub release channel.");
+                throw new RuntimeException("Repository overrides are disabled. FNLLA updates can only use the official FNLLA release channel.");
             }
 
             if (str_starts_with($argument, "--api-base-url=") || $argument === "--api-base-url") {
                 $this->auditRejectedOption($argument);
-                throw new RuntimeException("GitHub API base URL overrides are disabled. FNLLA updates can only use https://api.github.com for the official techayoDEV/fnlla release channel.");
+                throw new RuntimeException("Release API base URL overrides are disabled. FNLLA updates can only use the official release API endpoint.");
             }
 
             if (str_starts_with($argument, "--clone-url=") || $argument === "--clone-url" || str_starts_with($argument, "--repo-url=") || $argument === "--repo-url") {
                 $this->auditRejectedOption($argument);
-                throw new RuntimeException("GitHub clone URL overrides are disabled. FNLLA updates can only clone the official techayoDEV/fnlla release source.");
+                throw new RuntimeException("Release clone URL overrides are disabled. FNLLA updates can only clone the official release source.");
             }
 
             throw new RuntimeException("Unknown option for framework:update: " . $argument);
@@ -183,11 +183,11 @@ final class FrameworkUpdateCommand extends Command
 
     private function printUsage(): void
     {
-        $this->line("Use --project PATH to run the current updater against an older project; release sources remain official GitHub only.");
+        $this->line("Use --project PATH to run the current updater against an older project; release sources remain official FNLLA only.");
         $this->line("Usage: php fnlla framework:update --check [--release-tag v1.0.x] [--json]");
         $this->line("   or: php fnlla framework:update --dry-run [--release-tag v1.0.x] [--json]");
         $this->line("   or: php fnlla framework:update --apply [--release-tag v1.0.x] [--json]");
-        $this->line("Updates are downloaded only from the official techayoDEV/fnlla GitHub release channel.");
+        $this->line("Updates are downloaded only from the official FNLLA release channel.");
         $this->line("Use --json to emit the framework update report as machine-readable JSON.");
     }
 
@@ -195,18 +195,18 @@ final class FrameworkUpdateCommand extends Command
     {
         $this->line("Framework update check");
         if (is_string($report["source_root"] ?? null) && $report["source_root"] !== "") {
-            $this->line("Source repository: " . $report["source_root"] . " (" . ($report["source_origin"] ?? "resolved") . ")");
+            $this->line("Source baseline: " . $report["source_root"] . " (" . ($report["source_origin"] ?? "resolved") . ")");
         }
         if (is_array($report["github_release"] ?? null) && $report["github_release"] !== []) {
             $githubRelease = (array) $report["github_release"];
             $this->line(
-                "GitHub release: "
+                "FNLLA release: "
                 . (string) ($githubRelease["tag"] ?? "unknown")
                 . " (current: "
                 . (string) ($githubRelease["current_version"] ?? "unknown")
                 . ")"
             );
-            $this->line("GitHub cache: " . (string) ($report["download_cache_path"] ?? "unknown"));
+            $this->line("Release cache: " . (string) ($report["download_cache_path"] ?? "unknown"));
         }
         $this->line("Current FNLLA base: " . $this->baseVersionSummary($report, "current"));
         $this->line("Source FNLLA base: " . $this->baseVersionSummary($report, "source"));

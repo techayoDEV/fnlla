@@ -92,7 +92,7 @@ note.
 
 ## What the export intentionally leaves behind
 
-This exported application does not copy the full maintainer workspace from `techayoDEV/fnlla`.
+This exported application does not copy the private FNLLA maintainer workspace.
 
 It intentionally leaves behind:
 
@@ -176,21 +176,21 @@ updates. Add full PHPUnit deliberately when the project needs that runner.
 - `php fnlla developer:install-storage --dry-run` prints the optional panel database schema
 - `php fnlla ops:backup-plan --verify` verifies the project backup plan
 - `php fnlla tech-debt:update --json` reports project debt without requiring upstream documentation
-- `php fnlla framework:update --check` checks the latest published FNLLA release from the official `techayoDEV/fnlla` GitHub channel and caches the release source locally before comparing drift
+- `php fnlla framework:update --check` checks the latest published FNLLA release from the official FNLLA release channel and caches the release source locally before comparing drift
 - `php fnlla framework:update --dry-run` writes an exact file-change report before any apply run
-- `php fnlla framework:update --apply` applies the safe portion of a newer official GitHub-backed update after the report has no conflicts
-- `/maintenance/framework-update` provides the same official GitHub-backed check, dry-run and apply workflow through a local-first maintenance page
+- `php fnlla framework:update --apply` applies the safe portion of a newer official release-channel update after the report has no conflicts
+- `/maintenance/framework-update` provides the same official release-channel check, dry-run and apply workflow through a local-first maintenance page
 - `php fnlla version:sync` regenerates `MANIFEST.json` and re-syncs integrated UI surface metadata after an intentional FNLLA version change
-- `php fnlla fnlla-runtime:sync` refreshes the integrated FNLLA UI surface from the official `techayoDEV/fnlla` GitHub repository through the publish -> sync workflow
+- `php fnlla fnlla-runtime:sync` refreshes the integrated FNLLA UI surface from the official FNLLA source channel through the publish -> sync workflow
 
-The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the upstream `techayoDEV/fnlla` repository.
+The export intentionally leaves `make:*`, `make:project` and broader framework-internal test coverage in the private FNLLA maintainer source.
 
 Project release preparation validates the application tests, lint, runtime,
 version metadata, acceptance probes and configuration. It does not require the
 FNLLA maintainer documentation or delete application queues, sessions or logs.
 Release checksums exclude runtime storage, uploads and local environment files.
 
-The full framework documentation remains in the upstream `techayoDEV/fnlla` repository.
+The full framework documentation remains in the private FNLLA maintainer source.
 Start with `docs/README.md`, `docs/STARTING-A-NEW-PROJECT.md`,
 `docs/BUILDING-WITH-FNLLA.md`, `docs/PUBLIC-API.md` and
 `docs/RELEASE-AND-OPERATIONS.md` there when you need deeper framework guidance.
@@ -229,7 +229,7 @@ connected service; FNLLA disables learning and does not automatically index the
 project or write service memory. Never share personal memory between app users.
 The default `local` driver is a deterministic reference lookup, not AI inference.
 
-The GitHub-backed framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
+The release-channel framework-update flow only prepares diffs or apply runs when the published FNLLA release is actually newer than the framework base already locked into this application, so the browser and CLI workflow do not suggest downgrades over equal or ahead-of-release project builds.
 
 ```bash
 php fnlla list

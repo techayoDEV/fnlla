@@ -42,7 +42,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Release channel</strong><span class="developer-dashboard-ok"><?= ($pageState["github_enabled"] ?? false) ? "ON" : "OFF" ?></span></div>
               <h3><?= $cachedReleaseTag !== "" ? h($cachedReleaseTag) : (($pageState["github_enabled"] ?? false) ? "Ready" : "Disabled") ?></h3>
-              <p>Official GitHub channel only.</p>
+              <p>Official FNLLA release channel only.</p>
             </article>
             <article class="developer-dashboard-status-card">
               <div class="developer-dashboard-card-head"><strong>Detected source</strong><span class="developer-dashboard-ok"><?= $detectedSourcePath !== "" ? "YES" : "NO" ?></span></div>

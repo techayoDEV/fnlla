@@ -22,7 +22,7 @@
   "use strict";
 
   /* Public version marker exposed through the runtime API. */
-  var fnllaRuntimeVersion = "2.2.4";
+  var fnllaRuntimeVersion = "2.2.5";
   var openLayerStack = [];
   var openModalStack = [];
   var openOffcanvasStack = [];

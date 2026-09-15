@@ -163,10 +163,10 @@ mixing those operations into the public application.
 
 Official FNLLA framework identity is exposed through `config/framework.php`:
 `https://fnlla.com` is the framework website, `support@fnlla.com` is the
-framework support mailbox and `techayoDEV/fnlla` is the official release
-repository. These values are metadata for the framework layer. They do not
-replace a downstream project's `APP_NAME`, `APP_URL`, public logo or mail
-sender.
+framework support mailbox and the configured FNLLA release channel is the
+official source for full-product framework updates. These values are metadata
+for the framework layer. They do not replace a downstream project's `APP_NAME`,
+`APP_URL`, public logo or mail sender.
 
 Developer teams can white-label the private operational surfaces without
 changing the public product identity. FNLLA remains the default private panel

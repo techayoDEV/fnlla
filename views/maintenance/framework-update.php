@@ -57,6 +57,12 @@ $reportUpdateReady = ($report["update_ready"] ?? false) === true;
 $reportRequiresManualReview = ($report["requires_manual_review"] ?? false) === true;
 $reportSourcePath = trim((string) ($report["source_root"] ?? $report["source_path"] ?? $sourcePathValue));
 $reportReleaseTag = trim((string) (($report["github_release"]["tag"] ?? ($report["release_tag"] ?? ""))));
+$reportSourceOriginDisplay = trim((string) ($report["source_origin"] ?? "official FNLLA release cache"));
+$reportSourceOriginDisplay = str_ireplace(
+    ["official GitHub release cache", "GitHub release cache", "GitHub"],
+    ["official FNLLA release cache", "FNLLA release cache", "FNLLA release channel"],
+    $reportSourceOriginDisplay
+);
 $reportDryRunPath = trim((string) ($report["dry_run_report_path"] ?? ""));
 $frameworkUpdateRunRoute = (string) ($frameworkUpdateRunRoute ?? route("maintenance.framework_update.run"));
 $frameworkUpdateRefreshRoute = (string) ($frameworkUpdateRefreshRoute ?? route("maintenance.framework_update"));
@@ -78,7 +84,7 @@ $frameworkUpdatePostureRows = [
     ["code" => "policy.profile", "label" => "Policy profile", "value" => strtoupper((string) ($applyPolicy["profile"] ?? "standard"))],
     ["code" => "apply.permission", "label" => "Apply from UI", "value" => $frameworkApplyAllowed ? "Yes" : "No"],
     ["code" => "apply.policy", "label" => "Apply policy", "value" => (($applyPolicy["allows_browser_apply"] ?? true) === true && $frameworkApplyCapabilityAllowed) ? "Satisfied" : "Evidence required"],
-    ["code" => "source.github", "label" => "GitHub release channel", "value" => ($pageState["github_enabled"] ?? false) ? "Enabled" : "Disabled"],
+    ["code" => "source.release", "label" => "FNLLA release channel", "value" => ($pageState["github_enabled"] ?? false) ? "Enabled" : "Disabled"],
     ["code" => "request.origin", "label" => "Current request is local", "value" => ($pageState["is_local_request"] ?? false) ? "Yes" : "No"],
     ["code" => "source.path", "label" => "Detected source path", "value" => $detectedSourcePath !== "" ? "Yes" : "No"],
 ];
@@ -117,11 +123,11 @@ $updateActionLabel = static function (array $update): string {
         <p class="content-text mb-0">Framework-managed files tracked inside <code>.fnlla/framework-lock.json</code>.</p>
       </article>
       <article class="feature-card">
-        <p class="feature-kicker">GitHub release channel</p>
+        <p class="feature-kicker">FNLLA release channel</p>
         <h2 class="content-title mb-xs"><?= ($pageState["github_enabled"] ?? false) ? ($cachedReleaseTag !== "" ? h($cachedReleaseTag) : "Ready") : "Disabled" ?></h2>
         <p class="content-text mb-0">
           <?php if (($pageState["github_enabled"] ?? false) !== true): ?>
-          Enable <code>FRAMEWORK_UPDATE_GITHUB_ENABLED</code> to fetch published releases directly from GitHub.
+          Enable the configured release channel to fetch published FNLLA releases.
           <?php elseif ($cachedReleaseTag !== ""): ?>
           Cached release <?= h($cachedReleaseVersion !== "" ? $cachedReleaseVersion : $cachedReleaseTag) ?> available for reuse.
           <?php else: ?>
@@ -269,11 +275,11 @@ $updateActionLabel = static function (array $update): string {
         <form class="form contact-form" action="<?= h($frameworkUpdateRunRoute) ?>" method="post" novalidate data-framework-update-form data-fnlla-busy-form data-fnlla-busy-label="Preparing framework update">
           <?= csrf_field() ?>
           <div class="grid gap-md framework-update-channel-grid">
-            <section class="feature-card framework-update-channel-card" aria-label="GitHub release channel controls">
+            <section class="feature-card framework-update-channel-card" aria-label="FNLLA release channel controls">
               <div class="framework-update-card-header">
                 <div>
                   <p class="contact-kicker">Recommended workflow</p>
-                  <h2 class="contact-card-title">GitHub release channel</h2>
+                  <h2 class="contact-card-title">FNLLA release channel</h2>
                 </div>
                 <span class="framework-update-badge">Preferred for projects</span>
               </div>
@@ -283,11 +289,11 @@ $updateActionLabel = static function (array $update): string {
                 <article class="feature-card">
                   <p class="feature-kicker">Latest cached release</p>
                   <h3 class="content-title mb-xs"><?= $cachedReleaseTag !== "" ? h($cachedReleaseTag) : "Not fetched yet" ?></h3>
-                  <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla")) : "Run a GitHub check to cache the latest release baseline locally." ?></p>
+                  <p class="content-text mb-0"><?= $cachedReleaseTag !== "" ? "Cache path: " . h((string) ($cachedRelease["cache_path"] ?? "storage/framework/updates/fnlla")) : "Run a release check to cache the latest release baseline locally." ?></p>
                 </article>
                 <article class="feature-card">
                   <p class="feature-kicker">Release notes preview</p>
-                  <p class="content-text mb-0"><?= $cachedReleaseNotes !== "" ? nl2br(h($cachedReleaseNotes)) : "Release notes and update highlights appear here after the first GitHub-backed check." ?></p>
+                  <p class="content-text mb-0"><?= $cachedReleaseNotes !== "" ? nl2br(h($cachedReleaseNotes)) : "Release notes and update highlights appear here after the first release-channel check." ?></p>
                 </article>
               </div>
 
@@ -322,7 +328,7 @@ $updateActionLabel = static function (array $update): string {
         <article class="process-step">
           <span class="process-step-number">1</span>
           <h3 class="process-step-title">Resolve the official release and export a fresh baseline</h3>
-          <p class="process-step-text">FNLLA fetches the selected published release from the official <code>techayoDEV/fnlla</code> GitHub channel, validates its manifest, caches it locally and exports a clean project baseline for comparison.</p>
+          <p class="process-step-text">FNLLA fetches the selected published release from the official FNLLA release channel, validates its manifest, caches it locally and exports a clean project baseline for comparison.</p>
         </article>
         <article class="process-step">
           <span class="process-step-number">2</span>
@@ -399,7 +405,7 @@ $updateActionLabel = static function (array $update): string {
           <input type="hidden" name="release_tag" value="<?= h($reportReleaseTag) ?>">
           <?php endif; ?>
           <div class="d-flex flex-wrap gap-md">
-            <button class="btn btn-primary" type="submit" data-framework-update-progress-mode="<?= h($reportRecommendedApplyMode) ?>">Apply this audited GitHub update</button>
+            <button class="btn btn-primary" type="submit" data-framework-update-progress-mode="<?= h($reportRecommendedApplyMode) ?>">Apply this audited FNLLA update</button>
           </div>
           <p class="help-text mb-0">FNLLA keeps the update flow automatic for safe framework-managed changes like the ones reviewed above. It pauses only when a real file conflict needs a human merge, then runs the built-in post-install checks after apply.</p>
         </form>
@@ -419,13 +425,13 @@ $updateActionLabel = static function (array $update): string {
       <article class="feature-card mb-lg">
         <h3 class="content-title">Resolved official release cache</h3>
         <p class="content-text mb-0"><strong>Path:</strong> <?= h((string) ($report["source_root"] ?? $report["source_path"] ?? "unknown")) ?></p>
-        <p class="content-text mb-0"><strong>Resolution:</strong> <?= h((string) ($report["source_origin"] ?? "official GitHub release cache")) ?></p>
+        <p class="content-text mb-0"><strong>Resolution:</strong> <?= h($reportSourceOriginDisplay) ?></p>
       </article>
 
       <?php if (is_array($report["github_release"] ?? null) && $report["github_release"] !== []): ?>
       <?php $githubRelease = (array) $report["github_release"]; ?>
       <article class="feature-card mb-lg">
-        <h3 class="content-title">GitHub release baseline</h3>
+        <h3 class="content-title">FNLLA release baseline</h3>
         <div class="grid grid-2 gap-md framework-update-meta-grid">
           <div>
             <p class="content-text mb-0"><strong>Tag:</strong> <?= h((string) ($githubRelease["tag"] ?? "unknown")) ?></p>
@@ -436,9 +442,6 @@ $updateActionLabel = static function (array $update): string {
           </div>
           <div>
             <p class="content-text mb-0"><strong>Update available:</strong> <?= ($githubRelease["has_newer_release"] ?? null) === true ? "Yes" : "No" ?></p>
-            <?php if (trim((string) ($githubRelease["html_url"] ?? "")) !== ""): ?>
-            <p class="content-text mb-0"><strong>Release page:</strong> <a href="<?= h((string) $githubRelease["html_url"]) ?>" target="_blank" rel="noreferrer"><?= h((string) $githubRelease["html_url"]) ?></a></p>
-            <?php endif; ?>
           </div>
         </div>
         <?php if (trim((string) ($githubRelease["notes"] ?? "")) !== ""): ?>
@@ -449,7 +452,7 @@ $updateActionLabel = static function (array $update): string {
         <?php endif; ?>
         <?php if (trim((string) ($report["release_skip_reason"] ?? "")) !== ""): ?>
         <div class="form-message mt-3" role="status">
-          <h3 class="form-message-title">GitHub release decision</h3>
+          <h3 class="form-message-title">FNLLA release decision</h3>
           <p class="form-message-text mb-0"><?= h((string) $report["release_skip_reason"]) ?></p>
         </div>
         <?php endif; ?>
@@ -544,11 +547,11 @@ $updateActionLabel = static function (array $update): string {
     <ul class="progress-steps" data-framework-update-progress-steps aria-label="Framework update progress stages">
       <li class="progress-step is-active">
         <p class="progress-step-label">Preparing the maintenance request.</p>
-        <p class="progress-step-meta">The browser is packaging the selected official GitHub release mode before the server-side workflow starts.</p>
+        <p class="progress-step-meta">The browser is packaging the selected official release-channel mode before the server-side workflow starts.</p>
       </li>
       <li class="progress-step">
         <p class="progress-step-label">Contacting the official update source.</p>
-        <p class="progress-step-meta">The maintenance flow resolves and validates the official GitHub release cache.</p>
+        <p class="progress-step-meta">The maintenance flow resolves and validates the official FNLLA release cache.</p>
       </li>
       <li class="progress-step">
         <p class="progress-step-label">Building the framework update report.</p>
@@ -590,10 +593,10 @@ $updateActionLabel = static function (array $update): string {
       const progressStops = Object.freeze([12, 38, 68, 92]);
       const progressDefinitions = Object.freeze({
         "github-check": {
-          copy: "FNLLA is checking the latest published GitHub release, updating the local cache and preparing a drift report.",
+          copy: "FNLLA is checking the latest published release, updating the local cache and preparing a drift report.",
           steps: [
             {
-              label: "Checking the latest published GitHub release metadata.",
+              label: "Checking the latest published release metadata.",
               meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
             },
             {
@@ -611,10 +614,10 @@ $updateActionLabel = static function (array $update): string {
           ]
         },
         "github-dry-run": {
-          copy: "FNLLA is preparing a dry-run file-change report from the official GitHub release cache without applying changes.",
+          copy: "FNLLA is preparing a dry-run file-change report from the official release cache without applying changes.",
           steps: [
             {
-              label: "Checking the latest published GitHub release metadata.",
+              label: "Checking the latest published release metadata.",
               meta: "Reads the release channel and confirms whether a newer framework baseline is available for this project."
             },
             {
@@ -632,10 +635,10 @@ $updateActionLabel = static function (array $update): string {
           ]
         },
         "github-apply": {
-          copy: "FNLLA is applying the cached GitHub-backed update and then running post-install validation checks.",
+          copy: "FNLLA is applying the cached release-channel update and then running post-install validation checks.",
           steps: [
             {
-              label: "Checking the latest published GitHub release metadata.",
+              label: "Checking the latest published release metadata.",
               meta: "Confirms the release source and verifies that the cached baseline is still the correct target."
             },
             {

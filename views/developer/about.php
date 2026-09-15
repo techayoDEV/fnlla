@@ -6,7 +6,6 @@ $developerPanelTitle = "Reference: About FNLLA";
 $developerPanelLead = "Framework identity, runtime version and maintainer information for this project installation.";
 $about = is_array($aboutFnlla ?? null) ? (array) $aboutFnlla : [];
 $officialUrl = (string) ($about["official_url"] ?? config("framework.official_url", "https://fnlla.com"));
-$repositoryUrl = (string) ($about["repository"] ?? config("framework.repository_web_url", "https://github.com/techayoDEV/fnlla"));
 $supportEmail = (string) ($about["support_email"] ?? config("framework.support_email", "support@fnlla.com"));
 $maintainerUrl = (string) ($about["maintainer_url"] ?? config("framework.maintainer_url", "https://techayo.co.uk"));
 $frameworkBrandLockup = framework_brand_asset("lockup");
@@ -19,7 +18,7 @@ $facts = [
     "Runtime version" => (string) ($about["runtime_version"] ?? config("fnlla_runtime.version", "unknown")),
     "Environment" => (string) ($about["environment"] ?? app_environment()),
     "Official website" => $officialUrl,
-    "Source repository" => $repositoryUrl,
+    "Maintainer source" => "Private TechAyo maintainer source",
     "Support email" => $supportEmail,
     "Maintainer" => (string) ($about["maintainer"] ?? \Fnlla\Php\Support\FrameworkIdentity::MAINTAINER_NAME),
     "License" => (string) ($about["license"] ?? "MIT"),
@@ -50,7 +49,7 @@ require __DIR__ . "/panel-header.php";
             </div>
             <div class="developer-panel-intro-actions">
               <a class="btn btn-outline btn-sm fnlla-literal" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">fnlla.com</a>
-              <a class="btn btn-outline btn-sm" href="<?= h($repositoryUrl) ?>" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a class="btn btn-outline btn-sm" href="<?= h($officialUrl) ?>" target="_blank" rel="noopener noreferrer">Release channel</a>
               <a class="btn btn-outline btn-sm fnlla-literal" href="<?= h($maintainerUrl) ?>" target="_blank" rel="noopener noreferrer">techayo.co.uk</a>
               <a class="btn btn-outline btn-sm" href="<?= h((string) ($developerLinks["documentation"] ?? route("developer.panel.documentation"))) ?>">Documentation</a>
             </div>
@@ -126,7 +125,7 @@ require __DIR__ . "/panel-header.php";
               <?php foreach ($facts as $label => $value): ?>
               <div class="developer-dashboard-glance-row">
                 <strong><?= h((string) $label) ?></strong>
-                <span<?= in_array($label, ["Framework version", "Brand system", "Runtime version", "Environment", "Official website", "Source repository", "Support email"], true) ? ' class="fnlla-literal"' : "" ?>><?= h((string) $value) ?></span>
+                <span<?= in_array($label, ["Framework version", "Brand system", "Runtime version", "Environment", "Official website", "Maintainer source", "Support email"], true) ? ' class="fnlla-literal"' : "" ?>><?= h((string) $value) ?></span>
               </div>
               <?php endforeach; ?>
             </div>

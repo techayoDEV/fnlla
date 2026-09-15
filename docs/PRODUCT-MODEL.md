@@ -1,16 +1,17 @@
 # FNLLA Product Model
 
-FNLLA is organised as the full project product plus an explicit Core edition.
-The split keeps the public runtime useful on its own while allowing TechAyo to
-develop paid project-control features without turning Core into a private fork.
+FNLLA is organised as the full commercial project product plus an explicit Core
+edition. The split keeps the public runtime useful on its own while allowing
+TechAyo to develop paid project-control features without turning Core into a
+private fork.
 
 ## Product Names
 
 | Product | Repository | Visibility | Role |
 | --- | --- | --- | --- |
-| FNLLA | `techayoDEV/fnlla` | Public source with commercial operations layer | Full product: Developer Panel, Client Portal, setup, preview, diagnostics, analytics, updates and FIONN AI gateway UI. |
+| FNLLA | TechAyo private maintainer source | Commercial product | Full product: licensed Starter package, Admin Panel, Developer Panel, Client Portal, setup, preview, diagnostics, analytics, updates and FIONN AI gateway UI. |
 | FNLLA Core | `techayoDEV/fnlla-core` | Public | MIT-licensed PHP framework, CLI, contracts and core package without private operations surfaces. |
-| fnlla.com | `techayoDEV/fnlla.com` | Product-site policy | Product website, public positioning and documentation surface. |
+| fnlla.com | TechAyo website source | Product-site policy | Product website, public positioning, documentation surface and commercial access entrypoint. |
 | FIONN AI | `techayoDEV/fionn-ai` | Private | Separate TechAyo AI service. FNLLA may connect to it through explicit adapters. |
 
 `FNLLA` is the preferred name for the integrated commercial product.
@@ -74,11 +75,22 @@ drift away from the standalone repository.
 
 FNLLA owns commercial project operations:
 
+- licensed Starter distribution and commercial access flows;
+- Admin Panel for business users and product operations;
 - Project Setup, Developer Panel and Client Portal;
 - maintenance, preview and service-control workflows;
 - notification, readiness, update and audit surfaces;
 - analytics, heatmap and error-monitor workbenches;
 - FIONN AI gateway UI and commercial integration adapters.
+
+The Admin Panel and Developer Panel are intentionally separate products inside
+the full FNLLA experience. The Admin Panel belongs to the end customer's
+business operation: customers, orders, licences, content, reporting and support
+workflows. The Developer Panel belongs to the technical delivery team:
+configuration, diagnostics, release readiness, framework updates, preview
+control and maintenance evidence. Technical tooling should not be hidden inside
+the business admin area, and business operations should not be treated as
+developer settings.
 
 Private customer workflows, product data, FIONN AI memory, model training,
 provider secrets and managed-service operations must not move into the public
