@@ -81,6 +81,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish-fnlla-runtime.ps1
 php fnlla fnlla-runtime:sync
 ```
 
+When a change touches the public framework core, keep the Core export clean as
+well. The `FNLLA Core Sync Proposal` workflow exports `techayoDEV/fnlla-core`,
+validates the exported package and, on `main`, opens or updates a Core sync pull
+request when the export differs from Core `main`. That proposal still needs
+normal Core review before merge or release.
+
 ## Pull request expectations
 
 A good pull request should:

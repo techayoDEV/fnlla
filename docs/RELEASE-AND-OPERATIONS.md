@@ -185,6 +185,20 @@ not push directly to Core `main`, publish a Core tag or create a Core release.
 Core release publication still requires the normal Core Quality, Hardening and
 Release Gate evidence for the exact commit plus explicit maintainer approval.
 
+The maintained automation for that proposal flow is
+`.github/workflows/fnlla-core-sync.yml`. Pull requests and pushes in
+`techayoDEV/fnlla` export the standalone Core repository, run Composer
+validation, install, tests, lint and static analysis against the exported
+package, and upload the export artifact for review. On pushes to `main`, the
+workflow opens or updates a branch named `sync/fnlla-core-from-fnlla-<sha>` in
+`techayoDEV/fnlla-core` only when the export differs from Core `main`.
+
+Cross-repository writes require the `FNLLA_CORE_SYNC_TOKEN` repository secret in
+`techayoDEV/fnlla`. The token must have permission to push branches and open pull
+requests in `techayoDEV/fnlla-core`. If the secret is absent, the validation job
+still runs and the proposal job reports a configuration notice instead of
+silently pretending that Core was synchronized.
+
 FNLLA releases must declare the supported Core range, for example `requires
 FNLLA Core ^2.3`, and should fail release preparation when they depend on Core
 changes that are not present in a stable Core release.

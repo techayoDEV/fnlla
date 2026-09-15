@@ -68,6 +68,9 @@ php scripts/export-fnlla-core-repo.php <target-fnlla-core-repo>
 
 The export rewrites Core package metadata to `techayodev/fnlla-core` and
 `techayoDEV/fnlla-core`; it must validate independently before publication.
+The `.github/workflows/fnlla-core-sync.yml` workflow runs this export for FNLLA
+pull requests and main pushes so Core-owned changes are checked before they can
+drift away from the standalone repository.
 
 FNLLA owns commercial project operations:
 
@@ -87,12 +90,14 @@ The full FNLLA product may need new Core extension points. That work must move t
 public Core release process instead of direct private mutation.
 
 1. FNLLA development identifies a missing Core primitive or contract.
-2. A branch or bot opens a pull request against `techayoDEV/fnlla-core`.
-3. The Core pull request contains only public framework changes, tests and docs.
-4. Core Quality, Hardening and Release Gate workflows pass for the exact commit.
-5. A maintainer approves and releases FNLLA Core.
-6. Full FNLLA updates its dependency to the published Core version.
-7. FNLLA release notes declare the supported Core version range.
+2. FNLLA CI exports the Core repository and validates the exported package.
+3. On a main push, the sync workflow opens or updates a proposal pull request
+   against `techayoDEV/fnlla-core` when the export differs from Core `main`.
+4. The Core pull request contains only public framework changes, tests and docs.
+5. Core Quality, Hardening and Release Gate workflows pass for the exact commit.
+6. A maintainer approves and releases FNLLA Core.
+7. Full FNLLA updates its dependency to the published Core version.
+8. FNLLA release notes declare the supported Core version range.
 
 FNLLA releases are blocked when they depend on unreleased Core changes. Core
 releases must never be created automatically from a full-product push without

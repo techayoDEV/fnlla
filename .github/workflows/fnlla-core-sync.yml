@@ -1,0 +1,172 @@
+name: FNLLA Core Sync Proposal
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FNLLA_CORE_REPOSITORY: techayoDEV/fnlla-core
+
+jobs:
+  validate-core-export:
+    name: Validate exported FNLLA Core
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out FNLLA
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql, fileinfo, mbstring, dom, xml
+          coverage: none
+
+      - name: Install FNLLA dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Export FNLLA Core repository
+        run: php scripts/export-fnlla-core-repo.php "${RUNNER_TEMP}/fnlla-core-export"
+
+      - name: Validate exported package metadata
+        working-directory: ${{ runner.temp }}/fnlla-core-export
+        run: composer validate --strict
+
+      - name: Install exported Core dependencies
+        working-directory: ${{ runner.temp }}/fnlla-core-export
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run exported Core tests
+        working-directory: ${{ runner.temp }}/fnlla-core-export
+        run: php scripts/test.php
+
+      - name: Run exported Core lint
+        working-directory: ${{ runner.temp }}/fnlla-core-export
+        run: php scripts/lint.php
+
+      - name: Run exported Core static analysis
+        working-directory: ${{ runner.temp }}/fnlla-core-export
+        run: php scripts/static-analysis.php
+
+      - name: Upload exported Core artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fnlla-core-export
+          path: ${{ runner.temp }}/fnlla-core-export
+          if-no-files-found: error
+          retention-days: 7
+
+  propose-core-sync:
+    name: Propose FNLLA Core sync PR
+    needs: validate-core-export
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out FNLLA
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql, fileinfo, mbstring, dom, xml
+          coverage: none
+
+      - name: Export FNLLA Core repository
+        run: php scripts/export-fnlla-core-repo.php "${RUNNER_TEMP}/fnlla-core-export"
+
+      - name: Push Core proposal branch
+        id: sync
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FNLLA_CORE_SYNC_TOKEN }}
+          FNLLA_CORE_SYNC_TOKEN: ${{ secrets.FNLLA_CORE_SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${FNLLA_CORE_SYNC_TOKEN}" ]; then
+            echo "::notice title=FNLLA Core sync token missing::Set the FNLLA_CORE_SYNC_TOKEN repository secret to let this workflow open Core sync pull requests."
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          export_dir="${RUNNER_TEMP}/fnlla-core-export"
+          core_dir="${RUNNER_TEMP}/fnlla-core-work"
+          branch="sync/fnlla-core-from-fnlla-${GITHUB_SHA:0:12}"
+
+          gh repo clone "${FNLLA_CORE_REPOSITORY}" "${core_dir}"
+          git -C "${core_dir}" checkout -B "${branch}" origin/main
+          rsync -a --delete --exclude='.git/' "${export_dir}/" "${core_dir}/"
+
+          cd "${core_dir}"
+          git config user.name "fnlla-core-sync[bot]"
+          git config user.email "fnlla-core-sync@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${FNLLA_CORE_SYNC_TOKEN}@github.com/${FNLLA_CORE_REPOSITORY}.git"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No exported FNLLA Core changes to propose."
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          git commit -m "Sync FNLLA Core from fnlla ${GITHUB_SHA:0:12}"
+          git push --force-with-lease origin "HEAD:${branch}"
+
+          echo "changed=true" >> "${GITHUB_OUTPUT}"
+          echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
+
+      - name: Open or update Core sync pull request
+        if: steps.sync.outputs.changed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FNLLA_CORE_SYNC_TOKEN }}
+          SYNC_BRANCH: ${{ steps.sync.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          body_file="${RUNNER_TEMP}/fnlla-core-sync-pr.md"
+          cat > "${body_file}" <<EOF
+          Automated FNLLA Core sync proposal generated from techayoDEV/fnlla@${GITHUB_SHA}.
+
+          This PR contains only the exported Core repository state produced by:
+
+          \`\`\`bash
+          php scripts/export-fnlla-core-repo.php <target>
+          \`\`\`
+
+          The source workflow validated the exported package with Composer validation, install, tests, lint and static analysis before opening this proposal.
+
+          This PR still requires normal FNLLA Core review and green FNLLA Core checks before merge. It does not publish a Core release.
+          EOF
+
+          title="Sync FNLLA Core from fnlla ${GITHUB_SHA:0:12}"
+          existing="$(gh pr list --repo "${FNLLA_CORE_REPOSITORY}" --head "${SYNC_BRANCH}" --state open --json number --jq '.[0].number // empty')"
+
+          if [ -n "${existing}" ]; then
+            gh pr edit "${existing}" --repo "${FNLLA_CORE_REPOSITORY}" --title "${title}" --body-file "${body_file}"
+            echo "Updated FNLLA Core sync PR #${existing}."
+          else
+            gh pr create \
+              --repo "${FNLLA_CORE_REPOSITORY}" \
+              --head "${SYNC_BRANCH}" \
+              --base main \
+              --title "${title}" \
+              --body-file "${body_file}"
+          fi
