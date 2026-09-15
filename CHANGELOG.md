@@ -34,6 +34,9 @@ private Developer Panel reference screens.
   FNLLA; public framework primitives belong to FNLLA Core.
 - Keep framework-managed update and runtime-sync files synchronized with the
   official fnlla.com export so downstream wording matches the maintained source.
+- Authenticate the previous-release fixture clone in Core Quality so release
+  validation continues to cover upgrade tests after the maintainer repository is
+  private.
 
 ## 2.2.4
 

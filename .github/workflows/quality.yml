@@ -164,7 +164,10 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: composer audit --locked
-      - run: git clone --depth 1 --branch v2.1.3 https://github.com/techayoDEV/fnlla.git "${{ runner.temp }}/fnlla-previous"
+      - name: Clone previous release fixture
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: git clone --depth 1 --branch v2.1.3 "https://x-access-token:${GITHUB_TOKEN}@github.com/techayoDEV/fnlla.git" "${{ runner.temp }}/fnlla-previous"
       - run: composer test:unit -- --testsuite integration --fail-on-skipped "--log-junit=${{ runner.temp }}/junit-integration.xml"
         env:
           FNLLA_TEST_PREVIOUS_SOURCE: ${{ runner.temp }}/fnlla-previous
