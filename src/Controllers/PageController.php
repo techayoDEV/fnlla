@@ -35,47 +35,16 @@ final class PageController extends Controller
             "pageTitleHome" => true,
             "heroStats" => [
                 [
-                    "value" => "Setup",
-                    "label" => "project identity and private access",
+                    "value" => "Pages",
+                    "label" => "Home, about and contact are ready to reshape.",
                 ],
                 [
-                    "value" => "OPS",
-                    "label" => "developer operations panel",
+                    "value" => "Form",
+                    "label" => "Validation and mail/log delivery are wired.",
                 ],
                 [
-                    "value" => "PHP",
-                    "label" => "server-rendered products",
-                ],
-            ],
-            "proofPoints" => [
-                [
-                    "number" => "01",
-                    "title" => "Start with application foundations",
-                    "text" => "The exported project keeps public pages, private flows, customer review and operational controls in one inspectable PHP application.",
-                ],
-                [
-                    "number" => "02",
-                    "title" => "Use AI where it is accountable",
-                    "text" => "Local project knowledge is not an AI model. The built-in FIONN AI gateway connects to TechAyo's separate AI service with a developer account and API access; OpenAI API and Anthropic API are optional integrations.",
-                ],
-                [
-                    "number" => "03",
-                    "title" => "Keep the client close to delivery",
-                    "text" => "Preview access, customer review, maintenance controls, analytics, project logs and release readiness are available before the first handover.",
-                ],
-            ],
-            "serviceTracks" => [
-                [
-                    "title" => "Web product delivery",
-                    "text" => "Public pages, contact journeys, protected portals and product workflows can grow from the same server-rendered base.",
-                ],
-                [
-                    "title" => "Developer operations",
-                    "text" => "Named developer access, setup, preview, service control, audit export, notifications, analytics and framework updates stay in the panel.",
-                ],
-                [
-                    "title" => "Review changes with context",
-                    "text" => "Project context, triage, review packs and technical-debt checks support maintenance. Remote AI assistance requires a separately configured provider and explicit access.",
+                    "value" => "Panel",
+                    "label" => "Private setup and operations stay available.",
                 ],
             ],
         ]);
@@ -84,43 +53,25 @@ final class PageController extends Controller
     public function about(Request $request): Response
     {
         return $this->view("pages/about", [
-            "pageTitle" => "About this project",
-            "pageTitleSection" => "Story, trust and delivery model",
+            "pageTitle" => "About",
+            "pageTitleSection" => "Project context",
             "pageHero" => [
                 "eyebrow" => "About",
-                "title" => "Project story, trust markers and delivery model in one clear place.",
-                "text" => "Use this page to explain the real organisation, product or service behind the build, then back it with the proof visitors need before they move forward.",
-                "meta" => ["Project story", "Trust markers", "Delivery model"],
+                "title" => "A simple place for the project story.",
+                "text" => "Say what this is, who it helps and what someone should do next.",
             ],
             "aboutPillars" => [
                 [
-                    "title" => "Built for ownership",
-                    "text" => "FNLLA favours code and configuration that project teams can inspect, change and maintain without a hidden build maze.",
+                    "title" => "Purpose",
+                    "text" => "Describe the product, service or organisation in plain language.",
                 ],
                 [
-                    "title" => "Small enough to understand",
-                    "text" => "The stack stays intentionally direct: routes, controllers, templates, storage, tests and deployment checks remain easy to follow.",
+                    "title" => "Trust",
+                    "text" => "Add only the proof that helps visitors decide with confidence.",
                 ],
                 [
-                    "title" => "Ready to reshape",
-                    "text" => "The public copy and page map are placeholders. The routing model, runtime and maintenance surfaces are the reusable foundation.",
-                ],
-            ],
-            "aboutSteps" => [
-                [
-                    "number" => "1",
-                    "title" => "Define the audience",
-                    "text" => "Replace the starter narrative with the company, product, service and trust signals that belong to the project.",
-                ],
-                [
-                    "number" => "2",
-                    "title" => "Ship the useful surface",
-                    "text" => "Keep the first release focused on routes, pages and forms that help visitors or operators complete a real task.",
-                ],
-                [
-                    "number" => "3",
-                    "title" => "Improve with checks",
-                    "text" => "Use tests, linting, runtime validation and framework update reports to keep later changes deliberate.",
+                    "title" => "Next step",
+                    "text" => "Point people to the contact route or the first useful workflow.",
                 ],
             ],
         ]);
@@ -129,39 +80,12 @@ final class PageController extends Controller
     public function contact(Request $request): Response
     {
         return $this->view("pages/contact", [
-            "pageTitle" => "Contact and enquiry flow",
-            "pageTitleSection" => "Working form, validation and follow-up",
+            "pageTitle" => "Contact",
+            "pageTitleSection" => "Send an enquiry",
             "pageHero" => [
                 "eyebrow" => "Contact",
-                "title" => "A working enquiry flow ready to become the project contact route.",
-                "text" => "Start with a real form that already handles CSRF, validation, old input, flash feedback, honeypot spam friction and mail/log delivery.",
-                "meta" => ["CSRF", "Validation", "Log mailer"],
-                "actions" => [
-                    [
-                        "href" => "#contact-form",
-                        "label" => "Open form",
-                        "variant" => "primary",
-                    ],
-                    [
-                        "href" => route("privacy") . "#cookies",
-                        "label" => "Privacy note",
-                        "variant" => "outline",
-                    ],
-                ],
-            ],
-            "contactChannels" => [
-                [
-                    "title" => "Project enquiry",
-                    "text" => "Replace this card with the route, form or mailbox your project should use for new enquiries.",
-                    "href" => "mailto:hello@example.test?subject=New%20project",
-                    "label" => "hello@example.test",
-                ],
-                [
-                    "title" => "Support route",
-                    "text" => "Use this for maintenance, handover or operator support once the real application workflow is defined.",
-                    "href" => "mailto:support@example.test?subject=Project%20support",
-                    "label" => "support@example.test",
-                ],
+                "title" => "Send a project enquiry.",
+                "text" => "A small working form with validation and delivery already wired.",
             ],
         ]);
     }

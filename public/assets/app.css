@@ -1116,25 +1116,15 @@
 }
 
 .starter-hero {
-  padding-block: 4.8rem 2.4rem;
+  padding-block: 4.2rem 2.25rem;
   border-bottom: 1px solid var(--fnlla-surface-border);
-  background-image:
-    linear-gradient(90deg, rgba(248, 250, 252, 0.98), rgba(248, 250, 252, 0.92)),
-    url("brand/fnlla/binary-field.png");
-  background-position: center;
-  background-size: auto, 640px 360px;
-}
-
-.starter-hero-grid {
-  display: grid;
-  gap: 2rem;
-  align-items: center;
+  background: var(--fnlla-color-bg);
 }
 
 .starter-hero-copy {
   display: grid;
-  gap: 1.1rem;
-  max-width: 62rem;
+  gap: 1rem;
+  max-width: 46rem;
 }
 
 .starter-kicker,
@@ -1149,11 +1139,11 @@
 
 .starter-hero-title,
 .starter-page-heading h1 {
-  max-width: 16ch;
+  max-width: 18ch;
   margin: 0;
   color: var(--fnlla-color-text);
-  font-size: 3.4rem;
-  line-height: 1;
+  font-size: clamp(2.4rem, 4.5vw, 3.15rem);
+  line-height: 1.04;
 }
 
 .starter-hero-text,
@@ -1174,39 +1164,39 @@
 
 .starter-stat-strip {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 1rem;
+  margin-top: 2.4rem;
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--fnlla-surface-border);
+  border-bottom: 1px solid var(--fnlla-surface-border);
 }
 
 .starter-stat {
-  min-height: 6rem;
   display: grid;
-  align-content: center;
-  gap: 0.25rem;
-  padding: 1rem;
-  border: 1px solid var(--fnlla-surface-border);
-  border-radius: var(--fnlla-radius-md);
-  background: var(--fnlla-color-surface);
+  align-content: start;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .starter-stat strong {
   color: var(--fnlla-color-primary);
-  font-size: 1.45rem;
+  font-size: 1rem;
 }
 
 .starter-stat span {
   color: var(--fnlla-color-muted);
-  font-size: var(--fnlla-font-size-sm);
-  font-weight: 600;
+  font-size: 0.94rem;
+  font-weight: 400;
   letter-spacing: 0;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .starter-page-title {
-  padding-block: 3.2rem 1.8rem;
+  padding-block: 3rem 1.65rem;
   border-bottom: 1px solid var(--fnlla-surface-border);
-  background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 1));
+  background: var(--fnlla-color-bg);
 }
 
 .starter-page-heading {
@@ -1215,8 +1205,8 @@
 }
 
 .starter-page-heading h1 {
-  max-width: 24ch;
-  font-size: clamp(2rem, 4vw, 3.15rem);
+  max-width: 21ch;
+  font-size: clamp(2rem, 4vw, 2.8rem);
   line-height: 1.04;
 }
 
@@ -1304,19 +1294,35 @@
   font-weight: 600;
 }
 
-.starter-contact-layout {
+.starter-simple-list {
   display: grid;
-  gap: 1rem;
-  align-items: start;
+  gap: 0;
+  max-width: 58rem;
+  border-top: 1px solid var(--fnlla-surface-border);
 }
 
-.starter-contact-form-card,
-.starter-contact-sidebar {
+.starter-simple-item {
+  display: grid;
+  gap: 0.4rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--fnlla-surface-border);
+}
+
+.starter-contact-layout {
+  display: grid;
+  align-items: start;
+  max-width: 58rem;
+}
+
+.starter-contact-form-card {
   min-width: 0;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+  border: 1px solid var(--fnlla-surface-border);
+  border-radius: var(--fnlla-radius-md);
+  background: var(--fnlla-color-surface);
 }
 
 .starter-contact-form,
-.starter-contact-sidebar,
 .starter-contact-list {
   display: grid;
   gap: 1rem;
@@ -1368,6 +1374,24 @@
   white-space: normal;
 }
 
+.starter-contact-privacy {
+  color: var(--fnlla-color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.starter-contact-privacy:hover,
+.starter-contact-privacy:focus-visible {
+  color: var(--fnlla-color-secondary);
+  outline: none;
+}
+
+.starter-contact-note {
+  margin: 0;
+  color: var(--fnlla-color-muted);
+  font-size: var(--fnlla-font-size-sm);
+}
+
 @media (max-width: 640px) {
   .developer-login-card .btn-primary,
   .starter-hero-actions .btn {
@@ -1397,7 +1421,8 @@
 }
 
 @media (min-width: 960px) {
-  .starter-contact-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.42fr);
+  .starter-simple-item {
+    grid-template-columns: minmax(9rem, 0.28fr) minmax(0, 1fr);
+    gap: 1.5rem;
   }
 }

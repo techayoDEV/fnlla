@@ -14,11 +14,7 @@ $contactSubjects = [
 <section class="section">
   <div class="container">
     <div class="starter-contact-layout" id="contact-form">
-      <article class="feature-card starter-contact-form-card">
-        <p class="feature-kicker">Starter contact form</p>
-        <h2 class="content-title">Send an enquiry</h2>
-        <p class="content-text">Use this as the first project-owned form. Add fields, persistence, queues or CRM delivery only when the real product requires them.</p>
-
+      <article class="starter-contact-form-card">
         <form class="form starter-contact-form" action="<?= h(route("contact.submit")) ?>" method="post" novalidate>
           <?= csrf_field() ?>
           <div class="starter-honeypot" aria-hidden="true">
@@ -40,11 +36,6 @@ $contactSubjects = [
           </div>
 
           <div class="starter-contact-field-grid">
-            <div class="form-group">
-              <label class="label" for="contact-phone">Phone <span class="label-optional">optional</span></label>
-              <input class="input" id="contact-phone" name="contact_phone" type="tel" autocomplete="tel" maxlength="40" value="<?= h((string) old("contact_phone")) ?>">
-              <?php if (error_for("contact_phone") !== null): ?><p class="help-text form-error"><?= h((string) error_for("contact_phone")) ?></p><?php endif; ?>
-            </div>
             <div class="form-group">
               <label class="label" for="contact-subject">Subject</label>
               <select class="select" id="contact-subject" name="contact_subject" required>
@@ -71,30 +62,12 @@ $contactSubjects = [
 
           <div class="starter-contact-actions">
             <button class="btn btn-primary" type="submit">Send enquiry</button>
-            <a class="btn btn-ghost" href="<?= h(route("privacy")) ?>">Privacy Policy</a>
+            <a class="starter-contact-privacy" href="<?= h(route("privacy")) ?>">Privacy Policy</a>
           </div>
+
+          <p class="starter-contact-note">Messages are delivered through the configured project mail route.</p>
         </form>
       </article>
-
-      <aside class="starter-contact-sidebar" aria-label="Contact starter notes">
-        <?php foreach ($contactChannels as $channel): ?>
-        <article class="feature-card starter-contact-card">
-          <h2 class="content-title"><?= h($channel["title"]) ?></h2>
-          <p class="content-text"><?= h($channel["text"]) ?></p>
-          <p><a class="btn btn-outline" href="<?= h($channel["href"]) ?>"><?= h($channel["label"]) ?></a></p>
-        </article>
-        <?php endforeach; ?>
-
-        <article class="feature-card starter-contact-card">
-          <h2 class="content-title">How to extend this</h2>
-          <ul class="starter-contact-list">
-            <li>Add file upload when the project needs documents or images.</li>
-            <li>Persist validated enquiries in a project-owned database table.</li>
-            <li>Queue mail delivery once the application has background workers.</li>
-            <li>Replace subject options with real services, departments or workflows.</li>
-          </ul>
-        </article>
-      </aside>
     </div>
   </div>
 </section>
