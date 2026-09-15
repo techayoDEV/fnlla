@@ -17,6 +17,7 @@ Purpose:
 $sourceRoot = dirname(__DIR__);
 $targetRoot = resolve_target($argv[1] ?? dirname($sourceRoot) . DIRECTORY_SEPARATOR . "fnlla-core");
 $manifestPath = $sourceRoot . DIRECTORY_SEPARATOR . "resources/project-templates/v1/core-files.json";
+$repoTemplateRoot = $sourceRoot . DIRECTORY_SEPARATOR . "resources/project-templates/v1/core-repo";
 $versionPath = $sourceRoot . DIRECTORY_SEPARATOR . "VERSION";
 
 $manifest = json_decode((string) file_get_contents($manifestPath), true, 512, JSON_THROW_ON_ERROR);
@@ -76,7 +77,7 @@ foreach ($manifest["files"] as $relativePath) {
 write_file($targetRoot . DIRECTORY_SEPARATOR . "VERSION", $version . PHP_EOL);
 write_json($targetRoot . DIRECTORY_SEPARATOR . "composer.json", [
     "name" => "techayodev/fnlla-core",
-    "description" => "FNLLA Core PHP framework package without the integrated Developer Panel or FNLLA UI surface.",
+    "description" => "Open PHP framework core for FNLLA applications.",
     "type" => "library",
     "license" => "MIT",
     "homepage" => "https://fnlla.com",
@@ -100,31 +101,10 @@ write_json($targetRoot . DIRECTORY_SEPARATOR . "composer.json", [
         "lint" => "@php scripts/lint.php",
         "analyse" => "@php scripts/static-analysis.php",
     ],
-], $version);
+]);
 
-write_file($targetRoot . DIRECTORY_SEPARATOR . "README.md", str_replace("{{VERSION}}", $version, <<<'MD'
-# FNLLA Core
-
-FNLLA Core is the standalone PHP framework core used by FNLLA. It contains the
-runtime primitives, routing, HTTP layer, container, validation, database,
-session, cache, mail, queue and core CLI building blocks without the integrated
-Developer Panel, Client Portal, FNLLA UI surface or commercial operations layer.
-
-Package: `techayodev/fnlla-core`
-Repository: `techayoDEV/fnlla-core`
-Version: `{{VERSION}}`
-
-## Validate
-
-```powershell
-php scripts/test.php
-php scripts/lint.php
-php scripts/static-analysis.php
-```
-
-This repository is generated from the maintained FNLLA source manifest. Do not
-add FNLLA product-panel files here; those belong in `techayoDEV/fnlla`.
-MD));
+copy_core_repo_templates($repoTemplateRoot, $targetRoot, $version);
+copy_branding_assets($sourceRoot, $targetRoot);
 
 write_file($targetRoot . DIRECTORY_SEPARATOR . ".gitignore", <<<'TXT'
 /vendor/
@@ -227,15 +207,33 @@ spl_autoload_register(static function (string $class) use ($root): void {
 
 require_once $root . "/src/Support/helpers.php";
 
+use Fnlla\Php\Container\Container;
+use Fnlla\Php\Database\QueryBuilder;
+use Fnlla\Php\Http\Request;
+use Fnlla\Php\Http\Response;
+use Fnlla\Php\Routing\Router;
+use Fnlla\Php\Support\FrameworkIdentity;
+use Fnlla\Php\Validation\ValidationException;
+use Fnlla\Php\Validation\Validator;
+
+$GLOBALS["fnlla_config"] = [
+    "app" => [
+        "base_url" => "",
+    ],
+    "http" => [
+        "security_headers" => [],
+    ],
+];
+
 $classes = [
-    Fnlla\Php\Container\Container::class,
+    Container::class,
     Fnlla\Php\Console\Application::class,
-    Fnlla\Php\Http\Request::class,
-    Fnlla\Php\Http\Response::class,
-    Fnlla\Php\Routing\Router::class,
-    Fnlla\Php\Validation\Validator::class,
+    Request::class,
+    Response::class,
+    Router::class,
+    Validator::class,
     Fnlla\Php\View\View::class,
-    Fnlla\Php\Support\FrameworkIdentity::class,
+    FrameworkIdentity::class,
 ];
 
 foreach ($classes as $class) {
@@ -245,29 +243,112 @@ foreach ($classes as $class) {
     }
 }
 
-$container = new Fnlla\Php\Container\Container();
+$container = new Container();
+$GLOBALS["fnlla_container"] = $container;
 $container->singleton(stdClass::class, static fn (): stdClass => (object) ["ok" => true]);
-if ($container->make(stdClass::class) !== $container->make(stdClass::class)) {
-    fwrite(STDERR, "Container singleton contract failed." . PHP_EOL);
-    exit(1);
-}
+assert_true($container->make(stdClass::class) === $container->make(stdClass::class), "Container singleton contract failed.");
 
-$validated = Fnlla\Php\Validation\Validator::make(
+$validated = Validator::make(
     ["email" => "developer@example.test"],
     ["email" => "required|email"]
 )->validate();
+assert_same("developer@example.test", $validated["email"] ?? null, "Validator contract failed.");
 
-if (($validated["email"] ?? null) !== "developer@example.test") {
-    fwrite(STDERR, "Validator contract failed." . PHP_EOL);
-    exit(1);
+expect_exception(ValidationException::class, static fn (): array => Validator::make(
+    ["email" => "not-an-email"],
+    ["email" => "required|email"]
+)->validate(), "Validator should reject invalid email.");
+
+$request = Request::capture(
+    '{"name":"Core"}',
+    [
+        "REQUEST_METHOD" => "POST",
+        "REQUEST_URI" => "/payload?debug=1",
+        "CONTENT_TYPE" => "application/json",
+        "CONTENT_LENGTH" => "15",
+        "HTTP_X_REQUEST_ID" => "core-request-1",
+    ]
+);
+assert_same("POST", $request->method(), "JSON request method mismatch.");
+assert_same("/payload", $request->path(), "JSON request path mismatch.");
+assert_same("Core", $request->json("name"), "JSON request body mismatch.");
+assert_same("core-request-1", $request->requestId(), "Request ID mismatch.");
+
+$router = new Router($container);
+$router->get("/projects/{slug}", static fn (Request $request, string $slug): Response => Response::json([
+    "slug" => $slug,
+    "route_param" => $request->input("slug"),
+]))->name("projects.show");
+
+$routeResponse = $router->dispatch(Request::capture("", [
+    "REQUEST_METHOD" => "GET",
+    "REQUEST_URI" => "/projects/core",
+]));
+assert_true($routeResponse instanceof Response, "Router did not return a response.");
+assert_same(200, $routeResponse->status(), "Route response status mismatch.");
+$payload = json_decode($routeResponse->body(), true, 512, JSON_THROW_ON_ERROR);
+assert_same("core", $payload["slug"] ?? null, "Route parameter mismatch.");
+assert_same("core", $payload["route_param"] ?? null, "Route input mismatch.");
+
+$optionsResponse = $router->dispatch(Request::capture("", [
+    "REQUEST_METHOD" => "OPTIONS",
+    "REQUEST_URI" => "/projects/core",
+]));
+assert_true($optionsResponse instanceof Response, "OPTIONS did not return a response.");
+assert_same(204, $optionsResponse->status(), "OPTIONS response status mismatch.");
+assert_true(str_contains((string) ($optionsResponse->headers()["Allow"] ?? ""), "GET"), "OPTIONS Allow header missing GET.");
+
+expect_exception(RuntimeException::class, static fn (): Response => Response::text("bad")->withHeader("X-Test", "bad\r\nheader"), "Response should reject unsafe header values.");
+
+if (in_array("sqlite", PDO::getAvailableDrivers(), true)) {
+    $pdo = new PDO("sqlite::memory:");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $pdo->exec("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, deleted_at TEXT NULL)");
+    $builder = new QueryBuilder($pdo, "users");
+    assert_true($builder->insert(["email" => "core@example.test", "deleted_at" => null]), "Query builder insert failed.");
+    $row = (new QueryBuilder($pdo, "users"))->where("email", "core@example.test")->whereNull("deleted_at")->first();
+    assert_same("core@example.test", $row["email"] ?? null, "Query builder select failed.");
+    expect_exception(RuntimeException::class, static fn (): QueryBuilder => new QueryBuilder($pdo, "users; DROP TABLE users"), "Query builder should reject unsafe table names.");
 }
 
-if (Fnlla\Php\Support\FrameworkIdentity::REPOSITORY !== "techayoDEV/fnlla-core") {
-    fwrite(STDERR, "Core repository identity was not rewritten." . PHP_EOL);
-    exit(1);
-}
+assert_same("techayoDEV/fnlla-core", FrameworkIdentity::REPOSITORY, "Core repository identity was not rewritten.");
+assert_same("FNLLA Core", FrameworkIdentity::PRODUCT_NAME, "Core product identity was not rewritten.");
 
 fwrite(STDOUT, "FNLLA Core package smoke test passed." . PHP_EOL);
+
+function assert_true(bool $condition, string $message): void
+{
+    if (!$condition) {
+        fwrite(STDERR, $message . PHP_EOL);
+        exit(1);
+    }
+}
+
+function assert_same(mixed $expected, mixed $actual, string $message): void
+{
+    if ($expected !== $actual) {
+        fwrite(STDERR, $message . " Expected " . var_export($expected, true) . ", got " . var_export($actual, true) . "." . PHP_EOL);
+        exit(1);
+    }
+}
+
+function expect_exception(string $class, callable $callback, string $message): void
+{
+    try {
+        $callback();
+    } catch (Throwable $exception) {
+        if ($exception instanceof $class) {
+            return;
+        }
+
+        fwrite(STDERR, $message . " Unexpected exception: " . get_class($exception) . " " . $exception->getMessage() . PHP_EOL);
+        exit(1);
+    }
+
+    fwrite(STDERR, $message . PHP_EOL);
+    exit(1);
+}
 PHP);
 
 fwrite(STDOUT, "FNLLA Core repository exported to: " . $targetRoot . PHP_EOL);
@@ -289,9 +370,72 @@ function safe_relative_path(string $path): bool
         && !str_starts_with($path, "storage/");
 }
 
-function write_json(string $path, array $payload, string $version): void
+function copy_core_repo_templates(string $templateRoot, string $targetRoot, string $version): void
 {
-    $payload["version"] = $version;
+    $realTemplateRoot = realpath($templateRoot);
+    if ($realTemplateRoot === false || !is_dir($realTemplateRoot)) {
+        fail("Core repository template directory missing: " . $templateRoot);
+    }
+
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($realTemplateRoot, RecursiveDirectoryIterator::SKIP_DOTS));
+    foreach ($iterator as $fileInfo) {
+        if (!$fileInfo->isFile() || $fileInfo->isLink()) {
+            continue;
+        }
+
+        $sourcePath = $fileInfo->getPathname();
+        $relativePath = str_replace(DIRECTORY_SEPARATOR, "/", substr($sourcePath, strlen($realTemplateRoot) + 1));
+        if (!safe_relative_path($relativePath)) {
+            fail("Unsafe Core repository template path: " . $relativePath);
+        }
+
+        $contents = str_replace("{{VERSION}}", $version, (string) file_get_contents($sourcePath));
+        write_file($targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath), $contents);
+    }
+}
+
+function copy_branding_assets(string $sourceRoot, string $targetRoot): void
+{
+    foreach ([
+        "branding/assets/logo/favicon.svg",
+        "branding/assets/logo/lockup.svg",
+        "branding/assets/logo/monogram.svg",
+        "branding/assets/logo/wordmark.svg",
+    ] as $relativePath) {
+        copy_source_file($sourceRoot, $targetRoot, $relativePath);
+    }
+
+    $outlineRoot = $sourceRoot . DIRECTORY_SEPARATOR . "branding/assets/logo/outline";
+    $outlineFiles = glob($outlineRoot . DIRECTORY_SEPARATOR . "*.svg");
+    if ($outlineFiles === false || $outlineFiles === []) {
+        fail("FNLLA outline logo assets are missing.");
+    }
+
+    foreach ($outlineFiles as $sourcePath) {
+        copy_source_file($sourceRoot, $targetRoot, "branding/assets/logo/outline/" . basename($sourcePath));
+    }
+}
+
+function copy_source_file(string $sourceRoot, string $targetRoot, string $relativePath): void
+{
+    if (!safe_relative_path($relativePath)) {
+        fail("Unsafe source copy path: " . $relativePath);
+    }
+
+    $source = $sourceRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath);
+    $realSource = realpath($source);
+    if ($realSource === false || !is_file($realSource) || is_link($source)) {
+        fail("Source file missing or aliased: " . $relativePath);
+    }
+
+    write_file(
+        $targetRoot . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $relativePath),
+        (string) file_get_contents($realSource)
+    );
+}
+
+function write_json(string $path, array $payload): void
+{
     write_file($path, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
 }
 
