@@ -147,7 +147,8 @@ final class TechnicalDebtReportBuilder
             $updated = rtrim($current) . PHP_EOL . PHP_EOL . $snapshot;
         }
 
-        $changed = $updated !== $current;
+        $changed = $updated !== $current
+            && $this->normalizeLineEndings($updated) !== $this->normalizeLineEndings($current);
 
         if (!$checkOnly && $changed) {
             file_put_contents($path, $updated, LOCK_EX);
@@ -461,6 +462,11 @@ final class TechnicalDebtReportBuilder
             static fn (array $parts): string => preg_quote(implode("", $parts), '/'),
             $words
         )) . ')(?:\s*:|\s+-|\s|$)/im';
+    }
+
+    private function normalizeLineEndings(string $contents): string
+    {
+        return str_replace(["\r\n", "\r"], "\n", $contents);
     }
 
     private function relativePath(string $path): string

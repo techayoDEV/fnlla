@@ -529,4 +529,21 @@ final class PerformanceAndAiTest extends TestCase
         self::assertStringContainsString("FNLLA_TECH_DEBT_REPORT:BEGIN", $snapshot);
         self::assertStringContainsString("php fnlla tech-debt:update --check", $snapshot);
     }
+
+    public function testTechnicalDebtSnapshotCheckIgnoresLineEndingOnlyDifferences(): void
+    {
+        $builder = new TechnicalDebtReportBuilder();
+        $report = $builder->build();
+        $snapshot = str_replace(["\r\n", "\r"], "\n", $builder->markdownSnapshot($report));
+        $path = tempnam(sys_get_temp_dir(), "fnlla-tech-debt-doc-");
+        self::assertIsString($path);
+        $this->temporaryFiles[] = $path;
+
+        file_put_contents($path, "# Test\n\n" . $snapshot, LOCK_EX);
+
+        $sync = $builder->syncMarkdown($path, $report, true);
+
+        self::assertFalse($sync["changed"]);
+        self::assertTrue($sync["ok"]);
+    }
 }
