@@ -1,4 +1,4 @@
-# FNLLA Core Project
+# {{APP_NAME}}
 
 This is a minimal public application built on FNLLA Core. It starts with a
 small server-rendered homepage, routes, config, tests and the core CLI surface.

@@ -23,14 +23,14 @@ final class CoreProjectExporter
             throw new RuntimeException("Invalid core package version.");
         }
         $this->write($target . "/packages/fnlla-core/composer.json", json_encode([
-            "name" => "techayodev/fnlla-core", "description" => "FNLLA HTTP and application core without the Developer Panel or UI distribution.",
+            "name" => "techayodev/fnlla-core", "description" => "Open PHP framework core for FNLLA applications.",
             "type" => "library", "license" => "MIT", "version" => $version,
             "require" => ["php" => "^8.3"], "autoload" => ["psr-4" => ["Fnlla\\Php\\" => "src/"]],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
         $this->write($target . "/composer.json", json_encode([
             "name" => "project/" . $slug, "description" => $name . " built on FNLLA Core", "type" => "project",
             "repositories" => [["type" => "path", "url" => "packages/fnlla-core", "options" => ["symlink" => false]]],
-            "require" => ["php" => "^8.3", "techayodev/fnlla-core" => $version],
+            "require" => ["php" => "^8.3", "techayodev/fnlla-core" => $this->versionConstraint($version)],
             "suggest" => [
                 "phpunit/phpunit" => "Optional full PHPUnit runner. The Core export ships a dependency-light local smoke-test harness.",
                 "phpstan/phpstan" => "Optional deeper static analysis. The Core export runs a dependency-light baseline without it.",
@@ -64,6 +64,13 @@ final class CoreProjectExporter
         foreach (["database/migrations", "storage/app", "storage/logs", "storage/framework/cache", "storage/framework/sessions", "storage/framework/queue"] as $path) {
             $this->write($target . "/" . $path . "/.gitignore", "*\n!.gitignore\n");
         }
+    }
+
+    private function versionConstraint(string $version): string
+    {
+        $parts = explode(".", $version);
+
+        return "~" . $parts[0] . "." . $parts[1] . ".0";
     }
 
     private function copy(string $root, string $relative, string $target): void

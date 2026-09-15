@@ -114,7 +114,8 @@ write_file($targetRoot . DIRECTORY_SEPARATOR . ".gitignore", <<<'TXT'
 !.env.example
 TXT);
 
-write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/lint.php", <<<'PHP'
+if (!is_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/lint.php")) {
+    write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/lint.php", <<<'PHP'
 <?php
 
 declare(strict_types=1);
@@ -146,8 +147,10 @@ if ($errors !== []) {
 
 fwrite(STDOUT, "Lint passed." . PHP_EOL);
 PHP);
+}
 
-write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/static-analysis.php", <<<'PHP'
+if (!is_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/static-analysis.php")) {
+    write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/static-analysis.php", <<<'PHP'
 <?php
 
 declare(strict_types=1);
@@ -177,16 +180,20 @@ if ($errors !== []) {
 
 fwrite(STDOUT, "Static analysis baseline passed." . PHP_EOL);
 PHP);
+}
 
-write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/test.php", <<<'PHP'
+if (!is_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/test.php")) {
+    write_file($targetRoot . DIRECTORY_SEPARATOR . "scripts/test.php", <<<'PHP'
 <?php
 
 declare(strict_types=1);
 
 require __DIR__ . "/../tests/CorePackageSmokeTest.php";
 PHP);
+}
 
-write_file($targetRoot . DIRECTORY_SEPARATOR . "tests/CorePackageSmokeTest.php", <<<'PHP'
+if (!is_file($targetRoot . DIRECTORY_SEPARATOR . "tests/CorePackageSmokeTest.php")) {
+    write_file($targetRoot . DIRECTORY_SEPARATOR . "tests/CorePackageSmokeTest.php", <<<'PHP'
 <?php
 
 declare(strict_types=1);
@@ -350,6 +357,7 @@ function expect_exception(string $class, callable $callback, string $message): v
     exit(1);
 }
 PHP);
+}
 
 fwrite(STDOUT, "FNLLA Core repository exported to: " . $targetRoot . PHP_EOL);
 
