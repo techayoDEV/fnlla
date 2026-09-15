@@ -427,7 +427,7 @@ require __DIR__ . "/panel-header.php";
                 <div class="form-group">
                   <label class="label" for="project-leadership-visibility">Visibility</label>
                   <select class="select" id="project-leadership-visibility" name="project_leadership_visibility">
-                    <?php foreach (["admin" => "Private panel and documentation", "public" => "Public after confirmation", "disabled" => "Disabled"] as $value => $label): ?>
+                    <?php foreach (["admin" => "Developer panel and documentation", "public" => "Public after confirmation", "disabled" => "Disabled"] as $value => $label): ?>
                     <option value="<?= h($value) ?>" <?= $projectLeadershipVisibility === $value ? "selected" : "" ?>><?= h($label) ?></option>
                     <?php endforeach; ?>
                   </select>

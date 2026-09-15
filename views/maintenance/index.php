@@ -493,7 +493,7 @@ if (($maintenanceAccess["seconds_remaining"] ?? 0) > 0) {
                   <label class="label" for="project-setup-leadership-visibility">Leadership visibility <span class="content-text">(optional)</span></label>
                   <select class="select" id="project-setup-leadership-visibility" name="project_leadership_visibility">
                     <option value="disabled">Disabled</option>
-                    <option value="admin">Private panel and documentation</option>
+                    <option value="admin">Developer panel and documentation</option>
                     <option value="public">Public after confirmation</option>
                   </select>
                 </div>

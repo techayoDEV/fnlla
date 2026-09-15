@@ -529,7 +529,7 @@ require __DIR__ . "/panel-header.php";
             <article class="developer-dashboard-card">
               <p class="feature-kicker">Client systems</p>
               <h3>Private by default</h3>
-              <p class="content-text mb-0">Set visibility to private panel and documentation when a client project should not show TechAyo or named-lead information publicly.</p>
+              <p class="content-text mb-0">Set visibility to developer panel and documentation when a client project should not show TechAyo or named-lead information publicly.</p>
             </article>
           </div>
         </section>
